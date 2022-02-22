@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- 定义访问类型的枚举限定 -->
+    <xs:simpleType name="AccessType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="RO" />
+            <xs:enumeration value="RW" />
+            <xs:enumeration value="RC" />
+            <xs:enumeration value="RS" />
+            <xs:enumeration value="WRC" />
+            <xs:enumeration value="WRS" />
+            <xs:enumeration value="WC" />
+            <xs:enumeration value="WS" />
+            <xs:enumeration value="WSRC" />
+            <xs:enumeration value="WCRS" />
+            <xs:enumeration value="W1C" />
+            <xs:enumeration value="W1S" />
+            <xs:enumeration value="W0C" />
+            <xs:enumeration value="W0S" />
+            <xs:enumeration value="W0T" />
+            <xs:enumeration value="W1SRC" />
+            <xs:enumeration value="W1CRS" />
+            <xs:enumeration value="W0SRC" />
+            <xs:enumeration value="W0CRS" />
+            <xs:enumeration value="WO" />
+            <xs:enumeration value="WOC" />
+            <xs:enumeration value="WOS" />
+            <xs:enumeration value="W1" />
+            <xs:enumeration value="WO1" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:element name="寄存器组">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="1" maxOccurs="unbounded" name="寄存器">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="名称" type="xs:string" />
+                            <!-- 地址偏移需以16进制表示 -->
+                            <xs:element name="地址偏移">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:pattern value="0[Xx][0-9A-Fa-f]+|[0-9]+"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <!-- 寄存器长度只能选32或64 bit -->
+                            <xs:element name="长度">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:integer">
+                                        <xs:enumeration value="32" />
+                                        <xs:enumeration value="64" />
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="简写" type="xs:string" />
+                            <xs:element name="访问类型" type="AccessType" />
+                            <xs:element name="描述" type="xs:string" />
+                            <xs:element minOccurs="1" maxOccurs="unbounded" name="域定义">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <!-- 域的两端边界比特位采用十进制xx:xx的形式 -->
+                                        <xs:element name="比特位">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:pattern value="[0-9]+:[0-9]+" />
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="域名称" type="xs:string" />
+                                        <xs:element name="描述" type="xs:string" />
+                                        <xs:element name="可选值">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:pattern value="(([0-9]+,?)+)|([0-9]+~[0-9]+)" />
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="访问类型" type="AccessType" />
+                                        <xs:element name="复位值">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:pattern value="0[Xx][0-9A-Fa-f]+|[0-9]+" />
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="复位信号" type="xs:string" />
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
