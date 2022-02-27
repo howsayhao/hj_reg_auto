@@ -87,25 +87,30 @@ class CommandRunner:
         if not ".xlsx" in args.name:
             args.name += ".xlsx" 
 
-        sheet_names = args.rname.split(",")
-        if args.rnum > len(sheet_names):
-            append_name = sheet_names[-1]
-            for _ in range(len(sheet_names), args.rnum):
-                sheet_names.append(append_name)
-        generate_excel(args.path, args.name, args.rnum, sheet_names, args.language)
+        reg_names = args.rname.split(",")
+        if args.rnum > len(reg_names):
+            append_name = reg_names[-1]
+            for _ in range(len(reg_names), args.rnum):
+                reg_names.append(append_name)
+        generate_excel(args.path, args.name, args.rnum, reg_names, args.language)
 
     @staticmethod
     def _check_excel(args):
         if args.show:
             show_rules()
+        # 单个Excel文件作为输入
         if args.file is not None:
             if args.list is not None:
-                message.warning("you cannot use -f(--file) and -l(--list) at the same time,"
+                message.warning("cannot use -f(--file) and -l(--list) at the same time,"
                                 "-l(--list) option will be ignored")
             if not os.path.exists(args.file):
                 message.error("file does not exists!")
                 sys.exit(1)
+            if not os.path.splitext()[-1] == ".xlsx":
+                message.error("wrong file format!")
+                sys.exit(1)
             check_excel_single(args.file)
+        # 多个Excel文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:
             if not os.path.exists(args.list):
                 message.error("list file does not exists!")

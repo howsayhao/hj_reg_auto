@@ -52,7 +52,7 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
                 continue
             cr = CellRange(mcr.coord)
             for regidx in range(1, rnum):
-                cr.shift(row_shift=(row_num+1)*regidx)
+                cr.shift(row_shift=row_num+1) 
                 ws.merge_cells(cr.coord)
 
         wb.save(gen_file)
