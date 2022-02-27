@@ -1,7 +1,7 @@
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
-from args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
-from ..utils import message
+from excel.args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
+import utils.message as message
 import sys
 import re
 
