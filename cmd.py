@@ -106,7 +106,7 @@ class CommandRunner:
             if not os.path.exists(args.file):
                 message.error("file does not exists!")
                 sys.exit(1)
-            if not os.path.splitext()[-1] == ".xlsx":
+            if not os.path.splitext(args.file)[-1] == ".xlsx":
                 message.error("wrong file format!")
                 sys.exit(1)
             check_excel_single(args.file)
@@ -116,7 +116,7 @@ class CommandRunner:
                 message.error("list file does not exists!")
                 sys.exit(1)
             check_excel_list(args.list)
-        else:
+        elif not args.show:
             message.error("one of the -f(--file) and -l(--list) options must be provided!")
             sys.exit(1)
             
