@@ -1,9 +1,11 @@
 import argparse
 import os
-import utils.message as message
 import sys
+
+import utils.message as message
+from excel.check import check_excel, check_rdl, show_rules
 from excel.gen_temp import generate_excel
-from excel.check import check_excel_list, check_excel_single, show_rules
+
 
 class CommandRunner:
     """
@@ -42,10 +44,10 @@ class CommandRunner:
                                         type=int,
                                         help="Number of registers generated in the Excel template. (Default: %(default)s)")
         parser_excel_template.add_argument("--rname",
-                                        default="TEM1",
+                                        default=["TEM1"],
+                                        nargs="+",
                                         help="Abbreviations of every generated registers "
-                                        "in the Excel template. (Default: %(default)s)",
-                                        metavar="TEM1[,TEM2,...]")
+                                        "in the Excel template. (Default: %(default)s)")
         parser_excel_template.add_argument("-l", "--language",
                                         default="cn",
                                         choices=["cn", "en"],
@@ -58,12 +60,13 @@ class CommandRunner:
         parser_check_excel = subparsers.add_parser("check_excel",
                                                 help="Rule check for register descriptions in Excel format.")
         parser_check_excel.add_argument("-f", "--file",
+                                        nargs="+",
                                         help="Excel files to check. (must provide entire file path)")
         parser_check_excel.add_argument("-l", "--list",
                                         help="A list including paths and names of all excel files. (useful for large number of files)")
         parser_check_excel.add_argument("-s", "--show",
                                         action="store_true",
-                                        help="Show rules.")                           
+                                        help="Show rules.")
         parser_check_excel.set_defaults(func=self._check_excel)
 
         # 子命令：对SystemRDL形式的寄存器说明进行规则检查
@@ -87,7 +90,7 @@ class CommandRunner:
         if not ".xlsx" in args.name:
             args.name += ".xlsx" 
 
-        reg_names = args.rname.split(",")
+        reg_names = args.rname
         if args.rnum > len(reg_names):
             append_name = reg_names[-1]
             for _ in range(len(reg_names), args.rnum):
@@ -98,34 +101,87 @@ class CommandRunner:
     def _check_excel(args):
         if args.show:
             show_rules()
-        # 单个Excel文件作为输入
+        # 单个或多个Excel文件作为输入
         if args.file is not None:
             if args.list is not None:
-                message.warning("cannot use -f(--file) and -l(--list) at the same time,"
-                                "-l(--list) option will be ignored")
-            if not os.path.exists(args.file):
-                message.error("file does not exists!")
-                sys.exit(1)
-            if not os.path.splitext(args.file)[-1] == ".xlsx":
-                message.error("wrong file format!")
-                sys.exit(1)
-            check_excel_single(args.file)
+                message.warning("cannot use -f/--file and -l/--list options at the same time,"
+                                "-l/--list option will be ignored")
+            for file in args.file:
+                if not os.path.exists(file):
+                    message.error("input file:%s does not exists!" %(file))
+                    sys.exit(1)
+                if not os.path.splitext(file)[-1] == ".xlsx":
+                    message.error("wrong file format! (should be .xlsx)")
+                    sys.exit(1)
+
+            # 以list形式把一个或多个Excel文件名传进去
+            check_excel(args.file)
+
         # 多个Excel文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:
             if not os.path.exists(args.list):
                 message.error("list file does not exists!")
                 sys.exit(1)
-            check_excel_list(args.list)
-        elif not args.show:
-            message.error("one of the -f(--file) and -l(--list) options must be provided!")
-            sys.exit(1)
-            
- 
+            else:
+                with open(args.list, "r") as f:
+                    flist = []
+                    lines = f.readlines()
+                    for cnt, line in enumerate(lines):
+                        if not os.path.exists(line):
+                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line))
+                            sys.exit(1)
+                        if not os.path.splitext(line)[-1] == ".xlsx":
+                            message.error("wrong file format! (should be .xlsx)")
+                            sys.exit(1)
+                        flist.append(line)
 
+            # 以list形式把一个或多个Excel文件名传进去
+            check_excel(flist)
+        elif not args.show:
+            message.error("one of the -f/--file and -l/--list options must be provided!")
+            sys.exit(1)
 
     @staticmethod
     def _check_rdl(args):
-        print(args.file, args.list)
+        # 单个或多个RDL文件作为输入
+        if args.file is not None:
+            if args.list is not None:
+                message.warning("cannot use -f/--file and -l/--list options at the same time,"
+                                "-l/--list option will be ignored")
+            for file in args.file:
+                if not os.path.exists(file):
+                    message.error("input file:%s does not exists!" %(file))
+                    sys.exit(1)
+                if not os.path.splitext(file)[-1] == ".rdl":
+                    message.error("wrong file format! (should be .rdl)")
+                    sys.exit(1)
+
+            # 以list形式把一个或多个RDL文件名传进去
+            check_rdl(args.file)
+
+        # 多个RDL文件作为输入,文件路径放在一个list文本文件中
+        elif args.list is not None:
+            if not os.path.exists(args.list):
+                message.error("list file does not exists!")
+                sys.exit(1)
+            else:
+                with open(args.list, "r") as f:
+                    flist = []
+                    lines = f.readlines()
+                    for cnt, line in enumerate(lines):
+                        if not os.path.exists(line):
+                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line))
+                            sys.exit(1)
+                        if not os.path.splitext(line)[-1] == ".rdl":
+                            message.error("wrong file format! (should be .rdl)")
+                            sys.exit(1)
+                        flist.append(line)
+
+            # 以list形式把一个或多个Excel文件名传进去
+            check_rdl(flist)
+        else:
+            message.error("one of the -f/--file and -l/--list options must be provided!")
+            sys.exit(1)
     
     def run(self):
         parser = self.build_parser()
