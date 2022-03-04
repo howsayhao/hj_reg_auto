@@ -1,0 +1,21 @@
+addrmap some_map {
+    signal {
+        name = "Generic Reset Signal";
+        desc = "This is a generic reset signal used to reset";
+    } generic_reset;
+
+    regfile {
+        reg {
+            name = "reg_name1";
+            desc = "reg_desc1";
+        } reg_abbr1;
+
+        reg {
+            name = "reg_name2";
+            desc = "reg_desc2";
+        } reg_abbr2;
+    }
+    
+
+};
+
