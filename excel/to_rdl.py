@@ -1,140 +1,199 @@
 from args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
 
-signal_str = """signal {{
-    name = "Generic Reset Signal";
-    desc = "This is a generic reset signal used to reset";
-}} {rst_sig};
-"""
-
-field_str = """field {{
-    name = "{field_name}";
-    desc = "{field_desc}";
-
-    {accesstype_str}
-
-    resetsignal = {field_rst_sig};
-    }} {field_name}[{field_bit_high}:{field_bit_low}] = {field_rst_val};
-"""
-
-accesstype_str = """
-    sw = {field_sw_acc_type};
-
-    onread = {field_read_effect};
-    onwrite = {field_write_effect};
-"""
-
-reg_str = """reg {{
-    name = "{reg_name}";
-    desc = "{reg_desc}";
-
-    regwidth = {reg_len};
-
-    {reg_fields}
-
-    }} {reg_abbr} @{reg_addr_offset};
-"""
-
-regfile_str = """regfile {{
-    name = "{regfile_name}";
-    desc = "{regfile_desc}";
-
-    {regfile_regs}
-
-    }} {regfile_name} @{regfile_base_addr};
-"""
-
-addrmap_str = """addrmap {{
-    {addrmap_regfiles}
-}} {addrmap_name};
-"""
-
-def insert_regfile(regs:list[dict]):
+class RDLGenerator:
+    signal_str = """signal {{
+    name = "{}";
+    desc = "{}";
+    }} {rst_sig};
     """
-    重构寄存器list, 插入regfile级,
-    默认将相同基地址的register归入相同regfile
+    field_str = """field {{
+        name = "{FieldName}";
+        desc = "{FieldDesc}";
 
-    Return
-    ------
-    `dict` : `root_addrmap`, 多了一级regfile
+        {accesstype_str}
 
-    i.e.
-    {'regfile_0': {'baseaddr': 0,
-                   'regs': [{'RegName': 'TEMPLATE寄存器',
-                             'BaseAddr': 0,
-                             'AddrOffset': 0,
-                             'RegLen': 32,
-                             'RegAbbr': 'TEM',
-                             'RegAccType': 'RW',
-                             'RegDesc': '示例寄存器',
-                             'Fields': [{'FieldBit': (xx, xx),
-                                         'FieldName': 'FIELD_xx',
-                                         'FieldDesc': 'xxxxxxx',
-                                         'FieldValue': '0',
-                                         'FieldAccType': 'RW',
-                                         'FieldRstVal': 0,
-                                         'FieldRstSig': 'Global Reset'},
-                                        {'FieldBit': (xx, xx),
-                                         'FieldName': 'FIELD_xx',
-                                         'FieldDesc': 'xxxxxxx',
-                                         'FieldValue': '0,1',
-                                         'FieldAccType': 'RW',
-                                         'FieldRstVal': 0,
-                                         'FieldRstSig': 'Global Reset'}
-                                        ]
-                            }]}
-     'regfile_1': {
-         ......}
-    }
+        resetsignal = {field_rst_sig};
+        }} {FieldName}[{FieldBit[0]}:{FieldBit[1]}] = {FieldRstVal};
     """
-    root_addrmap = {}
-    regfiles = {}
-    regfile_num = 0
-    field_elements = EXCEL_REG_FIELD.keys()
+    accesstype_str = """
+        sw = {field_sw_acc_type};
 
-    for reg in regs:
-        field_num = len(reg["FieldBit"])
-        reg_baseaddr = reg["BaseAddr"]
+        onread = {field_read_effect};
+        onwrite = {field_write_effect};
+    """
+    reg_str = """reg {{
+        name = "{reg_name}";
+        desc = "{reg_desc}";
 
-        reg_fields = []
-        regfile_name = "regfile_%d" % (regfile_num)
-    
-        if reg_baseaddr not in regfiles.values():
+        regwidth = {reg_len};
 
-            regfiles[regfile_name] = reg_baseaddr
-            regfile_num += 1
-            root_addrmap[regfile_name] = {"baseaddr": reg_baseaddr,
-                                          "regs":[reg]}
-        else:
-            root_addrmap[regfile_name]["regs"].append(reg)
+        {fields}
 
-        for idx in range(field_num):
-            reg_field = {}
+        }} {reg_abbr} @{reg_addr_offset};
+    """
+    regfile_str = """regfile {{
+        name = "{regfile_name}";
+        desc = "{regfile_desc}";
 
-            for fkey in field_elements:
-                reg_field[fkey] = reg[fkey][idx]
+        {regfile_regs}
 
-            reg_fields.append(reg_field)
+        }} {regfile_name} @{regfile_base_addr};
+    """
+    addrmap_str = """addrmap {{
+        {addrmap_regfiles}
+    }} {addrmap_name};
+    """
 
-        for fkey in field_elements:
-            reg.pop(fkey)
+    @staticmethod
+    def resize_model(reg_model:dict[str,list]):
+        """
+        重构寄存器模型Dict, 将Field相关项进行转置,
+        并删去在解析和检查Excel时引入的与寄存器无关的多余元素
 
-        reg["Fields"] = reg_fields
+        i.e. 
+        - 重构前:
+        {
+            'template': [
+                {
+                    'BaseRow': 1,
+                    'RegName': 'TEMPLATE寄存器',
+                    'AddrOffset': 0,
+                    'RegWidth': 32,
+                    'RegAbbr': 'TEM',
+                    'RegDesc': '示例寄存器',
+                    'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
+                    'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
+                    'FieldDesc': [
+                        '保留位',
+                        '[功能描述]...',
+                        '[功能描述]...',
+                        '[功能描述]...',
+                        '保留位'
+                    ],
+                    'FieldRdType': ['R', 'RCLR', 'RSET', 'RUSER', 'R'],
+                    'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
+                    'FieldRstVal': [0, 0, 0, 1, 0],
+                    'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']
+                }
+            ]
+        }
+        - 重构后:
+        {
+            'template': [
+                {
+                    'RegName': 'TEMPLATE寄存器',
+                    'AddrOffset': 0,
+                    'RegWidth': 32,
+                    'RegAbbr': 'TEM',
+                    'RegDesc': '示例寄存器',
+                    'Fields': [
+                        {
+                            'FieldBit': (31, 18),
+                            'FieldName': 'Reserved',
+                            'FieldDesc': '保留位',
+                            'FieldRdType': 'R',
+                            'FieldWrType': 'W',
+                            'FieldRstVal': 0,
+                            'FieldRstSig': 'Global Reset'
+                        },
+                        {
+                            'FieldBit': (17, 17),
+                            'FieldName': 'FIELD_1',
+                            'FieldDesc': '[功能描述]...',
+                            'FieldRdType': 'RCLR',
+                            'FieldWrType': 'NA',
+                            'FieldRstVal': 0,
+                            'FieldRstSig': 'Global Reset'
+                        },
+                        {
+                            'FieldBit': (16, 14),
+                            'FieldName': 'FIELD_2',
+                            'FieldDesc': '[功能描述]...',
+                            'FieldRdType': 'RSET',
+                            'FieldWrType': 'WOSET',
+                            'FieldRstVal': 0,
+                            'FieldRstSig': 'Global Reset'
+                        },
+                        {
+                            'FieldBit': (13, 13),
+                            'FieldName': 'FIELD_3',
+                            'FieldDesc': '[功能描述]...',
+                            'FieldRdType': 'RUSER',
+                            'FieldWrType': 'WOT',
+                            'FieldRstVal': 1,
+                            'FieldRstSig': 'Global Reset'
+                        },
+                        {
+                            'FieldBit': (12, 0),
+                            'FieldName': 'Reserved',
+                            'FieldDesc': '保留位',
+                            'FieldRdType': 'R',
+                            'FieldWrType': 'W',
+                            'FieldRstVal': 0,
+                            'FieldRstSig': 'Global Reset'
+                        }
+                    ]
+                }
+            ]
+        }
+        """
+        fkeys = EXCEL_REG_FIELD.keys()
+        hkeys = EXCEL_REG_HEAD.keys()
 
-    return root_addrmap
+        for rfile_entry in reg_model.values():
+            for reg in rfile_entry:
+                fld_num = len(reg["FieldBit"])
+                fields = []
 
-test_regs = [{'RegName': 'TEMPLATE寄存器',
-              'BaseAddr': 0,
-              'AddrOffset': 0,
-              'RegLen': 32,
-              'RegAbbr': 'TEM',
-              'RegAccType': 'RW',
-              'RegDesc': '示例寄存器',
-              'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
-              'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
-              'FieldDesc': ['保留位', '[功能描述]\n[0：可选说明，该FIELD为0时的作用\n1：可选说明，该FIELD为1时的作用]',
-                            '[功能描述]\n[0：可选说明，该FIELD为0时的作用\n1：该FIELD为1时的作用\n…\n7：该FIELD为7时的作用]',
-                            '[功能描述]\n[0：可选说明，该FIELD为0时的作用\n1：可选说明，该FIELD为1时的作用]', '保留位'],
-              'FieldValue': ['0', '0,1', '0~7', '0,1', '0'],
-              'FieldAccType': ['RW', 'RW', 'RW', 'RW', 'RW'],
-              'FieldRstVal': [0, 0, 0, 1, 0],
-              'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']}]
+                for idx in range(fld_num):
+                    reg_field = {}
+
+                    for fkey in fkeys:
+                        reg_field[fkey] = reg[fkey][idx]
+
+                    fields.append(reg_field)
+
+                # 对Field相关元素进行转置
+                for inkey in list(reg.keys()):
+                    if not inkey in hkeys:
+                        reg.pop(inkey)
+                reg["Fields"] = fields
+        print(reg_model)
+
+    def generate_rdl(root_addrmap:dict):
+        """
+        根据root_addrmap生成SystemRDL代码.
+        """
+        for regf_name, regf_entry in root_addrmap.items():
+            baseaddr = regf_entry["baseaddr"]
+            regs = regf_entry["regs"]
+            for reg in regs:
+                for field in reg["Fields"]:
+                    acc_type = field["FieldAccType"]
+
+
+test_regs = {
+    'template': [
+        {
+            'BaseRow': 1,
+            'RegName': 'TEMPLATE寄存器',
+            'AddrOffset': 0,
+            'RegWidth': 32,
+            'RegAbbr': 'TEM',
+            'RegDesc': '示例寄存器',
+            'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
+            'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
+            'FieldDesc': [
+                '保留位',
+                '[功能描述]...',
+                '[功能描述]...',
+                '[功能描述]...',
+                '保留位'
+            ],
+            'FieldRdType': ['R', 'RCLR', 'RSET', 'RUSER', 'R'],
+            'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
+            'FieldRstVal': [0, 0, 0, 1, 0],
+            'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']
+        }
+    ]
+}
