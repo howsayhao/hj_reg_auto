@@ -35,8 +35,8 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
             for col in range(1, col_num + 1):
                 source_cell = source_cells[row-1][col-1]
                 for regidx in range(1, rnum):
-                    new_rol = row + (row_num + 1) * regidx
-                    new_cell = ws.cell(row=new_rol, column=col)
+                    new_row = row + (row_num + 2) * regidx
+                    new_cell = ws.cell(row=new_row, column=col)
 
                     # 复制值和格式
                     new_cell.value = source_cell.value
