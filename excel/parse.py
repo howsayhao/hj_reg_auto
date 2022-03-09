@@ -145,7 +145,7 @@ class ExcelParser:
                 self.regs[rfile_name].append(item_dict)
 
         self.format_regs(self.regs)
-        print(self.regs)
+
         return check_ack
 
     @property
@@ -318,11 +318,14 @@ class ExcelParser:
         return True
 
 
-def parse_excel(files:list[str]):
+def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_path:str):
     """
     Parameter
     ---------
     `files` : 包含所有需要检查的Excel文件名的list
+    `generate_rdl` : 是否生成SystemRDL
+    `module_name` : 生成的SystemRDL的模块名(addrmap名)
+    `rdl_path` : SystemRDL的生成路径
 
     Return
     ------
@@ -344,6 +347,19 @@ def parse_excel(files:list[str]):
         if not checker():
             message.info("parser aborted due to previous error")
             sys.exit(1)
+
+    message.info("all files have been parsed successfully")
+    if generate_rdl:
+        from gen_rdl import RDLGenerator
+
+        if not os.path.exists(rdl_path):
+            message.error("specified an invalid path for the generated rdl file!")
+            sys.exit(1)
+
+        generator = RDLGenerator(reg_model=parser.parsed_model,
+                                 gen_path=rdl_path,
+                                 module_name=module_name)
+        generator.generate_rdl()
 
 def parse_rdl(files:list[str]):
     rdlc = RDLCompiler()

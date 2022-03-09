@@ -168,13 +168,14 @@ class RDLGenerator:
 
     def generate_rdl(self):
         """
-        遍历Register model生成SystemRDL代码.
+        遍历Register model生成SystemRDL代码, 并保存在指定路径
         """
         regfiles_str = ""
         sigs_str = ""
         rst_sigs = []
 
         filename = os.path.join(self.gen_path, self.module_name + ".rdl")
+
         # module_name重名处理
         new_name = self.module_name
         suffix_num = 1
@@ -260,98 +261,3 @@ class RDLGenerator:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(sigs_str)
             file.write(addrmap_str)
-
-if __name__ == "__main__":
-    test_regs = {
-    'template1': [
-        {
-            'BaseRow': 1,
-            'RegName': 'TEMPLATE寄存器',
-            'AddrOffset': 0,
-            'RegWidth': 32,
-            'RegAbbr': 'TEM1',
-            'RegDesc': '示例寄存器',
-            'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
-            'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
-            'FieldDesc': [
-                '保留位',
-                '[功能描述]...',
-                '[功能描述]...',
-                '[功能描述]...',
-                '保留位'
-            ],
-            'FieldRdType': ['R', 'RCLR', 'RSET', 'RUSER', 'R'],
-            'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
-            'FieldRstVal': [0, 0, 0, 1, 0],
-            'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']
-        },
-        {
-            'BaseRow': 1,
-            'RegName': 'TEMPLATE寄存器',
-            'AddrOffset': 4,
-            'RegWidth': 32,
-            'RegAbbr': 'TEM2',
-            'RegDesc': '示例寄存器',
-            'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
-            'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
-            'FieldDesc': [
-                '保留位',
-                '[功能描述]...',
-                '[功能描述]...',
-                '[功能描述]...',
-                '保留位'
-            ],
-            'FieldRdType': ['R', 'RCLR', 'RSET', 'R', 'R'],
-            'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
-            'FieldRstVal': [0, 0, 0, 1, 0],
-            'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']
-        }
-    ],
-    'template2': [
-        {
-            'BaseRow': 1,
-            'RegName': 'TEMPLATE寄存器',
-            'AddrOffset': 0,
-            'RegWidth': 32,
-            'RegAbbr': 'TEM1',
-            'RegDesc': '示例寄存器',
-            'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
-            'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
-            'FieldDesc': [
-                '保留位',
-                '[功能描述]...',
-                '[功能描述]...',
-                '[功能描述]...',
-                '保留位'
-            ],
-            'FieldRdType': ['R', 'RCLR', 'RSET', 'R', 'R'],
-            'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
-            'FieldRstVal': [0, 0, 0, 1, 0],
-            'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']
-        },
-        {
-            'BaseRow': 1,
-            'RegName': 'TEMPLATE寄存器',
-            'AddrOffset': 4,
-            'RegWidth': 32,
-            'RegAbbr': 'TEM2',
-            'RegDesc': '示例寄存器',
-            'FieldBit': [(31, 18), (17, 17), (16, 14), (13, 13), (12, 0)],
-            'FieldName': ['Reserved', 'FIELD_1', 'FIELD_2', 'FIELD_3', 'Reserved'],
-            'FieldDesc': [
-                '保留位',
-                '[功能描述]...',
-                '[功能描述]...',
-                '[功能描述]...',
-                '保留位'
-            ],
-            'FieldRdType': ['R', 'RCLR', 'RSET', 'R', 'R'],
-            'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
-            'FieldRstVal': [0, 0, 0, 1, 0],
-            'FieldRstSig': ['Global Reset', 'Global Reset', 'Global Reset', 'Global Reset', 'Global Reset']
-        }
-    ]
-}
-
-    generator = RDLGenerator(test_regs)
-    generator.generate_rdl()

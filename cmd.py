@@ -3,8 +3,8 @@ import os
 import sys
 
 import utils.message as message
-from excel.check import parse_excel, parse_rdl, show_rules
-from excel.gen_temp import generate_excel
+from excel.parse import parse_excel, parse_rdl, show_rules
+from excel.gen_temp import generate_excel, genrate_rdl
 
 
 __version__ = "0.1.0"
@@ -37,23 +37,23 @@ class CommandRunner:
                                                       help="generate an Excel template for register description")
         parser_excel_template.add_argument("-p", "--path",
                                            default=".",
-                                           help="path for the generated template (Default: %(default)s)")
+                                           help="path for the generated template (default: %(default)s)")
         parser_excel_template.add_argument("-n", "--name",
                                            default="template.xlsx",
-                                           help="generated template name (Default: %(default)s)")
+                                           help="generated template name (default: %(default)s)")
         parser_excel_template.add_argument("--rnum",
                                            default=1,
                                            type=int,
-                                           help="number of registers to be generated in the Excel template (Default: %(default)s)")
+                                           help="number of registers to be generated in the Excel template (default: %(default)s)")
         parser_excel_template.add_argument("--rname",
                                            default=["TEM1"],
                                            nargs="+",
                                            help="abbreviations of every generated registers "
-                                                "in the Excel template. (Default: %(default)s)")
+                                                "in the Excel template. (default: %(default)s)")
         parser_excel_template.add_argument("-l", "--language",
                                            default="cn",
                                            choices=["cn", "en"],
-                                           help="language of the generated template. (Default: %(default)s)")
+                                           help="language of the generated template. (default: %(default)s)")
         parser_excel_template.set_defaults(func=self._generate_excel)
 
         # 子命令：生成寄存器SystemRDL模板
@@ -65,10 +65,21 @@ class CommandRunner:
                                         nargs="+",
                                         help="Excel files to parse. (must provide the entire file path)")
         parser_parse_excel.add_argument("-l", "--list",
-                                        help="a list file including paths and names of all Excel files (useful for large number of files)")
+                                        help="a list file including paths and names of all Excel files "
+                                             "(useful for large number of files)")
         parser_parse_excel.add_argument("-s", "--show",
                                         action="store_true",
                                         help="show parsing rules")
+        parser_parse_excel.add_argument("-g", "--generate",
+                                        action="store_true",
+                                        help="generate SystemRDL (.rdl) module file based on Excel specifications")
+        parser_parse_excel.add_argument("-m", "--module",
+                                        default="unnamed",
+                                        help="register module name for all input Excel files (default:%(default)s)")
+        parser_parse_excel.add_argument("-gp", "--generate_path",
+                                        default=".",
+                                        help="if -g/--generate is set to generate an RDL file, "
+                                             "this option specifies the RDL file path (default:%(default)s)")
         parser_parse_excel.set_defaults(func=self._parse_excel)
 
         # 子命令：解析SystemRDL形式的寄存器描述
@@ -77,7 +88,8 @@ class CommandRunner:
         parser_parse_rdl.add_argument("-f", "--file",
                                       help="SystemRDL files to parse (must provide the entire file path)")
         parser_parse_rdl.add_argument("-l", "--list",
-                                      help="a list including paths and names of all SystemRDL files (useful for large number of files)")                      
+                                      help="a list including paths and names of all SystemRDL files "
+                                           "(useful for large number of files)")                      
         parser_parse_rdl.set_defaults(func=self._parse_rdl)
 
         return parser
@@ -120,7 +132,7 @@ class CommandRunner:
                     sys.exit(1)
 
             # 以list形式把一个或多个Excel文件名传进去
-            parse_excel(args.file)
+            parse_excel(flist, args.generate, args.module, args.generate_path)
 
         # 多个Excel文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:
@@ -141,7 +153,7 @@ class CommandRunner:
                         flist.append(line)
 
             # 以list形式把一个或多个Excel文件名传进去
-            parse_excel(flist)
+            parse_excel(flist, args.generate, args.module, args.generate_path)
         elif not args.show:
             message.error("one of the -f/--file and -l/--list options must be provided!")
             sys.exit(1)
