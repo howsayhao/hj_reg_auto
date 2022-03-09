@@ -3,80 +3,82 @@ import os
 import sys
 
 import utils.message as message
-from excel.check import check_excel, check_rdl, show_rules
+from excel.check import parse_excel, parse_rdl, show_rules
 from excel.gen_temp import generate_excel
 
 
+__version__ = "0.1.0"
+
 class CommandRunner:
     """
-    提供命令行解析和执行功能。
-    
+    提供命令行解析和执行功能
+
     子命令
     -----
     `excel_template` : 生成寄存器Excel模板
-
     `rdl_template` : 生成寄存器SystemRDL模板
-
-    `check_excel` : 对Excel形式的寄存器说明进行规则检查
-
-    `check_rdl` : 对SystemRDL形式的寄存器说明进行规则检查
+    `parse_excel` : 对Excel形式的寄存器说明进行规则检查
+    `parse_rdl` : 对SystemRDL形式的寄存器说明进行规则检查
     """
     def build_parser(self):
         """
-        构建命令行解析器。
+        构建命令行解析器
         """
         parser = argparse.ArgumentParser(prog="regslv",
-                                        description="Register Slave (RegSlv) RTL Automation tool.")
-        subparsers = parser.add_subparsers(title="Sub-functions",
-                                        description="Generating templates, checking, generating RTL...",
-                                        help="See more in the documentaion")
+                                         description="register slave (regslv) RTL automation tool.")
+        parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
+        subparsers = parser.add_subparsers(title="sub-commands",
+                                           description="now support for generating excel templates, " 
+                                                       "parsing Excel/SystemRDL specifications, "
+                                                       "and generating RTL, RAL, documentation files and C header files",
+                                           help="see more details in the documentaion")
         # 子命令：生成寄存器Excel模板
         parser_excel_template = subparsers.add_parser("excel_template",
-                                                    help="Generate an Excel template for register description.")
+                                                      help="generate an Excel template for register description")
         parser_excel_template.add_argument("-p", "--path",
-                                        default=".",
-                                        help="Path for the generated template. (Default: %(default)s)")
+                                           default=".",
+                                           help="path for the generated template (Default: %(default)s)")
         parser_excel_template.add_argument("-n", "--name",
-                                        default="template.xlsx",
-                                        help="File name for the generated template. (Default: %(default)s)")
+                                           default="template.xlsx",
+                                           help="generated template name (Default: %(default)s)")
         parser_excel_template.add_argument("--rnum",
-                                        default=1,
-                                        type=int,
-                                        help="Number of registers generated in the Excel template. (Default: %(default)s)")
+                                           default=1,
+                                           type=int,
+                                           help="number of registers to be generated in the Excel template (Default: %(default)s)")
         parser_excel_template.add_argument("--rname",
-                                        default=["TEM1"],
-                                        nargs="+",
-                                        help="Abbreviations of every generated registers "
-                                        "in the Excel template. (Default: %(default)s)")
+                                           default=["TEM1"],
+                                           nargs="+",
+                                           help="abbreviations of every generated registers "
+                                                "in the Excel template. (Default: %(default)s)")
         parser_excel_template.add_argument("-l", "--language",
-                                        default="cn",
-                                        choices=["cn", "en"],
-                                        help="Language for the generated template. (Default: %(default)s)")
+                                           default="cn",
+                                           choices=["cn", "en"],
+                                           help="language of the generated template. (Default: %(default)s)")
         parser_excel_template.set_defaults(func=self._generate_excel)
-        
+
         # 子命令：生成寄存器SystemRDL模板
         
-        # 子命令：对Excel形式的寄存器说明进行规则检查
-        parser_check_excel = subparsers.add_parser("check_excel",
-                                                help="Rule check for register descriptions in Excel format.")
-        parser_check_excel.add_argument("-f", "--file",
+        # 子命令：解析Excel形式的寄存器描述
+        parser_parse_excel = subparsers.add_parser("parse_excel",
+                                                help="parse and check register specifications in Excel files")
+        parser_parse_excel.add_argument("-f", "--file",
                                         nargs="+",
-                                        help="Excel files to check. (must provide entire file path)")
-        parser_check_excel.add_argument("-l", "--list",
-                                        help="A list including paths and names of all excel files. (useful for large number of files)")
-        parser_check_excel.add_argument("-s", "--show",
+                                        help="Excel files to parse. (must provide the entire file path)")
+        parser_parse_excel.add_argument("-l", "--list",
+                                        help="a list file including paths and names of all Excel files (useful for large number of files)")
+        parser_parse_excel.add_argument("-s", "--show",
                                         action="store_true",
-                                        help="Show rules.")
-        parser_check_excel.set_defaults(func=self._check_excel)
+                                        help="show parsing rules")
+        parser_parse_excel.set_defaults(func=self._parse_excel)
 
-        # 子命令：对SystemRDL形式的寄存器说明进行规则检查
-        parser_check_excel = subparsers.add_parser("check_rdl",
-                                                help="Rule check for register descriptions in SystemRDL format.")
-        parser_check_excel.add_argument("-f", "--file",
-                                        help="SystemRDL files to check. (must provide entire file path)")
-        parser_check_excel.add_argument("-l", "--list",
-                                        help="A list including paths and names of all excel files. (useful for large number of files)")                      
-        parser_check_excel.set_defaults(func=self._check_rdl)
+        # 子命令：解析SystemRDL形式的寄存器描述
+        parser_parse_rdl = subparsers.add_parser("parse_rdl",
+                                                 help="parse and check register specifications in SystemRDL files")
+        parser_parse_rdl.add_argument("-f", "--file",
+                                      help="SystemRDL files to parse (must provide the entire file path)")
+        parser_parse_rdl.add_argument("-l", "--list",
+                                      help="a list including paths and names of all SystemRDL files (useful for large number of files)")                      
+        parser_parse_rdl.set_defaults(func=self._parse_rdl)
 
         return parser
 
@@ -84,6 +86,9 @@ class CommandRunner:
     # Wrapper
     @staticmethod
     def _generate_excel(args):
+        """
+        子命令`excel_template`的执行函数, 作为Wrapper检查参数合法性并向下传递
+        """
         if not os.path.exists(args.path):
             message.error("path does not exists!")
             sys.exit(1)
@@ -98,7 +103,7 @@ class CommandRunner:
         generate_excel(args.path, args.name, args.rnum, reg_names, args.language)
 
     @staticmethod
-    def _check_excel(args):
+    def _parse_excel(args):
         if args.show:
             show_rules()
         # 单个或多个Excel文件作为输入
@@ -115,7 +120,7 @@ class CommandRunner:
                     sys.exit(1)
 
             # 以list形式把一个或多个Excel文件名传进去
-            check_excel(args.file)
+            parse_excel(args.file)
 
         # 多个Excel文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:
@@ -136,13 +141,13 @@ class CommandRunner:
                         flist.append(line)
 
             # 以list形式把一个或多个Excel文件名传进去
-            check_excel(flist)
+            parse_excel(flist)
         elif not args.show:
             message.error("one of the -f/--file and -l/--list options must be provided!")
             sys.exit(1)
 
     @staticmethod
-    def _check_rdl(args):
+    def _parse_rdl(args):
         # 单个或多个RDL文件作为输入
         if args.file is not None:
             if args.list is not None:
@@ -157,7 +162,7 @@ class CommandRunner:
                     sys.exit(1)
 
             # 以list形式把一个或多个RDL文件名传进去
-            check_rdl(args.file)
+            parse_rdl(args.file)
 
         # 多个RDL文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:
@@ -178,11 +183,11 @@ class CommandRunner:
                         flist.append(line)
 
             # 以list形式把一个或多个Excel文件名传进去
-            check_rdl(flist)
+            parse_rdl(flist)
         else:
             message.error("one of the -f/--file and -l/--list options must be provided!")
             sys.exit(1)
-    
+
     def run(self):
         parser = self.build_parser()
         args = parser.parse_args()

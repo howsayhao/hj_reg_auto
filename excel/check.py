@@ -318,7 +318,7 @@ class ExcelParser:
         return True
 
 
-def check_excel(files:list[str]):
+def parse_excel(files:list[str]):
     """
     Parameter
     ---------
@@ -326,7 +326,7 @@ def check_excel(files:list[str]):
 
     Return
     ------
-    `bool` : 是否通过所有规则检查
+    No return
 
     """
     worksheets = {}
@@ -343,23 +343,18 @@ def check_excel(files:list[str]):
                     parser.check_field]:
         if not checker():
             message.info("parser aborted due to previous error")
-            print(checker)
-            return False
+            sys.exit(1)
 
-    return True
-
-def check_rdl(files:list[str]):
-    # Create an instance of the compiler
+def parse_rdl(files:list[str]):
     rdlc = RDLCompiler()
 
-    # Compile all the files provided
     try:
         for file in files:
             rdlc.compile_file(file)
-        # Elaborate the design
+
         root = rdlc.elaborate()
     except RDLCompileError:
-        # A compilation error occurred. Exit with error code
+        message.info("parser aborted due to previous error")
         sys.exit(1)
 
     return root

@@ -2,17 +2,30 @@ import os.path
 from shutil import copy
 
 import utils.message as message
-from openpyxl import Workbook, load_workbook
+from openpyxl import load_workbook
 from openpyxl.worksheet.cell_range import CellRange
 
 
 def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
     """
-    以单个寄存器说明模板为基础生成指定数量的寄存器说明表格(放在一张sheet里)
+    以单个寄存器模板为基础生成的寄存器组(regfile)的规格说明
+
+    Parameter
+    ---------
+    `path` : 生成模板存放的路径
+    `name` : 生成模板的名字, 后续将作为regfile的名称使用
+    `rnum` : 生成模板中寄存器的数量
+    `rname` : 生成模板中各个寄存器的名字
+    `language` : 生成模板的语言格式, 支持中文/English
+
+    Return
+    ------
+    No return
     """
     temp_file = os.path.join("excel", "templates", "template_{}.xlsx".format(language))
     gen_file = os.path.join(path, name)
 
+    # 重名处理
     if os.path.exists(gen_file):
         prefix_num = 1
         gen_name = str(prefix_num) + "_" + name
@@ -42,8 +55,9 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
                     new_cell.value = source_cell.value
                     new_cell._style = source_cell._style
                     new_cell.number_format = source_cell.number_format
-        # 解决上面Style Copy并不能复制被合并的单元格的问题
-        # 在openpyxl里单元格合并并不是一个Style,
+
+        # FIX: 上面Style Copy存在不能复制被合并的单元格的问题,
+        # 原因是在openpyxl里单元格合并不是一个Style,
         # 而是将被合并单元格变成MergedCell Object,
         # 与普通的Cell Object不同
         area = CellRange(min_row=1, max_row=row_num, min_col=1, max_col=col_num)
