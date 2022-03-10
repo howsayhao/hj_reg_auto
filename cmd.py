@@ -187,7 +187,7 @@ class CommandRunner:
                     lines = f.readlines()
                     for cnt, line in enumerate(lines):
                         if not os.path.exists(line):
-                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line))
+                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line.replace("\n", "")))
                             sys.exit(1)
                         if not os.path.splitext(line)[-1] == ".rdl":
                             message.error("wrong file format! (should be .rdl)")

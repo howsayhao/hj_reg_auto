@@ -84,7 +84,13 @@ class ExcelParser:
                                 check_ack = False
 
                     if check_ack:
-                        item_dict[key] = cell.value
+                        # 强制不转义字符串里的换行符, 避免之后生成RDL时格式错乱
+                        # \r -> \\\r, \n -> \\\n
+                        # Note: 实际上加了两级非转义, 因为RDL在编译的时候也会转义换行符
+                        if val["Content"]["Format"] == "str":
+                            item_dict[key] = cell.value.replace("\r", r"\\r").replace("\n", r"\\n")
+                        else:
+                            item_dict[key] = cell.value
 
                 # 验证表的域定义项: 包括表项名和内容
                 for key, val in EXCEL_REG_FIELD.items():
@@ -119,7 +125,13 @@ class ExcelParser:
                                 check_ack = False
 
                         if check_ack:
-                            item_dict[key].append(cell.value)
+                            # 强制不转义字符串里的换行符, 避免之后生成RDL时格式错乱
+                            # \r -> \\\r, \n -> \\\n
+                            # Note: 实际上加了两级非转义, 因为RDL在编译的时候也会转义换行符
+                            if val["Content"]["Format"] == "str":
+                                item_dict[key].append(cell.value.replace("\r", r"\\r").replace("\n", r"\\n"))
+                            else:
+                                item_dict[key].append(cell.value)
 
                         row += 1
                         cell = worksheet.cell(row=row, column=col)
