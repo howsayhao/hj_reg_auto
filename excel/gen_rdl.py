@@ -1,6 +1,8 @@
-import utils.message as message
-from args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
 import os.path
+
+import utils.message as message
+from .args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
+
 
 class RDLGenerator:
     """
@@ -200,7 +202,7 @@ class RDLGenerator:
                 for fld in reg["Fields"]:
                     if fld["FieldName"].lower() == "reserved":
                         continue
-                    
+
                     # 给Field中定义的reset signal分配外部定义的signal
                     rst_sig = fld["FieldRstSig"]
                     if rst_sig not in rst_sigs:
@@ -253,7 +255,7 @@ class RDLGenerator:
             regfile_str = self.regfile_str.format(regs_str=regs_str, rfile_name=rfile_name, rfile_desc="Default")
             regfiles_str += regfile_str
 
-        addrmap_str = self.addrmap_str.format(regfiles_str=regfiles_str, addrmap_name=self.addrmap_str)
+        addrmap_str = self.addrmap_str.format(regfiles_str=regfiles_str, addrmap_name=self.module_name)
 
         for rst_sig in rst_sigs:
             sigs_str += self.signal_str.format(sig_name=rst_sig, sig_desc="Default", active_mode="activehigh")
@@ -261,3 +263,4 @@ class RDLGenerator:
         with open(filename, "w", encoding="utf-8") as file:
             file.write(sigs_str)
             file.write(addrmap_str)
+        message.info("saved in %s" % (filename))

@@ -1,12 +1,13 @@
 import os.path
 from shutil import copy
+from .args import EXCEL_REG_HEAD, EXCEL_REG_FIELD
 
 import utils.message as message
 from openpyxl import load_workbook
 from openpyxl.worksheet.cell_range import CellRange
 
 
-def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
+def generate_excel(path:str, name:str, rnum:int, rname:list, language:str, table_interval=4):
     """
     以单个寄存器模板为基础生成的寄存器组(regfile)的规格说明
 
@@ -47,8 +48,9 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
         for row in range(1, row_num + 1):
             for col in range(1, col_num + 1):
                 source_cell = source_cells[row-1][col-1]
-                for regidx in range(1, rnum):
-                    new_row = row + (row_num + 2) * regidx
+
+                for regidx in range(rnum):
+                    new_row = row + (row_num + table_interval) * regidx
                     new_cell = ws.cell(row=new_row, column=col)
 
                     # 复制值和格式
@@ -66,7 +68,7 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str):
                 continue
             cr = CellRange(mcr.coord)
             for regidx in range(1, rnum):
-                cr.shift(row_shift=row_num+1) 
+                cr.shift(row_shift=row_num+table_interval) 
                 ws.merge_cells(cr.coord)
 
         wb.save(gen_file)

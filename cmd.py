@@ -94,8 +94,6 @@ class CommandRunner:
 
         return parser
 
-    # 子命令执行函数
-    # Wrapper
     @staticmethod
     def _generate_excel(args):
         """
@@ -116,6 +114,9 @@ class CommandRunner:
 
     @staticmethod
     def _parse_excel(args):
+        """
+        子命令`parse_excel`的执行函数, 作为Wrapper检查参数合法性并向下传递
+        """
         if args.show:
             show_rules()
         # 单个或多个Excel文件作为输入
@@ -125,14 +126,15 @@ class CommandRunner:
                                 "-l/--list option will be ignored")
             for file in args.file:
                 if not os.path.exists(file):
-                    message.error("input file:%s does not exists!" %(file))
+                    message.error("input file:%s does not exists, "
+                                  "maybe you need to add .xlsx suffix" %(file))
                     sys.exit(1)
                 if not os.path.splitext(file)[-1] == ".xlsx":
                     message.error("wrong file format! (should be .xlsx)")
                     sys.exit(1)
 
             # 以list形式把一个或多个Excel文件名传进去
-            parse_excel(flist, args.generate, args.module, args.generate_path)
+            parse_excel(args.file, args.generate, args.module, args.generate_path)
 
         # 多个Excel文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:

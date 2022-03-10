@@ -56,6 +56,7 @@ class ExcelParser:
             while last_row < max_row:
                 item_dict = {"BaseRow": base_row+1}
                 last_rows = []
+
                 for key, val in EXCEL_REG_HEAD.items():
                     # 验证表项名是否正确
                     off_row, col = val["Entry"]["Loc"]
@@ -382,10 +383,9 @@ def parse_rdl(files:list[str]):
 
         root = rdlc.elaborate()
     except RDLCompileError:
-        message.info("parser aborted due to previous error")
         sys.exit(1)
-
-    return root
+    else:
+        message.info("SystemRDL parsed successfully")
 
 def show_rules():
     print(ExcelParser.__doc__, "\n",
