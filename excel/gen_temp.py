@@ -53,10 +53,19 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str, table
                     new_row = row + (row_num + table_interval) * regidx
                     new_cell = ws.cell(row=new_row, column=col)
 
-                    # 复制值和格式
-                    new_cell.value = source_cell.value
-                    new_cell._style = source_cell._style
-                    new_cell.number_format = source_cell.number_format
+                    if regidx >= 1:
+                        # 复制值和格式
+                        new_cell.value = source_cell.value
+                        new_cell._style = source_cell._style
+                        new_cell.number_format = source_cell.number_format
+
+                    # 更新每张表的寄存器名和地址偏移
+                    if (row, col) == EXCEL_REG_HEAD["RegName"]["Content"]["Loc"]:
+                        new_cell.value = rname[regidx].upper()
+                    elif (row, col) == EXCEL_REG_HEAD["RegAbbr"]["Content"]["Loc"]:
+                        new_cell.value = rname[regidx].upper()
+                    elif (row, col) == EXCEL_REG_HEAD["AddrOffset"]["Content"]["Loc"]:
+                        new_cell.value = "{0:#0{1}X}".format(regidx<<2, 10)
 
         # FIX: 上面Style Copy存在不能复制被合并的单元格的问题,
         # 原因是在openpyxl里单元格合并不是一个Style,
