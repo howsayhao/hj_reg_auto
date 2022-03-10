@@ -203,6 +203,11 @@ class CommandRunner:
     def run(self):
         parser = self.build_parser()
         args = parser.parse_args()
+
+        if len(sys.argv) <= 1:
+            message.error("no command is specified, use -h/--help option to get instruction")
+            sys.exit(1)
+
         args.func(args)
 
 if __name__ == "__main__":
