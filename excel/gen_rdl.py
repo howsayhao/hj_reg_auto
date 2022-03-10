@@ -99,7 +99,7 @@ class RDLGenerator:
                             'FieldRdType': 'R',
                             'FieldWrType': 'W',
                             'FieldRstVal': 0,
-                            'FieldRstSig': 'Global Reset'
+                            'FieldRstSig': 'global_reset'
                         },
                         {
                             'FieldBit': (17, 17),
@@ -108,7 +108,7 @@ class RDLGenerator:
                             'FieldRdType': 'RCLR',
                             'FieldWrType': 'NA',
                             'FieldRstVal': 0,
-                            'FieldRstSig': 'Global Reset'
+                            'FieldRstSig': 'global_reset'
                         },
                         {
                             'FieldBit': (16, 14),
@@ -117,7 +117,7 @@ class RDLGenerator:
                             'FieldRdType': 'RSET',
                             'FieldWrType': 'WOSET',
                             'FieldRstVal': 0,
-                            'FieldRstSig': 'Global Reset'
+                            'FieldRstSig': 'global_reset'
                         },
                         {
                             'FieldBit': (13, 13),
@@ -126,7 +126,7 @@ class RDLGenerator:
                             'FieldRdType': 'R',
                             'FieldWrType': 'WOT',
                             'FieldRstVal': 1,
-                            'FieldRstSig': 'Global Reset'
+                            'FieldRstSig': 'global_reset'
                         },
                         {
                             'FieldBit': (12, 0),
@@ -135,7 +135,7 @@ class RDLGenerator:
                             'FieldRdType': 'R',
                             'FieldWrType': 'W',
                             'FieldRstVal': 0,
-                            'FieldRstSig': 'Global Reset'
+                            'FieldRstSig': 'global_reset'
                         }
                     ]
                 }

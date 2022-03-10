@@ -148,7 +148,11 @@ class ExcelParser:
                     last_row = last_rows[0]
 
                 # 每张表的行基数是开头的前一行
-                base_row = last_row + 1
+                # 表之间有空行间隔, 需要确定下一张表的基准位置
+                empty_row = last_row
+                while worksheet.cell(row=empty_row, column=1).value is None and empty_row <= max_row:
+                    empty_row += 1
+                base_row = empty_row - 1
 
                 # 如果当前寄存器定义Table出现问题, 则停止检查后面的Table,
                 # 直接返回False, 避免报错信息过多及影响后续格式检查
@@ -363,7 +367,7 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_path:st
 
     message.info("all files have been parsed successfully")
     if generate_rdl:
-        from gen_rdl import RDLGenerator
+        from .gen_rdl import RDLGenerator
 
         if not os.path.exists(rdl_path):
             message.error("specified an invalid path for the generated rdl file!")
@@ -373,6 +377,7 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_path:st
                                  gen_path=rdl_path,
                                  module_name=module_name)
         generator.generate_rdl()
+        parse_rdl([os.path.join(rdl_path, module_name + ".rdl")])
 
 def parse_rdl(files:list[str]):
     rdlc = RDLCompiler()
