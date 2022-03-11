@@ -12,7 +12,7 @@ class RDLGenerator:
     ---------
     `reg_model` : `ExcelParser`解析出来的寄存器模型, 可通过`parsed_model`属性获取
     `module_name` : 输入寄存器模型的顶层模块名, 即root addrmap的名字, 默认为`unnamed`
-    `gen_path` : 生成后的RDL文件保存路径 
+    `gen_dir` : 生成后的RDL文件保存路径 
     """
     signal_str = "signal {{\n" \
         "\tname = \"{sig_name}\";\n" \
@@ -43,9 +43,9 @@ class RDLGenerator:
         "{regfiles_str}" \
         "}};"
 
-    def __init__(self, reg_model:dict[str,list], gen_path:str, module_name:str="unnamed"):
+    def __init__(self, reg_model:dict[str,list], gen_dir:str, module_name:str="unnamed"):
         self.reg_model = reg_model
-        self.gen_path = gen_path
+        self.gen_dir = gen_dir
         self.module_name = module_name
 
         self._resize_model()
@@ -176,7 +176,7 @@ class RDLGenerator:
         sigs_str = ""
         rst_sigs = []
 
-        filename = os.path.join(self.gen_path, self.module_name + ".rdl")
+        filename = os.path.join(self.gen_dir, self.module_name + ".rdl")
 
         # module_name重名处理
         new_name = self.module_name
@@ -185,7 +185,7 @@ class RDLGenerator:
         while os.path.exists(filename):
             message.warning("rdl file %s already exists" % (filename))
             new_name = self.module_name + "_%d" %(suffix_num)
-            filename = os.path.join(self.gen_path, new_name + ".rdl")
+            filename = os.path.join(self.gen_dir, new_name + ".rdl")
             suffix_num += 1
 
         self.module_name = new_name

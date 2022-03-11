@@ -3,7 +3,7 @@ import os
 import sys
 
 import utils.message as message
-from excel.parse import parse_excel, parse_rdl, show_rules
+from parse import parse_excel, parse_rdl, show_excel_rules
 from excel.gen_temp import generate_excel, genrate_rdl
 
 
@@ -35,9 +35,9 @@ class CommandRunner:
         # 子命令：生成寄存器Excel模板
         parser_excel_template = subparsers.add_parser("excel_template",
                                                       help="generate an Excel template for register description")
-        parser_excel_template.add_argument("-p", "--path",
+        parser_excel_template.add_argument("-d", "--dir",
                                            default=".",
-                                           help="path for the generated template (default: %(default)s)")
+                                           help="directory for the generated template (default: %(default)s)")
         parser_excel_template.add_argument("-n", "--name",
                                            default="template.xlsx",
                                            help="generated template name (default: %(default)s)")
@@ -76,16 +76,17 @@ class CommandRunner:
         parser_parse_excel.add_argument("-m", "--module",
                                         default="unnamed",
                                         help="register module name for all input Excel files (default:%(default)s)")
-        parser_parse_excel.add_argument("-gp", "--generate_path",
+        parser_parse_excel.add_argument("-gd", "--gen_dir",
                                         default=".",
                                         help="if -g/--generate is set to generate an RDL file, "
-                                             "this option specifies the RDL file path (default:%(default)s)")
+                                             "this option specifies the RDL file directory (default:%(default)s)")
         parser_parse_excel.set_defaults(func=self._parse_excel)
 
         # 子命令：解析SystemRDL形式的寄存器描述
         parser_parse_rdl = subparsers.add_parser("parse_rdl",
                                                  help="parse and check register specifications in SystemRDL files")
         parser_parse_rdl.add_argument("-f", "--file",
+                                      nargs="+",
                                       help="SystemRDL files to parse (must provide the entire file path)")
         parser_parse_rdl.add_argument("-l", "--list",
                                       help="a list including paths and names of all SystemRDL files "
@@ -98,9 +99,17 @@ class CommandRunner:
     def _generate_excel(args):
         """
         子命令`excel_template`的执行函数, 作为Wrapper检查参数合法性并向下传递
+
+        Parameter
+        ---------
+        `args.dir` : 生成寄存器Excel模板的输出目录
+        `args.name` : 生成寄存器Excel模板的文件名
+        `args.rnum` : 生成Excel模板中寄存器的数量
+        `args.rname` : 生成Excel模板中寄存器的名称`list`
+        `args.language` : 生成Excel模板的语言, 支持中文/English
         """
-        if not os.path.exists(args.path):
-            message.error("path does not exists!")
+        if not os.path.exists(args.dir):
+            message.error("directory does not exists!")
             sys.exit(1)
         if not ".xlsx" in args.name:
             args.name += ".xlsx" 
@@ -110,15 +119,24 @@ class CommandRunner:
             append_name = reg_names[-1]
             for _ in range(len(reg_names), args.rnum):
                 reg_names.append(append_name)
-        generate_excel(args.path, args.name, args.rnum, reg_names, args.language)
+        generate_excel(args.dir, args.name, args.rnum, reg_names, args.language)
 
     @staticmethod
     def _parse_excel(args):
         """
         子命令`parse_excel`的执行函数, 作为Wrapper检查参数合法性并向下传递
+
+        Parameter
+        ---------
+        `args.file` : `list`类型, 需要解析的所有Excel文件名
+        `args.list` : 存放所有需要解析的Excel文件名的list文件名
+        `args.show` : `bool`类型, 是否显示Excel检查规则
+        `args.generate` : `bool`类型, 是否生成对应的SystemRDL文件
+        `args.module` : 本次解析的模块名, 也作为生成的SystemRDL中顶层addrmap的类型名
+        `args.gen_dir` : 生成的SystemRDL的目录位置
         """
         if args.show:
-            show_rules()
+            show_excel_rules()
         # 单个或多个Excel文件作为输入
         if args.file is not None:
             if args.list is not None:
@@ -134,7 +152,7 @@ class CommandRunner:
                     sys.exit(1)
 
             # 以list形式把一个或多个Excel文件名传进去
-            parse_excel(args.file, args.generate, args.module, args.generate_path)
+            parse_excel(args.file, args.generate, args.module, args.gen_dir)
 
         # 多个Excel文件作为输入,文件路径放在一个list文本文件中
         elif args.list is not None:
@@ -161,13 +179,21 @@ class CommandRunner:
                         flist.append(line)
 
             # 以list形式把一个或多个Excel文件名传进去
-            parse_excel(flist, args.generate, args.module, args.generate_path)
+            parse_excel(flist, args.generate, args.module, args.gen_dir)
         elif not args.show:
             message.error("one of the -f/--file and -l/--list options must be provided!")
             sys.exit(1)
 
     @staticmethod
     def _parse_rdl(args):
+        """
+        子命令`parse_rdl`的执行函数, 作为Wrapper检查参数合法性并向下传递
+
+        Parameter
+        ---------
+        `args.file` : `list`类型, 需要解析的所有RDL文件名
+        `args.list` : 存放所有需要解析的RDL文件名的list文件名
+        """
         # 单个或多个RDL文件作为输入
         if args.file is not None:
             if args.list is not None:

@@ -335,14 +335,14 @@ class ExcelParser:
         return True
 
 
-def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_path:str):
+def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str):
     """
     Parameter
     ---------
     `files` : 包含所有需要检查的Excel文件名的list
     `generate_rdl` : 是否生成SystemRDL
     `module_name` : 生成的SystemRDL的模块名(addrmap名)
-    `rdl_path` : SystemRDL的生成路径
+    `rdl_dir` : SystemRDL的生成路径
 
     Return
     ------
@@ -367,19 +367,36 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_path:st
 
     message.info("all files have been parsed successfully")
     if generate_rdl:
-        from .gen_rdl import RDLGenerator
+        from .excel.gen_rdl import RDLGenerator
 
-        if not os.path.exists(rdl_path):
+        if not os.path.exists(rdl_dir):
             message.error("specified an invalid path for the generated rdl file!")
             sys.exit(1)
 
         generator = RDLGenerator(reg_model=parser.parsed_model,
-                                 gen_path=rdl_path,
+                                 gen_dir=rdl_dir,
                                  module_name=module_name)
         generator.generate_rdl()
-        parse_rdl([os.path.join(rdl_path, module_name + ".rdl")])
+        parse_rdl([os.path.join(rdl_dir, module_name + ".rdl")])
+
+def show_excel_rules():
+    """
+    显示Excel解析需要遵循的规则
+    """
+    print(ExcelParser.__doc__, "\n",
+          ExcelParser.check_format.__doc__, "\n",
+          ExcelParser.check_name.__doc__, "\n",
+          ExcelParser.check_addr.__doc__, "\n",
+          ExcelParser.check_field.__doc__)
 
 def parse_rdl(files:list[str]):
+    """
+    使用`systemrdl-compiler`编译并解析SystemRDL文件
+
+    Parameter
+    ---------
+    `files` : 需要解析的文件名, 以`list`形式组织
+    """
     rdlc = RDLCompiler()
 
     try:
@@ -391,10 +408,3 @@ def parse_rdl(files:list[str]):
         sys.exit(1)
     else:
         message.info("SystemRDL parsed successfully")
-
-def show_rules():
-    print(ExcelParser.__doc__, "\n",
-          ExcelParser.check_format.__doc__, "\n",
-          ExcelParser.check_name.__doc__, "\n",
-          ExcelParser.check_addr.__doc__, "\n",
-          ExcelParser.check_field.__doc__)
