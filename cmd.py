@@ -146,6 +146,12 @@ class CommandRunner:
                     flist = []
                     lines = f.readlines()
                     for cnt, line in enumerate(lines):
+                        line = line.replace("\n", "")
+
+                        # list文件中有注释(#)或空行
+                        if line == "" or line.startswith("#"):
+                            continue
+
                         if not os.path.exists(line):
                             message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line))
                             sys.exit(1)
@@ -188,8 +194,14 @@ class CommandRunner:
                     flist = []
                     lines = f.readlines()
                     for cnt, line in enumerate(lines):
+                        line = line.replace("\n", "")
+
+                        # list文件中有注释(#)或空行
+                        if line == "" or line.startswith("#"):
+                            continue
+
                         if not os.path.exists(line):
-                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line.replace("\n", "")))
+                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line))
                             sys.exit(1)
                         if not os.path.splitext(line)[-1] == ".rdl":
                             message.error("wrong file format! (should be .rdl)")
