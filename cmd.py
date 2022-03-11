@@ -5,6 +5,7 @@ import sys
 import utils.message as message
 from parse import parse_excel, parse_rdl, show_excel_rules
 from excel.gen_temp import generate_excel, genrate_rdl
+from .html.export import export_html
 
 
 __version__ = "0.1.0"
@@ -16,9 +17,9 @@ class CommandRunner:
     子命令
     -----
     `excel_template` : 生成寄存器Excel模板
-    `rdl_template` : 生成寄存器SystemRDL模板
     `parse_excel` : 对Excel形式的寄存器说明进行规则检查
     `parse_rdl` : 对SystemRDL形式的寄存器说明进行规则检查
+    `generate` : 后端Generator生成RTL, HTML Docs, UVM RAL, C Headers
     """
     def build_parser(self):
         """
@@ -32,6 +33,7 @@ class CommandRunner:
                                                        "parsing Excel/SystemRDL specifications, "
                                                        "and generating RTL, RAL, documentation files and C header files",
                                            help="see more details in the documentaion")
+
         # 子命令：生成寄存器Excel模板
         parser_excel_template = subparsers.add_parser("excel_template",
                                                       help="generate an Excel template for register description")
@@ -56,9 +58,7 @@ class CommandRunner:
                                            help="language of the generated template. (default: %(default)s)")
         parser_excel_template.set_defaults(func=self._generate_excel)
 
-        # 子命令：生成寄存器SystemRDL模板
-        
-        # 子命令：解析Excel形式的寄存器描述
+        # 子命令: 解析Excel形式的寄存器描述
         parser_parse_excel = subparsers.add_parser("parse_excel",
                                                 help="parse and check register specifications in Excel files")
         parser_parse_excel.add_argument("-f", "--file",
@@ -92,6 +92,32 @@ class CommandRunner:
                                       help="a list including paths and names of all SystemRDL files "
                                            "(useful for large number of files)")                      
         parser_parse_rdl.set_defaults(func=self._parse_rdl)
+
+        # TO BE DONE: 子命令: 后端Generator生成RTL, HTML Docs, UVM RAL, C Headers
+        # 支持Excel和SystemRDL混合输入
+        parser_generate = subparsers.add_parser("generate",
+                                                help="generate RTL, HTML Docs, UVM RAL and C Headers")
+        parser_generate.add_argument("-f", "--file",
+                                     nargs="+",
+                                     help="RDL or Excel (or mixed) files to parse (must provide the entire file path)")
+        parser_generate.add_argument("-l", "--list",
+                                     help="a list including paths and names of all files "
+                                          "(useful for large number of files)")
+        parser_generate.add_argument("--rtl",
+                                     action="store_true",
+                                     help="generate synthesiszable SystemVerilog RTL code")
+        parser_generate.add_argument("--html",
+                                     action="store_true",
+                                     help="generate HTML-format register documentations")
+        parser_generate.add_argument("--ral",
+                                     action="store_true",
+                                     help="generate UVM RAL model")
+        parser_generate.add_argument("--cheader",
+                                     action="store_true",
+                                     help="generate C headers")
+        parser_generate.add_argument("--all",
+                                     action="store_true",
+                                     help="generate all")
 
         return parser
 
@@ -239,6 +265,30 @@ class CommandRunner:
         else:
             message.error("one of the -f/--file and -l/--list options must be provided!")
             sys.exit(1)
+
+    @staticmethod
+    def _generate_rtl(args):
+        """
+        """
+        pass
+
+    @staticmethod
+    def _generate_html(args):
+        """
+        """
+        pass
+
+    @staticmethod
+    def _generate_ral(args):
+        """
+        """
+        pass
+    
+    @staticmethod
+    def _generate_cheader(args):
+        """
+        """
+        pass
 
     def run(self):
         parser = self.build_parser()
