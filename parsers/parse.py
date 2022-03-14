@@ -1,6 +1,7 @@
 import re
 import sys
 import os.path
+from typing import final
 
 import utils.message as message
 from openpyxl import load_workbook
@@ -335,7 +336,7 @@ class ExcelParser:
         return True
 
 
-def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str):
+def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str, to_parse_rdl=True):
     """
     Parameter
     ---------
@@ -343,10 +344,11 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str
     `generate_rdl` : 是否生成SystemRDL
     `module_name` : 生成的SystemRDL的模块名(addrmap名)
     `rdl_dir` : SystemRDL的生成路径
+    `to_parse_rdl` : 是否解析一遍生成的RDL代码
 
     Return
     ------
-    No return
+    `rdl_file` : 生成的RDL完整文件名
 
     """
     worksheets = {}
@@ -376,9 +378,12 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str
         generator = RDLGenerator(reg_model=parser.parsed_model,
                                  gen_dir=rdl_dir,
                                  module_name=module_name)
-        generator.generate_rdl()
-        parse_rdl([os.path.join(rdl_dir, module_name + ".rdl")])
+        rdl_file = generator.generate_rdl()
+        if to_parse_rdl:
+            parse_rdl([os.path.join(rdl_dir, module_name + ".rdl")])
 
+        return rdl_file
+        
 def show_excel_rules():
     """
     显示Excel解析需要遵循的规则
@@ -396,6 +401,10 @@ def parse_rdl(files:list[str]):
     Parameter
     ---------
     `files` : 需要解析的文件名, 以`list`形式组织
+
+    Return
+    ------
+    `root` : `systemrdl.node.RootNode`
     """
     rdlc = RDLCompiler()
 
@@ -408,3 +417,5 @@ def parse_rdl(files:list[str]):
         sys.exit(1)
     else:
         message.info("SystemRDL parsed successfully")
+
+    return root

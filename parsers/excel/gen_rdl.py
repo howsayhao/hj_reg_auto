@@ -171,6 +171,10 @@ class RDLGenerator:
     def generate_rdl(self):
         """
         遍历Register model生成SystemRDL代码, 并保存在指定路径
+
+        Return
+        ------
+        `filename` : 生成的RDL完整文件名
         """
         regfiles_str = ""
         sigs_str = ""
@@ -264,3 +268,5 @@ class RDLGenerator:
             file.write(sigs_str)
             file.write(addrmap_str)
         message.info("saved in %s" % (filename))
+
+        return filename

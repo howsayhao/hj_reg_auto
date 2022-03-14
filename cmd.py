@@ -102,21 +102,25 @@ class CommandRunner:
         parser_generate.add_argument("-l", "--list",
                                      help="a list including paths and names of all files "
                                           "(useful for large number of files)")
-        parser_generate.add_argument("--rtl",
+        parser_generate.add_argument("-gd", "--gen_dir",
+                                     default=".",
+                                     help="directory to save generated files (default:%(default)s)")
+        parser_generate.add_argument("-gr", "--gen_rtl",
                                      action="store_true",
                                      help="generate synthesiszable SystemVerilog RTL code")
-        parser_generate.add_argument("--html",
+        parser_generate.add_argument("-gh", "--gen_html",
                                      action="store_true",
                                      help="generate HTML-format register documentations")
-        parser_generate.add_argument("--ral",
+        parser_generate.add_argument("-gra", "--gen_ral",
                                      action="store_true",
                                      help="generate UVM RAL model")
-        parser_generate.add_argument("--cheader",
+        parser_generate.add_argument("-gc", "--gen_cheader",
                                      action="store_true",
                                      help="generate C headers")
-        parser_generate.add_argument("--all",
+        parser_generate.add_argument("-gall", "--gen_all",
                                      action="store_true",
                                      help="generate all")
+        parser_generate.set_defaults(func=self._generate)
 
         return parser
 
@@ -265,6 +269,86 @@ class CommandRunner:
             message.error("one of the -f/--file and -l/--list options must be provided!")
             sys.exit(1)
 
+    @staticmethod
+    def _generate(args):
+        """
+        """
+        # 单个或多个Excel或者SystemRDL文件作为输入
+        rdl_files, excel_files = [], []
+        if args.file is not None:
+            if args.list is not None:
+                message.warning("cannot use -f/--file and -l/--list options at the same time,"
+                                "-l/--list option will be ignored")
+
+            for file in args.file:
+                if not os.path.exists(file):
+                    message.error("input file:%s does not exists!" %(file))
+                    sys.exit(1)
+
+                file_format = os.path.splitext(file)[-1]
+                if file_format == ".rdl":
+                    rdl_files.append(file)
+                elif file_format == ".xlsx":
+                    excel_files.append(file)
+                else:
+                    message.error("wrong file format! (should be .rdl/.xlsx)")
+                    sys.exit(1)
+
+        # 多个Excel或RDL文件作为输入, 文件路径放在一个list文本文件中
+        elif args.list is not None:
+            if not os.path.exists(args.list):
+                message.error("list file does not exists!")
+                sys.exit(1)
+            else:
+                with open(args.list, "r") as f:
+                    lines = f.readlines()
+                    for cnt, line in enumerate(lines):
+                        line = line.replace("\n", "")
+
+                        # list文件中有注释(#)或空行
+                        if line == "" or line.startswith("#"):
+                            continue
+
+                        if not os.path.exists(line):
+                            message.error("list file:%s line:%d input file:%s does not exists!" %(args.list, cnt, line))
+                            sys.exit(1)
+                        
+                        file_format = os.path.splitext(line)[-1]
+
+                        if file_format == ".rdl":
+                            rdl_files.append(line)
+                        elif file_format == ".xlsx":
+                            excel_files.append(line)
+                        else:
+                            message.error("wrong file format! (should be .rdl/.xlsx)")
+                            sys.exit(1)
+
+        else:
+            message.error("one of the -f/--file and -l/--list options must be provided!")
+            sys.exit(1)
+
+        # 先解析Excel生成中间RDL代码,
+        # 再合并其他输入的RDL代码一起输入systemrdl-compiler编译生成寄存器模型
+        if len(excel_files) > 0:
+            excel_rdl_file = parse_excel(excel_files, to_parse_rdl=False)   # 不解析生成的RDL, 后续会一并解析
+            rdl_files.append(excel_rdl_file)
+
+        root = parse_rdl(rdl_files)
+
+        if not os.path.exists(args.gen_dir):
+            message.error("-gd/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
+            sys.exit(1)
+
+        if args.gen_all or args.gen_rtl:
+            pass
+        if args.gen_all or args.gen_html:
+            export_html(root, args.gen_dir)
+        if args.gen_all or args.gen_ral:
+            pass
+        if args.gen_all or args.gen_cheader:
+            pass
+                    
+        
     @staticmethod
     def _generate_rtl(args):
         """
