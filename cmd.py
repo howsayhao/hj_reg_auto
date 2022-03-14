@@ -3,10 +3,9 @@ import os
 import sys
 
 import utils.message as message
-from parse import parse_excel, parse_rdl, show_excel_rules
-from excel.gen_temp import generate_excel, genrate_rdl
-from .html.export import export_html
-
+from generators.html.export import export_html
+from parsers.excel.gen_temp import generate_excel
+from parsers.parse import parse_excel, parse_rdl, show_excel_rules
 
 __version__ = "0.1.0"
 

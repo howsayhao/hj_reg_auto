@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from systemrdl import RDLCompileError, RDLCompiler, RDLWalker
 
-from excel.args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
+from .excel.args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
 
 
 class ExcelParser:

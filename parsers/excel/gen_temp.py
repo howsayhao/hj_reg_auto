@@ -1,11 +1,13 @@
 import os.path
 from shutil import copy
-from .args import EXCEL_REG_HEAD, EXCEL_REG_FIELD
 
 import utils.message as message
 from openpyxl import load_workbook
 from openpyxl.worksheet.cell_range import CellRange
 
+from .args import EXCEL_REG_HEAD
+
+temp_dir = os.path.join("parsers", "excel", "templates")
 
 def generate_excel(path:str, name:str, rnum:int, rname:list, language:str, table_interval=4):
     """
@@ -23,7 +25,7 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str, table
     ------
     No return
     """
-    temp_file = os.path.join("excel", "templates", "template_{}.xlsx".format(language))
+    temp_file = os.path.join(temp_dir, "template_{}.xlsx".format(language))
     gen_file = os.path.join(path, name)
 
     # 重名处理
@@ -81,6 +83,3 @@ def generate_excel(path:str, name:str, rnum:int, rname:list, language:str, table
                 ws.merge_cells(cr.coord)
 
         wb.save(gen_file)
-
-def genrate_rdl():
-    pass
