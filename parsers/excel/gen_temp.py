@@ -7,7 +7,7 @@ from openpyxl.worksheet.cell_range import CellRange
 
 from .args import EXCEL_REG_HEAD
 
-temp_dir = os.path.join("parsers", "excel", "templates")
+temp_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "templates")
 
 def generate_excel(path:str, name:str, rnum:int, rname:list, language:str, table_interval=4):
     """
