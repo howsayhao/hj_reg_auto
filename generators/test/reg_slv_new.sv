@@ -1,12 +1,23 @@
 //  a registerfile module template which could contain 
 //  registers (registerfiles are splited into registers) and memories
 module template_slv(
+    // reg_native_if
     input clk,
     input rstn,
     input req_vld,
     input wr_en,rd_en,
     input [ADDR_WIDTH-1:0] addr, //offset in the module
     input [DATA_WIDTH-1:0] wr_data,
+    output ack_vld,
+    output [DATA_WIDTH-1:0] rd_data,
+
+    // for external memory interface
+    input ext_mem_rd_data,
+    input ext_mem_ack,
+    output ext_mem_addr,
+    output ext_mem_sel_ff,
+    output ext_mem_wr_ff,
+    output ext_mem_wr_data
 
     //for access forward interface
     input ack_vld_fwd,
@@ -14,17 +25,18 @@ module template_slv(
     output req_vld_fwd,
     output wr_en_fwd,rd_en_fwd,
     output addr_fwd,
-    output wr_data_fwd,
+    output wr_data_fwd
 
-    output ack_vld,
-    output [DATA_WIDTH-1:0] rd_data
 );
 
 PARAMETER ADDR_WIDTH = 64;
 PARAMETER DATA_WIDTH = 32;
 
+PARAMETER N = 0
+PARAMETER M = 0
+
 // access forward interface map which is declared in the top
-/* this may be modified later  */
+/* these may be modified later  */
 assign req_vld_fwd = req_vld;
 assign wr_en_fwd = wr_en;
 assign rd_en_fwd = rd_en;
@@ -52,9 +64,10 @@ always_comb begin
         reg_sel = {N{1'b0}};
         ext_mem_sel = {M{1'b0}};
         dummy_reg = 1'b0;
-        `REG_ADDR_0, `REG_ADDR_1: reg_sel[0] = 1'b1;// shared register shared1
-        `REG_ADDR_2: reg_sel[1] = 1'b1;//normal register normalA
-        `REG_ADDR_3, `REG_ADDR_4: reg_sel[2] = 1'b1;// shared register shared2
+        `REG_ADDR_0: reg_sel[0] = 1'b1;// shared register shared1_A
+        `REG_ADDR_1: reg_sel[1] = 1'b1;//normal register normalA
+        `REG_ADDR_2: reg_sel[2] = 1'b1;// shared register shared1_B
+        `REG_ADDR_3, `REG_ADDR_4: reg_sel[3] = 1'b1;// shared register shared2
         `MEM_REG_ADDR_1, `MEM_REG_ADDR_2, `MEM_REG_ADDR_3, `MEM_REG_ADDR_4: ext_mem_sel[0] = 1'b1;// memory1 which has 4 registers
         `MEM_REG_ADDR_5, `MEM_REG_ADDR_6, `MEM_REG_ADDR_7: ext_mem_sel[1] = 1'b1;// memory2 which has 3 registers
         // other reg_sel[i] assignment
@@ -65,24 +78,16 @@ always_comb begin
 end
 
 // flag to mark if select the external memory/register
-// if the address matches the memory addr or cannot be decode(forward), the flag will be asserted
+// if the address matches the memory addr or cannot be decode(forward), the external flag will be asserted
 wire external;
-wire flag_vld;
-split_mux_2d #(.WIDTH(1), .CNT(N+M), .GROUP_SIZE(128)) rd_split_mux
-   (.clk(clk), .rst_n(rstn),
-    .din({{N{1'b0}},{M{1'b1}}}), .sel({reg_sel_ff,ext_mem_sel_ff}),
-    .dout(external), .dout_vld(flag_vld)
-    );
-//
+// if 1024 mem_addrs the or gate stage will be limited in less than 10 stages
+assign external = |ext_mem_sel
+
 
 // machine state decode
 PARAMETER   IDLE = 3'd0;
-PARAMETER   DECODE = 3'd1;
-PARAMETER   INTERN = 3'd2;
-PARAMETER   EXTERN = 3'd3;
-PARAMETER   ACK = 3'd4;
-PARAMETER   EXTERN_ACK = 3'd5;
-
+PARAMETER   ACK = 3'd1;
+PARAMETER   EXTERN_ACK = 3'd2;
 
 // machine state value
 reg [2:0] next_state;
@@ -106,20 +111,9 @@ wire ext_timeout;
 always_comb begin
     case(state)
         IDLE:begin
-            if(req_vld) next_state = DECODE;
+            if(req_vld && ~external && rd_en) next_state = ACK;
+            else if(req_vld && external && rd_en) next_state = MEM_ACK;
             else next_state = IDLE;
-        end
-        DECODE:begin
-            if(flag_vld && external) next_state = EXTERN;
-            else if(flag_vld && ~external) next_state = INTERN;
-            else if(dec_timeout) next_state = IDLE;
-            else next_state = IDLE
-        end
-        INTERN:begin
-            next_state = ACK;
-        end
-        EXTERN:begin
-            next_state = EXT_ACK;
         end
         ACK:begin
             if(ack_vld_t || reg_timeout)begin
@@ -141,12 +135,11 @@ end
 
 // state output
 
-// for IDLE state: collect the bus information
+// for IDLE state: collect the bus information, execute the write operation
 reg [ADDR_WIDTH-1:0]addr_ff;
 reg [DATA_WIDTH-1:0]wr_data_ff;
 reg wr_ff;
 reg rd_ff;
-reg ext_mem_wr_ff;
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
         addr_ff <= 0;
@@ -174,17 +167,14 @@ end
 
 // for DECODE state: decode the address to judge the registers' existance and type
 //this is for storing the input in the DFF
-reg dec_timeout;
-reg [2:0] dec_cnt;
 reg [N-1:0] rd_sel_ff;
 reg [N-1:0] wr_sel_ff;
 reg [N-1:0] reg_sel_ff;
-reg [N-1:0] mem_sel_ff;
+reg [M-1:0] mem_sel_ff;
+reg [M-1:0] ext_mem_wr_ff;
 
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
-        dec_timeout <= 0;
-        dec_cnt <= 0;
         rd_sel_ff <= 0;
         wr_sel_ff <= 0;
         ext_mem_wr_ff <= 0;
@@ -193,24 +183,14 @@ always_ff@(posedge clk or negedge rstn)begin
     end
     else begin
         case(next_state)
-            DEC:begin
+            DECODE:begin
                 rd_sel_ff <= reg_sel & {N{rd_ff}};
                 wr_sel_ff <= reg_sel & {N{wr_ff}};
                 ext_mem_wr_ff <= ext_mem_sel & {M{wr_ff}};
                 reg_sel_ff <= reg_sel;
                 mem_sel_ff <= ext_mem_sel;
-                if(dec_cnt == 3'b111)begin
-                    dec_timeout <= 1;
-                    dec_cnt <= 0;
-                end
-                else begin
-                    dec_timeout <= 0;
-                    dec_cnt <= dec_cnt + 1'b1;
-                end
             end
             default:begin
-                dec_timeout <= 0;
-                dec_cnt <= 0;
                 rd_sel_ff <= rd_sel_ff;
                 wr_sel_ff <= wr_sel_ff;
                 ext_mem_wr_ff <= ext_mem_wr_ff;
@@ -221,12 +201,7 @@ always_ff@(posedge clk or negedge rstn)begin
     end
 end
 
-wire [M+N-1:0] addr_sel;
-always_comb begin
-    addr_sel = {reg_sel_ff,ext_mem_sel_ff};
-end
-
-// for INTERN state: if WR, just back to IDLE ,if RD, just wait for ack
+// for INTERN  state: if WR, just back to IDLE ,if RD, just wait for ack
 // for ACK state
 // INTERN REG READ time_out detecter
 reg reg_timeout;
@@ -389,7 +364,54 @@ end
 assign reg_rd_data_in[31:0] = normalA;
 
 // shared registers are instantiated as the same above
-// omit the shared1 and shared2 for the sw signal is the same
+// shared1_A and shared1_B instantiated only one field
+wire [DATA_WIDTH-1:0] shared1_A;
+wire [DATA_WIDTH-1:0] shared1_A_wr_data;
+assign shared1_A_wr_data = reg_sel_ff[0] && wr_sel_ff[0] && req_vld_ff[0] ? wr_data_ff : 0;
+
+wire [DATA_WIDTH-1:0] shared1_B;
+wire [DATA_WIDTH-1:0] shared1_B_wr_data;
+assign shared1_B_wr_data = reg_sel_ff[2] && wr_sel_ff[2] && req_vld_ff[2] ? wr_data_ff : 0;
+
+// shared1_A_field1@(31:0)
+field
+	//**************PARAMETER INSTANTIATE***************//
+	#( 
+	.F_WDITH(12),
+	.SRST_CNT(0),
+	.SRST_WIDTH(1),
+	.ARST_VALUE(32'h4d2),
+	.SRST_VALUE(0),
+	.USE_EXT_ASYNC_VALUE(0),
+	.USE_EXT_SYNC_VALUE(0),
+    .ALIAS_NUM(2),
+	.SW_TYPE({`RW,`RO}),
+    .SW_ONREAD_TYPE({`RCLR,`NA}),
+    .SW_ONWRITE_TYPE({`WOCLR,`NA}),
+    .SWMOD({1,0}),
+    .SWACC({1,0}),
+    .PULSE({1,0}),
+	.HW_TYPE({`RW,`RO}),
+	.PRECEDENCE(`SW)
+	)
+x__shared1__field1
+	//*****************PORT INSTANTIATE*****************//
+	(
+	.clk(clk),
+	.rst(rst_n),
+	.syn_rst(),
+	.ext_async_reset_value(),
+	.ext_sync_reset_value(),
+	.sw_wr_data({shared1_A_wr_data,shared1_B_wr_data}),
+	.sw_rd({rd_sel_ff[0],rd_sel_ff[2]}),
+	.sw_wr(wr_sel_ff[0],wr_sel_ff[2]}),
+	.write_protect_en(),
+	.hw_value(shared1_A__field1__next_value),
+	.hw_pulse(shared1_A__field1__pulse),
+	.field_value(shared1_A__field1__curr_value)
+	);
+    // end field instantiate
+
 
 assign reg_rd_data_in[63:32] = shared1;
 assign reg_rd_data_in[95:64] = shared2;
@@ -442,28 +464,9 @@ split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(64)) mem_rd_split_mux
     );
 // store the memory mux out
 
-// select which to read out and pull the corresponding high
-reg [DATA_WIDTH-1:0]rd_data_ff;
-reg ack_vld_ff;
-always_ff@(posedge clk or negedge rst)begin
-    if(~rst)begin
-        rd_data_ff <= 0;
-    end
-    else begin
-        rd_data_ff <= ack_vld_fwd ? rd_data_fwd : (ack_vld_t ? rd_data_t : rd_data_ff);
-    end
-end
 
-always_ff@(posedge clk or negedge rst)begin
-    if(~rst)begin
-        ack_vld_ff <= 0;
-    end
-    else begin
-        ack_vld_ff <= ack_vld_fwd | ack_vld_t;
-    end
-end
-
-assign rd_data = rd_data_ff;
-assign ack_vld = ack_vld_ff;
+// select which to read out and pull the corresponding vld signal high
+assign rd_data = ack_vld_fwd ? rd_data_fwd : (ack_vld_t ? rd_data_t : rd_data_ff);
+assign ack_vld = ack_vld_fwd | ack_vld_t;
 
 endmodule

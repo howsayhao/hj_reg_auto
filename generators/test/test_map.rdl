@@ -1,0 +1,147 @@
+signal {
+	name = "global_reset";
+	desc = "Default";
+	activehigh;
+} global_reset;
+
+reg shared_tem{
+	shared;
+	name = "SHARED";
+	desc = "xxx";
+	regwidth = 32;
+	field {
+		name = "FIELD_1";
+		desc = "xxx";
+		sw = rw;	
+	} FIELD_1[16:14] = 0x0;
+};
+
+addrmap test_map_1{
+	regfile {
+		name = "test1";
+		desc = "Default";
+
+		reg tem_alias_1{
+			name = "TEM21";
+			desc = "xxx";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = r;
+				onread = rclr;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "xxx";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "xxx";
+				sw = rw;
+				onread = rclr;
+				onwrite = wot;
+			} FIELD_3[13:13] = 0x1;
+		} TEM21 @0xc;
+
+		alias TEM21 tem_alias_1 TEM21_alias @0X10c;
+		TEM21_alias.FIELD_2 -> onwrite = wzc;
+
+		reg tem_alias_2{
+			name = "TEM22";
+			desc = "xxx";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = r;
+				onread = rclr;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "xxx";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;	
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "xxx";
+				sw = rw;
+				onread = rclr;
+				onwrite = wot;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEM22 @0x10;
+
+		alias TEM22 tem_alias_2 TEM22_alias @0X110;
+		TEM22_alias.FIELD_1 -> resetsignal = global_reset;
+		TEM22_alias.FIELD_2 -> onread = rset;
+		TEM22_alias.FIELD_3 -> name = "FIELD_3 ALIAS";
+
+		reg tem_alias_3{
+			name = "TEM23";
+			desc = "xxx";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = r;
+				onread = rclr;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "xxx";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "xxx";
+				sw = rw;
+				onread = rclr;
+				onwrite = wot;
+			} FIELD_3[13:13] = 0x1;
+		} TEM23 @0x14;
+
+		alias TEM23 tem_alias_3 TEM23_alias @0X114;
+		TEM23_alias.FIELD_1 -> resetsignal = global_reset;
+		TEM23_alias.FIELD_2 -> rclr;
+		TEM23_alias.FIELD_3 -> reset = 0x0;
+	} test1;
+};
+
+addrmap test_map_2 {
+	shared_tem shared_2;
+	shared_2 -> name = "SHARED_IN_TEST_MAP_2";
+	shared_2.FIELD_1 -> reset = 0X04;
+	shared_2.FIELD_1 -> onread = rset;
+	shared_2.FIELD_1 -> onwrite = wzt;
+};
+
+addrmap test_map_3 {
+	shared_tem shared_3;
+	shared_3 -> name = "SHARED_IN_TEST_MAP_3";
+	shared_3.FIELD_1 -> reset = 0X07;
+	shared_3.FIELD_1 -> sw = r;
+	shared_3.FIELD_1 -> onread = rclr;
+};
+
+addrmap root_map {
+	test_map_1 test_map_1_inst;
+	test_map_2 test_map_2_inst;
+	test_map_3 test_map_3_inst;
+};
