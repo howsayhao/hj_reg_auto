@@ -4,6 +4,7 @@ import sys
 
 import utils.message as message
 from generators.html.export import export_html
+from generators.uvm.export import export_uvm
 from parsers.excel.gen_temp import generate_excel
 from parsers.parse import parse_excel, parse_rdl, show_excel_rules
 
@@ -102,19 +103,19 @@ class CommandRunner:
         parser_generate.add_argument("-l", "--list",
                                      help="a list including paths and names of all files "
                                           "(useful for large number of files)")
-        parser_generate.add_argument("-gd", "--gen_dir",
+        parser_generate.add_argument("-gdir", "--gen_dir",
                                      default=".",
                                      help="directory to save generated files (default:%(default)s)")
-        parser_generate.add_argument("-gr", "--gen_rtl",
+        parser_generate.add_argument("-grtl", "--gen_rtl",
                                      action="store_true",
                                      help="generate synthesiszable SystemVerilog RTL code")
-        parser_generate.add_argument("-gh", "--gen_html",
+        parser_generate.add_argument("-ghtml", "--gen_html",
                                      action="store_true",
                                      help="generate HTML-format register documentations")
-        parser_generate.add_argument("-gra", "--gen_ral",
+        parser_generate.add_argument("-gral", "--gen_ral",
                                      action="store_true",
                                      help="generate UVM RAL model")
-        parser_generate.add_argument("-gc", "--gen_cheader",
+        parser_generate.add_argument("-gch", "--gen_cheader",
                                      action="store_true",
                                      help="generate C headers")
         parser_generate.add_argument("-gall", "--gen_all",
@@ -344,7 +345,7 @@ class CommandRunner:
         if args.gen_all or args.gen_html:
             export_html(root, args.gen_dir)
         if args.gen_all or args.gen_ral:
-            pass
+            export_uvm(root, args.gen_dir)
         if args.gen_all or args.gen_cheader:
             pass
                     
