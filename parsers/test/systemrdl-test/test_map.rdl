@@ -116,6 +116,7 @@ addrmap test_map_1{
 
 addrmap root_map {
 	test_map_1 test_map_1_inst;
+	test_map_1_inst -> ispresent = false;
 	external test_map_2 test_map_2_inst;
 	external test_map_3 test_map_3_inst;
 };
