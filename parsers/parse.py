@@ -336,21 +336,28 @@ class ExcelParser:
         return True
 
 
-def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str, to_parse_rdl=True):
+def parse_excel(files:list[str], module_name:str, rdl_dir:str, generate_rdl=False, gen_aggregation=False, gen_rst_sigs=False):
     """
     Parameter
     ---------
     `files` : 包含所有需要检查的Excel文件名的list
-    `generate_rdl` : 是否生成SystemRDL
-    `module_name` : 生成的SystemRDL的模块名(addrmap名)
+    `module_name` : `gen_aggregation == True`时生成的聚合RDL文件名
     `rdl_dir` : SystemRDL的生成路径
-    `to_parse_rdl` : 是否解析一遍生成的RDL代码
+    `generate_rdl` : 是否生成SystemRDL
+    `gen_aggregation` : 是否将所有输入Excel解析生成一个RDL文件
+    `gen_rst_sigs` : 是否生成RDL形式的复位信号定义
 
     Return
     ------
-    `rdl_file` : 生成的RDL完整文件名
+    `rdl_file` : `generate_rdl == True`时生成的多个或聚合的一个RDL文件名
+        - `gen_aggregation == False`时为`list`类型
+        - `gen_aggregation == True`时为`str`类型
 
+    `None` : 输入`files`为空或者`generate_rdl == False`时无返回值
     """
+    if files == []:
+        return None
+
     worksheets = {}
     for file in files:
         wb = load_workbook(file)
@@ -366,8 +373,8 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str
         if not checker():
             message.info("parser aborted due to previous error")
             sys.exit(1)
+    message.info("all Excel(.xlsx) files have been parsed successfully")
 
-    message.info("all files have been parsed successfully")
     if generate_rdl:
         from .excel.gen_rdl import RDLGenerator
 
@@ -375,14 +382,10 @@ def parse_excel(files:list[str], generate_rdl:bool, module_name:str, rdl_dir:str
             message.error("specified an invalid path for the generated rdl file!")
             sys.exit(1)
 
-        generator = RDLGenerator(reg_model=parser.parsed_model,
-                                 gen_dir=rdl_dir,
-                                 module_name=module_name)
-        rdl_file = generator.generate_rdl()
-        if to_parse_rdl:
-            parse_rdl([os.path.join(rdl_dir, module_name + ".rdl")])
+        generator = RDLGenerator(parser.parsed_model)
+        rdl_files = generator.generate_rdl(rdl_dir, module_name, gen_aggregation, gen_rst_sigs)
 
-        return rdl_file
+        return rdl_files
         
 def show_excel_rules():
     """
@@ -405,7 +408,11 @@ def parse_rdl(files:list[str]):
     Return
     ------
     `root` : `systemrdl.node.RootNode`
+    `None` : `files`为空列表时
     """
+    if files == []:
+        return None
+
     rdlc = RDLCompiler()
 
     try:
@@ -416,6 +423,6 @@ def parse_rdl(files:list[str]):
     except RDLCompileError:
         sys.exit(1)
     else:
-        message.info("SystemRDL parsed successfully")
+        message.info("SystemRDL files parsed successfully")
 
     return root

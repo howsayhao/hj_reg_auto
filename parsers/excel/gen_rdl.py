@@ -11,8 +11,6 @@ class RDLGenerator:
     Parameter
     ---------
     `reg_model` : `ExcelParser`解析出来的寄存器模型, 可通过`parsed_model`属性获取
-    `module_name` : 输入寄存器模型的顶层模块名, 即root addrmap的名字, 默认为`unnamed`
-    `gen_dir` : 生成后的RDL文件保存路径 
     """
     signal_str = "signal {{\n" \
         "\tname = \"{sig_name}\";\n" \
@@ -34,20 +32,14 @@ class RDLGenerator:
         "\t\t\tregwidth = {RegWidth};\n\n" \
         "{fields_str}" \
         "\t\t}} {RegAbbr} @{AddrOffset};\n\n"
-    regfile_str = "\tregfile {{\n" \
-        "\t\tname = \"{rfile_name}\";\n" \
-        "\t\tdesc = \"{rfile_desc}\";\n\n" \
+    addrmap_str = "addrmap {addrmap_name} {{\n" \
+        "\tname = \"{addrmap_name}\";\n" \
+        "\tdesc = \"{addrmap_desc}\";\n\n" \
         "{regs_str}" \
-        "\t}} {rfile_name};\n\n"
-    addrmap_str = "addrmap {addrmap_name}{{\n" \
-        "{regfiles_str}" \
-        "}};"
+        "}};\n"
 
-    def __init__(self, reg_model:dict[str,list], gen_dir:str, module_name:str="unnamed"):
+    def __init__(self, reg_model:dict[str,list]):
         self.reg_model = reg_model
-        self.gen_dir = gen_dir
-        self.module_name = module_name
-
         self._resize_model()
 
     def _resize_model(self):
@@ -145,8 +137,8 @@ class RDLGenerator:
         fkeys = EXCEL_REG_FIELD.keys()
         hkeys = EXCEL_REG_HEAD.keys()
 
-        for rfile_entry in self.reg_model.values():
-            for reg in rfile_entry:
+        for addrmap_entry in self.reg_model.values():
+            for reg in addrmap_entry:
                 fld_num = len(reg["FieldBit"])
                 fields = []
 
@@ -168,37 +160,49 @@ class RDLGenerator:
                         reg.pop(inkey)
                 reg["Fields"] = fields
 
-    def generate_rdl(self):
+    def generate_rdl(self, gen_dir:str, module_name:str, is_aggregated=False, gen_signals=True):
         """
         遍历Register model生成SystemRDL代码, 并保存在指定路径
 
+        Parameter
+        ---------
+        `gen_dir` :
+        `module_name` :
+        `is_aggregated` :
+        `gen_signals` :
+
         Return
         ------
-        `filename` : 生成的RDL完整文件名
+        `agg_filename` : `str`类型, `is_aggregated == True`时生成聚合的RDL文件名
+        `sep_files` : `list`类型, `is_aggregated == False`时生成的分散的RDL文件名
         """
-        regfiles_str = ""
-        sigs_str = ""
-        rst_sigs = []
+        if gen_signals:
+            sigs_str = ""
+            rst_sigs = []
 
-        filename = os.path.join(self.gen_dir, self.module_name + ".rdl")
+        # 当需要聚合所有输入的寄存器说明文件到一个RDL里时, 检查生成文件名的重名情况
+        # 所以只有is_aggregated=True时module_name才会被用到
+        if is_aggregated:
+            agg_filename = os.path.join(gen_dir, module_name + ".rdl")
+            addrmaps_str = ""
+            new_name = module_name
+            suffix_num = 1
 
-        # module_name重名处理
-        new_name = self.module_name
-        suffix_num = 1
+            while os.path.exists(agg_filename):
+                message.warning("rdl file %s already exists" % (agg_filename))
+                new_name = module_name + "_%d" %(suffix_num)
+                agg_filename = os.path.join(gen_dir, new_name + ".rdl")
+                suffix_num += 1
 
-        while os.path.exists(filename):
-            message.warning("rdl file %s already exists" % (filename))
-            new_name = self.module_name + "_%d" %(suffix_num)
-            filename = os.path.join(self.gen_dir, new_name + ".rdl")
-            suffix_num += 1
+            module_name = new_name
+        else:
+            sep_files = []
 
-        self.module_name = new_name
-
-        # 生成一个映射(Addrmap)中所有寄存器组(Regfile)例化代码
-        for rfile_name, rfile_entry in self.reg_model.items():
+        # 生成一个映射(Addrmap)中所有寄存器(Reg)例化代码
+        for addrmap_name, addrmap_entry in self.reg_model.items():
             regs_str = ""
             # 生成一个寄存器组(Regfile)中所有寄存器(Reg)例化代码
-            for reg in rfile_entry:
+            for reg in addrmap_entry:
                 fields_str = ""
                 ext_str = ""
 
@@ -208,9 +212,10 @@ class RDLGenerator:
                         continue
 
                     # 给Field中定义的reset signal分配外部定义的signal
-                    rst_sig = fld["FieldRstSig"]
-                    if rst_sig not in rst_sigs:
-                        rst_sigs.append(rst_sig)
+                    if gen_signals:
+                        rst_sig = fld["FieldRstSig"]
+                        if rst_sig not in rst_sigs:
+                            rst_sigs.append(rst_sig)
 
                     # 生成的SystemRDL代码中以16进制表示复位值
                     fld["FieldRstVal"] = hex(fld["FieldRstVal"])
@@ -233,6 +238,7 @@ class RDLGenerator:
                             ext_str = "external "
                     else:
                         onread_str = ""
+
                     if "w" in wrtype:
                         sw += "w"
                         if wrtype == "w":
@@ -255,18 +261,36 @@ class RDLGenerator:
                 reg["AddrOffset"] = hex(reg["AddrOffset"])
                 reg_str = self.reg_str.format(fields_str=fields_str, ext_str=ext_str, **reg)
                 regs_str += reg_str
-            
-            regfile_str = self.regfile_str.format(regs_str=regs_str, rfile_name=rfile_name, rfile_desc="Default")
-            regfiles_str += regfile_str
 
-        addrmap_str = self.addrmap_str.format(regfiles_str=regfiles_str, addrmap_name=self.module_name)
+            addrmap_str = self.addrmap_str.format(regs_str=regs_str, addrmap_name=addrmap_name, addrmap_desc="[Reserved for editing.]")
 
-        for rst_sig in rst_sigs:
-            sigs_str += self.signal_str.format(sig_name=rst_sig, sig_desc="Default", active_mode="activehigh")
+            if is_aggregated:
+                addrmaps_str += addrmap_str
+            else:
+                sep_filename = os.path.join(gen_dir, addrmap_name + ".rdl")
+                with open(sep_filename, "w", encoding="utf-8") as file:
+                    file.write(addrmap_str)
+                    message.info("seperate module rdl file saved as %s" % (sep_filename))
+                sep_files.append(sep_filename)
 
-        with open(filename, "w", encoding="utf-8") as file:
-            file.write(sigs_str)
-            file.write(addrmap_str)
-        message.info("saved in %s" % (filename))
+        # 单独列出reset signal, 放到一个单独的signals.rdl
+        if gen_signals:
+            for rst_sig in rst_sigs:
+                sigs_str += self.signal_str.format(sig_name=rst_sig, sig_desc="[Reserved for editing.]", active_mode="activehigh")
 
-        return filename
+        if is_aggregated:
+            with open(agg_filename, "w", encoding="utf-8") as file:
+                if gen_signals:
+                    file.write(sigs_str)
+                file.write(addrmaps_str)
+            message.info("aggregated Excel-oriented RDL file saved as %s" % (agg_filename))
+            return agg_filename
+        else:
+            if gen_signals:
+                sig_filename = os.path.join(gen_dir, "signals.rdl")
+                with open(sig_filename, "w", encoding="utf-8") as file:
+                    file.write(sigs_str)
+                    message.info("signal RDL file saved as %s" % (sig_filename))
+                sep_files.insert(0, sig_filename)
+
+            return sep_files
