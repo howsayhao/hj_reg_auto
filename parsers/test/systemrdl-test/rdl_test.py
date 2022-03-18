@@ -6,23 +6,23 @@ from systemrdl.node import FieldNode
 # Define a listener that will print out the register model hierarchy
 class MyListener(RDLListener):
     def enter_Addrmap(self, node):
-        print("Entering addrmap", node.get_path())
+        # print(node.get_path(), "external:", node.external)
+        pass
 
     def exit_Addrmap(self, node):
-        print("Exiting addrmap", node.get_path())
+        pass
 
     def enter_Reg(self, node):
-        print("Entering register", node.get_path())
-        print("Absolute address:", node.absolute_address)
+        print(node.get_path(), "absolute address:", hex(node.absolute_address))
 
     def exit_Reg(self, node):
-        print("Exiting register", node.get_path())
+        pass
 
     def enter_Field(self, node):
-        print("Entering field", node.get_path())
+        pass
 
     def exit_Field(self, node):
-        print("Exiting field", node.get_path())
+        pass
 
 if __name__ == "__main__":
     import sys
