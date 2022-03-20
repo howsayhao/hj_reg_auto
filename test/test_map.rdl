@@ -119,4 +119,6 @@ addrmap root_map {
 	test_map_1_inst -> ispresent = true;
 	test_map_2 test_map_2_inst;
 	test_map_3 test_map_3_inst;
+	test_1 test_1_inst;
+	test_2 test_2_inst;
 };

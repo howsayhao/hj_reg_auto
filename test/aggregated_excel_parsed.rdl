@@ -1,0 +1,220 @@
+signal {
+	name = "global_reset";
+	desc = "[Reserved for editing.]";
+	activehigh;
+} global_reset;
+
+addrmap test_1 {
+	name = "test_1";
+	desc = "[Reserved for editing.]";
+
+		reg {
+			name = "TEST11";
+			desc = "示例寄存器";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = r;
+				onread = rclr;
+				
+				resetsignal = global_reset;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：该FIELD为1时的作用\\n…\\n7：该FIELD为7时的作用]";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+				resetsignal = global_reset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = rw;
+				
+				onwrite = wot;
+				resetsignal = global_reset;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEST11 @0x0;
+
+		reg {
+			name = "TEST12";
+			desc = "示例寄存器";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = r;
+				onread = rclr;
+				
+				resetsignal = global_reset;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：该FIELD为1时的作用\\n…\\n7：该FIELD为7时的作用]";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+				resetsignal = global_reset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = rw;
+				
+				onwrite = wot;
+				resetsignal = global_reset;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEST12 @0x4;
+
+		reg {
+			name = "TEST13";
+			desc = "示例寄存器";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = r;
+				onread = rclr;
+				
+				resetsignal = global_reset;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：该FIELD为1时的作用\\n…\\n7：该FIELD为7时的作用]";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+				resetsignal = global_reset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = rw;
+				
+				onwrite = wot;
+				resetsignal = global_reset;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEST13 @0x8;
+
+		reg {
+			name = "TEST14";
+			desc = "示例寄存器";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = r;
+				onread = rclr;
+				
+				resetsignal = global_reset;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：该FIELD为1时的作用\\n…\\n7：该FIELD为7时的作用]";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+				resetsignal = global_reset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = rw;
+				
+				onwrite = wot;
+				resetsignal = global_reset;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEST14 @0xc;
+
+		reg {
+			name = "TEST15";
+			desc = "示例寄存器";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = r;
+				onread = rclr;
+				
+				resetsignal = global_reset;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：该FIELD为1时的作用\\n…\\n7：该FIELD为7时的作用]";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+				resetsignal = global_reset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = rw;
+				
+				onwrite = wot;
+				resetsignal = global_reset;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEST15 @0x10;
+
+};
+addrmap test_2 {
+	name = "test_2";
+	desc = "[Reserved for editing.]";
+
+		reg {
+			name = "TEM";
+			desc = "示例寄存器";
+			regwidth = 32;
+
+			field {
+				name = "FIELD_1";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = r;
+				onread = rclr;
+				
+				resetsignal = global_reset;
+			} FIELD_1[17:17] = 0x0;
+
+			field {
+				name = "FIELD_2";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：该FIELD为1时的作用\\n…\\n7：该FIELD为7时的作用]";
+				sw = rw;
+				onread = rset;
+				onwrite = woset;
+				resetsignal = global_reset;
+			} FIELD_2[16:14] = 0x0;
+
+			field {
+				name = "FIELD_3";
+				desc = "[功能描述]\\n[0：可选说明，该FIELD为0时的作用\\n1：可选说明，该FIELD为1时的作用]";
+				sw = rw;
+				
+				onwrite = wot;
+				resetsignal = global_reset;
+			} FIELD_3[13:13] = 0x1;
+
+		} TEM @0x0;
+
+};
