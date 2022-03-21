@@ -1,6 +1,6 @@
 文件夹下面有两份.rdl文件生成的.v和.vh文件，文件名与.rdl文件名一致
 .vh文件记录了不同寄存器在module中的地址
-.v文件包括:{  
+.v文件包括:{
     1、module standard ports
     2、external ports(if needed)
     3、internal fields ports

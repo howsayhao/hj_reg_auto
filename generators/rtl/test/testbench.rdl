@@ -1,0 +1,227 @@
+// User-defined properties
+
+// Define synchronous reset signals for regslv blocks
+property hj_syncresetsignal {
+    component = field|reg|regfile|addrmap;
+    type = string;
+};
+
+// Define whether to generate independent regslv blocks
+property hj_genrtl {
+    component = addrmap;
+    type = boolean;
+};
+
+addrmap test_1 {
+	hj_genrtl = false;
+
+	signal {
+		name = "srst_1";
+		activehigh;
+		sync;
+	} srst_1;
+
+	signal {
+		name = "srst_2";
+		activehigh;
+		sync;
+	} srst_2;
+
+	// test sw=rw, all onread/onwrite types
+	reg REG1_def{
+		regwidth = 32;
+
+		field {
+			sw = rw;
+		} FIELD_1[29:28] = 0x0;
+
+		field {
+			sw = rw;
+			onread = rclr;
+		} FIELD_2[27:26] = 0x0;
+
+		field {
+			sw = rw;
+			onread = rset;
+		} FIELD_3[25:24] = 0x0;
+
+		field {
+			sw = rw;
+			onwrite = woclr;
+		} FIELD_4[23:22] = 0x0;
+
+		field {
+			sw = rw;
+			onwrite = woset;
+		} FIELD_5[21:20] = 0x0;
+
+		field {
+			sw = rw;
+			onwrite = wot;
+		} FIELD_6[19:18] = 0x0;
+
+		field {
+			sw = rw;
+			onwrite = wzc;
+		} FIELD_7[17:16] = 0x0;
+
+		field {
+			sw = rw;
+			onwrite = wzs;
+		} FIELD_8[15:14] = 0x0;
+
+		field {
+			sw = rw;
+			onwrite = wzt;
+		} FIELD_9[13:12] = 0x0;
+	} REG1_SW_RW @0x0;
+
+	// test sw=r, all onread types
+	alias REG1_SW_RW REG1_def REG1_SW_R_alias @0X100;
+	REG1_SW_R_alias.FIELD_1 -> sw = r;
+	REG1_SW_R_alias.FIELD_2 -> sw = r;
+	REG1_SW_R_alias.FIELD_3 -> sw = r;
+
+	// test sw=w, all onwrite types
+	reg REG2_def{
+		regwidth = 32;
+
+		field {
+			sw = w;
+		} FIELD_0[31:30] = 0x0;
+
+		field {
+			sw = w;
+			onwrite = woclr;
+		} FIELD_1[29:28] = 0x0;
+
+		field {
+			sw = w;
+			onwrite = woset;
+		} FIELD_2[27:26] = 0x0;
+
+		field {
+			sw = w;
+			onwrite = wot;
+		} FIELD_3[25:24] = 0x0;
+
+		field {
+			sw = w;
+			onwrite = wzc;
+		} FIELD_4[23:22] = 0x0;
+
+		field {
+			sw = w;
+			onwrite = wzs;
+		} FIELD_5[21:20] = 0x0;
+
+		field {
+			sw = w;
+			onwrite = wzt;
+		} FIELD_6[19:18] = 0x0;
+	} REG2_SW_W @0x4;
+
+	// test synchronous reset signal
+	alias REG2_SW_W REG2_def REG2_SRST_alias @0X104;
+	REG2_SRST_alias.FIELD_1 -> hj_syncresetsignal = "srst_1";
+	REG2_SRST_alias.FIELD_2 -> hj_syncresetsignal = "srst_2";
+
+	// test hardware access propeties, hwclr, hwset
+	reg REG3_def{
+		regwidth = 32;
+
+		field {
+			hw = rw;
+		} FIELD_0[31:30] = 0x0;
+
+		field {
+			hw = r;
+			onwrite = woclr;
+		} FIELD_1[29:28] = 0x0;
+
+		field {
+			hwclr;
+		} FIELD_2[27:26] = 0x0;
+
+		field {
+			hwset;
+		} FIELD_3[25:24] = 0x0;
+	} REG3_HW @0x8;
+
+	// test hardware access propeties, hwclr, hwset
+	reg REG4_def{
+		regwidth = 32;
+
+		field {
+			sw = rw;
+			hw = rw;
+			precedence = sw;
+		} FIELD_0[31:30] = 0x0;
+
+		field {
+			sw = rw;
+			hw = rw;
+			precedence = hw;
+		} FIELD_1[29:28] = 0x0;
+	} REG4_PRECEDENCE @0xc;
+
+	// test hardware access propeties, hwclr, hwset
+	reg REG5_def{
+		regwidth = 32;
+
+		field {
+			singlepulse;
+		} FIELD_0[31:31] = 0x0;
+	} REG5_SINGLEPULSE @0x10;
+
+	// test swacc, swmod
+	reg REG6_def{
+		regwidth = 32;
+
+		field {
+			swacc;
+			swmod;
+		} FIELD_0[31:30] = 0x0;
+	} REG6_SW_ACC_MOD @0x14;
+};
+
+// test shared property
+reg shared_tem{
+	shared;
+	regwidth = 32;
+
+	field {
+		sw = rw;
+	} FIELD_0[31:0] = 0x0;
+};
+
+addrmap test_2 {
+	hj_genrtl = false;
+	// test reset values
+	shared_tem shared_2;
+	shared_2.FIELD_0 -> reset = 0XFFFFFFFF;
+};
+
+addrmap test_3 {
+	hj_genrtl = false;
+	// test reset values
+	shared_tem shared_3;
+	shared_3.FIELD_0 -> reset = 0XAAAAAAAA;
+};
+
+// test external memories
+mem ext_mem_def {
+    mementries = 64;
+    memwidth = 32;
+};
+
+addrmap regmst_test {
+	addrmap regslv_test {
+		hj_genrtl = true;
+
+		test_1 test_1_inst;
+		test_2 test_2_inst;
+		test_3 test_3_inst;
+		external ext_mem_def ext_mem_1_inst, ext_mem_2_inst, ext_mem_3_inst;
+	} regslv_test_inst;
+};

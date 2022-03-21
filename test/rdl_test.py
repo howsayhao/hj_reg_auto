@@ -31,7 +31,7 @@ if __name__ == "__main__":
     from systemrdl import RDLCompiler, RDLCompileError, RDLWalker
 
     # Collect input files from the command line arguments
-    input_files = ["test_1.rdl", "test_2.rdl", "test_map.rdl"]
+    input_files = ["testbench.rdl"]
 
     # Create an instance of the compiler
     rdlc = RDLCompiler()

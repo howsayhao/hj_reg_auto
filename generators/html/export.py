@@ -22,6 +22,6 @@ def export_html(root:RootNode, out_dir:str):
     try:
         exporter.export(root, html_dir)
     except:
-        message.error("html export failed!")
+        message.error("html export failed")
     else:
         message.info("save html in directory:%s" % (html_dir))

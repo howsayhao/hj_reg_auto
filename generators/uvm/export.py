@@ -19,6 +19,6 @@ def export_uvm(root:RootNode, out_dir:str):
     try:
         exporter.export(root, export_file, reuse_class_definitions=False)
     except:
-        message.error("uvm export failed!")
+        message.error("uvm export failed")
     else:
-        message.info("save in: %s" % (export_file))
+        message.info("save uvm ral model in: %s" % (export_file))

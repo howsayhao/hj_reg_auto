@@ -1,14 +1,14 @@
 `include "xregister.vh"
 
-module sw_ctrl (field_value, 
-		sw_wr, sw_rd, sw_wr_data, sw_type_alter_signal, 
+module sw_ctrl (field_value,
+		sw_wr, sw_rd, sw_wr_data, sw_type_alter_signal,
                 nxt_sw_value, sw_modify,swmod_out,swacc_out,pulse_out,reset_modify);
 
    parameter F_WIDTH = 4;
    parameter SW_CNT  = 1;
-   parameter SW_TYPE = `SW_RW;
-   parameter SW_ONREAD_TYPE = `NA;
-   parameter SW_ONWRITE_TYPE = `NA;
+   parameter [3:0] SW_TYPE = `SW_RW;
+   parameter [3:0] SW_ONREAD_TYPE = `NA;
+   parameter [3:0] SW_ONWRITE_TYPE = `NA;
    parameter SWMOD = 0;
    parameter SWACC = 0;
    parameter PULSE = 0;
@@ -29,7 +29,7 @@ module sw_ctrl (field_value,
 
    logic onread_modify;
    logic onwrite_modify;
-   
+
    logic [F_WIDTH-1:0] 		      sw_onread_value;
    logic [F_WIDTH-1:0] 		      sw_onwrite_value;
    logic [F_WIDTH*2-1:0]         sw_mux_din;
@@ -42,9 +42,6 @@ module sw_ctrl (field_value,
       end
       if(SWACC)begin:g_SWACC
         assign swacc_out = |sw_rd & |sw_wr;
-      end
-      if(PULSE)begin:g_PULSE
-        assign pulse_out = |sw_wr & |sw_wr_data;
       end
    endgenerate
 
@@ -88,7 +85,7 @@ module sw_ctrl (field_value,
                 $display("%m:Unknown SW_TYPE %d", SW_TYPE);
                 $finish;
             end
-// synopsys translate_on	
+// synopsys translate_on
       end
    endgenerate
 
@@ -98,7 +95,7 @@ module sw_ctrl (field_value,
          if(SW_ONWRITE_TYPE == `WOCLR)begin: g_ONWRITE_WOCLR
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux_onwrite
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value & (~sw_mux_value);
@@ -106,7 +103,7 @@ module sw_ctrl (field_value,
          else if(SW_ONWRITE_TYPE == `WOSET)begin: g_ONWRITE_WOSET
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux_onwrite
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value | sw_mux_value;
@@ -114,7 +111,7 @@ module sw_ctrl (field_value,
          else if(SW_ONWRITE_TYPE == `WOT)begin: g_ONWRITE_WOT
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux_onwrite
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value ^ sw_mux_value;
@@ -122,7 +119,7 @@ module sw_ctrl (field_value,
          else if(SW_ONWRITE_TYPE == `WZS)begin: g_ONWRITE_WZS
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux_onwrite
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value | (~sw_mux_value);
@@ -130,7 +127,7 @@ module sw_ctrl (field_value,
          else if(SW_ONWRITE_TYPE == `WZC)begin: g_ONWRITE_WZC
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux_onwrite
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value & sw_mux_value;
@@ -138,7 +135,7 @@ module sw_ctrl (field_value,
          else if(SW_ONWRITE_TYPE == `WZT)begin: g_ONWRITE_WZT
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux_onwrite
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value ^ (~sw_mux_value);
@@ -146,10 +143,20 @@ module sw_ctrl (field_value,
          else if(SW_ONWRITE_TYPE == `NA) begin: g_ONWRITE_NA
             assign onwrite_modify = |sw_wr;
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux
-            (.din (sw_wr_data), 
+            (.din (sw_wr_data),
                 .sel (sw_wr),
                 .dout (sw_mux_value));
             assign sw_onwrite_value = sw_mux_value;
+         end
+         else if(PULSE)begin:g_PULSE
+            // when a operation is requested or one of the the last field_value is asserted, the pulse will be generated
+            assign onwrite_modify = (|sw_wr) | (|field_value);
+            priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux
+            (.din (sw_wr_data),
+                .sel (sw_wr),
+                .dout (sw_mux_value));
+            // ~field value to let previous asserted bit turn zero
+            assign sw_onwrite_value = sw_mux_value & ~(field_value);
          end
          else begin:g_SW_ONWRITE_unknown
          // synopsys translate_off
@@ -159,7 +166,7 @@ module sw_ctrl (field_value,
                      end
          end
       end
-      else if(SW_TYPE == `SW_RO)begin: g_SW_WR//no writable
+      else if(SW_TYPE == `SW_RO)begin: g_SW_RO//no writable
          assign onwrite_modify = 1'b0;
          assign sw_onwrite_value = {F_WIDTH{1'b0}};
       end
@@ -169,7 +176,7 @@ module sw_ctrl (field_value,
                 $display("%m:Unknown SW_TYPE %d", SW_TYPE);
                 $finish;
             end
-// synopsys translate_on	
+// synopsys translate_on
       end
    endgenerate
 
@@ -178,8 +185,8 @@ module sw_ctrl (field_value,
    assign sw_mux_sel = {onread_modify,onwrite_modify};
 
    priority_mux #(.WIDTH (F_WIDTH), .CNT (2))
-     sw_mux (.din (sw_mux_din), 
-                .sel (sw_mux_sel), 
+     sw_mux (.din (sw_mux_din),
+                .sel (sw_mux_sel),
                 .dout (nxt_sw_value));
    assign sw_modify = onread_modify | onwrite_modify;
 

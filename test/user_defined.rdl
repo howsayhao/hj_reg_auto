@@ -1,0 +1,13 @@
+// User-defined properties
+
+// Define synchronous reset signals for regslv blocks
+property hj_syncresetsignal {
+    component = field | reg | regfile | addrmap;
+    type = string;
+};
+
+// Define whether to generate independent regslv blocks
+property hj_genrtl {
+    component = addrmap;
+    type = boolean;
+};

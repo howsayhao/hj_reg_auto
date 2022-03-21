@@ -18,7 +18,7 @@ EXCEL_REG_HEAD = {
         "Content": {
             "Loc": (2,2),
             "Format": "hex",
-            "Pattern": "^0[Xx][0-9A-Fa-f]+|[0-9]+$"
+            "Pattern": "^(0[Xx][0-9A-Fa-f]+)$"
         }
     },
     "RegWidth": {
@@ -29,7 +29,7 @@ EXCEL_REG_HEAD = {
         "Content": {
             "Loc": (3,2),
             "Format": "int",
-            "Pattern": "^(32)|(64)$"
+            "Pattern": "^((32)|(64))$"
         }
     },
     "RegAbbr": {
@@ -65,7 +65,7 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,1),
             "Format": "range",
-            "Pattern": "^[0-9]+:[0-9]+$"
+            "Pattern": "^([0-9]+:[0-9]+)$"
         }
     },
     "FieldName": {
@@ -98,7 +98,7 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,4),
             "Format": "str",
-            "Pattern": "^(R)|(NA)|(RCLR)|(RSET)|(RUSER)$"
+            "Pattern": "^((R)|(NA)|(RCLR)|(RSET)|(RUSER))$"
         } # Access Type
     },
     "FieldWrType": {
@@ -109,7 +109,7 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,5),
             "Format": "str",
-            "Pattern": "^(W)|(NA)|(WOSET)|(WOCLR)|(WOT)|(WZS)|(WZC)|(WZT)|(WUSER)$"
+            "Pattern": "^((W)|(NA)|(WOSET)|(WOCLR)|(WOT)|(WZS)|(WZC)|(WZT)|(WUSER))$"
         }
     },
     "FieldRstVal": {
@@ -120,18 +120,18 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,6),
             "Format": "hex",
-            "Pattern": "^0[Xx][0-9A-Fa-f]+|[0-9]+$"
+            "Pattern": "^(0[Xx][0-9A-Fa-f]+)$"
         }
     },
-    "FieldRstSig": {
+    "FieldSyncRstSig": {
         "Entry": {
             "Loc": (8,7),
-            "Name": ("复位信号", "Reset Signal")
+            "Name": ("同步复位信号", "Sync. Reset Signal")
         },
         "Content": {
             "StartLoc": (9,7),
             "Format": "str",
-            "Pattern": None
+            "Pattern": "^(([Nn][Oo][Nn][Ee])|([^0-9_]\w*(,\s*[^0-9_]\w*)*))$"
         }
     }
 }

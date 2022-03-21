@@ -5,11 +5,11 @@
 module field (clk, rst_n,
 
               // synchronous reset is not mandatory
-              // It can be float because it is not used internally 
+              // It can be float because it is not used internally
               sync_rst,
-   
+
               // When asserted, write protect is ON,
-              // field can't be written by software 
+              // field can't be written by software
               write_protect_en,
 
               sw_wr, sw_rd, sw_wr_data,
@@ -20,16 +20,16 @@ module field (clk, rst_n,
               field_value,
 
               // Fields' output defined by access property
-              swmod_out,swacc_out,pulse_out);
+              swmod_out,swacc_out);
 
    parameter F_WIDTH       = 4;
    parameter ALIAS_NUM     = 1; //Alias Register number
    parameter SRST_CNT      = 1;
    parameter PRECEDENCE    = `SW;
 
-   parameter SW_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`SW_RW}};
-   parameter SW_ONREAD_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`NA}};
-   parameter SW_ONWRITE_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`NA}};
+   parameter [3:0] SW_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`SW_RW}};
+   parameter [3:0] SW_ONREAD_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`NA}};
+   parameter [3:0] SW_ONWRITE_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`NA}};
    parameter HW_TYPE       = `HW_RO;
 
    parameter SWMOD[ALIAS_NUM-1:0]       = '{ALIAS_NUM{0}};
@@ -45,7 +45,7 @@ module field (clk, rst_n,
 
 
 
-   input [F_WIDTH*ALIAS_NUM-1:0] sw_wr_data;
+   input [ALIAS_NUM-1:0] [F_WIDTH-1:0] sw_wr_data;
    input [ALIAS_NUM-1:0]         sw_rd, sw_wr;
    input                      sw_type_alter_signal;
    input [F_WIDTH-1:0]        hw_value;
@@ -57,9 +57,8 @@ module field (clk, rst_n,
 
    output logic               swmod_out;
    output logic               swacc_out;
-   output logic               pulse_out;
 
-   logic [F_WIDTH*ALIAS_NUM-1:0] sw_wr_data;
+   logic [ALIAS_NUM-1:0] [F_WIDTH-1:0] sw_wr_data;
    logic [ALIAS_NUM-1:0]         sw_rd, sw_wr;
    logic                      sw_type_alter_signal;
    logic [F_WIDTH-1:0]        hw_value;
@@ -68,31 +67,30 @@ module field (clk, rst_n,
    logic                      clk, rst_n;
    logic [SRST_WIDTH-1:0]     sync_rst;
 
-   logic [ALIAS_NUM-1:0]         swmod_out_pre, swacc_out_pre,pulse_out_pre;
+   logic [ALIAS_NUM-1:0]         swmod_out_pre, swacc_out_pre;
 
    logic                       hw_modify;
    logic                       sw_modify;
    logic [ALIAS_NUM-1:0]       sw_modify_pre;
    logic                       reset_modify;
    logic [ALIAS_NUM-1:0]       reset_modify_pre;
-   logic [ALIAS_NUM-1:0]       sw_roc_modify;
 
-   logic [F_WIDTH-1:0]         nxt_hw_value, 
+   logic [F_WIDTH-1:0]         nxt_hw_value,
                                nxt_sw_value,
                                nxt_field_value;
-   logic [F_WIDTH*ALIAS_NUM-1:0] nxt_sw_value_pre;
-   
+   logic [ALIAS_NUM-1:0] [F_WIDTH-1:0] nxt_sw_value_pre;
+
    logic [F_WIDTH*2-1:0]      field_mux_din_pre;
    logic [2-1:0]              field_mux_sel_pre;
    logic [F_WIDTH*(2+SRST_CNT)-1:0] field_mux_din;
    logic [(2+SRST_CNT)-1:0]         field_mux_sel;
 
-   // flag to show if SW = RW1 and W1 and they have been modified once
+   // flag to show if SW = RW1 or W1, and they have been modified once
    logic flag;
 
 
    wire [F_WIDTH-1:0]               sync_rst_value, async_rst_value;
-   assign sync_rst_value  = SRST_VALUE; // For TB force 
+   assign sync_rst_value  = SRST_VALUE; // For TB force
    assign async_rst_value = ARST_VALUE; // For TB force
 
 
@@ -103,16 +101,15 @@ module field (clk, rst_n,
          sw_ctrl #(.F_WIDTH (F_WIDTH), .SW_CNT (1), .SW_TYPE (SW_TYPE[i]),
                 .SW_ONREAD_TYPE(SW_ONREAD_TYPE[i]),.SW_ONWRITE_TYPE(SW_ONWRITE_TYPE[i]),
                 .SWMOD(SWMOD[i]),.SWACC(SWACC[i]),.PULSE(PULSE[i])) sw_ctrl_i
-         (.sw_wr (sw_wr[i]), 
-         .sw_rd (sw_rd[i]), 
-         .sw_wr_data (sw_wr_data[F_WIDTH*(i+1)-1:F_WIDTH*i]),
+         (.sw_wr (sw_wr[i]),
+         .sw_rd (sw_rd[i]),
+         .sw_wr_data (sw_wr_data[i]),
          .sw_type_alter_signal (sw_type_alter_signal),
          .field_value (field_value),
-         .nxt_sw_value (nxt_sw_value_pre[F_WIDTH*(i+1)-1:F_WIDTH*i]), 
+         .nxt_sw_value (nxt_sw_value_pre[i]),
          .sw_modify (sw_modify_pre[i]),
          .swmod_out (swmod_out_pre[i]),
          .swacc_out (swacc_out_pre[i]),
-         .pulse_out (pulse_out_pre[i]),
          .reset_modify(reset_modify_pre[i]));
          end
    endgenerate
@@ -120,19 +117,20 @@ module field (clk, rst_n,
 
    // - * Hardware control
    hw_ctrl #(.F_WIDTH (F_WIDTH), .HW_TYPE (HW_TYPE), .OVERFLOW_LOCK (OVERFLOW_LOCK)) hw_ctrl
-     (.hw_pulse (hw_pulse), 
-      .hw_value (hw_value), 
-      .field_value (field_value), 
-      .nxt_hw_value (nxt_hw_value), 
+     (.hw_pulse (hw_pulse),
+      .hw_value (hw_value),
+      .field_value (field_value),
+      .nxt_hw_value (nxt_hw_value),
       .hw_modify (hw_modify));
 
    // generate sw value seletor
+   // reset_modify to show when field is rw1 or w1 and they have been modified once
    assign reset_modify = |reset_modify_pre;
    generate
       if(ALIAS_NUM >1)begin: g_sw_ctrl_mux
-         priority_mux #(.WIDTH (F_WIDTH), .CNT (ALIAS_NUM))
-         sw_mux (.din (nxt_sw_value_pre), 
-                     .sel (sw_modify_pre), 
+         priority_mux_2d #(.WIDTH (F_WIDTH), .CNT (ALIAS_NUM))
+         sw_mux (.din (nxt_sw_value_pre),
+                     .sel (sw_modify_pre),
                      .dout (nxt_sw_value));
          assign sw_modify = (| sw_modify_pre) & ~flag;
       end
@@ -140,7 +138,6 @@ module field (clk, rst_n,
          assign nxt_sw_value = nxt_sw_value_pre;
          assign sw_modify = sw_modify_pre & ~flag;
       end
-
    endgenerate
 
    // - * Ultimate mux
@@ -148,7 +145,7 @@ module field (clk, rst_n,
       if (PRECEDENCE == `SW) begin: g_fmux_sw_dominant
          // For ROC hw_ctrl should update value based on cleared value
          assign field_mux_din_pre = {nxt_hw_value, nxt_sw_value};
-         assign field_mux_sel_pre = {hw_modify, sw_modify & ~write_protect_en};
+         assign field_mux_sel_pre = {hw_modify, sw_modify};
       end
       else begin: g_fmux_hw_dominant
          assign field_mux_din_pre = {nxt_sw_value, nxt_hw_value};
@@ -168,8 +165,8 @@ module field (clk, rst_n,
    endgenerate
 
    priority_mux #(.WIDTH (F_WIDTH), .CNT (2+SRST_CNT))
-     field_mux (.din (field_mux_din), 
-                .sel (field_mux_sel), 
+     field_mux (.din (field_mux_din),
+                .sel (field_mux_sel),
                 .dout (nxt_field_value));
 
    // - *DFF
@@ -184,17 +181,16 @@ module field (clk, rst_n,
      else
        field_value <= field_value;
 
-   // swmod/swacc/singpulse genrated by software   
+   // swmod/swacc/singpulse genrated by software
    always_ff @(posedge clk or negedge rst_n)
       if(!rst_n)begin
        swmod_out <= 1'b0;
        swacc_out <= 1'b0;
-       pulse_out <= 1'b0;
+
       end
       else begin
        swmod_out <= |swmod_out_pre;
        swacc_out <= |swacc_out_pre;
-       pulse_out <= |pulse_out_pre;
       end
 
    // flag to show if SW = RW1 and W1 and they have been modified once

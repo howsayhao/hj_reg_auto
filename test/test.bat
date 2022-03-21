@@ -1,16 +1,21 @@
-:: Command line test
-del .\parsers\test\*.xlsx
-del .\parsers\test\*.rdl
+:: command line test
+del test_1.xlsx test_2.xlsx
+del test_1.rdl test_2.rdl
+del excel_extra_top.rdl
+del uvm_test.sv
+rmdir /s/q html
 
-python cmd.py   % will display error message %
+:: help and version info
 python cmd.py -h
 python cmd.py --version
 
 :: sub-command: excel_template
-python cmd.py excel_template -d parsers\test -n test_en --rnum 4 --rname tem1 tem2 tem3 tem4 -l en
-python cmd.py excel_template -d parsers\test -n test_cn --rnum 4 --rname tem1 tem2 tem3 tem4 -l cn
-python cmd.py excel_template -d parsers\test -n test_cn --rnum 4 --rname tem1 tem2 tem3 tem4 -l cn % will display error info %
+python ..\cmd.py excel_template -h
+python ..\cmd.py excel_template -n test_1.xlsx -rnum 4 -rname TEST_11 TEST_12 TEST_13 TEST_14
+python ..\cmd.py excel_template -n test_2.xlsx -rnum 4 -rname TEST_21 TEST_22 TEST_23 TEST_24
 
-:: sub-command: parse_excel
-python cmd.py parse_excel -f parsers\test\test_cn.xlsx -g -m test_1 --gen_dir parsers\test
-python cmd.py parse_excel -l parsers\test\test_list -g -m test_1 --gen_dir parsers\test
+:: sub-command: parse
+python ..\cmd.py parse -f .\test_1.xlsx .\test_2.xlsx -g    % only excel files to be parsed and generated %
+
+:: sub-command: generate
+python ..\cmd.py generate -f .\test_1.xlsx .\test_2.xlsx -ghtml -gral
