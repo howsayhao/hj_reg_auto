@@ -1,0 +1,48 @@
+{
+    "signal": [
+        {
+            "name": "clk",
+            "wave": "P......."
+        },
+        [
+            "master",
+                {
+                    "name": "req_vld",
+                    "wave": "01.0...."
+                },
+                {
+                    "name": "req_ack",
+                    "wave": "0...1..0"
+                },
+                {
+                    "name": "wr_en",
+                    "wave": "x3.x4..x",
+                    "data": "A1 A2"
+                },
+                {
+                    "name": "rd_en",
+                    "wave": "x3.x....",
+                    "data": "D1"
+                },
+                {
+                    "name": "rd_data",
+                    "wave": "x3.x....",
+                    "data": "D1"
+                },
+                {
+                    "name": "wr_data",
+                    "wave": "x3.x....",
+                    "data": "D1"
+                },
+                {
+                    "name": "ack_vld",
+                    "wave": "01.0...."
+                },
+                {
+                    "name": "ack_rdy",
+                    "wave": "01.0...."
+                }
+        ],
+        {}
+    ]
+}
