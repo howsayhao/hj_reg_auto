@@ -1,0 +1,19 @@
+{signal: [
+  {name: 'clk', wave: 'p.........'},
+  {name: 'req_vld_m', wave: '0.30......'},
+  {name: 'addr', wave: '0.30......', data: ['addr']},
+  {name: 'rd_en', wave: '0.30......'},
+  {name: 'ack_rdy_m', wave: '0.30......'},
+//  {name: 'req_rdy_m', wave: 'x.9090....'},
+  {name: 'rd_en_ff', wave: '0..90.....'},
+  {name: 'ack_vld_m', wave: '0...90....'},
+  {name: 'rd_data', wave: '0...90....', data: ['rd_data']},
+  {name: 'ack_vld_s', wave: '0...80....'},
+//  {name: 'req_rdy_s', wave: '0.10......'},
+  {name: 'state', wave: '0.45640...', data: ['IDLE','LOCK','ACK','IDLE']},
+  {name: 'next_state', wave: '045640....', data: ['IDLE','LOCK','ACK','IDLE']},
+  {},
+],
+config: { hscale: 2 },
+ head :{text:'internal read'}
+}

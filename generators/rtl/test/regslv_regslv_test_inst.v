@@ -276,7 +276,7 @@ reg [REG_NUM-1:0] reg_sel_ff;
 wire internal;
 logic dummy_reg;
 reg dummy_reg_ff;
-assign internal = (|reg_sel) | dummy_reg;
+assign internal = (|reg_sel_ff) | dummy_reg_ff;
 wire wr_en_ff;
 wire rd_en_ff;
 wire [ADDR_WIDTH-1:0] addr_ff;
@@ -287,6 +287,11 @@ assign wr_sel_ff = {REG_NUM{wr_en_ff}} & reg_sel_ff;
 assign rd_sel_ff = {REG_NUM{rd_en_ff}} & reg_sel_ff;
 wire [DATA_WIDTH-1:0] rd_data_vld_in;
 wire ack_vld_in;
+wire ext_reg_ack_vld;
+wire ext_ack_rdy;
+wire[EXT_NUM-1:0] ext_ack_vld;
+wire[EXT_NUM-1:0] ext_ack;
+wire[EXT_NUM-1:0] ext_req_rdy;
 //****************************************WIRE DECLARATION END****************************************//
 
 
@@ -333,7 +338,7 @@ slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH), .M(M), .N(N))
 	.rd_data_vld_in(rd_data_vld_in), .ack_vld_in(ack_vld_in),
 	.wr_en_ff(wr_en_ff), .rd_en_ff(rd_en_ff), .addr_ff(addr_ff), .wr_data_ff(wr_data_ff),
 	.req_rdy_m(req_rdy), .ack_rdy_m(ack_rdy),
-	.req_rdy_s((|ext_req_rdy) | internal), .ack_rdy_s(ext_ack_rdy),
+	.req_rdy_s({ext_req_rdy,internal}), .ack_rdy_s(ext_ack_rdy),
 	.rd_data(rd_data), .ack_vld(ack_vld),
 	.global_sync_reset_in(global_sync_reset_in),
 	.global_sync_reset_out(global_sync_reset_out),
@@ -1220,11 +1225,6 @@ assign ext_wr_en = wr_en_ff;
 assign ext_rd_en = rd_en_ff;
 assign ext_addr = addr_ff;
 assign ext_wr_data = wr_data_ff;
-wire ext_reg_ack_vld;
-wire ext_ack_rdy;
-wire[EXT_NUM-1:0] ext_ack_vld;
-wire[EXT_NUM-1:0] ext_ack;
-wire[EXT_NUM-1:0] ext_req_rdy;
 //ext_mem_1_inst connection, external[0];
 assign ext_req_vld[0] = ext_sel_ff[0];
 assign ext_ack[0] = ext_ack_vld[0] & ext_sel_ff[0];

@@ -1,0 +1,18 @@
+{signal: [
+  {name: 'clk', wave: 'p.........'},
+  {name: 'req_vld_m', wave: '0.30......'},
+  {name: 'addr', wave: '0.30......', data: ['addr']},
+  {name: 'wr_en', wave: '0.30......'},
+  {name: 'wr_data', wave: '0.30......', data: ['wr_data']},
+  {name: 'ack_rdy_m', wave: '0.30......'},
+  {name: 'req_rdy_m', wave: 'x.9090....'},
+  {name: 'ack_vld_m', wave: '0..90.....'},
+  {name: 'ack_vld_s', wave: '0..80.....'},
+  {name: 'req_rdy_s', wave: '0.10......'},
+  {name: 'state', wave: '0.4540....', data: ['IDLE','LOCK','IDLE']},
+  {name: 'next_state', wave: '04540.....', data: ['IDLE','LOCK','IDLE']},
+  {},
+],
+config: { hscale: 2 },
+ head :{text:'internal write'}
+}

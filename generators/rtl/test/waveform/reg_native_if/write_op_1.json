@@ -1,0 +1,53 @@
+{
+    "signal": [
+        {
+            "name": "clk",
+            "wave": "P......."
+        },
+        {
+            "name": "req_vld",
+            "wave": "0.10...."
+        },
+        {
+            "name": "req_rdy",
+            "wave": "1..0...."
+        },
+        {
+            "name": "wr_en",
+            "wave": "0.10...."
+        },
+        {
+            "name": "rd_en",
+            "wave": "0......."
+        },
+        {
+            "name": "wr_data",
+            "wave": "x.2x....",
+            "data": "DATA1"
+        },
+        {
+            "name": "ack_vld",
+            "wave": "0..10..."
+        },
+        {
+            "name": "ack_rdy",
+            "wave": "0..10..."
+        },
+        {
+            "name": "state",
+            "wave": "2..22...",
+            "data": "IDLE LOCK IDLE"
+        }
+    ],
+    "head": {
+        "text": [
+            "tspan", {
+                "font-size": 16
+            },
+            "Write Operation Method 1: regmst-regslv, regslv-regslv"
+        ]
+    },
+    "config": {
+        "hscale": 2
+    }
+}
