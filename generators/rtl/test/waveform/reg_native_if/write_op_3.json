@@ -21,7 +21,12 @@
             "wave": "0......."
         },
         {
-            "name": "wr_data",
+            "name": "addr[63:0]",
+            "wave": "x.2.x...",
+            "data": "ADDR1"
+        },
+        {
+            "name": "wr_data[31:0]",
             "wave": "x.2.x...",
             "data": "DATA1"
         },
