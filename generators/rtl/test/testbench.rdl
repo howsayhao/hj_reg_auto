@@ -197,6 +197,7 @@ reg shared_tem{
 
 addrmap test_2 {
 	hj_genrtl = false;
+	rsvdset = true;
 	// test reset values
 	shared_tem shared_2;
 	shared_2.FIELD_0 -> reset = 0XFFFFFFFF;
@@ -206,7 +207,6 @@ addrmap test_3 {
 	hj_genrtl = false;
 	// test reset values
 	shared_tem shared_3;
-	shared_3.FIELD_0 -> reset = 0XAAAAAAAA;
 };
 
 // test external memories
@@ -218,7 +218,7 @@ mem ext_mem_def {
 addrmap regmst_test {
 	addrmap regslv_test {
 		hj_genrtl = true;
-
+		rsvdset = false;
 		test_1 test_1_inst;
 		test_2 test_2_inst;
 		test_3 test_3_inst;

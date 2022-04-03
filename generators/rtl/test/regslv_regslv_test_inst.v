@@ -151,9 +151,9 @@ input global_sync_reset_in;
 output global_sync_reset_out;
 output ack_vld;
 input ack_rdy;
+//declare the syn_rst
 input test_1_inst_srst_1;
 input test_1_inst_srst_2;
-//declare the syn_rst
 //declare the portwidth of external module
 output [EXT_NUM-1:0] ext_req_vld;
 input ext_req_rdy;
@@ -264,7 +264,6 @@ input [32-1:0] test_2_inst_shared_2__FIELD_0__next_value;
 input test_2_inst_shared_2__FIELD_0__pulse;
 output [32-1:0] test_2_inst_shared_2__FIELD_0__curr_value;
 logic [EXT_NUM-1:0] ext_sel;
-reg [EXT_NUM-1:0] ext_sel_ff;
 wire external;
 assign external = |ext_sel;
 wire [DATA_WIDTH-1:0] ext_rd_data_vld;
@@ -272,19 +271,17 @@ wire [DATA_WIDTH-1:0] ext_rd_data_vld;
 wire [REG_NUM-1:0] [DATA_WIDTH-1:0] reg_rd_data_in;
 wire [DATA_WIDTH-1:0] reg_rd_data_vld;
 logic [REG_NUM-1:0] reg_sel;
-reg [REG_NUM-1:0] reg_sel_ff;
 wire internal;
 logic dummy_reg;
-reg dummy_reg_ff;
-assign internal = (|reg_sel_ff) | dummy_reg_ff;
+assign internal = (|reg_sel) | dummy_reg;
 wire wr_en_ff;
 wire rd_en_ff;
-wire [ADDR_WIDTH-1:0] addr_ff;
+wire [ADDR_WIDTH-1:0] addr_decode;
 wire [DATA_WIDTH-1:0] wr_data_ff;
 wire [REG_NUM-1:0] wr_sel_ff;
 wire [REG_NUM-1:0] rd_sel_ff;
-assign wr_sel_ff = {REG_NUM{wr_en_ff}} & reg_sel_ff;
-assign rd_sel_ff = {REG_NUM{rd_en_ff}} & reg_sel_ff;
+assign wr_sel_ff = {REG_NUM{wr_en_ff}} & reg_sel;
+assign rd_sel_ff = {REG_NUM{rd_en_ff}} & reg_sel;
 wire [DATA_WIDTH-1:0] rd_data_vld_in;
 wire ack_vld_in;
 wire ext_reg_ack_vld;
@@ -292,9 +289,11 @@ wire ext_ack_rdy;
 wire[EXT_NUM-1:0] ext_ack_vld;
 wire[EXT_NUM-1:0] ext_ack;
 wire[EXT_NUM-1:0] ext_req_rdy;
+wire req_vld_s;
 //****************************************WIRE DECLARATION END****************************************//
 
 
+//***************************internal register operation wire declare START***************************//
 logic [31:0] test_1_inst_REG1_SW_RW_wr_data;
 logic [31:0] test_1_inst_REG2_SW_W_wr_data;
 logic [31:0] test_1_inst_REG3_HW_wr_data;
@@ -305,6 +304,7 @@ logic [31:0] test_1_inst_REG1_SW_R_alias_wr_data;
 logic [31:0] test_1_inst_REG2_SRST_alias_wr_data;
 logic [31:0] test_2_inst_shared_2_wr_data;
 logic [31:0] test_3_inst_shared_3_wr_data;
+//****************************internal register operation wire declare END****************************//
 
 
 //************************************Address Decoding START Here*************************************//
@@ -332,20 +332,19 @@ end
 //*************************************Address Decoding END Here**************************************//
 
 
+//************************************STATE MACHINE INSTANCE START************************************//
 slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH), .M(M), .N(N))
 	slv_fsm_regslv_test_inst (
 	.clk(clk), .rstn(rstn), .req_vld(req_vld), .wr_en(wr_en), .rd_en(rd_en), .addr(addr), .wr_data(wr_data),
-	.rd_data_vld_in(rd_data_vld_in), .ack_vld_in(ack_vld_in),
-	.wr_en_ff(wr_en_ff), .rd_en_ff(rd_en_ff), .addr_ff(addr_ff), .wr_data_ff(wr_data_ff),
+	.rd_data_vld_in(rd_data_vld_in), .ack_vld_in(ack_vld_in), .req_vld_s(req_vld_s),
+	.wr_en_ff(wr_en_ff), .rd_en_ff(rd_en_ff), .addr_decode(addr_decode), .wr_data_ff(wr_data_ff),
 	.req_rdy_m(req_rdy), .ack_rdy_m(ack_rdy),
-	.req_rdy_s({ext_req_rdy,internal}), .ack_rdy_s(ext_ack_rdy),
+	.req_rdy_s(|{ext_req_rdy&ext_sel,internal}), .ack_rdy_s(ext_ack_rdy),
 	.rd_data(rd_data), .ack_vld(ack_vld),
 	.global_sync_reset_in(global_sync_reset_in),
-	.global_sync_reset_out(global_sync_reset_out),
-	.ext_sel(ext_sel), .ext_sel_ff(ext_sel_ff),
-	.reg_sel(reg_sel), .reg_sel_ff(reg_sel_ff),
-	.dummy_reg(dummy_reg), .dummy_reg_ff(dummy_reg_ff)
+	.global_sync_reset_out(global_sync_reset_out)
 	);
+//*************************************STATE MACHINE INSTANCE END*************************************//
 
 
 //*******************************Register&field Instantiate START Here********************************//
@@ -355,7 +354,7 @@ slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH), .M(M), .N(N))
 //REG ABSOLUTE_ADDR:64'h0//
 //REG OFFSET_ADDR:64'h64'h0//
 logic [31:0] test_1_inst_REG1_SW_RW;
-assign test_1_inst_REG1_SW_RW_wr_data = reg_sel_ff[0] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG1_SW_RW_wr_data = reg_sel[0] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -618,7 +617,7 @@ x__test_1_inst_REG1_SW_RW__FIELD_1
 	.field_value(test_1_inst_REG1_SW_RW__FIELD_1__curr_value)
 	);
 always_comb begin
-	test_1_inst_REG1_SW_RW[31:0] = 32'd0;
+	test_1_inst_REG1_SW_RW[31:0] = 32'h0;
 	test_1_inst_REG1_SW_RW[13:12] = test_1_inst_REG1_SW_RW__FIELD_9__curr_value;
 	test_1_inst_REG1_SW_RW[15:14] = test_1_inst_REG1_SW_RW__FIELD_8__curr_value;
 	test_1_inst_REG1_SW_RW[17:16] = test_1_inst_REG1_SW_RW__FIELD_7__curr_value;
@@ -637,7 +636,7 @@ assign reg_rd_data_in[0] = test_1_inst_REG1_SW_RW;
 //REG ABSOLUTE_ADDR:64'h4//
 //REG OFFSET_ADDR:64'h64'h4//
 logic [31:0] test_1_inst_REG2_SW_W;
-assign test_1_inst_REG2_SW_W_wr_data = reg_sel_ff[1] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG2_SW_W_wr_data = reg_sel[1] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -842,7 +841,7 @@ x__test_1_inst_REG2_SW_W__FIELD_0
 	.field_value(test_1_inst_REG2_SW_W__FIELD_0__curr_value)
 	);
 always_comb begin
-	test_1_inst_REG2_SW_W[31:0] = 32'd0;
+	test_1_inst_REG2_SW_W[31:0] = 32'h0;
 end
 assign reg_rd_data_in[1] = test_1_inst_REG2_SW_W;
 //==========================================END REG INSTANT===========================================//
@@ -852,7 +851,7 @@ assign reg_rd_data_in[1] = test_1_inst_REG2_SW_W;
 //REG ABSOLUTE_ADDR:64'h8//
 //REG OFFSET_ADDR:64'h64'h8//
 logic [31:0] test_1_inst_REG3_HW;
-assign test_1_inst_REG3_HW_wr_data = reg_sel_ff[2] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG3_HW_wr_data = reg_sel[2] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -966,7 +965,7 @@ x__test_1_inst_REG3_HW__FIELD_0
 	.field_value(test_1_inst_REG3_HW__FIELD_0__curr_value)
 	);
 always_comb begin
-	test_1_inst_REG3_HW[31:0] = 32'd0;
+	test_1_inst_REG3_HW[31:0] = 32'h0;
 	test_1_inst_REG3_HW[25:24] = test_1_inst_REG3_HW__FIELD_3__curr_value;
 	test_1_inst_REG3_HW[27:26] = test_1_inst_REG3_HW__FIELD_2__curr_value;
 	test_1_inst_REG3_HW[29:28] = test_1_inst_REG3_HW__FIELD_1__curr_value;
@@ -980,7 +979,7 @@ assign reg_rd_data_in[2] = test_1_inst_REG3_HW;
 //REG ABSOLUTE_ADDR:64'hc//
 //REG OFFSET_ADDR:64'h64'hc//
 logic [31:0] test_1_inst_REG4_PRECEDENCE;
-assign test_1_inst_REG4_PRECEDENCE_wr_data = reg_sel_ff[3] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG4_PRECEDENCE_wr_data = reg_sel[3] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -1038,7 +1037,7 @@ x__test_1_inst_REG4_PRECEDENCE__FIELD_0
 	.field_value(test_1_inst_REG4_PRECEDENCE__FIELD_0__curr_value)
 	);
 always_comb begin
-	test_1_inst_REG4_PRECEDENCE[31:0] = 32'd0;
+	test_1_inst_REG4_PRECEDENCE[31:0] = 32'h0;
 	test_1_inst_REG4_PRECEDENCE[29:28] = test_1_inst_REG4_PRECEDENCE__FIELD_1__curr_value;
 	test_1_inst_REG4_PRECEDENCE[31:30] = test_1_inst_REG4_PRECEDENCE__FIELD_0__curr_value;
 end
@@ -1050,7 +1049,7 @@ assign reg_rd_data_in[3] = test_1_inst_REG4_PRECEDENCE;
 //REG ABSOLUTE_ADDR:64'h10//
 //REG OFFSET_ADDR:64'h64'h10//
 logic [31:0] test_1_inst_REG5_SINGLEPULSE;
-assign test_1_inst_REG5_SINGLEPULSE_wr_data = reg_sel_ff[4] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG5_SINGLEPULSE_wr_data = reg_sel[4] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -1081,7 +1080,7 @@ x__test_1_inst_REG5_SINGLEPULSE__FIELD_0
 	.field_value(test_1_inst_REG5_SINGLEPULSE__FIELD_0__curr_value)
 	);
 always_comb begin
-	test_1_inst_REG5_SINGLEPULSE[31:0] = 32'd0;
+	test_1_inst_REG5_SINGLEPULSE[31:0] = 32'h0;
 	test_1_inst_REG5_SINGLEPULSE[31:31] = test_1_inst_REG5_SINGLEPULSE__FIELD_0__curr_value;
 end
 assign reg_rd_data_in[4] = test_1_inst_REG5_SINGLEPULSE;
@@ -1092,7 +1091,7 @@ assign reg_rd_data_in[4] = test_1_inst_REG5_SINGLEPULSE;
 //REG ABSOLUTE_ADDR:64'h14//
 //REG OFFSET_ADDR:64'h64'h14//
 logic [31:0] test_1_inst_REG6_SW_ACC_MOD;
-assign test_1_inst_REG6_SW_ACC_MOD_wr_data = reg_sel_ff[5] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG6_SW_ACC_MOD_wr_data = reg_sel[5] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -1124,7 +1123,7 @@ x__test_1_inst_REG6_SW_ACC_MOD__FIELD_0
 	.field_value(test_1_inst_REG6_SW_ACC_MOD__FIELD_0__curr_value)
 	);
 always_comb begin
-	test_1_inst_REG6_SW_ACC_MOD[31:0] = 32'd0;
+	test_1_inst_REG6_SW_ACC_MOD[31:0] = 32'h0;
 	test_1_inst_REG6_SW_ACC_MOD[31:30] = test_1_inst_REG6_SW_ACC_MOD__FIELD_0__curr_value;
 end
 assign reg_rd_data_in[5] = test_1_inst_REG6_SW_ACC_MOD;
@@ -1135,9 +1134,9 @@ assign reg_rd_data_in[5] = test_1_inst_REG6_SW_ACC_MOD;
 //REG ABSOLUTE_ADDR:64'h100//
 //REG OFFSET_ADDR:64'h64'h100//
 logic [31:0] test_1_inst_REG1_SW_R_alias;
-assign test_1_inst_REG1_SW_R_alias_wr_data = reg_sel_ff[6] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG1_SW_R_alias_wr_data = reg_sel[6] && wr_en_ff ? wr_data_ff : 0;
 always_comb begin
-	test_1_inst_REG1_SW_R_alias[31:0] = 32'd0;
+	test_1_inst_REG1_SW_R_alias[31:0] = 32'h0;
 	test_1_inst_REG1_SW_R_alias[13:12] = test_1_inst_REG1_SW_RW__FIELD_9__curr_value;
 	test_1_inst_REG1_SW_R_alias[15:14] = test_1_inst_REG1_SW_RW__FIELD_8__curr_value;
 	test_1_inst_REG1_SW_R_alias[17:16] = test_1_inst_REG1_SW_RW__FIELD_7__curr_value;
@@ -1156,9 +1155,9 @@ assign reg_rd_data_in[6] = test_1_inst_REG1_SW_R_alias;
 //REG ABSOLUTE_ADDR:64'h104//
 //REG OFFSET_ADDR:64'h64'h104//
 logic [31:0] test_1_inst_REG2_SRST_alias;
-assign test_1_inst_REG2_SRST_alias_wr_data = reg_sel_ff[7] && wr_en_ff ? wr_data_ff : 0;
+assign test_1_inst_REG2_SRST_alias_wr_data = reg_sel[7] && wr_en_ff ? wr_data_ff : 0;
 always_comb begin
-	test_1_inst_REG2_SRST_alias[31:0] = 32'd0;
+	test_1_inst_REG2_SRST_alias[31:0] = 32'h0;
 end
 assign reg_rd_data_in[7] = test_1_inst_REG2_SRST_alias;
 //==========================================END REG INSTANT===========================================//
@@ -1168,7 +1167,7 @@ assign reg_rd_data_in[7] = test_1_inst_REG2_SRST_alias;
 //REG ABSOLUTE_ADDR:64'h108//
 //REG OFFSET_ADDR:64'h64'h0//
 logic [31:0] test_2_inst_shared_2;
-assign test_2_inst_shared_2_wr_data = reg_sel_ff[8] && wr_en_ff ? wr_data_ff : 0;
+assign test_2_inst_shared_2_wr_data = reg_sel[8] && wr_en_ff ? wr_data_ff : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
@@ -1199,7 +1198,7 @@ x__test_2_inst_shared_2__FIELD_0
 	.field_value(test_2_inst_shared_2__FIELD_0__curr_value)
 	);
 always_comb begin
-	test_2_inst_shared_2[31:0] = 32'd0;
+	test_2_inst_shared_2[31:0] = 32'h0;
 	test_2_inst_shared_2[31:0] = test_2_inst_shared_2__FIELD_0__curr_value;
 end
 assign reg_rd_data_in[8] = test_2_inst_shared_2;
@@ -1210,9 +1209,9 @@ assign reg_rd_data_in[8] = test_2_inst_shared_2;
 //REG ABSOLUTE_ADDR:64'h10c//
 //REG OFFSET_ADDR:64'h64'h0//
 logic [31:0] test_3_inst_shared_3;
-assign test_3_inst_shared_3_wr_data = reg_sel_ff[9] && wr_en_ff ? wr_data_ff : 0;
+assign test_3_inst_shared_3_wr_data = reg_sel[9] && wr_en_ff ? wr_data_ff : 0;
 always_comb begin
-	test_3_inst_shared_3[31:0] = 32'd0;
+	test_3_inst_shared_3[31:0] = 32'h0;
 	test_3_inst_shared_3[31:0] = test_2_inst_shared_2__FIELD_0__curr_value;
 end
 assign reg_rd_data_in[9] = test_3_inst_shared_3;
@@ -1223,25 +1222,26 @@ assign reg_rd_data_in[9] = test_3_inst_shared_3;
 //*********************************EXTERNAL CONNECTION INSTANT START**********************************//
 assign ext_wr_en = wr_en_ff;
 assign ext_rd_en = rd_en_ff;
-assign ext_addr = addr_ff;
+assign ext_addr = addr_decode;
 assign ext_wr_data = wr_data_ff;
 //ext_mem_1_inst connection, external[0];
-assign ext_req_vld[0] = ext_sel_ff[0];
-assign ext_ack[0] = ext_ack_vld[0] & ext_sel_ff[0];
+assign ext_req_vld[0] = ext_sel[0] & req_vld_s;
+assign ext_ack[0] = ext_ack_vld[0] & ext_sel[0];
 //ext_mem_2_inst connection, external[1];
-assign ext_req_vld[1] = ext_sel_ff[1];
-assign ext_ack[1] = ext_ack_vld[1] & ext_sel_ff[1];
+assign ext_req_vld[1] = ext_sel[1] & req_vld_s;
+assign ext_ack[1] = ext_ack_vld[1] & ext_sel[1];
 //ext_mem_3_inst connection, external[2];
-assign ext_req_vld[2] = ext_sel_ff[2];
-assign ext_ack[2] = ext_ack_vld[2] & ext_sel_ff[2];
+assign ext_req_vld[2] = ext_sel[2] & req_vld_s;
+assign ext_ack[2] = ext_ack_vld[2] & ext_sel[2];
+//**********************************EXTERNAL CONNECTION INSTANT END***********************************//
 
 
 
 
-//************************************Rd_data Split Mux START Here************************************//
+//********************************Rd_data/Ack_vld Split Mux START Here********************************//
 split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(64)) rd_split_mux
 (.clk(clk), .rst_n(rstn),
-.din({reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel_ff,dummy_reg_ff}),
+.din({reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel_ff,dummy_reg}),
 .dout(reg_rd_data_vld), .dout_vld(reg_ack_vld)
 );
 split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(64)) ext_rd_split_mux
@@ -1249,12 +1249,12 @@ split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(64)) ext_rd_split_mux
 .din(ext_rd_data), .sel(ext_ack),
 .dout(ext_rd_data_vld), .dout_vld(ext_reg_ack_vld)
 );
-//*************************************Rd_data Split Mux END Here*************************************//
+//*********************************Rd_data/Ack_vld Split Mux END Here*********************************//
 
 
-//********************************OUTPUT Signal Definitinon START Here********************************//
-// select which to read out and pull the corresponding vld signal high
+//*************************Final Split Mux OUT Signal Definitinon START Here**************************//
+// select which to read out and transfer the corresponding vld signal
 assign rd_data_vld_in = reg_ack_vld ? reg_rd_data_vld : (ext_reg_ack_vld ? ext_rd_data_vld : 0);
-assign ack_vld_in = reg_ack_vld | ext_reg_ack_vld| (wr_en & internal);
-//*********************************OUTPUT Signal Definitinon END Here*********************************//
+assign ack_vld_in = reg_ack_vld | ext_reg_ack_vld| (wr_en_ff & internal);
+//**************************Final Split Mux OUT Signal Definitinon END Here***************************//
 endmodule
