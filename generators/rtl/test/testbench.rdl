@@ -1,17 +1,3 @@
-// User-defined properties
-
-// Define synchronous reset signals for regslv blocks
-property hj_syncresetsignal {
-    component = field|reg|regfile|addrmap;
-    type = string;
-};
-
-// Define whether to generate independent regslv blocks
-property hj_genrtl {
-    component = addrmap;
-    type = boolean;
-};
-
 addrmap test_1 {
 	hj_genrtl = false;
 
@@ -33,54 +19,61 @@ addrmap test_1 {
 
 		field {
 			sw = rw;
-		} FIELD_1[29:28] = 0x0;
+		} FIELD_0[29:28] = 0x0;
 
 		field {
 			sw = rw;
 			onread = rclr;
-		} FIELD_2[27:26] = 0x0;
+		} FIELD_1[27:26] = 0x0;
 
 		field {
 			sw = rw;
 			onread = rset;
-		} FIELD_3[25:24] = 0x0;
+		} FIELD_2[25:24] = 0x0;
 
 		field {
 			sw = rw;
 			onwrite = woclr;
-		} FIELD_4[23:22] = 0x0;
+		} FIELD_3[23:22] = 0x0;
 
 		field {
 			sw = rw;
 			onwrite = woset;
-		} FIELD_5[21:20] = 0x0;
+		} FIELD_4[21:20] = 0x0;
 
 		field {
 			sw = rw;
 			onwrite = wot;
-		} FIELD_6[19:18] = 0x0;
+		} FIELD_5[19:18] = 0x0;
 
 		field {
 			sw = rw;
 			onwrite = wzc;
-		} FIELD_7[17:16] = 0x0;
+		} FIELD_6[17:16] = 0x0;
 
 		field {
 			sw = rw;
 			onwrite = wzs;
-		} FIELD_8[15:14] = 0x0;
+		} FIELD_7[15:14] = 0x0;
 
 		field {
 			sw = rw;
 			onwrite = wzt;
-		} FIELD_9[13:12] = 0x0;
+		} FIELD_8[13:12] = 0x0;
 	} REG1_SW_RW @0x0;
 
+	alias REG1_SW_RW REG1_def REG1_SW_R_W_alias @0X100;
 	// test sw=r, all onread types
-	alias REG1_SW_RW REG1_def REG1_SW_R_alias @0X100;
-	REG1_SW_R_alias.FIELD_1 -> sw = r;
-	REG1_SW_R_alias.FIELD_2 -> sw = r;
-	REG1_SW_R_alias.FIELD_3 -> sw = r;
+	REG1_SW_R_W_alias.FIELD_0 -> sw = r;
+	REG1_SW_R_W_alias.FIELD_1 -> sw = r;
+	REG1_SW_R_W_alias.FIELD_2 -> sw = r;
+	// test sw=w, all onwrite types
+	REG1_SW_R_W_alias.FIELD_3 -> sw = w;
+	REG1_SW_R_W_alias.FIELD_4 -> sw = w;
+	REG1_SW_R_W_alias.FIELD_5 -> sw = w;
+	REG1_SW_R_W_alias.FIELD_6 -> sw = w;
+	REG1_SW_R_W_alias.FIELD_7 -> sw = w;
+	REG1_SW_R_W_alias.FIELD_8 -> sw = w;
 
 	// test sw=w, all onwrite types
 	reg REG2_def{
@@ -197,7 +190,7 @@ reg shared_tem{
 
 addrmap test_2 {
 	hj_genrtl = false;
-	rsvdset = true;
+
 	// test reset values
 	shared_tem shared_2;
 	shared_2.FIELD_0 -> reset = 0XFFFFFFFF;
@@ -218,7 +211,6 @@ mem ext_mem_def {
 addrmap regmst_test {
 	addrmap regslv_test {
 		hj_genrtl = true;
-		rsvdset = false;
 		test_1 test_1_inst;
 		test_2 test_2_inst;
 		test_3 test_3_inst;

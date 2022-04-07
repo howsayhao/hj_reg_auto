@@ -1,6 +1,6 @@
 `timescale 1ns/1ns
 
-module tb_regslv_test;
+module tb_regmst_test;
 
 parameter ADDR_WIDTH = 64;
 parameter DATA_WIDTH = 32;
@@ -11,29 +11,8 @@ parameter INT_REG_NUM = 10;
 reg clk;
 reg rstn;
 
-// upstream reg_native_if definition
-reg req_vld;
-wire req_rdy;
-reg wr_en, rd_en;
-reg [ADDR_WIDTH-1:0] addr;
-reg [DATA_WIDTH-1:0] wr_data;
-wire ack_vld;
-reg ack_rdy;
-wire [DATA_WIDTH-1:0] rd_data;
+// APB interface
 
-// synchronous reset signals definition
-reg global_srst_in;
-reg test_1_inst_srst_1, test_1_inst_srst_2;
-wire global_srst_out;
-
-// external reg_native_if definition
-wire [EXT_MEM_NUM-1:0] ext_req_vld, ext_req_rdy;
-wire ext_wr_en, ext_rd_en;
-wire [ADDR_WIDTH-1:0] ext_addr;
-wire [DATA_WIDTH-1:0] ext_wr_data;
-wire [EXT_MEM_NUM-1:0] ext_ack_vld;
-wire ext_ack_rdy;
-wire [EXT_MEM_NUM-1:0] [DATA_WIDTH-1:0] ext_rd_data;
 
 // instantiate regslv dut
 regslv_regslv_test_inst #(
@@ -141,8 +120,8 @@ endgenerate
 
 // dump simulation files
 initial begin
-    $fsdbDumpfile("tb_regslv_test.fsdb");
-    $fsdbDumpvars(0, tb_regslv_test);
+    $fsdbDumpfile("tb_regmst_test.fsdb");
+    $fsdbDumpvars(0, tb_regmst_test);
     $fsdbDumpMDA();
 end
 
