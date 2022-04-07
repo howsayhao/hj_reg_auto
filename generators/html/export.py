@@ -11,7 +11,7 @@ def export_html(root:RootNode, out_dir:str):
 
     Parameter
     ---------
-    `root` : `systemrdl.node.RootNode` systemrdl-compiler解析完以后的寄存器模型根节点
+    `root` : `systemrdl.node.RootNode` systemrdl-compiler解析完成的寄存器模型根节点
     `out_dir` : 输出HTML的目录, 会在该目录下创建一个`html`子目录, 存放输出的HTML
     """
     exporter = HTMLExporter()
@@ -24,4 +24,4 @@ def export_html(root:RootNode, out_dir:str):
     except:
         message.error("html export failed")
     else:
-        message.info("save html in directory:%s" % (html_dir))
+        message.info("save html in directory: %s" % (html_dir))

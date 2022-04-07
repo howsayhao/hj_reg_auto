@@ -1,5 +1,5 @@
 from systemrdl.node import *
-from rtl_type import *
+from .rtl_type import *
 import sys
 
 # create new rtl_type from node type while copying the useful information to draw rtl
@@ -82,7 +82,7 @@ def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:
         # new_obj.syncresetsignal = node.get_property('hj_syncresetsignal') if('hj_syncresetsignal' in node.inst.properties) else ''
         new_obj.syncresetsignal = syn_rst
         new_obj.reset = str(new_obj.fieldwidth) + '\'h' + get_hex(node.get_property('reset'))
-            
+
         # new_obj.resetsignal = node.get_property('resetsignal').get_path_segment()
         # field place
         new_obj.msb = node.msb

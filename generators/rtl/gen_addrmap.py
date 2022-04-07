@@ -1,17 +1,13 @@
-from msilib.schema import Component
-from venv import create
-from xmlrpc.client import Boolean
 from systemrdl.node import *
 import sys
-import os
 import shutil
 
-from rtl_type import *
-from gen_field_rtl import *
-from create_obj import *
+from .rtl_type import *
+from .gen_field_rtl import *
+from .create_obj import *
 
 class addrmap_str(object):
-    def __init__(self, node:Node, master:Boolean, Root:RTL_NODE) -> None:
+    def __init__(self, node:Node, master:bool, Root:RTL_NODE):
         # rtl module name from the Top addressmap(self.node)'s instance name
         self.module_name = node.get_path_segment()
         self.node = node
@@ -68,7 +64,7 @@ class addrmap_str(object):
         self.split_mux = ''
         self.output_select = ''
 
-    def get_ports(self) -> None:
+    def get_ports(self):
         for internal_register in self.internal_register_map:
             # if the register is alias reg or shared reg(not the first), its field will not be instanced
             if(internal_register.alias is True or (internal_register.shared is True and internal_register.first_shared is False)):
@@ -95,16 +91,16 @@ class addrmap_str(object):
                         self.field_out.append(swacc_signal)
 
     # show enter component information
-    def enter(self, node:Node) -> None:
+    def enter(self, node:Node):
         print('\t'*self.indent + 'entering ' + node.get_path_segment())
         self.indent += 1
     # show exit component information
-    def exit(self, node:Node) -> None:
+    def exit(self, node:Node):
         self.indent -= 1
         print('\t'*self.indent + 'exiting ' + node.get_path_segment())
 
     # get rtl str
-    def write(self) -> None:
+    def write(self):
         if(self.master):
             self.Root.reg_mst = self
         else:
@@ -132,7 +128,7 @@ class addrmap_str(object):
                     self.ext_instance_port + '\n\n' + \
                     self.split_mux + '\n\n' + \
                     self.output_select + 'endmodule'
-        
+
         # self.Root.field_wire += self.fields_ports
         self.Root.field_in += self.field_in
         self.Root.field_out += self.field_out
@@ -144,7 +140,7 @@ class addrmap_str(object):
         shutil.move(file_name,folder_name)
 
     # get information from node tree and generate corresponding rtl str
-    def get_internal_strcture(self) -> None:
+    def get_internal_strcture(self):
         # walking the node tree to fill information in different maps and get new rtl_type tree
         print('\n###start traverse %s###'%self.module_name)
         self.rtl_obj.external = False
@@ -171,7 +167,7 @@ class addrmap_str(object):
         self.get_module_rtl()
 
     # traverse the node tree to get the information as well as a new tree saving information and fill the different maps
-    def walking(self, node:Node, rtl_obj:RTL_NODE) -> None:
+    def walking(self, node:Node, rtl_obj:RTL_NODE):
         self.enter(node)
         i = 0
         # traverse the node's childnode
@@ -220,7 +216,7 @@ class addrmap_str(object):
                     self.external_register_map.append(visual_reg)
                     visual_reg.id = len(self.external_register_map) - 1
                     visual_reg.external_top = new_obj.external_top
-            
+
             # record the regs' external property in internal&external register map
             self.obj_handling(child,new_obj, rtl_obj)
             # preserve the hierachy for the new_object to show real placement in rtl
@@ -322,7 +318,7 @@ class addrmap_str(object):
         ext_addr.reg_slv_if.rd_en = '%s_rd_en'%(module_name)
         ext_addr.reg_slv_if.wr_data = '%s_wr_data'%(module_name)
         ext_addr.reg_slv_if.addr = '%s_addr'%(module_name)
-        
+
         # return ins_str
 
     # get C head and decode rtl code from (reg - addr) map
@@ -387,9 +383,9 @@ class addrmap_str(object):
     def gen_reg_port(self,register:RTL_NODE):
         reg_port_str = ''
         rtl_reg_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-        # if the reg is alias or share    
+        # if the reg is alias or share
         if(register.shared):
-            pass    
+            pass
         if(register.alias or (register.shared and len(register.alias_reg) == 0)):
             field_bin = register.origin_reg.children
         else:
@@ -442,7 +438,7 @@ class addrmap_str(object):
             ext_connect += 'assign ext_rd_en = rd_en_ff;\n'
             ext_connect += 'assign ext_addr = addr_decode;\n'
             ext_connect += 'assign ext_wr_data = wr_data_ff;\n'
-            for addr in self.external_addr_map:        
+            for addr in self.external_addr_map:
                 ext_connect += '//%s connection, external[%s];\n'%(addr.registers[0].external_top.obj,i)
                 ext_connect += 'assign ext_req_vld[%s] = ext_sel[%s] & req_vld_s;\n'%(i,i)
                 ext_connect += 'assign ext_ack[%s] = ext_ack_vld[%s] & ext_sel[%s];\n'%(i,i,i)
@@ -477,11 +473,11 @@ class addrmap_str(object):
         else:
             self.standard_ports += '\tglobal_sync_reset_in,\n'
             self.standard_ports += '\tglobal_sync_reset_out,\n'
-        
+
         signal_map = self.signal_map + self.global_signal_map
         for signal in signal_map:
             self.standard_ports += '\t%s,\n'%(signal.hierachy_name)
-        
+
         self.standard_ports += '\tack_vld,\n' + \
                                '\tack_rdy,\n' + \
                                '\trd_data\n'
@@ -517,7 +513,7 @@ class addrmap_str(object):
         # self.fields_ports = self.fields_ports[:] + '\n'
         self.fields_ports += '//' + 'INTERNAL field connection port END'.center(100,"*") + '//\n'
 
-        # get regslv parameter  
+        # get regslv parameter
         self.parameter += '//' + 'PARAMETER Definition START Here'.center(100,"*") + '//\n' + \
                           'parameter ADDR_WIDTH = 64;\n' + \
                           'parameter DATA_WIDTH = 32;\n' + \

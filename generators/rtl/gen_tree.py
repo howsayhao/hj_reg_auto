@@ -1,23 +1,18 @@
-from doctest import master
-from msilib.schema import Component
-from venv import create
-from xmlrpc.client import Boolean
 from systemrdl.node import *
-import sys
 import os
 import shutil
 
-from rtl_type import *
-from gen_field_rtl import *
-from create_obj import *
-from gen_addrmap import *
+from .rtl_type import *
+from .gen_field_rtl import *
+from .create_obj import *
+from .gen_addrmap import *
 
 class Root_str(object):
-    def __init__(self, node:Node) -> None:
+    def __init__(self, node:Node, folder_name:str):
         self.node = node
         self.module_name = 'reg_tree'
         # file place
-        self.folder_name = ''
+        self.folder_name = folder_name
         # root rtl_obj
         self.rtl_obj = create_obj(node = self.node, parent_obj= None)
         self.children = []
@@ -34,7 +29,7 @@ class Root_str(object):
         self.rtl = ''
         self.def_str = ''
         self.port_str = ''
-    
+
     def scan(self):
         # scan the root obj
         for child in self.node.children(unroll=True, skip_not_present=True):
@@ -48,12 +43,12 @@ class Root_str(object):
                 self.global_signal_map.append(new_signal)
         # create reg_mst and reg_slv
         module_name = Top_Addrmap.get_path_segment()
-        self.folder_name = "%s_rtl_files"%(module_name)
+        self.folder_name = os.path.join(self.folder_name, "%s_rtl_files"%(module_name))
         if(os.path.exists(self.folder_name)):
             shutil.rmtree(self.folder_name)
         # create new folder
         os.mkdir(self.folder_name)
-        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = Reg_sub_tree)
+        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self)
 
         # create reg_mst's reg_slv_if
         Top_Map.reg_slv_if.global_sync = 'fsm_sync_reset'
@@ -74,7 +69,7 @@ class Root_str(object):
         self.port()
         self.third_party_wire()
         self.write()
-    
+
     def define(self):
         ins = self.reg_slv[:]
         ins.insert(0,self.reg_mst)
@@ -93,7 +88,7 @@ class Root_str(object):
                                 'logic %s_rd_en;\n'%(module_name) + \
                                 'logic %s_fsm_sync_reset;\n'%(module_name) + \
                                 'logic [DATA_WIDTH-1:0]%s_wr_data;\n'%(module_name) + \
-                                'logic [DATA_WIDTH-1:0] %s_addr;\n'%(module_name)        
+                                'logic [DATA_WIDTH-1:0] %s_addr;\n'%(module_name)
 
     def port(self):
         # necessary port from outside (APB/AHB master) for reg_mst
@@ -229,36 +224,3 @@ class Root_str(object):
         folder_name = self.folder_name
         shutil.move(file_name,folder_name)
 
-if __name__ == "__main__":
-    import sys
-    import os
-
-    from systemrdl import RDLCompiler, RDLCompileError, RDLWalker
-
-    # Collect input files from the command line arguments
-    # input_files = sys.argv[1:]
-    # input_files = ["atxmega_spi.rdl"]
-    # input_files = ["accelera_generic_example.rdl"]
-    # input_files = ["basic.rdl"]
-    # input_files = ["test_map.rdl"]
-    # input_files = ["test_map_new_type.rdl"]
-    # input_files = ["test_map_with_signals.rdl"]
-    input_files = ["testbench.rdl"]
-
-    # Create an instance of the compiler
-    rdlc = RDLCompiler()
-
-    try:
-        # Compile all the files provided
-        for input_file in input_files:
-            rdlc.compile_file(input_file)
-
-        # Elaborate the design
-        root = rdlc.elaborate()
-    except RDLCompileError:
-        # A compilation error occurred. Exit with error code
-        sys.exit(1)
-
-    Reg_sub_tree = Root_str(root)
-    Reg_sub_tree.scan()
-    pass

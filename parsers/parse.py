@@ -288,7 +288,7 @@ class ExcelParser:
     def check_field(self):
         """
         检查域定义
-        
+
         Rule
         ----
         1. 比特位序从最高位起
@@ -350,7 +350,7 @@ class ExcelParser:
                     if fld_name not in fld_names or fld_name.lower() == "reserved":
                         fld_names.add(fld_name)
                     else:
-                        message.error("addrmap: %s, reg: %s(base row: %d) has duplicate field name: %s" 
+                        message.error("addrmap: %s, reg: %s(base row: %d) has duplicate field name: %s"
                                       % (addrmap_name, reg_name, base_row, fld_name))
                         return False
 
@@ -444,7 +444,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
 
     if excel_rdl_files is None:
         if to_generate_rdl:
-            message.warning("input files do not include Excel(.xlsx) files")
+            message.info("input files only include SystemRDL(.rdl) files")
         if ori_rdl_files == []:
             return None
     else:
@@ -488,7 +488,7 @@ def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
         wb = load_workbook(file)
         ws = wb.active
         worksheets[file] = ws
-    
+
     parser = ExcelParser(worksheets)
 
     for checker in [parser.check_format,
@@ -515,7 +515,7 @@ def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
         return rdl_files
     else:
         return None
-        
+
 def show_excel_rules():
     """
     显示Excel解析需要遵循的规则

@@ -1,5 +1,3 @@
-from dataclasses import field
-import sys
 # field instantion
 def gen_field_rtl(register):
     fstr = ''
@@ -18,15 +16,15 @@ def gen_field_rtl(register):
 
         sw_wr_str_list.append('wr_sel_ff[%d]'%register.id)
         sw_rd_str_list.append('rd_sel_ff[%d]'%register.id)
-        
+
         for r_obj in register.alias_reg:
             sw_wr_str_list.append('wr_sel_ff[%d]'%r_obj.id)
             sw_rd_str_list.append('rd_sel_ff[%d]'%r_obj.id)
-        
+
 
         for f_obj in register.children:
             alias_num = len(register.alias_reg)
-            
+
             sw_wr_data_str_list= []
             sw_wr_data_str_list.append(register_name + '_wr_data' + '[%d:%d]'%(f_obj.msb,f_obj.lsb))
 
@@ -49,7 +47,7 @@ def gen_field_rtl(register):
             for alias in register.alias_reg:
                 alias_reg_name = '_'.join(r_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                 sw_wr_data_str_list.append(alias_reg_name + '_wr_data' + '[%d:%d]'%(f_obj.msb,f_obj.lsb))
-                
+
                 sw_type.append(alias.children[i].sw)
                 sw_onread_type.append(alias.children[i].onread)
                 sw_onwrite_type.append(alias.children[i].onwrite)
@@ -79,7 +77,7 @@ def gen_field_rtl(register):
             # fstr = fstr[0:-1]
             fstr += '\n\t)\n'
             f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(f_obj.hierachy[-1])
-            
+
 
             sw_wr_data_str = ','.join(sw_wr_data_str_list)
             sw_wr_str = ','.join(sw_wr_str_list)

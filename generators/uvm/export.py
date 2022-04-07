@@ -11,7 +11,7 @@ def export_uvm(root:RootNode, out_dir:str):
     Parameter
     ---------
     `root` : `systemrdl.node.RootNode` systemrdl-compiler解析完以后的寄存器模型根节点
-    `out_dir` : 输出HTML的目录, 会在该目录下创建一个`html`子目录, 存放输出的HTML
+    `out_dir` : 输出UVM RAL模型的目录, 会在该目录下创建一个`uvm_ral`子目录, 存放输出的模型
     """
     exporter = UVMExporter()
     export_file = os.path.join(out_dir, "uvm_test.sv")

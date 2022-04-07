@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from generators.rtl.export import export_rtl
 
 import utils.message as message
 from generators.html.export import export_html
@@ -28,7 +29,7 @@ class CommandRunner:
                                          description="register slave (regslv) RTL automation tool.")
         parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
         subparsers = parser.add_subparsers(title="sub-commands",
-                                           description="now support for generating excel templates, " 
+                                           description="now support for generating excel templates, "
                                                        "parsing Excel/SystemRDL specifications, "
                                                        "and generating RTL, RAL, documentation files "
                                                        "and C header files",
@@ -135,7 +136,7 @@ class CommandRunner:
             message.error("directory does not exists!")
             sys.exit(1)
         if not ".xlsx" in args.name:
-            args.name += ".xlsx" 
+            args.name += ".xlsx"
 
         reg_names = args.rname
         if args.rnum > len(reg_names):
@@ -179,7 +180,7 @@ class CommandRunner:
             sys.exit(1)
 
         if args.gen_all or args.gen_rtl:
-            pass
+            export_rtl(root, args.gen_dir)
         if args.gen_all or args.gen_html:
             export_html(root, args.gen_dir)
         if args.gen_all or args.gen_ral:
