@@ -6,102 +6,153 @@ module slv_fsm
         parameter   N = 1
     )
     (
-        clk, rst_n,
-        // global synchronous reset
-        glb_srst_up, glb_srst_down,
-        // req and ack handshake of reg_native_if between upstream and current regslv module
-        req_vld_up, req_rdy_up, ack_vld_up, ack_rdy_up,
-        // control signals and info of reg_native_if between upstream and current regslv module
-        rd_en_up, wr_en_up, addr_up, wr_data_up, rd_data_up,
-        // req and ack handshake of reg_native_if between current regslv and downstream modules
-        req_vld_down, req_rdy_down, ack_vld_down, ack_rdy_down,
-        // control signals and info of reg_native_if between current regslv and downstream modules
-        rd_en_down, wr_en_down, addr_down, wr_data_down, rd_data_down
+        clk,
+        rstn,
+        mst__fsm__req_vld,
+        mst__fsm__rd_en,
+        mst__fsm__wr_en,
+        mst__fsm__addr,
+        mst__fsm__wr_data,
+        mst__fsm__sync_reset,
+        fsm__mst__rd_data,
+        fsm__mst__ack_vld,
+        //  control signal
+        fsm__slv__sync_reset,
+        fsm__slv__addr,
+        fsm__slv__wr_data,
+        fsm__slv__wr_en,
+        fsm__slv__rd_en,
+
+        mst__fsm__ack_rdy,
+        fsm__slv__ack_rdy,
+        fsm__mst__req_rdy,
+        slv__fsm__req_rdy,
+
+        fsm__slv__req_vld,
+
+        slv__fsm__rd_data,
+        slv__fsm__ack_vld
     );
 
-localparam EXT_NUM = M ? M : 1;
-localparam REG_NUM = N ? N : 1;
+localparam LP_EXT_NUM = M ? M : 1;
+localparam LP_REG_NUM = N ? N : 1;
 
-localparam  IDLE = 2'b00, // no operation
-            LOCK = 2'b01, // get req_vld_up from master, lock the input signal
-            WAIT = 2'b10, // if slave is not ready, wait slave req_rdy_down
-            ACK =  2'b11; // wait slave ack_vld_up
 
-input logic clk;
-input logic rst_n;
+// state decode
+localparam   S_IDLE = 2'd0; // no operation
+localparam   S_WAIT_SLV_RDY = 2'd1; // if slave is not ready, S_WAIT_SLV_RDY slave slv__fsm__req_rdy
+localparam   S_WAIT_SLV_ACK =  2'd2; // S_WAIT_SLV_RDY slave fsm__mst__ack_vld
+//reg_slv_if in
+input clk;
+input rstn;
+input mst__fsm__rd_en;
+input mst__fsm__wr_en;
+input [ADDR_WIDTH-1:0] mst__fsm__addr;
+input [DATA_WIDTH-1:0] mst__fsm__wr_data;
+// decoder in
+input mst__fsm__sync_reset;
+input [DATA_WIDTH-1:0] slv__fsm__rd_data;
+input slv__fsm__ack_vld;
+// internal/external reg control signal
+output reg fsm__slv__sync_reset;
+output [ADDR_WIDTH-1:0] fsm__slv__addr;
+output [DATA_WIDTH-1:0] fsm__slv__wr_data;
+output fsm__slv__wr_en;
+output fsm__slv__rd_en;
+// reg_slv_if handshake
+input mst__fsm__req_vld;
+input mst__fsm__ack_rdy;
+input slv__fsm__req_rdy;// LP_EXT_NUM external modules and 1 internal modules slv__fsm__req_rdy = {ext_req_rdy,internal}
+output fsm__slv__ack_rdy;
+output reg fsm__mst__req_rdy;
+output fsm__mst__ack_vld;
+output fsm__slv__req_vld;
+output [DATA_WIDTH-1:0] fsm__mst__rd_data;
 
-input logic glb_srst_up;
-output logic glb_srst_down;
+// machine state value
+reg [1:0] next_state;
+reg [1:0] state;
 
-input logic req_vld_up;
-output logic req_rdy_up;
-output logic ack_vld_up;
-input logic ack_rdy_up;
+//define reg for latching output to slave
+reg [ADDR_WIDTH-1:0] mst__fsm__addr_ff;
+reg [DATA_WIDTH-1:0]mst__fsm__wr_data_ff;
+reg mst__fsm__wr_en_ff;
+reg mst__fsm__rd_en_ff;
+reg fsm__slv__req_vld_ff;
+reg fsm__slv__ack_rdy_ff;
+// to see if the module selected is accessable
 
-input logic rd_en_up;
-input logic wr_en_up;
-input logic [ADDR_WIDTH-1:0] addr_up;
-output logic [DATA_WIDTH-1:0] rd_data_up;
-input logic [DATA_WIDTH-1:0] wr_data_up;
-
-output logic req_vld_down;
-input logic req_rdy_down;
-input logic ack_vld_down;
-output logic ack_rdy_down;
-
-output logic rd_en_down;
-output logic wr_en_down;
-output logic [ADDR_WIDTH-1:0] addr_down;
-input logic [DATA_WIDTH-1:0] rd_data_down;
-output logic [DATA_WIDTH-1:0] wr_data_down;
-
-logic [1:0] state;
-logic [1:0] next_state;
-
-// state register
-always_ff @(posedge clk or negedge rst_n) begin
-    if(~rst_n || glb_srst_up)
-        state <= IDLE;
-    else
+// state transfer
+always_ff@(posedge clk or negedge rstn)begin
+    if(!rstn)begin
+        state <= 2'b0;
+    end
+    else begin
         state <= next_state;
+    end
 end
 
-// state transition logic
+// state transfer flow
 always_comb begin
     case(state)
-        IDLE:begin
-            next_state = req_vld_up ? LOCK : IDLE;
+        // if mst__fsm__sync_reset, next_state back to IDLE, else check req_vld from the master as well as req_rdy and ack_vld from the slave
+        S_IDLE:begin
+            next_state = mst__fsm__sync_reset ? S_IDLE : 
+                                                mst__fsm__req_vld ? (slv__fsm__req_rdy ? (slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK) : S_WAIT_SLV_RDY) : S_IDLE);
         end
-        LOCK:begin
-            next_state = ack_vld_up ? IDLE : (req_rdy_down ? ACK : WAIT);
+        S_WAIT_SLV_RDY:begin
+            next_state = mst__fsm__sync_reset ? S_IDLE : 
+                                                slv__fsm__req_rdy ? slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK 
+                                                                    : S_WAIT_SLV_RDY;
         end
-        WAIT:begin
-            next_state = req_rdy_down ? ACK : WAIT;
+        S_WAIT_SLV_ACK:begin
+            next_state = mst__fsm__sync_reset ? S_IDLE : 
+                                                slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK;
         end
-        ACK:begin
-            next_state = ack_vld_up ? IDLE : ACK;
-        end
-        default: next_state = IDLE;
+        default: next_state = S_IDLE;
     endcase
 end
-
-// output logic
-always_ff @(posedge clk or negedge rst_n) begin
-    if(!rst_n)
-        wr_data_down <= 0;
-    else
-        wr_data_down <= (next_state == LOCK) ? wr_data_up : wr_data_down;
+// for output control signal latch
+always_ff@(posedge clk or negedge rstn)begin
+    if(!rstn)begin
+        mst__fsm__addr_ff <= 0;
+        mst__fsm__wr_data_ff <= 0;
+        mst__fsm__wr_en_ff <= 0;
+        mst__fsm__rd_en_ff <= 0;
+    end
+    else begin
+        mst__fsm__addr_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__addr : mst__fsm__addr_ff;
+        mst__fsm__wr_data_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__wr_data : fsm__slv__wr_data;
+        mst__fsm__wr_en_ff <= (next_state == S_WAIT_SLV_RDY) ? mst__fsm__wr_en : 1'b0;
+        mst__fsm__rd_en_ff <= (next_state == S_WAIT_SLV_RDY) ? mst__fsm__rd_en : 1'b0;
+    end
 end
 
-assign req_rdy_up = (state == IDLE);
-assign req_vld_down = (state == LOCK || state == WAIT);
-assign wr_en_down = (state == LOCK || state == WAIT) ? wr_en_up : 1'b0;
-assign rd_en_down = (state == LOCK || state == WAIT) ? rd_en_up : 1'b0;
+// for output handshake signal
+always_ff@(posedge clk or negedge rstn)begin
+    if(!rstn)begin
+        fsm__slv__req_vld_ff <= 0; 
+        fsm__mst__req_rdy <= 0;
+        fsm__slv__ack_rdy_ff <= 0;
+    end
+    else begin
+        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_RDY) ? 1'b1 : 1'b0;
+        fsm__mst__req_rdy <=  (next_state == S_IDLE) ? 1'b1 : 1'b0;
+        fsm__slv__ack_rdy_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;
+    end
+end
 
-assign ack_rdy_down = (state == ACK);
-assign glb_srst_down = glb_srst_up;
-assign rd_data_up = ack_vld_down ? rd_data_down : rd_data_up; // ???
-assign ack_vld_up = ack_vld_down;
-assign addr_down = addr_up;
+assign fsm__slv__sync_reset = mst__fsm__sync_reset;
+assign fsm__mst__rd_data = slv__fsm__ack_vld ? slv__fsm__rd_data : {DATA_WIDTH{1'b0}};
+assign fsm__mst__ack_vld = slv__fsm__ack_vld;
+
+// assign fsm_slv output signal, IDLE state: wired to input, other working state to latch
+assign fsm__slv__addr = (state == S_IDLE) ? {ADDR_WIDTH{1'b0}} : mst__fsm__addr_ff;
+assign fsm__slv__wr_data = (state == S_IDLE) ? {DATA_WIDTH{1'b0}} : mst__fsm__wr_data_ff;
+assign fsm__slv__wr_en = (state == S_IDLE) ? 1'b0 : mst__fsm__wr_en_ff;
+assign fsm__slv__rd_en = (state == S_IDLE) ? 1'b0 : mst__fsm__rd_en_ff;
+// assign handshake output signal
+assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
+assign fsm__slv__ack_rdy = fsm__slv__ack_rdy_ff;
 
 endmodule
