@@ -1,17 +1,18 @@
 simv_name = simv
-src = xregister.vh common_funcs.vh \
-	dw/right_find_1st_one.v  dw/one_hot_mux.v dw/one_hot_mux_ff.v \
+src = dw/right_find_1st_one.v  dw/one_hot_mux.v dw/one_hot_mux_ff.v \
 	dw/one_hot_mux_2d.v dw/split_mux.v dw/split_mux_2d.v \
 	dw/priority_mux.v dw/priority_mux_2d.v \
 	field.v sw_ctrl.v hw_ctrl.v \
-	slv_fsm.v regslv_regslv_test_inst.v \
-	ext_mem_32_64.v regslv_tb.v
+	slv_fsm.v mst_fsm.v \
+	xregister.vh common_funcs.vh \
+	gen/regslv_regslv_test_inst.v \
+	tb/ext_mem_32_64.v tb/regslv_tb.v
 
 VCS_OPS = -R -full64 -sverilog +v2k -timescale=1ns/1ns  \
 		-debug_acc+all                                  \
 		+warn=none                                      \
 		+notimingcheck                                  \
-		-kdb											\
+		-kdb                                            \
 		+nospecify                                      \
 		+vcs+flush+all                                  \
 		-o $(simv_name)
