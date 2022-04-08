@@ -1,5 +1,5 @@
 addrmap test_1 {
-	hj_genrtl = false;
+	hj_genrtl = true;
 
 	signal {
 		name = "srst_1";
@@ -208,12 +208,29 @@ mem ext_mem_def {
     memwidth = 32;
 };
 
-addrmap regmst_test {
-	addrmap regslv_test {
+addrmap reg_top {
+	addrmap {
 		hj_genrtl = true;
-		test_1 test_1_inst;
-		test_2 test_2_inst;
-		test_3 test_3_inst;
-		external ext_mem_def ext_mem_1_inst, ext_mem_2_inst, ext_mem_3_inst;
-	} regslv_test_inst;
+
+		// implement downstream regslv
+		test_1 test_11;
+		// implement internal registers
+		test_2 test_12;
+		test_3 test_13;
+		// implement external memory
+		external ext_mem_def ext_mem_11;
+	} reg_block_1;
+
+	addrmap {
+		hj_genrtl = true;
+		// implement internal registers
+		test_1 test_21;
+		test_21 -> hj_genrtl = false;
+		test_2 test_22;
+		test_3 test_23;
+		// implement external memories
+		external ext_mem_def ext_mem_21, ext_mem_22, ext_mem_23;
+	} reg_block_2;
+
+	external ext_mem_def ext_mem_in_top;
 };

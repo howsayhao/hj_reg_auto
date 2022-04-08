@@ -2,7 +2,6 @@ module mst_fsm
     #(
         parameter   ADDR_WIDTH = 64,
         parameter   DATA_WIDTH = 32,
-        parameter   M = 0,
         parameter TIMECNT = 99
     )
     (
@@ -16,31 +15,27 @@ module mst_fsm
         PRDATA,
         PREADY,
         PSLVERR,
-
-
-        req_vld,
-        rd_en,
-        wr_en,
-        addr,
-        wr_data,
+        
         // for interrupt this signal may be float
         clear,
+        //  control signal
+        fsm__slv__addr,
+        fsm__slv__wr_data,
+        fsm__slv__wr_en,
+        fsm__slv__rd_en,
+        fsm__slv__sync_reset,
+        interrupt,
+
+        fsm__slv__req_vld,
+        fsm__slv__ack_rdy,
+        slv__fsm__req_rdy,
+        fsm__mst__req_rdy,
+
+        external_reg_selected,
         // these may be float for no slv_module
         slv__fsm__rd_data,
-        slv__fsm__ack_vld,
-        //  control signal
-        addr_ff,
-        wr_data_ff,
-        wr_en_ff,
-        rd_en_ff,
-        global_sync_reset,
-        interrput,
-
-        fsm__slv__ack_rdy,
-        slv__fsm__req_rdy
+        slv__fsm__ack_vld
     );
-
-localparam SLV_NUM = M ? M : 1;
 
 
 input clk;
@@ -56,45 +51,44 @@ output PREADY;
 output PSLVERR;
 
 
-output req_vld;
-output rd_en;
-output wr_en;
-output [ADDR_WIDTH-1:0]addr;
-output [DATA_WIDTH-1:0]wr_data;
+output fsm__slv__req_vld;
 // for interrupt this signal may be float
 input clear;
 // decode dispatch
-input slv_sel;
 input [DATA_WIDTH-1:0]slv__fsm__rd_data;
 input slv__fsm__ack_vld;
 // output control signal
-output reg [ADDR_WIDTH-1:0] addr_ff;
-output reg [DATA_WIDTH-1:0] wr_data_ff;
-output reg wr_en_ff;
-output reg rd_en_ff;
-output global_sync_reset;
-output reg interrput;
+output reg [ADDR_WIDTH-1:0] fsm__slv__addr;
+output reg [DATA_WIDTH-1:0] fsm__slv__wr_data;
+output reg fsm__slv__wr_en;
+output reg fsm__slv__rd_en;
+output fsm__slv__sync_reset;
+output reg interrupt;
 // reg_slv_if handshake
-output reg fsm__slv__ack_rdy;
+output fsm__slv__ack_rdy;
+output fsm__mst__req_rdy;
 // SLV_NUM external modules
+input external_reg_selected;
 input slv__fsm__req_rdy;
 
 reg slv__fsm__ack_vld_ff;
+reg fsm__slv__req_vld_ff;
+reg fsm__slv__ack_rdy_ff;
 reg [DATA_WIDTH-1:0]slv__fsm__rd_data_ff;
 
 
 // state decode
 // localparam   S_IDLE = 2'd0;
 localparam   S_SETUP = 2'd0;
-localparam   S_WAIT_RDY = 2'd1; //slave is not ready to get command, lock the control signal
-localparam   S_WAIT_ACK = 2'd2; //slave is get command, free the control signal and wait for ack
+localparam   S_WAIT_SLV_RDY = 2'd1; //slave is not ready to get command, lock the control signal
+localparam   S_WAIT_SLV_ACK = 2'd2; //slave is get command, free the control signal and wait for ack
 localparam   S_ACCESS =  2'd3; // return result to APB bus
 
 reg state;
 reg next_state;
 
 
-// S_WAIT_RDY time: TIMECNT * Tclk
+// S_WAIT_SLV_RDY time: TIMECNT * Tclk
 reg [16-1:0] cnt;
 reg op_time_out;
 
@@ -115,19 +109,19 @@ always_comb begin
         S_SETUP:begin
             if(PSEL & !PENABLE)
                 if(slv__fsm__ack_vld) next_state = S_ACCESS;
-                else if(slv__fsm__req_rdy) next_state = S_WAIT_ACK;
-                else next_state = S_WAIT_RDY;
+                else if(slv__fsm__req_rdy) next_state = S_WAIT_SLV_ACK;
+                else next_state = S_WAIT_SLV_RDY;
         end
-        S_WAIT_RDY:begin
-            if(slv__fsm__ack_vld) next_state = S_SETUP;
+        S_WAIT_SLV_RDY:begin
+            if(slv__fsm__ack_vld | op_time_out) next_state = S_SETUP;
             else if(slv__fsm__req_rdy) next_state = S_SETUP;
-            else next_state = S_WAIT_RDY;
+            else next_state = S_WAIT_SLV_RDY;
         end
-        S_WAIT_ACK:begin
-            if(slv__fsm__ack_vld) next_state = S_SETUP;
+        S_WAIT_SLV_ACK:begin
+            if(slv__fsm__ack_vld | op_time_out) next_state = S_SETUP;
         end
         S_ACCESS:begin
-            next_state = S_SETUP;
+             next_state = S_SETUP;
         end
         default: next_state = S_SETUP;
     endcase
@@ -136,16 +130,23 @@ end
 // write/read control signal
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
-        addr_ff <= 0;
-        wr_data_ff <= 0;
-        wr_en_ff <= 1'b0;
-        rd_en_ff <= 1'b0;
+        fsm__slv__addr <= 0;
+        fsm__slv__wr_data <= 0;
+        fsm__slv__wr_en <= 1'b0;
+        fsm__slv__rd_en <= 1'b0;
     end
     else begin
-        addr_ff <= (state == S_SETUP && next_state != S_SETUP) ? PADDR : addr_ff;
-        wr_data_ff <= (state == S_SETUP && next_state != S_SETUP) ? PWDATA : wr_data_ff;
-        wr_en_ff <= (next_state == S_WAIT_SLV_RDY) ? PWRITE : 1'b0;
-        rd_en_ff <= (next_state == S_WAIT_SLV_RDY) ? !PWRITE : 1'b0;
+        fsm__slv__addr <= (state == S_SETUP && next_state != S_SETUP) ? PADDR : fsm__slv__addr;
+        fsm__slv__wr_data <= (state == S_SETUP && next_state != S_SETUP) ? PWDATA : fsm__slv__wr_data;
+        
+        // case1: external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK
+        //        when APB launches a requistion for external_reg while external_reg is rdy, latch the control signal for 1 cycle
+        // case2: next_state == S_WAIT_SLV_RDY
+        //        when APB launches a requistion for external_reg while external_reg is not rdy, latch the control signal until slv_rdy back
+        fsm__slv__wr_en <= (external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK) ? PWRITE :
+                                                                                                         (next_state == S_WAIT_SLV_RDY) ? PWRITE : 1'b0;
+        fsm__slv__rd_en <= (external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK) ? !PWRITE :
+                                                                                                         (next_state == S_WAIT_SLV_RDY) ? !PWRITE : 1'b0;
     end
 end
 
@@ -156,7 +157,12 @@ always_ff@(posedge clk or negedge rstn)begin
         fsm__slv__ack_rdy_ff <= 0;
     end
     else begin
-        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_RDY) ? 1'b1 : 1'b0;
+        // case1: external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK
+        //        when APB launches a requistion for external_reg while external_reg is rdy, latch the control signal for 1 cycle
+        // case2: next_state == S_WAIT_SLV_RDY
+        //        when APB launches a requistion for external_reg while external_reg is not rdy, latch the control signal until slv_rdy back
+        fsm__slv__req_vld_ff <= (external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK) ? 1'b1 :
+                                                                                                              (next_state == S_WAIT_SLV_RDY) ? 1'b1 : 1'b0;
         fsm__slv__ack_rdy_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;
     end
 end
@@ -172,30 +178,34 @@ always_ff@(posedge clk or negedge rstn)begin
     end
 end
 
-// for time out interrupt and lef_node record
+// for time-out interrupt and leaf_node record
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
         interrupt <= 1'b0;
         leaf_node <= 0;
     end
     else begin
-        if(op_time_out)
+        if(op_time_out) begin
             interrupt <= 1'b1;
-            leaf_node <= addr_ff;
-        else if(clear)
+            leaf_node <= fsm__slv__addr;
+        end
+        else if(clear) begin
             interrupt <= 1'b0;
             leaf_node <= 0;
-        else
+        end
+        else begin
             interrupt <= interrupt;
             leaf_node <= leaf_node;
+        end
     end
 end
 
-assign global_sync_reset = op_time_out;
+assign fsm__slv__sync_reset = op_time_out;
 
 // assign handshake output signal
 assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
 assign fsm__slv__ack_rdy = fsm__slv__ack_rdy_ff;
+assign fsm__mst__req_rdy = (state == S_SETUP) ? 1'b1 : 1'b0;
 
 // APB output
 // if ack_vld in SETUP, ready should last for 2 cycle
@@ -205,13 +215,14 @@ always_ff@(posedge clk or negedge rstn)begin
         slv__fsm__rd_data_ff <= 0;
     end
     else begin
-        slv__fsm__ack_vld_ff <= state == S_SETUP ? slv__fsm__ack_vld;
+        slv__fsm__ack_vld_ff <= slv__fsm__ack_vld;
         slv__fsm__rd_data_ff <= slv__fsm__rd_data;
     end
 end
 
 
-assign PREADY = (next_state != S_SETUP) ? 1'b1 : 1'b0;
-assign PRDATA = slv__fsm__ack_vld ? slv__fsm__rd_data : {DATA_WIDTH{1'b0}};
+assign PREADY = (state == S_ACCESS) ? slv__fsm__ack_vld_ff : slv__fsm__ack_vld | op_time_out;
+assign PRDATA = (state == S_ACCESS) ? slv__fsm__rd_data_ff : 
+                                      op_time_out ? 32'hdead_1eaf : slv__fsm__rd_data;
 assign PSLVERR = op_time_out;
 endmodule

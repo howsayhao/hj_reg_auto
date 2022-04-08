@@ -1,4 +1,4 @@
-module ext_mem_32_64 (
+module ext_mem (
     // reg_native if ports
     clk,
     req_vld, req_rdy,

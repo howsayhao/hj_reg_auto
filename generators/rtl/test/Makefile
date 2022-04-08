@@ -6,7 +6,7 @@ src = dw/right_find_1st_one.v  dw/one_hot_mux.v dw/one_hot_mux_ff.v \
 	slv_fsm.v mst_fsm.v \
 	xregister.vh common_funcs.vh \
 	gen/regslv_regslv_test_inst.v \
-	tb/ext_mem_32_64.v tb/regslv_tb.v
+	tb/ext_mem.v tb/regslv_tb.v tb/regmst_tb.v
 
 VCS_OPS = -R -full64 -sverilog +v2k -timescale=1ns/1ns  \
 		-debug_acc+all                                  \

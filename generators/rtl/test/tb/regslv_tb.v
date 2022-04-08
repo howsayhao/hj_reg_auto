@@ -1,6 +1,6 @@
 `timescale 1ns/1ns
 
-module tb_regslv_test;
+module tb_regslv;
 
 parameter ADDR_WIDTH = 64;
 parameter DATA_WIDTH = 32;
@@ -23,7 +23,7 @@ wire [DATA_WIDTH-1:0] rd_data;
 
 // synchronous reset signals definition
 reg global_srst_in;
-reg test_1_inst_srst_1, test_1_inst_srst_2;
+reg test_21_srst_1, test_21_srst_2;
 wire global_srst_out;
 
 // external reg_native_if definition
@@ -36,10 +36,10 @@ wire ext_ack_rdy;
 wire [EXT_MEM_NUM-1:0] [DATA_WIDTH-1:0] ext_rd_data;
 
 // instantiate regslv dut
-regslv_regslv_test_inst #(
+regslv_reg_block_2 #(
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH))
-regslv_test_dut (
+regslv_dut (
     .clk(clk),
     .rstn(rstn),
     // upstream reg_native_if
@@ -55,8 +55,8 @@ regslv_test_dut (
     // synchronous reset signals
     .global_sync_reset_in(global_srst_in),
     .global_sync_reset_out(global_srst_out),
-    .test_1_inst_srst_1(test_1_inst_srst_1),
-    .test_1_inst_srst_2(test_1_inst_srst_2),
+    .test_21_srst_1(test_21_srst_1),
+    .test_21_srst_2(test_21_srst_2),
     // external memory reg_native_if
     .ext_req_vld(ext_req_vld),
     .ext_req_rdy(ext_req_rdy),
@@ -68,54 +68,54 @@ regslv_test_dut (
     .ext_ack_rdy(ext_ack_rdy),
     .ext_rd_data(ext_rd_data),
     // hardware access input ports
-    .test_1_inst_REG1_SW_RW__FIELD_9__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_9__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_8__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_8__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_7__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_7__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_6__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_6__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_5__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_5__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_4__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_4__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_3__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_3__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_2__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_2__pulse(1'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_1__next_value(2'b0),
-    .test_1_inst_REG1_SW_RW__FIELD_1__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_6__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_6__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_5__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_5__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_4__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_4__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_3__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_3__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_2__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_2__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_1__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_1__pulse(1'b0),
-    .test_1_inst_REG2_SW_W__FIELD_0__next_value(2'b0),
-    .test_1_inst_REG2_SW_W__FIELD_0__pulse(1'b0),
-    .test_1_inst_REG3_HW__FIELD_3__next_value(2'b0),
-    .test_1_inst_REG3_HW__FIELD_3__pulse(1'b0),
-    .test_1_inst_REG3_HW__FIELD_2__next_value(2'b0),
-    .test_1_inst_REG3_HW__FIELD_2__pulse(1'b0),
-    .test_1_inst_REG3_HW__FIELD_0__next_value(2'b0),
-    .test_1_inst_REG3_HW__FIELD_0__pulse(1'b0),
-    .test_1_inst_REG4_PRECEDENCE__FIELD_1__next_value(2'b0),
-    .test_1_inst_REG4_PRECEDENCE__FIELD_1__pulse(1'b0),
-    .test_1_inst_REG4_PRECEDENCE__FIELD_0__next_value(2'b0),
-    .test_1_inst_REG4_PRECEDENCE__FIELD_0__pulse(1'b0),
-    .test_1_inst_REG5_SINGLEPULSE__FIELD_0__next_value(1'b0),
-    .test_1_inst_REG5_SINGLEPULSE__FIELD_0__pulse(1'b0),
-    .test_1_inst_REG6_SW_ACC_MOD__FIELD_0__next_value(2'b0),
-    .test_1_inst_REG6_SW_ACC_MOD__FIELD_0__pulse(1'b0),
-    .test_2_inst_shared_2__FIELD_0__next_value(32'b0),
-    .test_2_inst_shared_2__FIELD_0__pulse(1'b0)
+    .test_21_REG1_SW_RW__FIELD_8__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_8__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_7__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_7__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_6__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_6__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_5__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_5__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_4__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_4__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_3__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_3__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_2__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_2__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_1__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_1__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_0__next_value(2'b0),
+    .test_21_REG1_SW_RW__FIELD_0__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_6__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_6__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_5__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_5__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_4__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_4__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_3__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_3__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_2__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_2__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_1__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_1__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_0__next_value(2'b0),
+    .test_21_REG2_SW_W__FIELD_0__pulse(1'b0),
+    .test_21_REG3_HW__FIELD_3__next_value(2'b0),
+    .test_21_REG3_HW__FIELD_3__pulse(1'b0),
+    .test_21_REG3_HW__FIELD_2__next_value(2'b0),
+    .test_21_REG3_HW__FIELD_2__pulse(1'b0),
+    .test_21_REG3_HW__FIELD_0__next_value(2'b0),
+    .test_21_REG3_HW__FIELD_0__pulse(1'b0),
+    .test_21_REG4_PRECEDENCE__FIELD_1__next_value(2'b0),
+    .test_21_REG4_PRECEDENCE__FIELD_1__pulse(1'b0),
+    .test_21_REG4_PRECEDENCE__FIELD_0__next_value(2'b0),
+    .test_21_REG4_PRECEDENCE__FIELD_0__pulse(1'b0),
+    .test_21_REG5_SINGLEPULSE__FIELD_0__next_value(1'b0),
+    .test_21_REG5_SINGLEPULSE__FIELD_0__pulse(1'b0),
+    .test_21_REG6_SW_ACC_MOD__FIELD_0__next_value(2'b0),
+    .test_21_REG6_SW_ACC_MOD__FIELD_0__pulse(1'b0),
+    .test_22_shared_2__FIELD_0__next_value(32'b0),
+    .test_22_shared_2__FIELD_0__pulse(1'b0)
 );
 
 // instantiate external memory
@@ -141,8 +141,8 @@ endgenerate
 
 // dump simulation files
 initial begin
-    $fsdbDumpfile("tb_regslv_test.fsdb");
-    $fsdbDumpvars(0, tb_regslv_test);
+    $fsdbDumpfile("tb_regslv.fsdb");
+    $fsdbDumpvars(0, tb_regslv);
     $fsdbDumpMDA();
 end
 
@@ -188,8 +188,8 @@ initial begin
 
     // all synchronous reset signals initialized to invalid
     global_srst_in = 1'b0;
-    test_1_inst_srst_1 = 1'b0;
-    test_1_inst_srst_2 = 1'b0;
+    test_21_srst_1 = 1'b0;
+    test_21_srst_2 = 1'b0;
 
     // get addresses of internal registers and external memory entries
     $readmemh("internal_addr_hex.txt", internal_addrs);
