@@ -25,13 +25,13 @@ class CommandRunner:
         """
         构建命令行解析器
         """
-        parser = argparse.ArgumentParser(prog="regslv",
-                                         description="register slave (regslv) RTL automation tool.")
+        parser = argparse.ArgumentParser(prog="rda",
+                                         description="Register Design Automation (RDA) Tool")
         parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
         subparsers = parser.add_subparsers(title="sub-commands",
-                                           description="now support for generating excel templates, "
+                                           description="support for generating excel templates, "
                                                        "parsing Excel/SystemRDL specifications, "
-                                                       "and generating RTL, RAL, documentation files "
+                                                       "and generating RTL, UVM RAL, HTML docs "
                                                        "and C header files",
                                            help="see more details in the documentaion")
 
