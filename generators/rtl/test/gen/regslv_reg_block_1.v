@@ -181,7 +181,7 @@ slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 	.fsm__mst__req_rdy(req_rdy), .mst__fsm__ack_rdy(ack_rdy),
 	.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),
 	.fsm__mst__rd_data(rd_data), .fsm__mst__ack_vld(ack_vld),
-	.external_reg_selected(external_reg_selected)
+	.external_reg_selected(external_reg_selected),
 	.mst__fsm__sync_reset(global_sync_reset_in),
 	.fsm__slv__sync_reset(global_sync_reset_out)
 	);
@@ -198,7 +198,7 @@ logic [31:0] test_12_shared_2;
 assign test_12_shared_2_wr_data = reg_sel[0] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(32),
 	.ARST_VALUE(32'hffffffff),
 	.ALIAS_NUM(2),

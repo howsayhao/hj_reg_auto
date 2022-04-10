@@ -395,7 +395,7 @@ slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 	.fsm__mst__req_rdy(req_rdy), .mst__fsm__ack_rdy(ack_rdy),
 	.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),
 	.fsm__mst__rd_data(rd_data), .fsm__mst__ack_vld(ack_vld),
-	.external_reg_selected(external_reg_selected)
+	.external_reg_selected(external_reg_selected),
 	.mst__fsm__sync_reset(global_sync_reset_in),
 	.fsm__slv__sync_reset(global_sync_reset_out)
 	);
@@ -412,7 +412,7 @@ logic [31:0] test_21_REG1_SW_RW;
 assign test_21_REG1_SW_RW_wr_data = reg_sel[0] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -441,7 +441,7 @@ x__test_21_REG1_SW_RW__FIELD_8
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -470,7 +470,7 @@ x__test_21_REG1_SW_RW__FIELD_7
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -499,7 +499,7 @@ x__test_21_REG1_SW_RW__FIELD_6
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -528,7 +528,7 @@ x__test_21_REG1_SW_RW__FIELD_5
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -557,7 +557,7 @@ x__test_21_REG1_SW_RW__FIELD_4
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -586,7 +586,7 @@ x__test_21_REG1_SW_RW__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -615,7 +615,7 @@ x__test_21_REG1_SW_RW__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -644,7 +644,7 @@ x__test_21_REG1_SW_RW__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -694,7 +694,7 @@ logic [31:0] test_21_REG2_SW_W;
 assign test_21_REG2_SW_W_wr_data = reg_sel[1] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -723,7 +723,7 @@ x__test_21_REG2_SW_W__FIELD_6
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -752,7 +752,7 @@ x__test_21_REG2_SW_W__FIELD_5
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -781,7 +781,7 @@ x__test_21_REG2_SW_W__FIELD_4
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -810,7 +810,7 @@ x__test_21_REG2_SW_W__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.SRST_CNT(1),
 	.ARST_VALUE(2'h0),
@@ -840,7 +840,7 @@ x__test_21_REG2_SW_W__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.SRST_CNT(1),
 	.ARST_VALUE(2'h0),
@@ -870,7 +870,7 @@ x__test_21_REG2_SW_W__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -911,7 +911,7 @@ logic [31:0] test_21_REG3_HW;
 assign test_21_REG3_HW_wr_data = reg_sel[2] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -939,7 +939,7 @@ x__test_21_REG3_HW__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -967,7 +967,7 @@ x__test_21_REG3_HW__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -995,7 +995,7 @@ x__test_21_REG3_HW__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1039,7 +1039,7 @@ logic [31:0] test_21_REG4_PRECEDENCE;
 assign test_21_REG4_PRECEDENCE_wr_data = reg_sel[3] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1067,7 +1067,7 @@ x__test_21_REG4_PRECEDENCE__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1109,7 +1109,7 @@ logic [31:0] test_21_REG5_SINGLEPULSE;
 assign test_21_REG5_SINGLEPULSE_wr_data = reg_sel[4] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(1),
 	.ARST_VALUE(1'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1151,7 +1151,7 @@ logic [31:0] test_21_REG6_SW_ACC_MOD;
 assign test_21_REG6_SW_ACC_MOD_wr_data = reg_sel[5] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1227,7 +1227,7 @@ logic [31:0] test_22_shared_2;
 assign test_22_shared_2_wr_data = reg_sel[8] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(32),
 	.ARST_VALUE(32'hffffffff),
 	.ALIAS_NUM(2),

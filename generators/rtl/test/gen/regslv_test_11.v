@@ -142,16 +142,6 @@ input ack_rdy;
 //declare the syn_rst
 input srst_1;
 input srst_2;
-//declare the portwidth of external module
-output [EXT_NUM-1:0] ext_req_vld;
-input [EXT_NUM-1:0] ext_req_rdy;
-output ext_wr_en;
-output ext_rd_en;
-output [ADDR_WIDTH-1:0] ext_addr;
-output [DATA_WIDTH-1:0] ext_wr_data;
-input [EXT_NUM-1:0] [DATA_WIDTH-1:0] ext_rd_data;
-input [EXT_NUM-1:0] ext_ack_vld;
-output ext_ack_rdy;
 
 //**************************INTERNAL REGISTER IN/OUT PORTS DEFINE START Here**************************//
 //['REG1_SW_RW', 'FIELD_8']
@@ -276,7 +266,7 @@ wire [DATA_WIDTH-1:0] slv__fsm__rd_data;
 wire slv__fsm__ack_vld;
 wire fsm__slv__req_vld;
 wire slv__fsm__req_rdy;
-assign slv__fsm__req_rdy = |{ext_req_rdy&ext_sel,internal_reg_selected};
+assign slv__fsm__req_rdy = |{internal_reg_selected};
 //declare the control signal for internal registers
 wire [ADDR_WIDTH-1:0] addr_for_decode;
 assign addr_for_decode = req_rdy ? addr : fsm__slv__addr;// req_rdy = 1 : fsm_state in IDLE for internal operation
@@ -350,9 +340,9 @@ slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 	.slv__fsm__rd_data(slv__fsm__rd_data), .slv__fsm__ack_vld(slv__fsm__ack_vld), .fsm__slv__req_vld(fsm__slv__req_vld),
 	.fsm__slv__wr_en(fsm__slv__wr_en), .fsm__slv__rd_en(fsm__slv__rd_en), .fsm__slv__addr(fsm__slv__addr), .fsm__slv__wr_data(fsm__slv__wr_data),
 	.fsm__mst__req_rdy(req_rdy), .mst__fsm__ack_rdy(ack_rdy),
-	.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),
+	.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(),
 	.fsm__mst__rd_data(rd_data), .fsm__mst__ack_vld(ack_vld),
-	.external_reg_selected(external_reg_selected)
+	.external_reg_selected(external_reg_selected),
 	.mst__fsm__sync_reset(global_sync_reset_in),
 	.fsm__slv__sync_reset(global_sync_reset_out)
 	);
@@ -369,7 +359,7 @@ logic [31:0] REG1_SW_RW;
 assign REG1_SW_RW_wr_data = reg_sel[0] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -398,7 +388,7 @@ x__REG1_SW_RW__FIELD_8
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -427,7 +417,7 @@ x__REG1_SW_RW__FIELD_7
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -456,7 +446,7 @@ x__REG1_SW_RW__FIELD_6
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -485,7 +475,7 @@ x__REG1_SW_RW__FIELD_5
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -514,7 +504,7 @@ x__REG1_SW_RW__FIELD_4
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -543,7 +533,7 @@ x__REG1_SW_RW__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -572,7 +562,7 @@ x__REG1_SW_RW__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -601,7 +591,7 @@ x__REG1_SW_RW__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -651,7 +641,7 @@ logic [31:0] REG2_SW_W;
 assign REG2_SW_W_wr_data = reg_sel[1] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -680,7 +670,7 @@ x__REG2_SW_W__FIELD_6
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -709,7 +699,7 @@ x__REG2_SW_W__FIELD_5
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -738,7 +728,7 @@ x__REG2_SW_W__FIELD_4
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -767,7 +757,7 @@ x__REG2_SW_W__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.SRST_CNT(1),
 	.ARST_VALUE(2'h0),
@@ -797,7 +787,7 @@ x__REG2_SW_W__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.SRST_CNT(1),
 	.ARST_VALUE(2'h0),
@@ -827,7 +817,7 @@ x__REG2_SW_W__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -868,7 +858,7 @@ logic [31:0] REG3_HW;
 assign REG3_HW_wr_data = reg_sel[2] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -896,7 +886,7 @@ x__REG3_HW__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -924,7 +914,7 @@ x__REG3_HW__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -952,7 +942,7 @@ x__REG3_HW__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -996,7 +986,7 @@ logic [31:0] REG4_PRECEDENCE;
 assign REG4_PRECEDENCE_wr_data = reg_sel[3] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1024,7 +1014,7 @@ x__REG4_PRECEDENCE__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1066,7 +1056,7 @@ logic [31:0] REG5_SINGLEPULSE;
 assign REG5_SINGLEPULSE_wr_data = reg_sel[4] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(1),
 	.ARST_VALUE(1'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1108,7 +1098,7 @@ logic [31:0] REG6_SW_ACC_MOD;
 assign REG6_SW_ACC_MOD_wr_data = reg_sel[5] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),

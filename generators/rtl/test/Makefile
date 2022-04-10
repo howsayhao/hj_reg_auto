@@ -5,12 +5,13 @@ src = dw/right_find_1st_one.v  dw/one_hot_mux.v dw/one_hot_mux_ff.v \
 	field.v sw_ctrl.v hw_ctrl.v \
 	slv_fsm.v mst_fsm.v \
 	xregister.vh common_funcs.vh \
-	gen/regslv_regslv_test_inst.v \
-	tb/ext_mem.v tb/regslv_tb.v tb/regmst_tb.v
+	gen/regmst_reg_top.v gen/regslv_reg_block_1.v \
+	gen/regslv_reg_block_2.v gen/regslv_test_11.v \
+	tb/ext_mem.v tb/regmst_tb.v
 
 VCS_OPS = -R -full64 -sverilog +v2k -timescale=1ns/1ns  \
 		-debug_acc+all                                  \
-		+warn=none                                      \
+		+warn=all                                       \
 		+notimingcheck                                  \
 		-kdb                                            \
 		+nospecify                                      \

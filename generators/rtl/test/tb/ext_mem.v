@@ -53,14 +53,14 @@ module ext_mem (
     // Write Operation : wr_en = 1, req_vld = 1
     always @(posedge clk) begin : MEM_WRITE
         if (req_vld_ff && wr_en_ff)
-            mem[addr_ff] <= #(DELAY) wr_data_ff;
+            mem[addr_ff] <= wr_data_ff;
             // $display($time, " Writing %m addr=%h wr_data=%h", addr_ff, wr_data_ff);
     end
 
     // Read Operation : rd_en = 1, req_vld = 1
     always @(posedge clk) begin : MEM_READ
         if (req_vld_ff && rd_en_ff)
-            rd_data <= #(DELAY) mem[addr_ff];
+            rd_data <= mem[addr_ff];
             // $display($time, " Reading %m addr=%h rd_data=%h", addr_ff, mem[addr_ff]);
     end
 
@@ -76,8 +76,8 @@ module ext_mem (
     // Ack handshake: ack_vld, ack_rdy
     always @(posedge clk) begin : ACK
         if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_rdy)
-            ack_vld <= #(DELAY) VALID;
+            ack_vld <= VALID;
         else
-            ack_vld <= #(DELAY) INVALID;
+            ack_vld <= INVALID;
     end
 endmodule

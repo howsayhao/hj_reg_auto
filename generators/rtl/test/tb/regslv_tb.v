@@ -122,9 +122,9 @@ regslv_dut (
 genvar i;
 generate
     for (i = 0; i < EXT_MEM_NUM; i = i + 1) begin: gen_ext_mem
-        ext_mem_32_64 #(
+        ext_mem #(
             .DATA_WIDTH(DATA_WIDTH), .ADDR_WIDTH(EXT_MEM_ADDR_WIDTH))
-        ext_mem_32_64_inst (
+        ext_mem_inst (
             .clk(clk),
             .req_vld(ext_req_vld[i]),
             .req_rdy(ext_req_rdy[i]),
@@ -168,7 +168,7 @@ generate
     for (i = 0; i < EXT_MEM_NUM; i = i + 1) begin: init_ext_mem
         initial begin
             for (integer j = 0; j < (1<<EXT_MEM_ADDR_WIDTH); j = j + 1) begin
-                gen_ext_mem[i].ext_mem_32_64_inst.mem[j] = {DATA_WIDTH{1'b0}};
+                gen_ext_mem[i].ext_mem_inst.mem[j] = {DATA_WIDTH{1'b0}};
             end
         end
     end
@@ -192,8 +192,8 @@ initial begin
     test_21_srst_2 = 1'b0;
 
     // get addresses of internal registers and external memory entries
-    $readmemh("internal_addr_hex.txt", internal_addrs);
-    $readmemh("external_addr_hex.txt", external_addrs);
+    $readmemh("regslv_tb_internal_addr_hex.txt", internal_addrs);
+    $readmemh("regslv_tb_external_addr_hex.txt", external_addrs);
 end
 
 /********************************************************************
