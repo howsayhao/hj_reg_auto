@@ -1,8 +1,134 @@
-# Register Design Automation Tool (RDA Tool)
+# **HJ-micro Register Design Automation Tool (HRDA Tool)**
 
-RDA Tool是基于Python的命令行工具，分前端（front-end）与后端（back-end）两部分。前端包含模板生成（Template Generation）和解析器（Parser）功能，前者支持生成既定样式的Excel Worksheet（.xlsx格式）类型寄存器说明模板，后者能够解析输入的Excel Worksheet或SystemRDL描述，进行语法和规则检查。后端包含生成器（Generator）功能，支持生成寄存器RTL (Verilog/SystemVerilog) Modules、HTML形式的寄存器文档、UVM RAL模型和C header files等。
+## **1. 简介**
 
-## 命令选项与参数
+HRDA Tool是基于Python构建的命令行形式的寄存器自动化工具，分前端（front-end）与后端（back-end）两部分。前端包含模板生成（Template Generation）和解析器（Parser）功能，前者支持生成既定样式的Excel Worksheet（.xlsx格式）类型寄存器说明模板，后者能够解析输入的Excel Worksheet或SystemRDL描述，进行语法和规则检查。后端包含生成器（Generator）功能，支持生成寄存器RTL (Verilog/SystemVerilog) Modules、HTML形式的寄存器文档、UVM RAL模型和C header files等。
+
+## **2. 功能描述**
+
+该工具的整体实现流程如下图所示。
+
+![ ](docs/pics/tool%20flow.png)
+
+### **2.1 寄存器Excel模板生成（template generator）**
+
+Excel模板的基础格式如下两张图所示。
+
+![ ](docs/pics/temp_cn.png)
+
+![ ](docs/pics/temp_en.png)
+
+### **2.2 Excel解析器（Excel Parser）**
+
+Excel解析器会完成两部分工作，其一是检查设计者输入的所有Excel文件，并对基础格式和其他寄存器设计规则进行检查，其二是将解析后的寄存器描述转换为SystemRDL代码，向后面的`SystemRDL Compiler`递交。Excel解析器会执行以下检查：
+
+- **BASIC_FORMAT :** 以正则表达式方式约束的基础格式，包括表格项是否齐全，位置是否正确，特定的单元格内容等。
+
+    1. 基地址必须为`hex`并以`0X(x)`作前缀
+
+    2. 地址偏移必须为`hex`并以`0X(x)`作前缀
+
+    3. 寄存器位宽只能为`32 bit`或`64 bit`
+
+    4. 域的读写属性是被支持的
+
+    5. 域的比特位范围为`xx:xx`格式
+
+    6. 复位值为`hex`并以`0X(x)`作前缀
+
+    7. 域的同步复位信号，若没有则为`None`，也可有一个或多个，多个的情况以`,`分隔
+
+- **REG_NAME :** 在同一张Excel工作表中描述的寄存器名字和简写不允许重复。
+
+- **REG_ADDR :** 对寄存器地址偏移分配的合法性。
+
+    1. 按寄存器字节长度的整数倍进行地址对齐（在SystemRDL中称为`regalign`方式）
+
+    2. 在同一张Excel工作表中不允许地址重叠
+
+- **FIELD_DEFINITION :** 域定义部分的合法性。
+
+    1. 定义多个域时的比特位序自高向低排列
+
+    2. 每个域的比特位范围按`[high_bit]:[low_bit]`排布
+
+    3. 域比特位无重叠（3.1），无遗漏（3.2）
+
+    4. 复位值合法, 不能超过该域能表示的最大值
+
+    5. 除保留域`Reserved`以外域名称无重复
+
+    6. 保留域`Reserved`的同步复位信号只能为`None`
+
+    7. 同一个域的同步复位信号不能重复
+
+解析过程中，若以上所述的任一规则不被满足，Excel解析器都会报错并提示错误信息和出错位置。
+
+### **2.3 SystemRDL编译器（SystemRDL Compiler）**
+
+SystemRDL的解析依赖于一个开源的github项目`SystemRDL Compiler`，项目地址见3.1节。它能够将SystemRDL 2.0 Spec定义的RDL输入进行解析、编译和语法检查，生成可遍历的树状寄存器模型，基本工作流程如下图所示。
+
+![ ](docs/pics/systemrdl-compiler.png)
+
+下面是一个简单的SystemRDL代码示例：
+
+```systemrdl
+reg my_reg_t {
+    field {} f1;
+    field {} f2;
+};
+
+addrmap top {
+    my_reg_t A[4];
+    my_reg_t B;
+};
+```
+
+编译后的寄存器模型如下图所示。
+
+![ ](docs/pics/rdlcompiler_ex1.png)
+
+或者另一种`Node`形式的模型。
+
+![ ](docs/pics/rdlcompiler_ex2.png)
+
+这个模型是连接工具前端（front-end）与后端（back-end）的桥梁，前端的解析最终会生成这个模型，而后端的一切都是基于这个模型的输入。
+
+> 关于这个模型的详细说明，参见SystemRDL Compiler Documentation : <https://systemrdl-compiler.readthedocs.io/en/stable/index.html>
+
+### **2.4 RTL生成器（RTL Generator）**
+
+参见HRDA Tool说明文档。
+
+### **2.5 HTML生成器（HTML Exporter）**
+
+HTML的导出依赖于github上开源的项目`PeakRDL-html`，项目地址见3.1节。一个简单的导出HTML的例子如下图所示。
+
+![ ](docs/pics/html_ex1.png)
+
+### **2.6 UVM RAL生成器（UVM Exporter）**
+
+UVM寄存器模型的导出依赖于github上开源的项目`PeakRDL-uvm`，项目地址见3.1节。
+
+### **2.7 C头文件生成器（C Header Generator）（TBD）**
+
+## **3. 使用说明**
+
+### **3.1 环境与依赖**
+
+- 可运行的OS: Windows/Linux
+
+- Python: Version 3.5+
+
+  - systemrdl-compiler  <https://github.com/SystemRDL/systemrdl-compiler>
+
+  - PeakRDL-html  <https://github.com/SystemRDL/PeakRDL-html>
+
+  - PeakRDL-uvm  <https://github.com/SystemRDL/PeakRDL-uvm>
+
+> 后续会将这些开源Python库集成到工具里，移除依赖要求
+
+### **3.2 命令选项与参数**
 
 - `-h,--help`
 
@@ -122,9 +248,7 @@ RDA Tool是基于Python的命令行工具，分前端（front-end）与后端（
 
     显式指定该选项则会生成以上所有文件。
 
-## 使用说明
-
-## 示例
+### **3.3 示例**
 
 > 使用时请将目录切换到到工具的源代码目录下。
 
@@ -149,19 +273,3 @@ RDA Tool是基于Python的命令行工具，分前端（front-end）与后端（
 
     python cmd.py generate -l test.list -gdir ../test -gall
     ```
-
-## 环境与依赖
-
-- 可运行的OS: Windows/Linux
-
-- Python: Version 3.5+
-
-  - systemrdl-compiler  <https://github.com/SystemRDL/systemrdl-compiler>
-
-  - PeakRDL-html  <https://github.com/SystemRDL/PeakRDL-html>
-
-  - PeakRDL-uvm  <https://github.com/SystemRDL/PeakRDL-uvm>
-
-> 后续会将依赖的开源Python库集成到工具里
-
-## TO BE DONE
