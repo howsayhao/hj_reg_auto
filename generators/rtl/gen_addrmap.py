@@ -1,10 +1,12 @@
-from systemrdl.node import *
-import sys
 import shutil
+import sys
 
-from .rtl_type import *
-from .gen_field_rtl import *
+from systemrdl.node import *
+
 from .create_obj import *
+from .gen_field_rtl import *
+from .rtl_type import *
+
 
 class addrmap_str(object):
     def __init__(self, node:Node, master:bool, Root:RTL_NODE):
@@ -59,7 +61,6 @@ class addrmap_str(object):
         self.state_machine = ''
         self.reg_instantion = ''
         self.external_logic = ''
-        self.ext_instance_port = ''
         # self.mem_port = ''
         self.split_mux = ''
         self.output_select = ''
@@ -79,13 +80,12 @@ class addrmap_str(object):
                         pulse_signal = Signal(field_name + '__pulse')
                         pulse_signal.width = "1"
                         self.field_in.append(pulse_signal)
-                    self.field_in.append(next_value_signal)
                     curr_value_signal = Signal(field_name + '__curr_value')
                     curr_value_signal.width = field.fieldwidth
                     self.field_out.append(curr_value_signal)
                     if(field.swmod):
-                        swmod_signal = Signal(field_name + 'swmod_signal')
-                        self.field_out.append(curr_value_signal)
+                        swmod_signal = Signal(field_name + '__swmod_out')
+                        self.field_out.append(swmod_signal)
                     if(field.swacc):
                         swacc_signal = Signal(field_name + '__swacc_out')
                         self.field_out.append(swacc_signal)
@@ -120,24 +120,23 @@ class addrmap_str(object):
                     self.standard_ports + ');\n' + \
                     self.parameter + '\n\n' + \
                     self.wire_declaration + '\n\n' + \
+                    self.external_logic + '\n\n' + \
+                    self.split_mux + '\n\n' + \
+                    self.output_select + '\n\n' + \
                     self.reg_wire + '\n\n' + \
                     self.decode_logic + '\n\n' + \
                     self.state_machine + '\n\n' + \
-                    self.reg_instantion + '\n\n' + \
-                    self.external_logic + '\n\n' + \
-                    self.ext_instance_port + '\n\n' + \
-                    self.split_mux + '\n\n' + \
-                    self.output_select + 'endmodule'
+                    self.reg_instantion + 'endmodule'
 
         # self.Root.field_wire += self.fields_ports
         self.Root.field_in += self.field_in
         self.Root.field_out += self.field_out
 
+        # if(os.path.exists(self.folder_name + '//' + file_name) is not True):
         fw = open(file_name,'w')
         fw.write(self.rtl)
         fw.close()
-        folder_name = self.folder_name
-        shutil.move(file_name,folder_name)
+        shutil.move(file_name,self.folder_name)
 
     # get information from node tree and generate corresponding rtl str
     def get_internal_strcture(self):
@@ -151,6 +150,7 @@ class addrmap_str(object):
         # get top level addr map and decoder rtl str
         [define_str,decode_str] = self.get_decoder()
         file_name = self.module_name + '.vh'
+        # if(os.path.exists(self.folder_name + '//' + file_name) is not True):
         fw = open(file_name,'w')
         fw.write(define_str)
         fw.close()
@@ -176,11 +176,12 @@ class addrmap_str(object):
             genrtl = False
             if(isinstance(child, AddrmapNode)):
                 genrtl = child.get_property('hj_genrtl') if('hj_genrtl' in child.inst.properties) else False
-                if(genrtl is True):
+                if(genrtl is True and child not in self.Root.genrtl_node):
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root)
                     ext_addr.write()
                     self.Root.children.append(ext_addr)
                     self.ext_instance(ext_addr)
+                    self.Root.genrtl_node.append(child)
                     self.inst += 1
             # create the child rtl_type object with corresponding properties
             new_obj = create_obj(child,rtl_obj)
@@ -204,18 +205,6 @@ class addrmap_str(object):
             elif(new_obj.external):
                 new_obj.external_top = new_obj
             # create external addr access for decoder
-            if(isinstance(child, MemNode)):
-                mem_bit = new_obj.mementries * new_obj.memwidth
-                mem_entries = int(mem_bit / self.DATA_WIDTH)
-                for entry in range(mem_entries):
-                    visual_reg_name = node.get_path_segment() + '_' + str(entry)
-                    visual_reg = Reg(visual_reg_name)
-                    visual_reg.external = True
-                    visual_reg.addr = int(new_obj.addr + entry * new_obj.memwidth/8)
-                    new_obj.children.append(visual_reg)
-                    self.external_register_map.append(visual_reg)
-                    visual_reg.id = len(self.external_register_map) - 1
-                    visual_reg.external_top = new_obj.external_top
 
             # record the regs' external property in internal&external register map
             self.obj_handling(child,new_obj, rtl_obj)
@@ -225,6 +214,22 @@ class addrmap_str(object):
             new_obj.hierachy.append(new_obj.obj)
             # create the tree from original node tree
             rtl_obj.children.append(new_obj)
+
+            if(isinstance(child, MemNode)):
+                mem_bit = new_obj.mementries * new_obj.memwidth
+                mem_entries = int(mem_bit / self.DATA_WIDTH)
+                for entry in range(mem_entries):
+                    visual_reg_name = child.get_path_segment() + '_reg_' + str(entry)
+                    visual_reg = Reg(visual_reg_name)
+                    visual_reg.external = True
+                    visual_reg.addr = int(new_obj.addr + entry * new_obj.memwidth/8)
+                    new_obj.children.append(visual_reg)
+                    self.external_register_map.append(visual_reg)
+                    visual_reg.id = len(self.external_register_map) - 1
+                    visual_reg.external_top = new_obj.external_top
+                    visual_reg.hierachy = new_obj.hierachy[:]
+                    visual_reg.hierachy.append('reg_' + str(entry))
+
             self.walking(child,rtl_obj.children[i])
             i = i + 1
         self.exit(node)
@@ -264,7 +269,7 @@ class addrmap_str(object):
                 new_obj.shared_origin = node.inst.original_def.type_name
                 self.shared_register_map.append(new_obj)
     # handle the regs' alias and shared situation
-    def reg_alias_shared_handle(self) -> None:
+    def reg_alias_shared_handle(self):
         # all_register_map = self.internal_register_map + self.external_register_map
         all_register_map = self.internal_register_map
         # find the alias register and the prime register which is be aliased
@@ -291,7 +296,7 @@ class addrmap_str(object):
                 shared_register.first_shared = True
 
     # external sub addrmap instance define
-    def ext_instance(self, ext_addr) -> str:
+    def ext_instance(self, ext_addr):
         # sub_module_name = node.get_path_segment()
         sub_module_name = ext_addr.module_name
         # ins_str = ''
@@ -307,12 +312,15 @@ class addrmap_str(object):
 
         # for global instantion
         ext_addr.reg_slv_if = reg_slv_if(sub_module_name)
-        module_name = 'regslv_' + self.module_name
+        if(self.master):
+            module_name = 'regmst_' + self.module_name
+        else:
+            module_name = 'regslv_' + self.module_name
         ext_addr.reg_slv_if.global_sync = '%s_fsm_sync_reset'%(module_name)
         ext_addr.reg_slv_if.req_vld = '%s_ext_req_vld[%d]'%(module_name,self.inst)
         ext_addr.reg_slv_if.req_rdy = '%s_ext_req_rdy[%d]'%(module_name,self.inst)
         ext_addr.reg_slv_if.ack_vld = '%s_ext_ack_vld[%d]'%(module_name,self.inst)
-        ext_addr.reg_slv_if.ack_rdy = '%s_ext_ack_rdy[%d]'%(module_name,self.inst)
+        ext_addr.reg_slv_if.ack_rdy = '%s_ext_ack_rdy'%(module_name)
         ext_addr.reg_slv_if.rd_data = '%s_ext_rd_data[%d]'%(module_name,self.inst)
         ext_addr.reg_slv_if.wr_en = '%s_wr_en'%(module_name)
         ext_addr.reg_slv_if.rd_en = '%s_rd_en'%(module_name)
@@ -322,7 +330,7 @@ class addrmap_str(object):
         # return ins_str
 
     # get C head and decode rtl code from (reg - addr) map
-    def get_decoder(self) -> list:
+    def get_decoder(self):
         define_str = ''
         define_str += '`ifndef __%s_vh__\n'%(self.module_name)
         define_str += '`define __%s_vh__\n'%(self.module_name)
@@ -333,7 +341,7 @@ class addrmap_str(object):
         decode_str += '\t\treg_sel = {REG_NUM{1\'b0}};\n'
         decode_str += '\t\text_sel = {EXT_NUM{1\'b0}};\n'
         decode_str += '\t\tdummy_reg = 1\'b0;\n'
-        decode_str += '\tunique case (addr)\n'
+        decode_str += '\tunique case (addr_for_decode)\n'
         # change reg - addr map to addr - reg map
         for register in self.internal_register_map:
             # if more than 1 reg has the same addr, the new_addr object will add a register instance in its list
@@ -398,7 +406,7 @@ class addrmap_str(object):
         return reg_port_str
 
     # internal reg instance
-    def get_reg(self) -> str:
+    def get_reg(self):
         regstr = ''
         regstr += '//' + 'Register&field Instantiate START Here'.center(100,"*") + '//\n'
         self.reg_wire += '//' + 'internal register operation wire declare START'.center(100,"*") + '//\n'
@@ -413,7 +421,7 @@ class addrmap_str(object):
             regstr += '//' + ('REG OFFSET_ADDR:%s'%(offset)) + '//\n'
             regstr += 'logic [%d:0] %s'%(register.regwidth-1,rtl_reg_name) + ';\n'
             self.reg_wire += 'logic [%d:0] %s_wr_data'%(register.regwidth-1,rtl_reg_name) + ';\n'
-            regstr += 'assign %s_wr_data = reg_sel[%d] && wr_en_ff ? wr_data_ff : 0;\n'%(rtl_reg_name,register.id)
+            regstr += 'assign %s_wr_data = reg_sel[%d] && internal_wr_en ? internal_wr_data : 0;\n'%(rtl_reg_name,register.id)
             # get field instantion
             regstr += gen_field_rtl(register)
             regstr += ''
@@ -428,19 +436,19 @@ class addrmap_str(object):
         regstr += '//' + 'Register&field Instantiate END Here'.center(100,"*") + '//\n'
         return regstr
 
-    def get_ext_connection(self) -> list:
+    def get_ext_connection(self):
         ext_port = ''
         ext_connect = ''
         i = 0
         if(len(self.external_register_map)>0):
             ext_connect += '//' + 'EXTERNAL CONNECTION INSTANT START'.center(100,"*") + '//\n'
-            ext_connect += 'assign ext_wr_en = wr_en_ff;\n'
-            ext_connect += 'assign ext_rd_en = rd_en_ff;\n'
-            ext_connect += 'assign ext_addr = addr_decode;\n'
-            ext_connect += 'assign ext_wr_data = wr_data_ff;\n'
+            ext_connect += 'assign ext_wr_en = fsm__slv__wr_en;\n'
+            ext_connect += 'assign ext_rd_en = fsm__slv__rd_en;\n'
+            ext_connect += 'assign ext_addr = fsm__slv__addr;\n'
+            ext_connect += 'assign ext_wr_data = fsm__slv__wr_data;\n'
             for addr in self.external_addr_map:
                 ext_connect += '//%s connection, external[%s];\n'%(addr.registers[0].external_top.obj,i)
-                ext_connect += 'assign ext_req_vld[%s] = ext_sel[%s] & req_vld_s;\n'%(i,i)
+                ext_connect += 'assign ext_req_vld[%s] = ext_sel[%s] & fsm__slv__req_vld;\n'%(i,i)
                 ext_connect += 'assign ext_ack[%s] = ext_ack_vld[%s] & ext_sel[%s];\n'%(i,i,i)
                 i += 1
             ext_connect += '//' + 'EXTERNAL CONNECTION INSTANT END'.center(100,"*") + '//\n'
@@ -449,7 +457,10 @@ class addrmap_str(object):
             for addr in self.external_addr_map:
                 ext_module = addr.registers[0].external_top
                 if(isinstance(ext_module, Memory)):
-                    ext_module.ref = "regslv_" + self.module_name
+                    if(self.master):
+                        ext_module.ref = "regmst_" + self.module_name
+                    else:
+                        ext_module.ref = "regslv_" + self.module_name
                     ext_module.ref_id = i
                     self.Root.third_party.append(ext_module)
                     self.thirdparty_num += 1
@@ -457,42 +468,52 @@ class addrmap_str(object):
 
         return[ext_port,ext_connect]
 
-    def get_module_rtl(self) -> None:
+    def get_module_rtl(self):
         # get module_standard in/outputs
-        self.standard_ports += '\tclk,\n' + \
-                               '\trstn,\n' + \
-                               '\treq_vld,\n' + \
-                               '\treq_rdy,\n' + \
-                               '\twr_en,rd_en,\n' + \
-                               '\taddr,\n' + \
-                               '\twr_data,\n'
+        signal_map = self.signal_map + self.global_signal_map
+        for signal in signal_map:
+            self.standard_ports += '\t%s,\n'%(signal.hierachy_name)
+        if(self.master is False):
+            self.standard_ports += '\tclk,\n' + \
+                                '\trstn,\n' + \
+                                '\treq_vld,\n' + \
+                                '\treq_rdy,\n' + \
+                                '\twr_en,rd_en,\n' + \
+                                '\taddr,\n' + \
+                                '\twr_data,\n'
+            self.standard_ports += '\tack_vld,\n' + \
+                                   '\tack_rdy,\n' + \
+                                   '\trd_data,\n'
+        else:
+            self.standard_ports += '\tclk,\n' + \
+                                '\trstn,\n' + \
+                                '\tPSEL,\n' + \
+                                '\tPENABLE,\n' + \
+                                '\tPREADY,\n' + \
+                                '\tPWRITE,\n' + \
+                                '\tPSLVERR,\n' + \
+                                '\tPADDR,\n' + \
+                                '\tPWDATA,\n' + \
+                                '\tPRDATA,\n'
         if(self.master is True):
-            self.standard_ports += '\tglobal_sync_reset_out,\n'
+
             self.standard_ports += '\tinterrupt,\n'
             self.standard_ports += '\tclear,\n'
         else:
             self.standard_ports += '\tglobal_sync_reset_in,\n'
-            self.standard_ports += '\tglobal_sync_reset_out,\n'
-
-        signal_map = self.signal_map + self.global_signal_map
-        for signal in signal_map:
-            self.standard_ports += '\t%s,\n'%(signal.hierachy_name)
-
-        self.standard_ports += '\tack_vld,\n' + \
-                               '\tack_rdy,\n' + \
-                               '\trd_data\n'
+        self.standard_ports += '\tglobal_sync_reset_out\n'
 
         # get module_external modules' in/outputs
         self.external_ports += '//' + 'EXTERNAL module connection port START'.center(100,"*") + '//\n'
-        if(len(self.external_addr_map) > 0):
-            self.external_ports += '\text_req_vld,\n' + \
-                                   '\text_req_rdy,\n' + \
-                                   '\text_wr_en,ext_rd_en,\n' + \
-                                   '\text_addr,\n' + \
-                                   '\text_wr_data,\n' + \
-                                   '\text_ack_vld,\n' + \
-                                   '\text_ack_rdy,\n' + \
-                                   '\text_rd_data,\n'
+        # if(len(self.external_addr_map) > 0):
+        self.external_ports += '\text_req_vld,\n' + \
+                                '\text_req_rdy,\n' + \
+                                '\text_wr_en,ext_rd_en,\n' + \
+                                '\text_addr,\n' + \
+                                '\text_wr_data,\n' + \
+                                '\text_ack_vld,\n' + \
+                                '\text_ack_rdy,\n' + \
+                                '\text_rd_data,\n'
         self.external_ports += '//' + 'EXTERNAL module connection port END'.center(100,"*") + '//\n'
 
         # get module_internal fields' in/outputs
@@ -525,27 +546,44 @@ class addrmap_str(object):
                           '//' + 'PARAMETER Definition END Here'.center(100,"*") + '//\n'
 
         # get reg_slv native ports
-        self.wire_declaration += '//' + 'WIRE DECLARATION START'.center(100,"*") + '//\n' + \
-                                 'input clk;\n' + \
-                                 'input rstn;\n' + \
-                                 'input req_vld;\n' + \
-                                 'output req_rdy;\n' + \
-                                 'input wr_en;\n' + \
-                                 'input rd_en;\n' + \
-                                 'input [ADDR_WIDTH-1:0] addr;\n' + \
-                                 'input [DATA_WIDTH-1:0] wr_data;\n' + \
-                                 'output [DATA_WIDTH-1:0] rd_data;\n' + \
-                                 'input global_sync_reset_in;\n' + \
-                                 'output global_sync_reset_out;\n' + \
-                                 'output ack_vld;\n' + \
-                                 'input ack_rdy;\n'
+        if(self.master is False):
+            self.wire_declaration += '//' + 'WIRE DECLARATION START'.center(100,"*") + '//\n' + \
+                                    'input clk;\n' + \
+                                    'input rstn;\n' + \
+                                    'input req_vld;\n' + \
+                                    'output req_rdy;\n' + \
+                                    'input wr_en;\n' + \
+                                    'input rd_en;\n' + \
+                                    'input [ADDR_WIDTH-1:0] addr;\n' + \
+                                    'input [DATA_WIDTH-1:0] wr_data;\n' + \
+                                    'output [DATA_WIDTH-1:0] rd_data;\n' + \
+                                    'input global_sync_reset_in;\n' + \
+                                    'output global_sync_reset_out;\n' + \
+                                    'output ack_vld;\n' + \
+                                    'input ack_rdy;\n'
+        else:
+            self.wire_declaration += '//' + 'WIRE DECLARATION START'.center(100,"*") + '//\n' + \
+                                    'input clk;\n' + \
+                                    'input rstn;\n' + \
+                                    'input PSEL;\n' + \
+                                    'input PENABLE;\n' + \
+                                    'output PREADY;\n' + \
+                                    'input PWRITE;\n' + \
+                                    'output PSLVERR;\n' + \
+                                    'input [ADDR_WIDTH-1:0] PADDR;\n' + \
+                                    'input [DATA_WIDTH-1:0] PWDATA;\n' + \
+                                    'output [DATA_WIDTH-1:0] PRDATA;\n' + \
+                                    'output global_sync_reset_out;\n' + \
+                                    'input clear;\n' + \
+                                    'output interrupt;\n'
+
         self.wire_declaration += '//declare the syn_rst\n'
         for signal in signal_map:
             self.wire_declaration += 'input %s;\n'%(signal.hierachy_name)
         # get reg_slv external ports
         self.wire_declaration += '//declare the portwidth of external module\n' + \
                                  'output [EXT_NUM-1:0] ext_req_vld;\n' + \
-                                 'input ext_req_rdy;\n' + \
+                                 'input [EXT_NUM-1:0] ext_req_rdy;\n' + \
                                  'output ext_wr_en;\n' + \
                                  'output ext_rd_en;\n' + \
                                  'output [ADDR_WIDTH-1:0] ext_addr;\n' + \
@@ -555,6 +593,7 @@ class addrmap_str(object):
                                  'output ext_ack_rdy;\n'
 
         # get reg_slv_field ports
+        self.wire_declaration += '\n//' + 'INTERNAL REGISTER IN/OUT PORTS DEFINE START Here'.center(100,"*") + '//\n'
         for internal_register in self.internal_register_map:
             # if the register is alias reg or shared reg(not the first), its field will not be instanced
             if(internal_register.alias is True or (internal_register.shared is True and internal_register.first_shared is False)):
@@ -568,55 +607,73 @@ class addrmap_str(object):
                     self.wire_declaration += 'output [%d-1:0] %s__curr_value;\n'%(field.fieldwidth,field_name)
                     self.wire_declaration += 'output %s__swmod_out;\n'%(field_name) if field.swmod else ''
                     self.wire_declaration += 'output %s__swacc_out;\n'%(field_name) if field.swacc else ''
+        self.wire_declaration += '//' + 'INTERNAL REGISTER IN/OUT PORTS DEFINE END Here'.center(100,"*") + '//\n\n'
 
-        self.wire_declaration += 'logic [EXT_NUM-1:0] ext_sel;\n' + \
-                                 'wire external;\n' + \
-                                 'assign external = |ext_sel;\n' + \
+        self.wire_declaration += '//declare the portwidth of external registers\n' + \
+                                 'logic [EXT_NUM-1:0] ext_sel;\n' + \
+                                 'wire external_reg_selected;\n' + \
+                                 'assign external_reg_selected = |ext_sel;\n' + \
                                  'wire [DATA_WIDTH-1:0] ext_rd_data_vld;\n' + \
-                                 '//declare the portwidth of internal registers\n' + \
-                                 'wire [REG_NUM-1:0] [DATA_WIDTH-1:0] reg_rd_data_in;\n' + \
-                                 'wire [DATA_WIDTH-1:0] reg_rd_data_vld;\n' + \
-                                 'logic [REG_NUM-1:0] reg_sel;\n' + \
-                                 'wire internal;\n' + \
-                                 'logic dummy_reg;\n' + \
-                                 'assign internal = (|reg_sel) | dummy_reg;\n' + \
-                                 'wire wr_en_ff;\nwire rd_en_ff;\nwire [ADDR_WIDTH-1:0] addr_decode;\nwire [DATA_WIDTH-1:0] wr_data_ff;\n' + \
-                                 'wire [REG_NUM-1:0] wr_sel_ff;\nwire [REG_NUM-1:0] rd_sel_ff;\n' + \
-                                 'assign wr_sel_ff = {REG_NUM{wr_en_ff}} & reg_sel;\nassign rd_sel_ff = {REG_NUM{rd_en_ff}} & reg_sel;\n' + \
-                                 'wire [DATA_WIDTH-1:0] rd_data_vld_in;\nwire ack_vld_in;\n' + \
                                  'wire ext_reg_ack_vld;\n' + \
-                                 'wire ext_ack_rdy;\n' + \
-                                 'wire[EXT_NUM-1:0] ext_ack_vld;\n' + \
                                  'wire[EXT_NUM-1:0] ext_ack;\n' + \
-                                 'wire[EXT_NUM-1:0] ext_req_rdy;\n' + \
-                                 'wire req_vld_s;\n' + \
+                                 '//declare the portwidth of internal registers\n' + \
+                                 'logic [REG_NUM-1:0] reg_sel;\n' + \
+                                 'logic dummy_reg;\n' + \
+                                 'wire internal_reg_selected;\n' + \
+                                 'assign internal_reg_selected = (|reg_sel) | dummy_reg;\n' + \
+                                 'wire [REG_NUM-1:0] [DATA_WIDTH-1:0] reg_rd_data_in;\n' + \
+                                 'wire [DATA_WIDTH-1:0] internal_reg_rd_data_vld;\n' + \
+                                 'wire internal_reg_ack_vld;\n'
+        self.wire_declaration += '//declare the control signal for external registers\n' + \
+                                 'wire fsm__slv__wr_en;\nwire fsm__slv__rd_en;\nwire [ADDR_WIDTH-1:0] fsm__slv__addr;\nwire [DATA_WIDTH-1:0] fsm__slv__wr_data;\n' + \
+                                 'wire [DATA_WIDTH-1:0] slv__fsm__rd_data;\n' + \
+                                 '//declare the handshake signal for fsm\n' + \
+                                 'wire slv__fsm__ack_vld;\n' + \
+                                 'wire fsm__slv__req_vld;\n' + \
+                                 'wire slv__fsm__req_rdy;\n' + \
+                                 'assign slv__fsm__req_rdy = |{ext_req_rdy&ext_sel,internal_reg_selected};\n'
+        self.wire_declaration += '//declare the control signal for internal registers\n'
+        if(self.master is False):
+            self.wire_declaration += 'wire [ADDR_WIDTH-1:0] addr_for_decode;\nassign addr_for_decode = fsm__slv__addr;\n' + \
+                                     'wire [DATA_WIDTH-1:0] internal_wr_data;\nassign internal_wr_data = fsm__slv__wr_data;\n' + \
+                                     'wire internal_wr_en;\nassign internal_wr_en = fsm__slv__wr_en;\n' + \
+                                     'wire internal_rd_en;\nassign internal_rd_en = fsm__slv__rd_en;\n'
+        else:
+            self.wire_declaration += 'wire req_rdy;\nwire [ADDR_WIDTH-1:0] addr_for_decode;\nassign addr_for_decode = fsm__slv__addr;// req_rdy = 1 : fsm_state in S_SETUP for internal operation\n' + \
+                                     'wire [DATA_WIDTH-1:0] internal_wr_data;\nassign internal_wr_data = fsm__slv__wr_data;\n' + \
+                                     'wire internal_wr_en;\nassign internal_wr_en = fsm__slv__wr_en;\n' + \
+                                     'wire internal_rd_en;\nassign internal_rd_en = fsm__slv__rd_en;\n'
+
+        self.wire_declaration += 'wire [REG_NUM-1:0] wr_sel_ff;\nwire [REG_NUM-1:0] rd_sel_ff;\n' + \
+                                 'assign wr_sel_ff = {REG_NUM{internal_wr_en}} & reg_sel;\nassign rd_sel_ff = {REG_NUM{internal_rd_en}} & reg_sel;\n' + \
                                  '//' + 'WIRE DECLARATION END'.center(100,"*") + '//\n'
 
         # get state machine instantiate
         self.state_machine += '//' + 'STATE MACHINE INSTANCE START'.center(100,"*") + '//\n'
         if(self.master is False):
-            self.state_machine += 'slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH), .M(M), .N(N))\n' + \
+            self.state_machine += 'slv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n' + \
                                   '\tslv_fsm_%s (\n'%(self.module_name) + \
-                                  '\t.clk(clk), .rstn(rstn), .req_vld(req_vld), .wr_en(wr_en), .rd_en(rd_en), .addr(addr), .wr_data(wr_data),\n' + \
-                                  '\t.rd_data_vld_in(rd_data_vld_in), .ack_vld_in(ack_vld_in), .req_vld_s(req_vld_s),\n' + \
-                                  '\t.wr_en_ff(wr_en_ff), .rd_en_ff(rd_en_ff), .addr_decode(addr_decode), .wr_data_ff(wr_data_ff),\n' + \
-                                  '\t.req_rdy_m(req_rdy), .ack_rdy_m(ack_rdy),\n' + \
-                                  '\t.req_rdy_s(|{ext_req_rdy&ext_sel,internal}), .ack_rdy_s(ext_ack_rdy),\n' + \
-                                  '\t.rd_data(rd_data), .ack_vld(ack_vld),\n' + \
-                                  '\t.global_sync_reset_in(global_sync_reset_in),\n' + \
-                                  '\t.global_sync_reset_out(global_sync_reset_out)\n' + '\t);\n'
+                                  '\t.clk(clk), .rstn(rstn), .mst__fsm__req_vld(req_vld), .mst__fsm__wr_en(wr_en), .mst__fsm__rd_en(rd_en), .mst__fsm__addr(addr), .mst__fsm__wr_data(wr_data),\n' + \
+                                  '\t.slv__fsm__rd_data(slv__fsm__rd_data), .slv__fsm__ack_vld(slv__fsm__ack_vld), .fsm__slv__req_vld(fsm__slv__req_vld),\n' + \
+                                  '\t.fsm__slv__wr_en(fsm__slv__wr_en), .fsm__slv__rd_en(fsm__slv__rd_en), .fsm__slv__addr(fsm__slv__addr), .fsm__slv__wr_data(fsm__slv__wr_data),\n' + \
+                                  '\t.fsm__mst__req_rdy(req_rdy), .mst__fsm__ack_rdy(ack_rdy),\n' + \
+                                  '\t.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),\n' + \
+                                  '\t.fsm__mst__rd_data(rd_data), .fsm__mst__ack_vld(ack_vld),\n' + \
+                                  '\t.external_reg_selected(external_reg_selected),\n' + \
+                                  '\t.mst__fsm__sync_reset(global_sync_reset_in),\n' + \
+                                  '\t.fsm__slv__sync_reset(global_sync_reset_out)\n' + '\t);\n'
         else:
-            self.state_machine += 'mst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH), .M(M))\n' + \
-                                  '\tmst_fsm%s (\n'%(self.module_name) + \
-                                  '\t.clk(clk), .rstn(rstn), .req_vld(req_vld), .wr_en(wr_en), .rd_en(rd_en), .addr(addr), .wr_data(wr_data),\n' + \
-                                  '\t.rd_data_vld_in(rd_data_vld_in), .ack_vld_in(ack_vld_in),\n' + \
-                                  '\t.wr_en_ff(wr_en_ff), .rd_en_ff(rd_en_ff), .addr_ff(addr_ff), .wr_data_ff(wr_data_ff),\n' + \
-                                  '\t.req_rdy_m(req_rdy), .ack_rdy_m(ack_rdy),\n' + \
-                                  '\t.req_rdy_s(ext_req_rdy), .ack_rdy_s(ext_ack_rdy),\n' + \
-                                  '\t.rd_data(rd_data), .ack_vld(ack_vld),\n' + \
-                                  '\t.global_sync_reset(global_sync_reset),\n' + \
-                                  '\t.slv_sel(ext_sel), .slv_sel_ff(ext_sel_ff),\n' + \
-                                  '\t.dummy_reg(dummy_reg), .dummy_reg_ff(dummy_reg_ff),\n' + \
+            self.state_machine += 'mst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n' + \
+                                  '\tmst_fsm_%s (\n'%(self.module_name) + \
+                                  '\t.clk(clk), .rstn(rstn), .fsm__slv__req_vld(fsm__slv__req_vld),\n' + \
+                                  '\t.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE),\n' + \
+                                  '\t.PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR),\n' + \
+                                  '\t.slv__fsm__rd_data(slv__fsm__rd_data), .slv__fsm__ack_vld(slv__fsm__ack_vld),\n' + \
+                                  '\t.fsm__slv__wr_en(fsm__slv__wr_en), .fsm__slv__rd_en(fsm__slv__rd_en), .fsm__slv__addr(fsm__slv__addr), .fsm__slv__wr_data(fsm__slv__wr_data),\n' + \
+                                  '\t.fsm__mst__req_rdy(req_rdy),\n' + \
+                                  '\t.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),\n' + \
+                                  '\t.external_reg_selected(external_reg_selected),\n' + \
+                                  '\t.fsm__slv__sync_reset(global_sync_reset_out),\n' + \
                                   '\t.clear(clear), .interrupt(interrupt)\n' + \
                                   '\t);\n'
         self.state_machine += '//' + 'STATE MACHINE INSTANCE END'.center(100,"*") + '//\n'
@@ -625,8 +682,8 @@ class addrmap_str(object):
         if(self.N > 0):
             self.split_mux += 'split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(64)) rd_split_mux\n' + \
                               '(.clk(clk), .rst_n(rstn),\n' + \
-                              '.din({reg_rd_data_in,{DATA_WIDTH{1\'b0}}}), .sel({rd_sel_ff,dummy_reg}),\n' + \
-                              '.dout(reg_rd_data_vld), .dout_vld(reg_ack_vld)\n' + \
+                              '.din({reg_rd_data_in,{DATA_WIDTH{1\'b0}}}), .sel({rd_sel_ff, !req_rdy & dummy_reg}),\n' + \
+                              '.dout(internal_reg_rd_data_vld), .dout_vld(internal_reg_ack_vld)\n' + \
                               ');\n'
         if(self.M > 0):
             self.split_mux += 'split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(64)) ext_rd_split_mux\n' + \
@@ -639,14 +696,14 @@ class addrmap_str(object):
         self.output_select += '//' + 'Final Split Mux OUT Signal Definitinon START Here'.center(100,"*") + '//\n'
         self.output_select += '// select which to read out and transfer the corresponding vld signal\n'
         if(self.M > 0 and self.N > 0):
-            self.output_select += 'assign rd_data_vld_in = reg_ack_vld ? reg_rd_data_vld : (ext_reg_ack_vld ? ext_rd_data_vld : 0);\n'
-            self.output_select += 'assign ack_vld_in = reg_ack_vld | ext_reg_ack_vld| (wr_en_ff & internal);\n'
+            self.output_select += 'assign slv__fsm__rd_data = internal_reg_ack_vld ? internal_reg_rd_data_vld : (ext_reg_ack_vld ? ext_rd_data_vld : 0);\n'
+            self.output_select += 'assign slv__fsm__ack_vld = internal_reg_ack_vld | ext_reg_ack_vld | (internal_wr_en & internal_reg_selected);\n'
         elif(self.M == 0 and self.N > 0):
-            self.output_select += 'assign rd_data_vld_in = reg_ack_vld ? reg_rd_data_vld : 0;\n'
-            self.output_select += 'assign ack_vld_in = reg_ack_vld | (wr_en_ff & internal);\n'
+            self.output_select += 'assign slv__fsm__rd_data = internal_reg_ack_vld ? internal_reg_rd_data_vld : 0;\n'
+            self.output_select += 'assign slv__fsm__ack_vld = internal_reg_ack_vld | (internal_wr_en & internal_reg_selected);\n'
         elif(self.M > 0 and self.N == 0):
-            self.output_select += 'assign rd_data_vld_in = dummy_reg ? {DATA_WIDTH{1\'b0}} : (ext_reg_ack_vld ? ext_rd_data_vld : 0);\n'
-            self.output_select += 'assign ack_vld_in = dummy_reg |ext_reg_ack_vld;\n'
+            self.output_select += 'assign slv__fsm__rd_data = dummy_reg ? {DATA_WIDTH{1\'b0}} : (ext_reg_ack_vld ? ext_rd_data_vld : 0);\n'
+            self.output_select += 'assign slv__fsm__ack_vld = dummy_reg | ext_reg_ack_vld;\n'
         else:
             try:
                 sys.exit(1)
@@ -655,7 +712,7 @@ class addrmap_str(object):
         self.output_select += '//' + 'Final Split Mux OUT Signal Definitinon END Here'.center(100,"*") + '//\n'
 
     # convert addr or reset value from int(decimal) to str(hex)
-    def get_hex(self,dec_d:int) -> str:
+    def get_hex(self,dec_d:int):
         if(dec_d is None):
             return '0'
         hex_d = str(hex(dec_d)[2:])

@@ -1,6 +1,9 @@
-from systemrdl.node import *
-from .rtl_type import *
 import sys
+
+from systemrdl.node import *
+
+from .rtl_type import *
+
 
 # create new rtl_type from node type while copying the useful information to draw rtl
 def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:

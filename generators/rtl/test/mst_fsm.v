@@ -15,7 +15,7 @@ module mst_fsm
         PRDATA,
         PREADY,
         PSLVERR,
-        
+
         // for interrupt this signal may be float
         clear,
         //  control signal
@@ -84,8 +84,8 @@ localparam   S_WAIT_SLV_RDY = 2'd1; //slave is not ready to get command, lock th
 localparam   S_WAIT_SLV_ACK = 2'd2; //slave is get command, free the control signal and wait for ack
 localparam   S_ACCESS =  2'd3; // return result to APB bus
 
-reg state;
-reg next_state;
+reg [1:0] state;
+reg [1:0] next_state;
 
 
 // S_WAIT_SLV_RDY time: TIMECNT * Tclk
@@ -138,7 +138,7 @@ always_ff@(posedge clk or negedge rstn)begin
     else begin
         fsm__slv__addr <= (state == S_SETUP && next_state != S_SETUP) ? PADDR : fsm__slv__addr;
         fsm__slv__wr_data <= (state == S_SETUP && next_state != S_SETUP) ? PWDATA : fsm__slv__wr_data;
-        
+
         // case1: external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK
         //        when APB launches a requistion for external_reg while external_reg is rdy, latch the control signal for 1 cycle
         // case2: next_state == S_WAIT_SLV_RDY
@@ -222,7 +222,7 @@ end
 
 
 assign PREADY = (state == S_ACCESS) ? slv__fsm__ack_vld_ff : slv__fsm__ack_vld | op_time_out;
-assign PRDATA = (state == S_ACCESS) ? slv__fsm__rd_data_ff : 
+assign PRDATA = (state == S_ACCESS) ? slv__fsm__rd_data_ff :
                                       op_time_out ? 32'hdead_1eaf : slv__fsm__rd_data;
 assign PSLVERR = op_time_out;
 endmodule

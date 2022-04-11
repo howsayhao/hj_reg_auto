@@ -1,7 +1,2 @@
 __pycache__/
-excel/xml/
 .vscode/
-build/
-dist/
-parsers/test/*.xlsx
-parsers/test/*.rdl

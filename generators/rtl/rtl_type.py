@@ -1,7 +1,5 @@
-from xmlrpc.client import Fault
-
 class reg_slv_if(object):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         self.obj = obj
         self.clk = 'clk'
         self.rstn = 'rstn'
@@ -19,19 +17,19 @@ class reg_slv_if(object):
         self.global_sync = ''
 
 class reg_slv_if_m(object):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         pass
 
 # a class contains external registers maps to common external top module's addr
 class addrpointer(object):
-    def __init__(self, addr) -> None:
+    def __init__(self, addr):
         self.addr = addr
         self.registers = []
         self.register_names = []
         self.addr_str = []
 
 class RTL_NODE(object):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         self.obj = obj
         self.name = ""
         self.desc = ""
@@ -43,16 +41,16 @@ class RTL_NODE(object):
         self.external_top = None
 
 class Signal(RTL_NODE):
-    def __init__(self, obj, width = "1") -> None:
+    def __init__(self, obj, width = "1"):
         RTL_NODE.__init__(self,obj)
         self.width = width
         self.dir = 'dual'
         self.source = None
         self.sink = None
-        
+
 
 class Field(RTL_NODE):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         RTL_NODE.__init__(self,obj)
         self.alias = False
         self.alias_field = []
@@ -62,7 +60,7 @@ class Field(RTL_NODE):
         self.resetsignal = "rstn"
         self.syncresetsignal = ""
         self.syncresetsignal = ""
-        
+
         self.sw = "RW"
         self.onread = "NA"
         self.onwrite = "NA"
@@ -78,11 +76,11 @@ class Field(RTL_NODE):
         self.msb = 0
         self.lsb = 0
 
-        
-        
+
+
 
 class Reg(RTL_NODE):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         RTL_NODE.__init__(self,obj)
         self.id = 0
         self.alias = False
@@ -99,28 +97,28 @@ class Reg(RTL_NODE):
 
 
 class Regfile(RTL_NODE):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         RTL_NODE.__init__(self,obj)
         self.alignment = ""
         self.addr = 0
-        
+
 
 class Memory(RTL_NODE):
-    def __init__(self, obj) -> None:
+    def __init__(self, obj):
         RTL_NODE.__init__(self,obj)
         self.mementries = 0
         self.memwidth = 16
-        self.sw = "RW"   
+        self.sw = "RW"
         self.external = True
         self.addr = 0
 
         self.ref = ""
         self.ref_id = 0
-        
-        
+
+
 
 class Addressmap(RTL_NODE):
-    def __init__(self,obj) -> None:
+    def __init__(self,obj):
         RTL_NODE.__init__(self,obj)
         self.alignment = ""
         self.sharedextbus = False
@@ -131,5 +129,5 @@ class Addressmap(RTL_NODE):
 
 
 class Root(RTL_NODE):
-    def __init__(self,obj) -> None:
+    def __init__(self,obj):
         RTL_NODE.__init__(self,obj)

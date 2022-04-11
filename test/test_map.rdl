@@ -1,5 +1,7 @@
 // generated from Excel Worksheet specification: test_map_1.xlsx
 addrmap test_map_1 {
+	hj_genrtl = true;
+
 	signal {
 		name = "sync_rst_signal_1";
 		activehigh;
@@ -127,10 +129,9 @@ reg shared_tem{
 };
 
 addrmap test_map_2 {
-	hj_genrtl = true;
+	hj_genrtl = false;
 	shared_tem shared_2;
 	shared_2 -> name = "SHARED_IN_TEST_MAP_2";
-	shared_2.FIELD_1 -> reset = 0X04;
 	shared_2.FIELD_1 -> onread = rset;
 	shared_2.FIELD_1 -> onwrite = wzt;
 };
@@ -139,14 +140,12 @@ addrmap test_map_3 {
 	hj_genrtl = false;
 	shared_tem shared_3;
 	shared_3 -> name = "SHARED_IN_TEST_MAP_3";
-	shared_3.FIELD_1 -> reset = 0X07;
 	shared_3.FIELD_1 -> sw = r;
 	shared_3.FIELD_1 -> onread = rclr;
 };
 
 addrmap root_map {
 	test_map_1 test_map_1_inst;
-	test_map_1_inst -> ispresent = true;
 	test_map_2 test_map_2_inst;
 	test_map_3 test_map_3_inst;
 };
