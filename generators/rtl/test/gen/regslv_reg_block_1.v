@@ -101,13 +101,13 @@ wire slv__fsm__req_rdy;
 assign slv__fsm__req_rdy = |{ext_req_rdy&ext_sel,internal_reg_selected};
 //declare the control signal for internal registers
 wire [ADDR_WIDTH-1:0] addr_for_decode;
-assign addr_for_decode = req_rdy ? addr : fsm__slv__addr;// req_rdy = 1 : fsm_state in IDLE for internal operation
+assign addr_for_decode = fsm__slv__addr;
 wire [DATA_WIDTH-1:0] internal_wr_data;
-assign internal_wr_data = req_rdy ? wr_data : fsm__slv__wr_data;
+assign internal_wr_data = fsm__slv__wr_data;
 wire internal_wr_en;
-assign internal_wr_en = req_rdy ? wr_en : fsm__slv__wr_en;
+assign internal_wr_en = fsm__slv__wr_en;
 wire internal_rd_en;
-assign internal_rd_en = req_rdy ? rd_en : fsm__slv__rd_en;
+assign internal_rd_en = fsm__slv__rd_en;
 wire [REG_NUM-1:0] wr_sel_ff;
 wire [REG_NUM-1:0] rd_sel_ff;
 assign wr_sel_ff = {REG_NUM{internal_wr_en}} & reg_sel;
@@ -132,7 +132,7 @@ assign ext_ack[1] = ext_ack_vld[1] & ext_sel[1];
 //********************************Rd_data/Ack_vld Split Mux START Here********************************//
 split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(64)) rd_split_mux
 (.clk(clk), .rst_n(rstn),
-.din({reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel_ff,dummy_reg}),
+.din({reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel_ff, !req_rdy & dummy_reg}),
 .dout(internal_reg_rd_data_vld), .dout_vld(internal_reg_ack_vld)
 );
 split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(64)) ext_rd_split_mux
@@ -198,7 +198,7 @@ logic [31:0] test_12_shared_2;
 assign test_12_shared_2_wr_data = reg_sel[0] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(32),
 	.ARST_VALUE(32'hffffffff),
 	.ALIAS_NUM(2),

@@ -99,12 +99,12 @@ always_comb begin
             next_state = mst__fsm__sync_reset ? S_IDLE : 
                                                 !mst__fsm__req_vld ? S_IDLE :
                                                                      slv__fsm__ack_vld ? S_IDLE : 
-                                                                                         slv__fsm__req_rdy ? S_WAIT_SLV_ACK : S_WAIT_SLV_RDY;
+                                                                                         external_reg_selected & slv__fsm__req_rdy ? S_WAIT_SLV_ACK : S_WAIT_SLV_RDY;
         end
         S_WAIT_SLV_RDY:begin
             next_state = mst__fsm__sync_reset ? S_IDLE : 
                                                 slv__fsm__ack_vld ? S_IDLE : 
-                                                                    slv__fsm__req_rdy ? S_WAIT_SLV_ACK : S_WAIT_SLV_RDY;
+                                                                    external_reg_selected & slv__fsm__req_rdy ? S_WAIT_SLV_ACK : S_WAIT_SLV_RDY;
         end
         S_WAIT_SLV_ACK:begin
             next_state = mst__fsm__sync_reset ? S_IDLE : 

@@ -75,7 +75,7 @@ module ext_mem (
 
     // Ack handshake: ack_vld, ack_rdy
     always @(posedge clk) begin : ACK
-        if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_rdy)
+        if (req_vld_ff && (wr_en_ff || rd_en_ff))
             ack_vld <= VALID;
         else
             ack_vld <= INVALID;

@@ -95,13 +95,13 @@ assign slv__fsm__req_rdy = |{ext_req_rdy&ext_sel,internal_reg_selected};
 //declare the control signal for internal registers
 wire req_rdy;
 wire [ADDR_WIDTH-1:0] addr_for_decode;
-assign addr_for_decode = req_rdy ? PADDR : fsm__slv__addr;// req_rdy = 1 : fsm_state in S_SETUP for internal operation
+assign addr_for_decode = fsm__slv__addr;// req_rdy = 1 : fsm_state in S_SETUP for internal operation
 wire [DATA_WIDTH-1:0] internal_wr_data;
-assign internal_wr_data = req_rdy ? PWDATA : fsm__slv__wr_data;
+assign internal_wr_data = fsm__slv__wr_data;
 wire internal_wr_en;
-assign internal_wr_en = req_rdy ? PWRITE : fsm__slv__wr_en;
+assign internal_wr_en = fsm__slv__wr_en;
 wire internal_rd_en;
-assign internal_rd_en = req_rdy ? !PWRITE : fsm__slv__rd_en;
+assign internal_rd_en = fsm__slv__rd_en;
 wire [REG_NUM-1:0] wr_sel_ff;
 wire [REG_NUM-1:0] rd_sel_ff;
 assign wr_sel_ff = {REG_NUM{internal_wr_en}} & reg_sel;

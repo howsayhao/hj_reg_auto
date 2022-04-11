@@ -2,7 +2,7 @@
 
 module sw_ctrl (field_value,
 		sw_wr, sw_rd, sw_wr_data, sw_type_alter_signal,
-                nxt_sw_value, sw_modify,swmod_out,swacc_out,pulse_out,reset_modify);
+                nxt_sw_value, sw_modify,swmod_out,swacc_out,reset_modify);
 
    parameter F_WIDTH = 4;
    parameter SW_CNT  = 1;
@@ -22,7 +22,6 @@ module sw_ctrl (field_value,
    output logic 		      sw_modify;
    output logic               swmod_out;
    output logic               swacc_out;
-   output logic               pulse_out;
    output logic               reset_modify;
 
    logic modified;

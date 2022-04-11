@@ -1,16 +1,16 @@
-module reg_tree #(
-parameter ADDR_WIDTH = 64,
-parameter DATA_WIDTH = 32)
+`define ADDR_WIDTH 7'd64
+`define DATA_WIDTH 6'd32
+module reg_tree 
 (
 	//reg_mst interface port
-	input clk
+	 input clk
 	,input rstn
-	,input [ADDR_WIDTH-1:0]PADDR
+	,input [`ADDR_WIDTH-1:0]PADDR
 	,input PWRITE
 	,input PSEL
 	,input PENABLE
-	,input [DATA_WIDTH-1:0]PWDATA
-	,output [DATA_WIDTH-1:0]PRDATA
+	,input [`DATA_WIDTH-1:0]PWDATA
+	,output [`DATA_WIDTH-1:0]PRDATA
 	,output PREADY
 	,output PSLVERR
 	,input clear
@@ -178,39 +178,28 @@ parameter DATA_WIDTH = 32)
 	,input regslv_reg_block_1__ext_mem_11_ack_vld
 	,input regslv_reg_block_1__ext_mem_11_req_rdy
 	,output regslv_reg_block_1__ext_mem_11_ack_rdy
-	,input [DATA_WIDTH-1:0]regslv_reg_block_1__ext_mem_11_rd_data
+	,input [`DATA_WIDTH-1:0]regslv_reg_block_1__ext_mem_11_rd_data
 	,output regslv_reg_block_2__ext_mem_21_req_vld
 	,input regslv_reg_block_2__ext_mem_21_ack_vld
 	,input regslv_reg_block_2__ext_mem_21_req_rdy
 	,output regslv_reg_block_2__ext_mem_21_ack_rdy
-	,input [DATA_WIDTH-1:0]regslv_reg_block_2__ext_mem_21_rd_data
+	,input [`DATA_WIDTH-1:0]regslv_reg_block_2__ext_mem_21_rd_data
 	,output regslv_reg_block_2__ext_mem_22_req_vld
 	,input regslv_reg_block_2__ext_mem_22_ack_vld
 	,input regslv_reg_block_2__ext_mem_22_req_rdy
 	,output regslv_reg_block_2__ext_mem_22_ack_rdy
-	,input [DATA_WIDTH-1:0]regslv_reg_block_2__ext_mem_22_rd_data
+	,input [`DATA_WIDTH-1:0]regslv_reg_block_2__ext_mem_22_rd_data
 	,output regslv_reg_block_2__ext_mem_23_req_vld
 	,input regslv_reg_block_2__ext_mem_23_ack_vld
 	,input regslv_reg_block_2__ext_mem_23_req_rdy
 	,output regslv_reg_block_2__ext_mem_23_ack_rdy
-	,input [DATA_WIDTH-1:0]regslv_reg_block_2__ext_mem_23_rd_data
+	,input [`DATA_WIDTH-1:0]regslv_reg_block_2__ext_mem_23_rd_data
 	,output regmst_reg_top__ext_mem_in_top_req_vld
 	,input regmst_reg_top__ext_mem_in_top_ack_vld
 	,input regmst_reg_top__ext_mem_in_top_req_rdy
 	,output regmst_reg_top__ext_mem_in_top_ack_rdy
-	,input [DATA_WIDTH-1:0]regmst_reg_top__ext_mem_in_top_rd_data
+	,input [`DATA_WIDTH-1:0]regmst_reg_top__ext_mem_in_top_rd_data
 //external IP/memory port declare
-	,output regslv_reg_block_1_addr
-	,output regslv_reg_block_1_wr_en
-	,output regslv_reg_block_1_rd_en
-	,output regslv_reg_block_1_wr_data
-	,output regslv_reg_block_1_fsm_sync_reset
-	,output regslv_reg_block_2_addr
-	,output regslv_reg_block_2_wr_en
-	,output regslv_reg_block_2_rd_en
-	,output regslv_reg_block_2_wr_data
-	,output regslv_reg_block_2_fsm_sync_reset
-//external IP/memory port end
 );
 //parameter instance here
 //wire definition here
@@ -218,42 +207,42 @@ logic [3-1:0] regmst_reg_top_ext_req_vld;
 logic [3-1:0] regmst_reg_top_ext_req_rdy;
 logic [3-1:0] regmst_reg_top_ext_ack_vld;
 logic regmst_reg_top_ext_ack_rdy;
-logic [3-1:0] [DATA_WIDTH-1:0]regmst_reg_top_ext_rd_data;
+logic [3-1:0] [`DATA_WIDTH-1:0]regmst_reg_top_ext_rd_data;
 logic regmst_reg_top_wr_en;
 logic regmst_reg_top_rd_en;
 logic regmst_reg_top_fsm_sync_reset;
-logic [DATA_WIDTH-1:0]regmst_reg_top_wr_data;
-logic [ADDR_WIDTH-1:0] regmst_reg_top_addr;
+logic [`DATA_WIDTH-1:0]regmst_reg_top_wr_data;
+logic [`ADDR_WIDTH-1:0] regmst_reg_top_addr;
 logic [2-1:0] regslv_reg_block_1_ext_req_vld;
 logic [2-1:0] regslv_reg_block_1_ext_req_rdy;
 logic [2-1:0] regslv_reg_block_1_ext_ack_vld;
 logic regslv_reg_block_1_ext_ack_rdy;
-logic [2-1:0] [DATA_WIDTH-1:0]regslv_reg_block_1_ext_rd_data;
+logic [2-1:0] [`DATA_WIDTH-1:0]regslv_reg_block_1_ext_rd_data;
 logic regslv_reg_block_1_wr_en;
 logic regslv_reg_block_1_rd_en;
 logic regslv_reg_block_1_fsm_sync_reset;
-logic [DATA_WIDTH-1:0]regslv_reg_block_1_wr_data;
-logic [ADDR_WIDTH-1:0] regslv_reg_block_1_addr;
+logic [`DATA_WIDTH-1:0]regslv_reg_block_1_wr_data;
+logic [`ADDR_WIDTH-1:0] regslv_reg_block_1_addr;
 logic [1-1:0] regslv_test_11_ext_req_vld;
 logic [1-1:0] regslv_test_11_ext_req_rdy;
 logic [1-1:0] regslv_test_11_ext_ack_vld;
 logic regslv_test_11_ext_ack_rdy;
-logic [1-1:0] [DATA_WIDTH-1:0]regslv_test_11_ext_rd_data;
+logic [1-1:0] [`DATA_WIDTH-1:0]regslv_test_11_ext_rd_data;
 logic regslv_test_11_wr_en;
 logic regslv_test_11_rd_en;
 logic regslv_test_11_fsm_sync_reset;
-logic [DATA_WIDTH-1:0]regslv_test_11_wr_data;
-logic [ADDR_WIDTH-1:0] regslv_test_11_addr;
+logic [`DATA_WIDTH-1:0]regslv_test_11_wr_data;
+logic [`ADDR_WIDTH-1:0] regslv_test_11_addr;
 logic [3-1:0] regslv_reg_block_2_ext_req_vld;
 logic [3-1:0] regslv_reg_block_2_ext_req_rdy;
 logic [3-1:0] regslv_reg_block_2_ext_ack_vld;
 logic regslv_reg_block_2_ext_ack_rdy;
-logic [3-1:0] [DATA_WIDTH-1:0]regslv_reg_block_2_ext_rd_data;
+logic [3-1:0] [`DATA_WIDTH-1:0]regslv_reg_block_2_ext_rd_data;
 logic regslv_reg_block_2_wr_en;
 logic regslv_reg_block_2_rd_en;
 logic regslv_reg_block_2_fsm_sync_reset;
-logic [DATA_WIDTH-1:0]regslv_reg_block_2_wr_data;
-logic [ADDR_WIDTH-1:0] regslv_reg_block_2_addr;
+logic [`DATA_WIDTH-1:0]regslv_reg_block_2_wr_data;
+logic [`ADDR_WIDTH-1:0] regslv_reg_block_2_addr;
 //external IP/memory port define
 //external: ext_mem_11 ref:regslv_reg_block_1  wire connection define
 assign regslv_reg_block_1__ext_mem_11_req_vld = regslv_reg_block_1_ext_req_vld[1];
@@ -286,7 +275,7 @@ assign regmst_reg_top_ext_ack_vld[2] = regmst_reg_top__ext_mem_in_top_ack_vld;
 assign regmst_reg_top_ext_req_rdy[2] = regmst_reg_top__ext_mem_in_top_req_rdy;
 assign regmst_reg_top_ext_rd_data[2] = regmst_reg_top__ext_mem_in_top_rd_data;
 //reg module instance here
-regmst_reg_top #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
+regmst_reg_top #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regmst_reg_top (
 	//APB interface instance
 	.clk(clk),.rstn(rstn),.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE), .PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR),.clear(clear), .interrupt(interrupt)
@@ -296,7 +285,7 @@ regmst_reg_top #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 	,.global_sync_reset_out(regmst_reg_top_fsm_sync_reset)//field ports instance
 	
 	);
-regslv_reg_block_1 #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
+regslv_reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_reg_block_1 (
 	//reg_module upstream interface instance
 	.clk(clk),.rstn(rstn),.req_vld(regmst_reg_top_ext_req_vld[0]),.req_rdy(regmst_reg_top_ext_req_rdy[0])
@@ -309,7 +298,7 @@ regslv_reg_block_1 #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 	,.test_12_shared_2__FIELD_0__next_value(test_12_shared_2__FIELD_0__next_value),.test_12_shared_2__FIELD_0__pulse(test_12_shared_2__FIELD_0__pulse),.test_12_shared_2__FIELD_0__curr_value(test_12_shared_2__FIELD_0__curr_value)
 	
 	);
-regslv_test_11 #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
+regslv_test_11 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_test_11 (
 	//reg_module upstream interface instance
 	.clk(clk),.rstn(rstn),.req_vld(regslv_reg_block_1_ext_req_vld[0]),.req_rdy(regslv_reg_block_1_ext_req_rdy[0])
@@ -347,7 +336,7 @@ regslv_test_11 #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 	,.REG6_SW_ACC_MOD__FIELD_0__curr_value(REG6_SW_ACC_MOD__FIELD_0__curr_value),.REG6_SW_ACC_MOD__FIELD_0__swmod_out(REG6_SW_ACC_MOD__FIELD_0__swmod_out),.REG6_SW_ACC_MOD__FIELD_0__swacc_out(REG6_SW_ACC_MOD__FIELD_0__swacc_out)
 	
 	);
-regslv_reg_block_2 #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
+regslv_reg_block_2 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_reg_block_2 (
 	//reg_module upstream interface instance
 	.clk(clk),.rstn(rstn),.req_vld(regmst_reg_top_ext_req_vld[1]),.req_rdy(regmst_reg_top_ext_req_rdy[1])

@@ -287,13 +287,13 @@ wire slv__fsm__req_rdy;
 assign slv__fsm__req_rdy = |{ext_req_rdy&ext_sel,internal_reg_selected};
 //declare the control signal for internal registers
 wire [ADDR_WIDTH-1:0] addr_for_decode;
-assign addr_for_decode = req_rdy ? addr : fsm__slv__addr;// req_rdy = 1 : fsm_state in IDLE for internal operation
+assign addr_for_decode = fsm__slv__addr;
 wire [DATA_WIDTH-1:0] internal_wr_data;
-assign internal_wr_data = req_rdy ? wr_data : fsm__slv__wr_data;
+assign internal_wr_data = fsm__slv__wr_data;
 wire internal_wr_en;
-assign internal_wr_en = req_rdy ? wr_en : fsm__slv__wr_en;
+assign internal_wr_en = fsm__slv__wr_en;
 wire internal_rd_en;
-assign internal_rd_en = req_rdy ? rd_en : fsm__slv__rd_en;
+assign internal_rd_en = fsm__slv__rd_en;
 wire [REG_NUM-1:0] wr_sel_ff;
 wire [REG_NUM-1:0] rd_sel_ff;
 assign wr_sel_ff = {REG_NUM{internal_wr_en}} & reg_sel;
@@ -306,7 +306,7 @@ assign rd_sel_ff = {REG_NUM{internal_rd_en}} & reg_sel;
 //********************************Rd_data/Ack_vld Split Mux START Here********************************//
 split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(64)) rd_split_mux
 (.clk(clk), .rst_n(rstn),
-.din({reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel_ff,dummy_reg}),
+.din({reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel_ff, !req_rdy & dummy_reg}),
 .dout(internal_reg_rd_data_vld), .dout_vld(internal_reg_ack_vld)
 );
 //*********************************Rd_data/Ack_vld Split Mux END Here*********************************//
@@ -377,7 +377,7 @@ logic [31:0] REG1_SW_RW;
 assign REG1_SW_RW_wr_data = reg_sel[0] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -406,7 +406,7 @@ x__REG1_SW_RW__FIELD_8
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -435,7 +435,7 @@ x__REG1_SW_RW__FIELD_7
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -464,7 +464,7 @@ x__REG1_SW_RW__FIELD_6
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -493,7 +493,7 @@ x__REG1_SW_RW__FIELD_5
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -522,7 +522,7 @@ x__REG1_SW_RW__FIELD_4
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -551,7 +551,7 @@ x__REG1_SW_RW__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -580,7 +580,7 @@ x__REG1_SW_RW__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -609,7 +609,7 @@ x__REG1_SW_RW__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -659,7 +659,7 @@ logic [31:0] REG2_SW_W;
 assign REG2_SW_W_wr_data = reg_sel[1] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -688,7 +688,7 @@ x__REG2_SW_W__FIELD_6
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -717,7 +717,7 @@ x__REG2_SW_W__FIELD_5
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -746,7 +746,7 @@ x__REG2_SW_W__FIELD_4
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -775,7 +775,7 @@ x__REG2_SW_W__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.SRST_CNT(1),
 	.ARST_VALUE(2'h0),
@@ -805,7 +805,7 @@ x__REG2_SW_W__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.SRST_CNT(1),
 	.ARST_VALUE(2'h0),
@@ -835,7 +835,7 @@ x__REG2_SW_W__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.ALIAS_NUM(2),
@@ -876,7 +876,7 @@ logic [31:0] REG3_HW;
 assign REG3_HW_wr_data = reg_sel[2] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -904,7 +904,7 @@ x__REG3_HW__FIELD_3
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -932,7 +932,7 @@ x__REG3_HW__FIELD_2
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -960,7 +960,7 @@ x__REG3_HW__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1004,7 +1004,7 @@ logic [31:0] REG4_PRECEDENCE;
 assign REG4_PRECEDENCE_wr_data = reg_sel[3] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1032,7 +1032,7 @@ x__REG4_PRECEDENCE__FIELD_1
 	);
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1074,7 +1074,7 @@ logic [31:0] REG5_SINGLEPULSE;
 assign REG5_SINGLEPULSE_wr_data = reg_sel[4] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(1),
 	.ARST_VALUE(1'h0),
 	.SW_TYPE({`SW_RW}),
@@ -1116,7 +1116,7 @@ logic [31:0] REG6_SW_ACC_MOD;
 assign REG6_SW_ACC_MOD_wr_data = reg_sel[5] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#( 
+	#(
 	.F_WIDTH(2),
 	.ARST_VALUE(2'h0),
 	.SW_TYPE({`SW_RW}),
