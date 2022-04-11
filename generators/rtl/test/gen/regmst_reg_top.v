@@ -138,7 +138,7 @@ split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(64)) ext_rd_split_mux
 //*************************Final Split Mux OUT Signal Definitinon START Here**************************//
 // select which to read out and transfer the corresponding vld signal
 assign slv__fsm__rd_data = dummy_reg ? {DATA_WIDTH{1'b0}} : (ext_reg_ack_vld ? ext_rd_data_vld : 0);
-assign slv__fsm__ack_vld = dummy_reg |ext_reg_ack_vld;
+assign slv__fsm__ack_vld = dummy_reg | ext_reg_ack_vld;
 //**************************Final Split Mux OUT Signal Definitinon END Here***************************//
 
 

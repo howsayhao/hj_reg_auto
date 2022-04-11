@@ -198,7 +198,7 @@ logic [31:0] test_12_shared_2;
 assign test_12_shared_2_wr_data = reg_sel[0] && internal_wr_en ? internal_wr_data : 0;
 field
 	//**************PARAMETER INSTANTIATE***************//
-	#(
+	#( 
 	.F_WIDTH(32),
 	.ARST_VALUE(32'hffffffff),
 	.ALIAS_NUM(2),

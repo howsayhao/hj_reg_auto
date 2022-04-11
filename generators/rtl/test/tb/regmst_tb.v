@@ -179,6 +179,16 @@ regslv_test_11_dut (
     .addr(regslv_reg_block_1__ext__addr),
     .wr_data(regslv_reg_block_1__ext__wr_data),
     .rd_data(regslv_reg_block_1__ext__rd_data[0]),
+    // downstream reg_native_if (float)
+    .ext_req_vld(),
+    .ext_req_rdy(1'b0),
+    .ext_wr_en(),
+    .ext_rd_en(),
+    .ext_addr(),
+    .ext_wr_data(),
+    .ext_ack_vld(1'b0),
+    .ext_ack_rdy(),
+    .ext_rd_data({DATA_WIDTH{1'b0}}),
     // hardware access ports
     .REG1_SW_RW__FIELD_8__next_value(2'b0),
     .REG1_SW_RW__FIELD_8__pulse(1'b0),
