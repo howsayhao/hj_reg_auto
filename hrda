@@ -27,7 +27,7 @@ class CommandRunner:
         """
         构建命令行解析器
         """
-        parser = argparse.ArgumentParser(prog="rda",
+        parser = argparse.ArgumentParser(prog="hrda",
                                          description="Register Design Automation (RDA) Tool")
         parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
         subparsers = parser.add_subparsers(title="sub-commands",
@@ -35,7 +35,7 @@ class CommandRunner:
                                                        "parsing Excel/SystemRDL specifications, "
                                                        "and generating RTL, UVM RAL, HTML docs "
                                                        "and C header files",
-                                           help="see more details in the documentaion")
+                                           help="see more details in the README and documentaion")
 
         # 子命令：生成寄存器Excel模板
         parser_excel_template = subparsers.add_parser("excel_template",

@@ -133,10 +133,13 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
 ### **3.1 环境与依赖**
 
 - 可运行的OS: Windows/Linux
-- Python: Version 3.5+
+
+- Python: Version 3.7+
 
   - systemrdl-compiler  [https://github.com/SystemRDL/systemrdl-compiler](https://github.com/SystemRDL/systemrdl-compiler)
+
   - PeakRDL-html  [https://github.com/SystemRDL/PeakRDL-html](https://github.com/SystemRDL/PeakRDL-html)
+
   - PeakRDL-uvm  [https://github.com/SystemRDL/PeakRDL-uvm](https://github.com/SystemRDL/PeakRDL-uvm)
 
 > 后续会将这些开源Python库集成到工具里，移除依赖要求
@@ -261,26 +264,29 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
 
 ### **3.3 示例**
 
-> 使用时请将目录切换到到工具的源代码目录下。
+> 使用时请将目录切换到到工具的源代码目录下，或者将可执行文件`hrda`加入到`PATH`中，或者使用`module`工具进行配置。
 
 - 生成Excel格式的寄存器模板：
 
   ```bash
-  python cmd.py excel_template -n test -rnum 3 -rname tem1 tem2 tem3 -d ../test
+  mkdir test
+  hrda excel_template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3
   ```
 
 - 解析Excel格式的寄存器说明并生成对应的RDL文件：
 
   ```bash
-  python cmd.py parse -f ../test/test.xlsx -g -gdir ../test -m test_top
-
-  python cmd.py parse -l test.list -g -gdir ../test -m test_top
+  hrda parse -f test/test.xlsx -g -gdir ./test -m test_top
+  # another method: edit and save a list file
+  hrda parse -l test.list -g -gdir ./test -m test_top
   ```
 
 - 使用Generator生成模块代码
 
   ```bash
-  python cmd.py generate -f test1.xlsx test2.xlsx test3.rdl -gdir ../test -grtl -ghtml -gral -gch
-
-  python cmd.py generate -l test.list -gdir ../test -gall
+  hrda generate -f test.xlsx -gdir ./test -grtl -ghtml -gral -gch
+  # another method: edit and save a list file
+  hrda generate -l test.list -gdir ./test -gall
   ```
+
+> 若执行`hrda`失败，请检查`python`和`hrda`是否在`PATH`中
