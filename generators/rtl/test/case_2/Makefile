@@ -13,17 +13,16 @@ VCS_OPS = -full64 -sverilog +v2k -timescale=1ns/1ns     \
 		-f $(rtl_src)
 
 # verdi dump wave compile option
-VERDI_OPS = -P $(VERDI_HOME)/share/PLI/VCS/linux64/novas.tab \
-			$(VERDI_HOME)/share/PLI/VCS/linux64/pli.a \
+VERDI_OPS = -P $(NOVAS_HOME)/share/PLI/VCS/linux64/novas.tab \
+			$(NOVAS_HOME)/share/PLI/VCS/linux64/pli.a \
 			+fsdb+autoflush
 
 
-gen_rtl: $(rdl_src)
+gen: $(rdl_src)
 	hrda generate -f $(rdl_src) -gdir ./gen -grtl
-	mv ./gen/rtl/* ./gen
-	rm -rf ./gen/rtl
+	mv ./gen/rtl/* ./gen && rm -rf ./gen/rtl
 
-vcs: $(rtl_src)
+vcs: gen $(rtl_src)
 	bsub -Is vcs $(VCS_OPS) $(rtl_src) $(VERDI_OPS)
 
 sim: vcs

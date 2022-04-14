@@ -1,0 +1,29 @@
+reg REG_def {
+		regwidth = 32;
+		field {
+			sw = rw;
+		} FIELD_0[31:0] = 0xaaaaaaaa;
+};
+
+addrmap reg_top {
+    signal {
+		activehigh;
+		sync;
+	} srst_1, srst_2, srst_3, srst_4, srst_5;
+
+	addrmap {
+		hj_genrtl = true;
+        hj_syncresetsignal = "srst_1, srst_2";
+
+		// implement internal registers
+        REG_def REG1_SRST, REG2_SRST, REG3_SRST;
+        REG1_SRST -> hj_syncresetsignal = "srst_3";
+        REG1_SRST.FIELD_0 -> reset = 0xdddddddd;
+        REG2_SRST -> hj_syncresetsignal = "srst3, srst_4";
+        REG2_SRST.FIELD_0 -> reset = 0xeeeeeeee;
+        REG2_SRST.FIELD_0 -> hj_syncresetsignal = "srst_5";
+
+        REG_def REG4_SWMOD, REG5_SWACC;
+        REG_def REG6_PRECEDENCE_SW, REG7_PRECEDENCE_HW;
+	} reg_block_1;
+};

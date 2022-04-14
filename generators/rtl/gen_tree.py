@@ -39,14 +39,13 @@ class Root_str(object):
             if(isinstance(child, AddrmapNode)):
                 Top_Addrmap = child
             elif(isinstance(child, SignalNode)):
-                new_signal = create_obj(child)
+                new_signal = create_obj(child, self.rtl_obj)
                 signal_name = child.get_path_segment()
                 new_signal.hierachy_name = signal_name
                 self.rtl_obj.children.append(new_signal)
                 self.global_signal_map.append(new_signal)
         # create reg_mst and reg_slv
         module_name = Top_Addrmap.get_path_segment()
-        self.folder_name = os.path.join(self.folder_name, "%s_rtl_files"%(module_name))
         if(os.path.exists(self.folder_name)):
             shutil.rmtree(self.folder_name)
         # create new folder

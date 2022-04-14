@@ -1,0 +1,23 @@
+reg REG_def {
+		regwidth = 32;
+		field {
+			sw = rw;
+		} FIELD_0[31:0] = 0x0;
+};
+
+addrmap reg_top {
+	addrmap {
+		hj_genrtl = true;
+
+		// implement internal registers
+		REG_def REG1_ONWRITE_NA;
+        REG_def REG2_ONWRITE_WOCLR, REG3_ONWRITE_WOSET, REG4_ONWRITE_WOT;
+        REG_def REG5_ONWRITE_WZS, REG6_ONWRITE_WZC, REG7_ONWRITE_WZT;
+		REG2_ONWRITE_WOCLR.FIELD_0 -> onwrite = woclr;
+		REG3_ONWRITE_WOSET.FIELD_0 -> onwrite = woset;
+        REG4_ONWRITE_WOT.FIELD_0 -> onwrite = wot;
+        REG5_ONWRITE_WZS.FIELD_0 -> onwrite = wzs;
+        REG6_ONWRITE_WZC.FIELD_0 -> onwrite = wzc;
+        REG7_ONWRITE_WZT.FIELD_0 -> onwrite = wzt;
+	} reg_block_1;
+};

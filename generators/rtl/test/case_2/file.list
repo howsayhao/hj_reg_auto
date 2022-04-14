@@ -14,8 +14,6 @@
 ../xregister.vh
 ../common_funcs.vh
 gen/regmst_reg_top.v
-gen/regslv_reg_top__reg_block_1__test_11.v
 gen/regslv_reg_top__reg_block_1.v
-gen/regslv_reg_top__reg_block_2.v
 tb/ext_mem.v
 tb/testbench.v

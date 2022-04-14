@@ -486,7 +486,7 @@ ext_mem_22 (
     .ack_rdy(regslv_reg_block_2__ext__ack_rdy),
     .wr_en(regslv_reg_block_2__ext__wr_en),
     .rd_en(regslv_reg_block_2__ext__rd_en),
-    .addr(ext_mem_21__addr[EXT_MEM_22_ADDR_WIDTH-1:0]),
+    .addr(ext_mem_22__addr[EXT_MEM_22_ADDR_WIDTH-1:0]),
     .wr_data(regslv_reg_block_2__ext__wr_data),
     .rd_data(regslv_reg_block_2__ext__rd_data[1])
 );

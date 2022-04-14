@@ -34,7 +34,9 @@ module mst_fsm
         external_reg_selected,
         // these may be float for no slv_module
         slv__fsm__rd_data,
-        slv__fsm__ack_vld
+        slv__fsm__ack_vld,
+        // for CDC situation
+        cdc_pulse_out
     );
 
 
@@ -71,6 +73,8 @@ output fsm__mst__req_rdy;
 input external_reg_selected;
 input slv__fsm__req_rdy;
 
+output reg cdc_pulse_out;
+
 reg slv__fsm__ack_vld_ff;
 reg fsm__slv__req_vld_ff;
 reg fsm__slv__ack_rdy_ff;
@@ -93,6 +97,14 @@ reg [16-1:0] cnt;
 reg op_time_out;
 
 reg [ADDR_WIDTH-1:0] leaf_node;
+
+// generate value pulse_out
+always_ff@(posedge clk or negedge rstn)begin
+    if(!rstn) cdc_pulse_out <= 1'b0;
+    else if(next_state != state) cdc_pulse_out <= 1'b1;
+    else cdc_pulse_out <= 1'b0;
+end
+
 // state transfer
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
@@ -109,12 +121,12 @@ always_comb begin
         S_SETUP:begin
             if(PSEL & !PENABLE)
                 if(slv__fsm__ack_vld) next_state = S_ACCESS;
-                else if(slv__fsm__req_rdy) next_state = S_WAIT_SLV_ACK;
+                else if(external_reg_selected & slv__fsm__req_rdy) next_state = S_WAIT_SLV_ACK;
                 else next_state = S_WAIT_SLV_RDY;
         end
         S_WAIT_SLV_RDY:begin
             if(slv__fsm__ack_vld | op_time_out) next_state = S_SETUP;
-            else if(slv__fsm__req_rdy) next_state = S_SETUP;
+            else if(external_reg_selected & slv__fsm__req_rdy) next_state = S_SETUP;
             else next_state = S_WAIT_SLV_RDY;
         end
         S_WAIT_SLV_ACK:begin

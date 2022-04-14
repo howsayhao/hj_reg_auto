@@ -1,49 +1,52 @@
-module slv_fsm #(
-    parameter   ADDR_WIDTH = 64,
-    parameter   DATA_WIDTH = 32)
-(
-    clk,
-    rstn,
-    //
-    mst__fsm__req_vld,
-    mst__fsm__rd_en,
-    mst__fsm__wr_en,
-    mst__fsm__addr,
-    mst__fsm__wr_data,
-    mst__fsm__sync_reset,
-    fsm__mst__rd_data,
-    fsm__mst__ack_vld,
-    //  control signal
-    fsm__slv__sync_reset,
-    fsm__slv__addr,
-    fsm__slv__wr_data,
-    fsm__slv__wr_en,
-    fsm__slv__rd_en,
+module slv_fsm
+    #(
+        parameter   ADDR_WIDTH = 64,
+        parameter   DATA_WIDTH = 32
+    )
+    (
+        clk,
+        rstn,
+        mst__fsm__req_vld,
+        mst__fsm__rd_en,
+        mst__fsm__wr_en,
+        mst__fsm__addr,
+        mst__fsm__wr_data,
+        mst__fsm__sync_reset,
+        fsm__mst__rd_data,
+        fsm__mst__ack_vld,
+        //  control signal
+        fsm__slv__sync_reset,
+        fsm__slv__addr,
+        fsm__slv__wr_data,
+        fsm__slv__wr_en,
+        fsm__slv__rd_en,
 
-    mst__fsm__ack_rdy,
-    fsm__slv__ack_rdy,
-    fsm__mst__req_rdy,
-    slv__fsm__req_rdy,
+        mst__fsm__ack_rdy,
+        fsm__slv__ack_rdy,
+        fsm__mst__req_rdy,
+        slv__fsm__req_rdy,
 
-    external_reg_selected,
+        external_reg_selected,
 
-    fsm__slv__req_vld,
+        fsm__slv__req_vld,
 
-    slv__fsm__rd_data,
-    slv__fsm__ack_vld
-);
+        slv__fsm__rd_data,
+        slv__fsm__ack_vld,
+        cdc_pulse_out
+    );
+
 
 // state decode
-localparam      S_IDLE          =   2'b0,
-                S_WAIT_SLV_RDY  =   2'b1,  // wait for slave slv__fsm__req_rdy
-                S_WAIT_SLV_ACK  =   2'b10;  // wait for slave fsm__mst__ack_vld
-
-input   clk;
-input   rstn;
-input   mst__fsm__rd_en;
-input   mst__fsm__wr_en;
-input   [ADDR_WIDTH-1:0] mst__fsm__addr;
-input   [DATA_WIDTH-1:0] mst__fsm__wr_data;
+localparam   S_IDLE = 2'd0; // no operation
+localparam   S_WAIT_SLV_RDY = 2'd1; // if slave is not ready, S_WAIT_SLV_RDY slave slv__fsm__req_rdy
+localparam   S_WAIT_SLV_ACK =  2'd2; // S_WAIT_SLV_RDY slave fsm__mst__ack_vld
+//reg_slv_if in
+input clk;
+input rstn;
+input mst__fsm__rd_en;
+input mst__fsm__wr_en;
+input [ADDR_WIDTH-1:0] mst__fsm__addr;
+input [DATA_WIDTH-1:0] mst__fsm__wr_data;
 // decoder in
 input mst__fsm__sync_reset;
 input [DATA_WIDTH-1:0] slv__fsm__rd_data;
@@ -63,9 +66,11 @@ output reg fsm__mst__req_rdy;
 output fsm__mst__ack_vld;
 output fsm__slv__req_vld;
 output [DATA_WIDTH-1:0] fsm__mst__rd_data;
-
+//
 input external_reg_selected;
+output reg cdc_pulse_out;
 
+// machine state value
 reg [1:0] next_state;
 reg [1:0] state;
 
@@ -78,10 +83,17 @@ reg fsm__slv__req_vld_ff;
 reg fsm__slv__ack_rdy_ff;
 // to see if the module selected is accessable
 
+// generate value pulse_out
+always_ff@(posedge clk or negedge rstn)begin
+    if(!rstn) cdc_pulse_out <= 1'b0;
+    else if(next_state != state) cdc_pulse_out <= 1'b1;
+    else cdc_pulse_out <= 1'b0;
+end
+
 // state transfer
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
-        state <= S_IDLE;
+        state <= 2'b0;
     end
     else begin
         state <= next_state;
