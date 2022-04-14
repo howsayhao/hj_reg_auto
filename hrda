@@ -80,7 +80,7 @@ class CommandRunner:
                                   action="store_true",
                                   help="generate SystemRDL(.rdl) file based on all input Excel(.xlsx) specifications")
         parser_parse.add_argument("-m", "--module",
-                                  default="excel_extra_top",
+                                  default="excel_top",
                                   help="if all input files are Excel worksheets, "
                                        "this option specifies extra top RDL file name "
                                        "for all input Excel(.xlsx) files (default:%(default)s)")
@@ -99,6 +99,11 @@ class CommandRunner:
         parser_generate.add_argument("-l", "--list",
                                      help="a list including paths and names of all files "
                                           "(useful for large number of files)")
+        parser_generate.add_argument("-m", "--module",
+                                     default="excel_top",
+                                     help="if all input files are Excel worksheets, "
+                                          "this option specifies extra top RDL file name "
+                                          "for all input Excel(.xlsx) files (default:%(default)s)")
         parser_generate.add_argument("-gdir", "--gen_dir",
                                      default=".",
                                      help="directory to save generated files (default:%(default)s)")
@@ -157,8 +162,7 @@ class CommandRunner:
         `args.file` : `list`类型, 需要解析所有Excel/SystemRDL文件名
         `args.list` : 存放所有需要解析的Excel文件名的list文本文件名
         `args.generate` : `bool`类型, 是否将输入的Excel生成对应的SystemRDL文件
-        `args.aggregate` : `bool`类型, 是否把所有输入最终整合到一个SystemRDL文件中
-        `args.module` : 本次解析的模块名, 也作为生成的SystemRDL中顶层addrmap的类型名
+        `args.module` : 输入全部为Excel文件时生成的SystemRDL中顶层addrmap定义名
         `args.gen_dir` : 生成的SystemRDL的目录位置
         """
         parse(args.file,
@@ -170,12 +174,24 @@ class CommandRunner:
     @staticmethod
     def _generate(args):
         """
+        子命令`generate`的执行函数, 作为Wrapper向下传递参数
+
+        Parameter
+        ---------
+        `args.file` : `list`类型, 需要解析所有Excel/SystemRDL文件名
+        `args.list` : 存放所有需要解析的Excel文件名的list文本文件名
+        `args.module` : 输入全部为Excel文件时生成的reg tree模块名, 也作为生成的SystemRDL中顶层addrmap定义名和根节点regmst名称
+        `args.gen_dir` : 生成的SystemRDL的目录位置
+        `args.gen_rtl` : `bool`类型, 是否生成RTL Modules
+        `args.gen_html` : `bool`类型, 是否生成HTML Docs
+        `args.gen_ral` : `bool`类型, 是否生成UVM RAL Model
+        `args.gen_cheader` : `bool`类型, 是否生成C Header files
         """
         root = parse(args.file,
                      args.list,
                      args.gen_dir,
                      to_generate_rdl=True,
-                     excel_top_name="excel_extra_top")
+                     excel_top_name=args.module)
 
         if not os.path.exists(args.gen_dir):
             message.error("-gd/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))

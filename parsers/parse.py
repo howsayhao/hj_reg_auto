@@ -358,7 +358,7 @@ class ExcelParser:
 
 
 def parse(original_files:list, list_file:str, gen_dir:str,
-          to_generate_rdl=False, excel_top_name="excel_extra_top"):
+          to_generate_rdl=False, excel_top_name="excel_top"):
     """
     解析Excel和SystemRDL文件, 调用`parse_excel`和`parse_rdl`
 
@@ -370,7 +370,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
     `to_generate_rdl` : 是否将解析完的Excel生成RDL, 默认为`False`
     `excel_top_name` :
         `to_generate_rdl == True`且`original_files`只包含Excel Worksheet时,
-        需要生成一个顶层addrmap, 该参数指定顶层addrmap名称, 默认为`excel_extra_top`
+        需要生成一个顶层addrmap, 该参数指定顶层addrmap名称, 默认为`excel_top`
     """
     ori_rdl_files, ori_excel_files= [], []
     # 预先定义的RDL files, 如user-defined properties
