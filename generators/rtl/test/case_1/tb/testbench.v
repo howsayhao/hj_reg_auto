@@ -1,6 +1,7 @@
 `timescale 1ns/1ns
 
-module regmst_tb;
+// testbench for case 1: multi-layer reg tree topology
+module reg_tb;
 
 parameter ADDR_WIDTH = 64;
 parameter DATA_WIDTH = 32;
@@ -559,8 +560,8 @@ ext_mem_in_top (
 
 // dump simulation files
 initial begin
-    $fsdbDumpfile("regmst_tb.fsdb");
-    $fsdbDumpvars(0, regmst_tb);
+    $fsdbDumpfile("reg_tb.fsdb");
+    $fsdbDumpvars(0, reg_tb);
     $fsdbDumpMDA();
 end
 
@@ -579,7 +580,7 @@ end
 /********************************************************************
 ********* test stimulus and external memory initialization **********
 *********************************************************************/
-parameter TOTAL_ACCESS_NUM = 340;
+parameter TOTAL_ACCESS_NUM = 344;
 
 // all external memory entries initialized to 0
 initial begin
@@ -611,13 +612,15 @@ initial begin
     reg_block_2__test_21_srst_2 = 1'b0;
 
     // get addresses of internal registers and external memory entries
-    $readmemh("tb/regmst_tb_addr_hex.txt", addrs);
+    $readmemh("tb/access_addr_hex.txt", addrs);
 end
 
 
 /********************************************************************
 ********************* simulate APB interface ************************
 *********************************************************************/
+integer err_cnt;
+
 initial begin
     wait(rstn);
     @(posedge clk); #1;
@@ -630,7 +633,8 @@ initial begin
         PENABLE = 1'b0;
         PWRITE = 1'b1;
         PADDR = addrs[i];
-        PWDATA = {DATA_WIDTH{1'b1}};
+        // FIXME: test write data can be arbitrary
+        PWDATA = addrs[i][DATA_WIDTH-1:0];
         $display($time, " start write operation: addr=%h data=%h", PADDR, PWDATA);
 
         @(posedge clk); #1;
@@ -653,11 +657,16 @@ initial begin
 
         wait(PREADY);
         #0 $display($time, " read data=%h", PRDATA);
+        if ((PWDATA != PRDATA) && !PSLVERR) begin
+            $display("write and read data not match!");
+            err_cnt = err_cnt + 1;
+        end
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end read operation");
     end
 
+    $display("test process done, error count: %d", err_cnt);
     #(CLK_PERIOD*10);
     $finish;
 end

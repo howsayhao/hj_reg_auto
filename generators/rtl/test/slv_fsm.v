@@ -34,9 +34,9 @@ module slv_fsm #(
 );
 
 // state decode
-localparam      S_IDLE          =   0,
-                S_WAIT_SLV_RDY  =   1,  // wait for slave slv__fsm__req_rdy
-                S_WAIT_SLV_ACK  =   2;  // wait for slave fsm__mst__ack_vld
+localparam      S_IDLE          =   2'b0,
+                S_WAIT_SLV_RDY  =   2'b1,  // wait for slave slv__fsm__req_rdy
+                S_WAIT_SLV_ACK  =   2'b10;  // wait for slave fsm__mst__ack_vld
 
 input   clk;
 input   rstn;
@@ -81,7 +81,7 @@ reg fsm__slv__ack_rdy_ff;
 // state transfer
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
-        state <= 2'b0;
+        state <= S_IDLE;
     end
     else begin
         state <= next_state;
