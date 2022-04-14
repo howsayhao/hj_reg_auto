@@ -51,7 +51,7 @@ class Root_str(object):
             shutil.rmtree(self.folder_name)
         # create new folder
         os.mkdir(self.folder_name)
-        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self)
+        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self, hierarchy = [])
 
         # create reg_mst's reg_slv_if
         Top_Map.reg_slv_if.global_sync = 'fsm_sync_reset'
@@ -92,8 +92,11 @@ class Root_str(object):
                                 'logic %s_fsm_sync_reset;\n'%(module_name) + \
                                 'logic [`DATA_WIDTH-1:0]%s_wr_data;\n'%(module_name) + \
                                 'logic [`ADDR_WIDTH-1:0] %s_addr;\n'%(module_name)
+                                # 'logic %s_cdc_pulse_out;\n'%(module_name)
 
     def port(self):
+        ins = self.reg_slv[:]
+        ins.insert(0,self.reg_mst)
         # necessary port from outside (APB/AHB master) for reg_mst
         self.port_str += '\t//reg_mst interface port\n'
         self.port_str += '\t input clk\n'
@@ -108,6 +111,13 @@ class Root_str(object):
         self.port_str += '\t,output PSLVERR\n'
         self.port_str += '\t,input clear\n'
         self.port_str += '\t,input interrupt\n'
+
+        # declare cdc_pulse
+        self.port_str += '\t//reg module cdc pulse port\n'
+        for slv in ins:
+            module_name = 'regslv_' + slv.module_name if(slv.master is not True) else 'regmst_' + slv.module_name
+            self.port_str += '\t,output %s_cdc_pulse_out\n'%(module_name)
+
         # declare field in/out port
         self.port_str += '\t//field interface port\n'
         for slv in self.reg_slv:
@@ -186,7 +196,7 @@ class Root_str(object):
                 self.rtl += '\t//APB interface instance\n' + \
                             '\t.clk(%s)'%(slv_if.clk) + \
                             ',.rstn(%s)'%(slv_if.rstn) + \
-                            ',.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE), .PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR)'
+                            ',.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE), .PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR)\n\t'
             else:
                 self.rtl += '\t//reg_module upstream interface instance\n' + \
                             '\t.clk(%s)'%(slv_if.clk) + \
@@ -217,7 +227,9 @@ class Root_str(object):
                             ',.ext_wr_en(%s_wr_en),'%(module_name) +  \
                             '.ext_rd_en(%s_rd_en),'%(module_name) +  \
                             '.ext_wr_data(%s_wr_data),'%(module_name) +  \
-                            '.ext_addr(%s_addr)\n\t'%(module_name)
+                            '.ext_addr(%s_addr),'%(module_name) + \
+                            '.cdc_pulse_out(%s_cdc_pulse_out)\n\t'%(module_name)
+
             # regslv will get the reset signal from upstream module as well as other signal
             module_name = 'regslv_' + slv.module_name if(slv.master is not True) else 'regmst_' + slv.module_name
             if(slv.master):
@@ -242,4 +254,3 @@ class Root_str(object):
         fw.close()
         folder_name = self.folder_name
         shutil.move(file_name,folder_name)
-

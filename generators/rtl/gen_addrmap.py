@@ -9,9 +9,9 @@ from .rtl_type import *
 
 
 class addrmap_str(object):
-    def __init__(self, node:Node, master:bool, Root:RTL_NODE):
+    def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list):
         # rtl module name from the Top addressmap(self.node)'s instance name
-        self.module_name = node.get_path_segment()
+        self.module_name = '__'.join(hierarchy[:]) + '__' + node.get_path_segment() if(master is False) else node.get_path_segment()
         self.node = node
         # if the master is true, it will gen a reg_mst
         self.master = master
@@ -48,6 +48,8 @@ class addrmap_str(object):
         self.field_out = []
         # reg_slv_if
         self.reg_slv_if = reg_slv_if(self.module_name)
+
+        self.hierarchy = hierarchy
 
         # output(rtl) components
         self.rtl = ''
@@ -92,12 +94,15 @@ class addrmap_str(object):
 
     # show enter component information
     def enter(self, node:Node):
-        print('\t'*self.indent + 'entering ' + node.get_path_segment())
+        node_name = node.get_path_segment()
+        self.hierarchy.append(node_name)
+        # print(self.hierarchy)
+        # print('\t'*self.indent + 'entering ' + node.get_path_segment())
         self.indent += 1
     # show exit component information
     def exit(self, node:Node):
         self.indent -= 1
-        print('\t'*self.indent + 'exiting ' + node.get_path_segment())
+        self.hierarchy.pop(-1)
 
     # get rtl str
     def write(self):
@@ -177,7 +182,8 @@ class addrmap_str(object):
             if(isinstance(child, AddrmapNode)):
                 genrtl = child.get_property('hj_genrtl') if('hj_genrtl' in child.inst.properties) else False
                 if(genrtl is True and child not in self.Root.genrtl_node):
-                    ext_addr = addrmap_str(node = child,master =  False,Root = self.Root)
+                    rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                    ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy)
                     ext_addr.write()
                     self.Root.children.append(ext_addr)
                     self.ext_instance(ext_addr)
@@ -495,6 +501,7 @@ class addrmap_str(object):
                                 '\tPADDR,\n' + \
                                 '\tPWDATA,\n' + \
                                 '\tPRDATA,\n'
+        self.standard_ports += '\tcdc_pulse_out,\n'
         if(self.master is True):
 
             self.standard_ports += '\tinterrupt,\n'
@@ -591,6 +598,8 @@ class addrmap_str(object):
                                  'input [EXT_NUM-1:0] [DATA_WIDTH-1:0] ext_rd_data;\n' + \
                                  'input [EXT_NUM-1:0] ext_ack_vld;\n' + \
                                  'output ext_ack_rdy;\n'
+        # get cdc port
+        self.wire_declaration += 'output cdc_pulse_out;'
 
         # get reg_slv_field ports
         self.wire_declaration += '\n//' + 'INTERNAL REGISTER IN/OUT PORTS DEFINE START Here'.center(100,"*") + '//\n'
@@ -660,6 +669,7 @@ class addrmap_str(object):
                                   '\t.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),\n' + \
                                   '\t.fsm__mst__rd_data(rd_data), .fsm__mst__ack_vld(ack_vld),\n' + \
                                   '\t.external_reg_selected(external_reg_selected),\n' + \
+                                  '\t.cdc_pulse_out(cdc_pulse_out),' + \
                                   '\t.mst__fsm__sync_reset(global_sync_reset_in),\n' + \
                                   '\t.fsm__slv__sync_reset(global_sync_reset_out)\n' + '\t);\n'
         else:
@@ -673,6 +683,7 @@ class addrmap_str(object):
                                   '\t.fsm__mst__req_rdy(req_rdy),\n' + \
                                   '\t.slv__fsm__req_rdy(slv__fsm__req_rdy), .fsm__slv__ack_rdy(ext_ack_rdy),\n' + \
                                   '\t.external_reg_selected(external_reg_selected),\n' + \
+                                  '\t.cdc_pulse_out(cdc_pulse_out),' + \
                                   '\t.fsm__slv__sync_reset(global_sync_reset_out),\n' + \
                                   '\t.clear(clear), .interrupt(interrupt)\n' + \
                                   '\t);\n'
