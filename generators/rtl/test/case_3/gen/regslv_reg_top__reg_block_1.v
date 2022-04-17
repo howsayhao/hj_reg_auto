@@ -200,7 +200,7 @@ field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
 	.F_WIDTH(32),
-	.ARST_VALUE(32'h0),
+	.ARST_VALUE(32'haaaaaaaa),
 	.SW_TYPE({`SW_RW}),
 	.SW_ONREAD_TYPE({`NA}),
 	.SW_ONWRITE_TYPE({`NA}),
@@ -241,7 +241,7 @@ field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
 	.F_WIDTH(32),
-	.ARST_VALUE(32'h0),
+	.ARST_VALUE(32'haaaaaaaa),
 	.SW_TYPE({`SW_RW}),
 	.SW_ONREAD_TYPE({`RCLR}),
 	.SW_ONWRITE_TYPE({`NA}),
@@ -282,7 +282,7 @@ field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
 	.F_WIDTH(32),
-	.ARST_VALUE(32'h0),
+	.ARST_VALUE(32'haaaaaaaa),
 	.SW_TYPE({`SW_RW}),
 	.SW_ONREAD_TYPE({`RSET}),
 	.SW_ONWRITE_TYPE({`NA}),
