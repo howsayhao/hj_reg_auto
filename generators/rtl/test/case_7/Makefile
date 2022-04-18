@@ -23,12 +23,12 @@ gen_rtl: $(rdl_src)
 	mv ./gen/rtl/* ./gen && rm -rf ./gen/rtl
 
 vcs: gen_rtl $(rtl_src)
-	bsub -Is vcs $(VCS_OPS) $(rtl_src) $(VERDI_OPS)
+	bsub -Is vcs $(VCS_OPS) $(VERDI_OPS)
 
 sim: vcs
 	./$(simv_name)
 
-verdi: vcs $(rtl_src)
+verdi: sim $(rtl_src)
 	bsub -Is verdi -sv $(rtl_src) -ssf *.fsdb
 
 .PHONY: clean

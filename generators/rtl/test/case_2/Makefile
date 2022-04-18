@@ -28,7 +28,7 @@ vcs: gen_rtl $(rtl_src)
 sim: vcs
 	./$(simv_name)
 
-verdi: vcs $(rtl_src)
+verdi: sim $(rtl_src)
 	bsub -Is verdi -sv $(rtl_src) -ssf *.fsdb
 
 .PHONY: clean

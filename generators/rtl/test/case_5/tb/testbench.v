@@ -1,13 +1,14 @@
 `timescale 1ns/1ns
 
-// testbench for case 4: software access properties: onwrite=na/woclr/woset/wot/wzc/wzs/wzt
+// testbench for case 5: alias and shared registers
 module reg_tb;
 
-parameter TOTAL_ACCESS_NUM = 7;
+parameter TOTAL_ACCESS_NUM = 26;
+parameter TOTAL_PHYSICAL_NUM = 2;
 parameter ADDR_WIDTH = 64;
 parameter DATA_WIDTH = 32;
 
-logic [DATA_WIDTH-1:0] actual_hw_value [0:TOTAL_ACCESS_NUM-1];
+logic [DATA_WIDTH-1:0] actual_hw_value [0:TOTAL_PHYSICAL_NUM-1];
 
 logic clk;
 logic rstn;
@@ -93,7 +94,7 @@ regmst_reg_top_dut (
 //      input glb_srst,
 //      hardware access ports for internal registers
 parameter REGSLV_REG_BLOCK_1_EXT_NUM = 0;
-parameter REGSLV_REG_BLOCK_1_INT_NUM = 7;
+parameter REGSLV_REG_BLOCK_1_INT_NUM = 22;
 
 regslv_reg_top__reg_block_1 #(
     .ADDR_WIDTH(ADDR_WIDTH),
@@ -125,15 +126,12 @@ regslv_reg_top__reg_block_1_dut (
     .ext_wr_data(),
     .ext_rd_data({DATA_WIDTH{1'b0}}),
     // hardware access input ports
-	.REG1_ONREAD_NA__FIELD_0__next_value(32'b0),
-	.REG1_ONREAD_NA__FIELD_0__pulse(1'b0),
-	.REG1_ONREAD_NA__FIELD_0__curr_value(actual_hw_value[0]),
-	.REG2_ONREAD_RCLR__FIELD_0__next_value(32'b0),
-	.REG2_ONREAD_RCLR__FIELD_0__pulse(1'b0),
-	.REG2_ONREAD_RCLR__FIELD_0__curr_value(actual_hw_value[1]),
-	.REG3_ONREAD_RSET__FIELD_0__next_value(32'b0),
-	.REG3_ONREAD_RSET__FIELD_0__pulse(1'b0),
-	.REG3_ONREAD_RSET__FIELD_0__curr_value(actual_hw_value[2])
+    .REG1__FIELD_0__next_value(32'b0),
+	.REG1__FIELD_0__pulse(1'b0),
+	.REG1__FIELD_0__curr_value(actual_hw_value[0]),
+	.test_2_shared_21__FIELD_0__next_value(32'b0),
+	.test_2_shared_21__FIELD_0__pulse(1'b0),
+	.test_2_shared_21__FIELD_0__curr_value(actual_hw_value[1]),
 );
 
 
@@ -191,6 +189,7 @@ end
 ********************* simulate APB interface ************************
 *********************************************************************/
 integer err_cnt;
+integer phy_idx;
 
 initial begin
     err_cnt = 0;
@@ -200,6 +199,11 @@ initial begin
     // continous APB write and read operations
     $display($time, " start continous APB operations");
     for (integer i = 0; i < TOTAL_ACCESS_NUM; i = i + 1) begin
+        if (i < TOTAL_ACCESS_NUM/TOTAL_PHYSICAL_NUM)
+            phy_idx = 0;
+        else
+            phy_idx = 1;
+
         // write operation
         @(posedge clk); #1;
         PSEL = 1'b1;
@@ -217,10 +221,10 @@ initial begin
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end write operation");
-        if (expected_hw_value[i*3] != actual_hw_value[i]) begin
+        if (expected_hw_value[i*3] != actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
             $display("write error occurs, expected=%h, actual=%h",
-                     expected_hw_value[i*3], actual_hw_value[i]);
+                     expected_hw_value[i*3], actual_hw_value[phy_idx]);
         end
 
         // read operation
@@ -244,10 +248,10 @@ initial begin
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end read operation");
-        if (expected_hw_value[i*3+1] != actual_hw_value[i]) begin
+        if (expected_hw_value[i*3+1] != actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
             $display("read hw error occurs, expected=%h, actual=%h",
-                     expected_hw_value[i*3+1], actual_hw_value[i]);
+                     expected_hw_value[i*3+1], actual_hw_value[phy_idx]);
         end
 
         // another write operation
@@ -267,10 +271,10 @@ initial begin
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end write operation");
-        if (expected_hw_value[i*3+2] != actual_hw_value[i]) begin
+        if (expected_hw_value[i*3+2] != actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
             $display("write error occurs, expected=%h, actual=%h",
-                     expected_hw_value[i*3+2], actual_hw_value[i]);
+                     expected_hw_value[i*3+2], actual_hw_value[phy_idx]);
         end
     end
 

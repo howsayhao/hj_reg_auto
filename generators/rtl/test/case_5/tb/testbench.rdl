@@ -26,18 +26,20 @@ addrmap reg_top {
 	    alias REG1 REG1_def REG1_alias_1, REG1_alias_2, REG1_alias_3,
                             REG1_alias_4, REG1_alias_5, REG1_alias_6,
                             REG1_alias_7, REG1_alias_8, REG1_alias_9,
-                            REG1_alias_10;
+                            REG1_alias_10, REG1_alias_11, REG1_alias_12;
 
         REG1_alias_1.FIELD_0 -> sw = r;
         REG1_alias_2.FIELD_0 -> sw = w;
-        REG1_alias_3.FIELD_0 -> onread = rclr;
-        REG1_alias_4.FIELD_0 -> onread = rset;
-        REG1_alias_5.FIELD_0 -> onwrite = woclr;
-        REG1_alias_6.FIELD_0 -> onwrite = woset;
-        REG1_alias_7.FIELD_0 -> onwrite = wot;
-        REG1_alias_8.FIELD_0 -> onwrite = wzs;
-        REG1_alias_9.FIELD_0 -> onwrite = wzc;
-        REG1_alias_10.FIELD_0 -> onwrite = wzt;
+        REG1_alias_3.FIELD_0 -> sw = w1;
+        REG1_alias_4.FIELD_0 -> sw = rw1;
+        REG1_alias_5.FIELD_0 -> onread = rclr;
+        REG1_alias_6.FIELD_0 -> onread = rset;
+        REG1_alias_7.FIELD_0 -> onwrite = woclr;
+        REG1_alias_8.FIELD_0 -> onwrite = woset;
+        REG1_alias_9.FIELD_0 -> onwrite = wot;
+        REG1_alias_10.FIELD_0 -> onwrite = wzs;
+        REG1_alias_11.FIELD_0 -> onwrite = wzc;
+        REG1_alias_12.FIELD_0 -> onwrite = wzt;
 
 		// implement internal registers
 		addrmap {
@@ -45,19 +47,22 @@ addrmap reg_top {
 
             // test reset values
             shared_reg shared_21, shared_22, shared_23, shared_24, shared_25,
-                       shared_26, shared_27, shared_28, shared_29, shared_210;
+                       shared_26, shared_27, shared_28, shared_29, shared_210,
+                       shared_211, shared_212;
 
             shared_21 -> hj_syncresetsignal = "srst_1";
             shared_21.FIELD_0 -> sw = r;
             shared_22.FIELD_0 -> sw = w;
-            shared_23.FIELD_0 -> onread = rclr;
-            shared_24.FIELD_0 -> onread = rset;
-            shared_25.FIELD_0 -> onwrite = woclr;
-            shared_26.FIELD_0 -> onwrite = woset;
-            shared_27.FIELD_0 -> onwrite = wot;
-            shared_28.FIELD_0 -> onwrite = wzs;
-            shared_29.FIELD_0 -> onwrite = wzc;
-            shared_210.FIELD_0 -> onwrite = wzt;
+            shared_23.FIELD_0 -> sw = w1;
+            shared_24.FIELD_0 -> sw = rw1;
+            shared_25.FIELD_0 -> onread = rclr;
+            shared_26.FIELD_0 -> onread = rset;
+            shared_27.FIELD_0 -> onwrite = woclr;
+            shared_28.FIELD_0 -> onwrite = woset;
+            shared_29.FIELD_0 -> onwrite = wot;
+            shared_210.FIELD_0 -> onwrite = wzs;
+            shared_211.FIELD_0 -> onwrite = wzc;
+            shared_212.FIELD_0 -> onwrite = wzt;
         } test_2;
 
         addrmap {
