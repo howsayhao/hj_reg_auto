@@ -1,6 +1,7 @@
 import shutil
 import sys
 
+import utils.message as message
 from systemrdl.node import *
 
 from .create_obj import *
@@ -228,7 +229,7 @@ class addrmap_str(object):
                     visual_reg_name = child.get_path_segment() + '_reg_' + str(entry)
                     visual_reg = Reg(visual_reg_name)
                     visual_reg.external = True
-                    visual_reg.addr = int(new_obj.addr + entry * new_obj.memwidth/8)
+                    visual_reg.addr = int(new_obj.addr + entry * self.DATA_WIDTH/8)
                     new_obj.children.append(visual_reg)
                     self.external_register_map.append(visual_reg)
                     visual_reg.id = len(self.external_register_map) - 1
@@ -250,12 +251,17 @@ class addrmap_str(object):
                 signal_map = self.signal_map + self.global_signal_map
                 for signal in node.get_property('hj_syncresetsignal').split(','):
                     signal = signal.replace(' ','')
+                    # search the signal defined in addrmap before
+                    signal_is_defined = 0
                     for ref_signal in signal_map:
                         if(signal == ref_signal.obj and set(parent_obj.hierachy)>set(ref_signal.hierachy[:-1])):
                             signal_name = '_'.join(ref_signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                             ref_signal.hierachy_name = signal_name
                             syn_rst.append(signal_name)
-
+                            signal_is_defined = 1
+                    if(not signal_is_defined and not parent_obj.external):
+                        message.error("signal %s in field %s(%s) hasn't been defined yet" % (signal,node.get_path_segment(),parent_obj.hierachy))
+                        sys.exit(1)
             new_obj.syncresetsignal = node.get_property('hj_syncresetsignal') if('hj_syncresetsignal' in node.inst.properties) else ''
             new_obj.syncresetsignal = syn_rst
         if(isinstance(new_obj, Reg)):
@@ -478,7 +484,8 @@ class addrmap_str(object):
         # get module_standard in/outputs
         signal_map = self.signal_map + self.global_signal_map
         for signal in signal_map:
-            self.standard_ports += '\t%s,\n'%(signal.hierachy_name)
+            signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+            self.standard_ports += '\t%s,\n'%(signal_name)
         if(self.master is False):
             self.standard_ports += '\tclk,\n' + \
                                 '\trstn,\n' + \

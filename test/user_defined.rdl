@@ -2,7 +2,7 @@
 
 // Define synchronous reset signals for regslv blocks
 property hj_syncresetsignal {
-    component = field | reg | regfile | addrmap;
+    component = field;
     type = string;
 };
 
