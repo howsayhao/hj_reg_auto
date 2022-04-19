@@ -147,7 +147,7 @@ always_comb begin
 		ext_sel = {EXT_NUM{1'b0}};
 		dummy_reg = 1'b0;
 	unique case (addr_for_decode)
-		64'h0,64'h4,64'h8,64'hc,64'h10,64'h14,64'h18:ext_sel[0] = 1'b1;//external module reg_block_1
+		64'h0,64'h4,64'h8,64'hc:ext_sel[0] = 1'b1;//external module reg_block_1
 		default: dummy_reg = 1'b1;
 	endcase
 end

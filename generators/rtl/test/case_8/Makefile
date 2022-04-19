@@ -29,7 +29,7 @@ sim: vcs
 	./$(simv_name)
 
 verdi: sim $(rtl_src)
-	bsub -Is verdi -sv $(rtl_src) -ssf *.fsdb
+	bsub -Is verdi -sv -f $(rtl_src) -ssf *.fsdb
 
 .PHONY: clean
 clean:

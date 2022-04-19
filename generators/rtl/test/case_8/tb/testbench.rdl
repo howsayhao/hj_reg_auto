@@ -6,7 +6,7 @@ reg REG_def {
 };
 
 mem ext_mem_def {
-    mementries = 64;
+    mementries = 2;
     memwidth = 128;
 };
 

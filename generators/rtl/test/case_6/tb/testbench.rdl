@@ -22,7 +22,7 @@ addrmap reg_top {
             field {
                 hw = rw;
                 hwclr;
-            } FIELD_0[31:0] = 0x0;
+            } FIELD_0[31:0] = 0xaaaaaaaa;
         } REG3_HW_CLR;
 
         reg {

@@ -114,6 +114,8 @@ regslv_reg_top__reg_block_1_dut (
     // synchronous reset signals
     .global_sync_reset_in(mst__ext__glb_srst),
     .global_sync_reset_out(),
+    // clock domain crossing signal
+    .cdc_pulse_out(),
     // external memory reg_native_if
     .ext_req_vld(),
     .ext_req_rdy(1'b0),
@@ -169,7 +171,7 @@ end
 
 
 /********************************************************************
-********* test stimulus and external memory initialization **********
+******************* test stimulus initialization ********************
 *********************************************************************/
 reg [ADDR_WIDTH-1:0] addrs [0:TOTAL_ACCESS_NUM-1];
 reg [DATA_WIDTH-1:0] expected_hw_value [0:(TOTAL_ACCESS_NUM)*3-1];
@@ -186,7 +188,7 @@ initial begin
     // interrupt clear signal initialized to invalid(0)
     bus__mst__clear = 1'b0;
 
-    // get addresses of internal registers and external memory entries
+    // get addresses, expected hardware value and read value of internal registers
     $readmemh("tb/access_addr_hex.txt", addrs);
     $readmemh("tb/expected_hw_value_hex.txt", expected_hw_value);
     $readmemh("tb/expected_read_value_hex.txt", expected_read_value);
@@ -203,10 +205,10 @@ initial begin
     wait(rstn);
     @(posedge clk); #1;
 
-    // continous APB write and read operations
+    // APB write and read operations
     $display($time, " start continous APB operations");
     for (integer i = 0; i < TOTAL_ACCESS_NUM; i = i + 1) begin
-        // write operation
+        // APB write operation
         @(posedge clk); #1;
         PSEL = 1'b1;
         PENABLE = 1'b0;
@@ -225,11 +227,11 @@ initial begin
         $display($time, " end write operation");
         if (expected_hw_value[i*3] != actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display("write error occurs, expected=%h, actual=%h",
-                     expected_hw_value[i*3], actual_hw_value[i]);
+            $display($time, " error: write addr=%h, expected=%h, actual=%h",
+                     PADDR, expected_hw_value[i*3], actual_hw_value[i]);
         end
 
-        // read operation
+        // APB read operation
         @(posedge clk); #1;
         PSEL = 1'b1;
         PENABLE = 1'b0;
@@ -244,19 +246,19 @@ initial begin
         #0 $display($time, " read data=%h", PRDATA);
         if (PRDATA != expected_read_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display("read sw error occurs, expected=%h, PRDATA=%h",
-                     expected_read_value[i], PRDATA);
+            $display($time, " error: read(sw) addr=%h, sw expected=%h, PRDATA=%h",
+                     PADDR, expected_read_value[i], PRDATA);
         end
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end read operation");
         if (expected_hw_value[i*3+1] != actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display("read hw error occurs, expected=%h, actual=%h",
-                     expected_hw_value[i*3+1], actual_hw_value[i]);
+            $display($time, " error: read(hw) in addr=%h, hw expected=%h, actual=%h",
+                     PADDR, expected_hw_value[i*3+1], actual_hw_value[i]);
         end
 
-        // another write operation to test sw=rw1/w1 properties
+        // another APB write operation to test sw=rw1/w1 properties
         @(posedge clk); #1;
         PSEL = 1'b1;
         PENABLE = 1'b0;
@@ -275,8 +277,8 @@ initial begin
         $display($time, " end write operation");
         if (expected_hw_value[i*3+2] != actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display("write error occurs, expected=%h, actual=%h",
-                     expected_hw_value[i*3+2], actual_hw_value[i]);
+            $display($time, " error: write addr=%h, expected=%h, actual=%h",
+                     PADDR, expected_hw_value[i*3+2], actual_hw_value[i]);
         end
     end
 

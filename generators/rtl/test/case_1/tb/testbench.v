@@ -132,6 +132,8 @@ regslv_reg_top__reg_block_1_dut (
     // synchronous reset signals
     .global_sync_reset_in(mst__ext__glb_srst),
     .global_sync_reset_out(regslv_reg_top__reg_block_1__ext__glb_srst),
+    // clock domain crossing signal
+    .cdc_pulse_out(),
     // external memory reg_native_if
     .ext_req_vld(regslv_reg_top__reg_block_1__ext__req_vld),
     .ext_req_rdy(regslv_reg_top__reg_block_1__ext__req_rdy),
@@ -199,6 +201,8 @@ regslv_reg_top__reg_block_1__test_11_dut (
     .addr(regslv_reg_top__reg_block_1__ext__addr),
     .wr_data(regslv_reg_top__reg_block_1__ext__wr_data),
     .rd_data(regslv_reg_top__reg_block_1__ext__rd_data[0]),
+    // clock domain crossing signal
+    .cdc_pulse_out(),
     // downstream reg_native_if (float)
     .ext_req_vld(),
     .ext_req_rdy(1'b0),
@@ -308,6 +312,8 @@ regslv_reg_top__reg_block_2_dut (
     .ext_addr(regslv_reg_top__reg_block_2__ext__addr),
     .ext_wr_data(regslv_reg_top__reg_block_2__ext__wr_data),
     .ext_rd_data(regslv_reg_top__reg_block_2__ext__rd_data),
+    // clock domain crossing signal
+    .cdc_pulse_out(),
     // hardware access input ports
     .test_21_REG1__FIELD_0__next_value(32'b0),
 	.test_21_REG1__FIELD_0__pulse(1'b0),
@@ -521,7 +527,7 @@ initial begin
     // interrupt clear signal initialized to invalid(0)
     bus__mst__clear = 1'b0;
 
-    // get addresses of internal registers and external memory entries
+    // get addresses of internal registers
     $readmemh("tb/access_addr_hex.txt", addrs);
 end
 
@@ -531,15 +537,16 @@ end
 *********************************************************************/
 integer err_cnt;
 
-initial begin
+initial begin: APB_OPS
     err_cnt = 0;
     wait(rstn);
+
     @(posedge clk); #1;
 
     // continous APB write and read operations
     $display($time, " start continous APB operations");
     for (integer i = 0; i < TOTAL_ACCESS_NUM; i = i + 1) begin
-        // write operation
+        // APB write operation
         PSEL = 1'b1;
         PENABLE = 1'b0;
         PWRITE = 1'b1;
@@ -556,7 +563,8 @@ initial begin
         PSEL = 1'b0;
         $display($time, " end write operation");
 
-        // read operation
+        // APB read operation
+        // NOTE: there is no gap between write and read operation
         PSEL = 1'b1;
         PENABLE = 1'b0;
         PWRITE = 1'b0;
@@ -568,26 +576,40 @@ initial begin
 
         wait(PREADY);
         #0 $display($time, " read data=%h", PRDATA);
-
-        if ((PWDATA != PRDATA) && !PSLVERR) begin
-            $display("write and read data not match");
+        if ((PWDATA != PRDATA) && ~PSLVERR) begin
             err_cnt = err_cnt + 1;
-        end else if (PSLVERR) begin
-            $display($"timeout situation occurs, interrupt=%b", mst__bus__interrupt);
-            if (mst__bus__interrupt)
-                bus__mst__clear = 1'b1;
+            $display($time, " error %1d: write data=%h, read data=%h, not match",
+                     err_cnt, PWDATA, PRDATA);
         end
 
         @(posedge clk); #1;
         PSEL = 1'b0;
-        if (bus__mst__clear)
-            bus__mst__clear = 1'b0;
         $display($time, " end read operation");
     end
 
-    $display("test process done, error count: %d", err_cnt);
-    #(CLK_PERIOD*2);
+
+    $display("test process done, error count: %1d", err_cnt);
+    #(CLK_PERIOD*10);
     $finish;
 end
 
+always begin: TIMEOUT_HANDLE
+    wait(PSLVERR);
+    $display($time, " timeout event occurs, pslverr asserted");
+    wait(mst__bus__interrupt);
+    $display($time, " interrupt signal asserted");
+
+    #(CLK_PERIOD*5);
+    @(posedge clk); #1;
+    bus__mst__clear = 1'b1;
+
+    @(posedge clk); #1;
+    bus__mst__clear = 1'b0;
+
+    if (mst__bus__interrupt) begin
+        $display($time, " error %1d: interrupt signal is not cleared",
+                 err_cnt);
+        err_cnt = err_cnt + 1;
+    end
+end
 endmodule

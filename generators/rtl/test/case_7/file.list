@@ -12,7 +12,6 @@
 ../slv_fsm.v
 ../mst_fsm.v
 ../xregister.vh
-../common_funcs.vh
 gen/regmst_reg_top.v
 gen/regslv_reg_top__reg_block_1.v
 tb/ext_mem.v

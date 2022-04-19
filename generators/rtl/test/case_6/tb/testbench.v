@@ -1,9 +1,9 @@
 `timescale 1ns/1ns
 
-// testbench for case 4: software access properties: onwrite=na/woclr/woset/wot/wzc/wzs/wzt
+// testbench for case 6: hardware access properties: hw=r/rw, hwclr, hwset
 module reg_tb;
 
-parameter TOTAL_ACCESS_NUM = 7;
+parameter TOTAL_ACCESS_NUM = 4;
 parameter ADDR_WIDTH = 64;
 parameter DATA_WIDTH = 32;
 
@@ -93,7 +93,14 @@ regmst_reg_top_dut (
 //      input glb_srst,
 //      hardware access ports for internal registers
 parameter REGSLV_REG_BLOCK_1_EXT_NUM = 0;
-parameter REGSLV_REG_BLOCK_1_INT_NUM = 7;
+parameter REGSLV_REG_BLOCK_1_INT_NUM = 4;
+
+logic [DATA_WIDTH-1:0] REG2_HW_RW__FIELD_0__next_value;
+logic REG2_HW_RW__FIELD_0__pulse;
+logic [DATA_WIDTH-1:0] REG3_HW_CLR__FIELD_0__next_value;
+logic REG3_HW_CLR__FIELD_0__pulse;
+logic [DATA_WIDTH-1:0] REG4_HW_SET__FIELD_0__next_value;
+logic REG4_HW_SET__FIELD_0__pulse;
 
 regslv_reg_top__reg_block_1 #(
     .ADDR_WIDTH(ADDR_WIDTH),
@@ -127,15 +134,16 @@ regslv_reg_top__reg_block_1_dut (
     .ext_wr_data(),
     .ext_rd_data({DATA_WIDTH{1'b0}}),
     // hardware access input ports
-	.REG1_ONREAD_NA__FIELD_0__next_value(32'b0),
-	.REG1_ONREAD_NA__FIELD_0__pulse(1'b0),
-	.REG1_ONREAD_NA__FIELD_0__curr_value(actual_hw_value[0]),
-	.REG2_ONREAD_RCLR__FIELD_0__next_value(32'b0),
-	.REG2_ONREAD_RCLR__FIELD_0__pulse(1'b0),
-	.REG2_ONREAD_RCLR__FIELD_0__curr_value(actual_hw_value[1]),
-	.REG3_ONREAD_RSET__FIELD_0__next_value(32'b0),
-	.REG3_ONREAD_RSET__FIELD_0__pulse(1'b0),
-	.REG3_ONREAD_RSET__FIELD_0__curr_value(actual_hw_value[2])
+    .REG1_HW_RO__FIELD_0__curr_value(actual_hw_value[0]),
+	.REG2_HW_RW__FIELD_0__next_value(REG2_HW_RW__FIELD_0__next_value),
+	.REG2_HW_RW__FIELD_0__pulse(REG2_HW_RW__FIELD_0__pulse),
+	.REG2_HW_RW__FIELD_0__curr_value(actual_hw_value[1]),
+	.REG3_HW_CLR__FIELD_0__next_value(REG3_HW_CLR__FIELD_0__next_value),
+	.REG3_HW_CLR__FIELD_0__pulse(REG3_HW_CLR__FIELD_0__pulse),
+	.REG3_HW_CLR__FIELD_0__curr_value(actual_hw_value[2]),
+	.REG4_HW_SET__FIELD_0__next_value(REG4_HW_SET__FIELD_0__next_value),
+	.REG4_HW_SET__FIELD_0__pulse(REG4_HW_SET__FIELD_0__pulse),
+	.REG4_HW_SET__FIELD_0__curr_value(actual_hw_value[3])
 );
 
 
@@ -165,11 +173,9 @@ end
 
 
 /********************************************************************
-******************* test stimulus initialization ********************
+***************** test stimulus initialization **********************
 *********************************************************************/
-reg [ADDR_WIDTH-1:0] addrs [0:TOTAL_ACCESS_NUM-1];
-reg [DATA_WIDTH-1:0] expected_hw_value [0:(TOTAL_ACCESS_NUM)*3-1];
-reg [DATA_WIDTH-1:0] expected_read_value [0:TOTAL_ACCESS_NUM-1];
+reg [DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_ACCESS_NUM-1];
 
 initial begin
     // all APB input initialized to 0
@@ -179,18 +185,24 @@ initial begin
     PADDR = {ADDR_WIDTH{1'b0}};
     PWDATA = {DATA_WIDTH{1'b0}};
 
-    // interrupt clear signal initialized to invalid(0)
+    // interrupt clear signal initialized to 0
     bus__mst__clear = 1'b0;
 
-    // get addresses, expected hardware value and read value of internal registers
-    $readmemh("tb/access_addr_hex.txt", addrs);
+    // hardware access ports initialized to 0
+    REG2_HW_RW__FIELD_0__next_value = 32'b0;
+    REG2_HW_RW__FIELD_0__pulse = 1'b0;
+    REG3_HW_CLR__FIELD_0__next_value = 32'b0;
+    REG3_HW_CLR__FIELD_0__pulse = 1'b0;
+    REG4_HW_SET__FIELD_0__next_value = 32'b0;
+    REG4_HW_SET__FIELD_0__pulse = 1'b0;
+
+    // get expected hardware value of registers
     $readmemh("tb/expected_hw_value_hex.txt", expected_hw_value);
-    $readmemh("tb/expected_read_value_hex.txt", expected_read_value);
 end
 
 
 /********************************************************************
-********************* simulate APB interface ************************
+******** simulate APB transaction and hardware access ***************
 *********************************************************************/
 integer err_cnt;
 
@@ -199,82 +211,56 @@ initial begin
     wait(rstn);
     @(posedge clk); #1;
 
-    // APB write and read operations
-    $display($time, " start continous APB operations");
-    for (integer i = 0; i < TOTAL_ACCESS_NUM; i = i + 1) begin
-        // APB write operation
-        @(posedge clk); #1;
-        PSEL = 1'b1;
-        PENABLE = 1'b0;
-        PWRITE = 1'b1;
-        PADDR = addrs[i];
-        // all register will be written to 0x00000000
-        PWDATA = {DATA_WIDTH{1'b0}};
-        $display($time, " start write operation: addr=%h data=%h", PADDR, PWDATA);
+    // test register: REG1_HW_RO
+    if (expected_hw_value[0] != actual_hw_value[0]) begin
+        $display($time, " error: REG1 hardware access, expected=%h, actual=%h",
+                 expected_hw_value[0], actual_hw_value[0]);
+        err_cnt = err_cnt + 1;
+    end
 
-        @(posedge clk); #1;
-        PENABLE = 1'b1;
+    // APB write operation
+    PSEL = 1'b1;
+    PENABLE = 1'b0;
+    PWRITE = 1'b1;
+    PADDR = 64'b0;
+    // write 0x12345678 to REG1_HW_RO_FIELD_0
+    PWDATA = 32'h12345678;
+    $display($time, " start APB write operation: addr=%h data=%h", PADDR, PWDATA);
+    @(posedge clk); #1;
+    PENABLE = 1'b1;
+    wait(PREADY);
+    @(posedge clk); #1;
+    PSEL = 1'b0;
+    $display($time, " end APB write operation");
 
-        wait(PREADY);
-        @(posedge clk); #1;
-        PSEL = 1'b0;
-        $display($time, " end write operation");
-        if (expected_hw_value[i*3] != actual_hw_value[i]) begin
+    // test register: REG1_HW_RO (after software modification)
+    if (expected_hw_value[1] != actual_hw_value[0]) begin
+        $display($time, " error: REG1 hardware access, expected=%h, actual=%h",
+                 0, expected_hw_value[1], actual_hw_value[0]);
+        err_cnt = err_cnt + 1;
+    end
+
+    // test register: REG2_HW_RW, REG3_HW_CLR, REG4_HW_SET
+    @(posedge clk); #1;
+    $display($time, " start hardware write: REG2, REG3, REG4")
+    REG2_HW_RW__FIELD_0__pulse = 1'b1;
+    REG2_HW_RW__FIELD_0__next_value = 32'h12345678;
+    // no need to assert pulse due to hwclr and hwset properties
+    REG3_HW_CLR__FIELD_0__next_value = 32'hffffffff;
+    REG4_HW_SET__FIELD_0__next_value = 32'hffffffff;
+
+    @(posedge clk); #1;
+    REG2_HW_RW__FIELD_0__pulse = 1'b0;
+
+    $display($time, " end hardware write: REG2, REG3, REG4")
+    for (integer i = 1; i < 4; i = i + 1) begin
+        if (expected_hw_value[i+1] != actual_hw_value[i]) begin
+            $display($time, " error: REG%d hardware access, expected=%h, actual=%h",
+                     i+1, expected_hw_value[i+1], actual_hw_value[i]);
             err_cnt = err_cnt + 1;
-            $display($time, " error: write addr=%h, expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3], actual_hw_value[i]);
-        end
-
-        // APB read operation
-        @(posedge clk); #1;
-        PSEL = 1'b1;
-        PENABLE = 1'b0;
-        PWRITE = 1'b0;
-        PADDR = addrs[i];
-        $display($time, " start read operation: addr=%h", PADDR);
-
-        @(posedge clk); #1;
-        PENABLE = 1'b1;
-
-        wait(PREADY);
-        #0 $display($time, " read data=%h", PRDATA);
-        if (PRDATA != expected_read_value[i]) begin
-            err_cnt = err_cnt + 1;
-            $display($time, " error: read(sw) addr=%h, sw expected=%h, PRDATA=%h",
-                     PADDR, expected_read_value[i], PRDATA);
-        end
-        @(posedge clk); #1;
-        PSEL = 1'b0;
-        $display($time, " end read operation");
-        if (expected_hw_value[i*3+1] != actual_hw_value[i]) begin
-            err_cnt = err_cnt + 1;
-            $display($time, " error: read(hw) in addr=%h, hw expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3+1], actual_hw_value[i]);
-        end
-
-        // another APB write operation
-        @(posedge clk); #1;
-        PSEL = 1'b1;
-        PENABLE = 1'b0;
-        PWRITE = 1'b1;
-        PADDR = addrs[i];
-        // all register will be written to 0xffffffff
-        PWDATA = {DATA_WIDTH{1'b1}};
-        $display($time, " start write operation: addr=%h data=%h", PADDR, PWDATA);
-
-        @(posedge clk); #1;
-        PENABLE = 1'b1;
-
-        wait(PREADY);
-        @(posedge clk); #1;
-        PSEL = 1'b0;
-        $display($time, " end write operation");
-        if (expected_hw_value[i*3+2] != actual_hw_value[i]) begin
-            err_cnt = err_cnt + 1;
-            $display($time, " error: write addr=%h, expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3+2], actual_hw_value[i]);
         end
     end
+
 
     $display("test process done, error count: %d", err_cnt);
     #(CLK_PERIOD*2);
