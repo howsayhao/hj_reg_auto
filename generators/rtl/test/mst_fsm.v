@@ -126,7 +126,7 @@ always_comb begin
         end
         S_WAIT_SLV_RDY:begin
             if(slv__fsm__ack_vld | op_time_out) next_state = S_SETUP;
-            else if(external_reg_selected & slv__fsm__req_rdy) next_state = S_SETUP;
+            else if(external_reg_selected & slv__fsm__req_rdy) next_state = S_WAIT_SLV_ACK;
             else next_state = S_WAIT_SLV_RDY;
         end
         S_WAIT_SLV_ACK:begin
