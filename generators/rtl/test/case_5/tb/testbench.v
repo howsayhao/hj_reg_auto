@@ -227,8 +227,8 @@ initial begin
         $display($time, " end write operation");
         if (expected_hw_value[i*3] != actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: write addr=%h, expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3], actual_hw_value[phy_idx]);
+            $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i*3], actual_hw_value[phy_idx]);
         end
 
         // APB read operation
@@ -246,16 +246,16 @@ initial begin
         #0 $display($time, " read data=%h", PRDATA);
         if (PRDATA != expected_read_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: read(sw) addr=%h, sw expected=%h, PRDATA=%h",
-                     PADDR, expected_read_value[i], PRDATA);
+            $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, PRDATA=%h",
+                     err_cnt, PADDR, expected_read_value[i], PRDATA);
         end
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end read operation");
         if (expected_hw_value[i*3+1] != actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: read(hw) in addr=%h, hw expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3+1], actual_hw_value[phy_idx]);
+            $display($time, " error %1d: read(hw) in addr=%h, hw expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i*3+1], actual_hw_value[phy_idx]);
         end
 
         // another APB write operation
@@ -277,12 +277,12 @@ initial begin
         $display($time, " end write operation");
         if (expected_hw_value[i*3+2] != actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: write addr=%h, expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3+2], actual_hw_value[phy_idx]);
+            $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i*3+2], actual_hw_value[phy_idx]);
         end
     end
 
-    $display("test process done, error count: %d", err_cnt);
+    $display("test process done, error count: %1d", err_cnt);
     #(CLK_PERIOD*2);
     $finish;
 end

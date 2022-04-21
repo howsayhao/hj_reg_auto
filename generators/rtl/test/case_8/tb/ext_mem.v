@@ -79,7 +79,7 @@ module ext_mem (
     generate
         if (~DEBUG_ERR) begin: GEN_ACK
             always @(posedge clk) begin
-                if (req_vld_ff && (wr_en_ff || rd_en_ff))
+                if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_vld)
                     ack_vld <= VALID;
                 else
                     ack_vld <= INVALID;

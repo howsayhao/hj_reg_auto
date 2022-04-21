@@ -2,7 +2,7 @@ reg REG_def {
 		regwidth = 32;
 		field {
 			sw = rw;
-		} FIELD_0[31:0] = 0x0;
+		} FIELD_0[31:0] = 0xaaaaaaaa;
 };
 
 addrmap reg_top {

@@ -20,8 +20,8 @@ module regslv_reg_top__reg_block_1(
 	test_2_shared_21__FIELD_0__pulse,
 	test_2_shared_21__FIELD_0__curr_value,
 //*********************************INTERNAL field connection port END*********************************//
-	srst_1,
-	srst_2,
+	,
+	,
 	clk,
 	rstn,
 	req_vld,
@@ -62,8 +62,8 @@ output global_sync_reset_out;
 output ack_vld;
 input ack_rdy;
 //declare the syn_rst
-input srst_1;
-input srst_2;
+input ;
+input ;
 //declare the portwidth of external module
 output [EXT_NUM-1:0] ext_req_vld;
 input [EXT_NUM-1:0] ext_req_rdy;
@@ -440,6 +440,7 @@ field
 	//**************PARAMETER INSTANTIATE***************//
 	#( 
 	.F_WIDTH(32),
+	.SRST_CNT(2),
 	.ARST_VALUE(32'haaaaaaaa),
 	.ALIAS_NUM(13),
 	.SW_TYPE({`SW_RO,`SW_WO,`SW_W1,`SW_RW1,`SW_RW,`SW_RW,`SW_RW,`SW_RW,`SW_RW,`SW_RW,`SW_RW,`SW_RW,`SW_RW}),
@@ -453,7 +454,7 @@ x__test_2_shared_21__FIELD_0
 	(
 	.clk(clk),
 	.rst_n(rstn),
-	.sync_rst(1'b0),
+	.sync_rst({,}),
 	.sw_wr_data({test_2_shared_21_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0],test_3_shared_31_wr_data[31:0]}),
 	.sw_rd({rd_sel_ff[13],rd_sel_ff[14],rd_sel_ff[15],rd_sel_ff[16],rd_sel_ff[17],rd_sel_ff[18],rd_sel_ff[19],rd_sel_ff[20],rd_sel_ff[21],rd_sel_ff[22],rd_sel_ff[23],rd_sel_ff[24],rd_sel_ff[25]}),
 	.sw_wr({wr_sel_ff[13],wr_sel_ff[14],wr_sel_ff[15],wr_sel_ff[16],wr_sel_ff[17],wr_sel_ff[18],wr_sel_ff[19],wr_sel_ff[20],wr_sel_ff[21],wr_sel_ff[22],wr_sel_ff[23],wr_sel_ff[24],wr_sel_ff[25]}),

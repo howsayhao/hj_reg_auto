@@ -5,25 +5,25 @@ signal {
 
 // test shared property
 reg shared_reg {
-	shared;
+    shared;
 
-	field {
-		sw = rw;
-	} FIELD_0[31:0] = 0xaaaaaaaa;
+    field {
+        sw = rw;
+    } FIELD_0[31:0] = 0xaaaaaaaa;
 };
 
 addrmap reg_top {
-	addrmap {
-		hj_genrtl = true;
+    addrmap {
+        hj_genrtl = true;
 
         reg REG1_def {
             field {
                 sw = rw;
             } FIELD_0[31:0] = 0xaaaaaaaa;
-	    } REG1;
+        } REG1;
 
         // implement alias register
-	    alias REG1 REG1_def REG1_alias_1, REG1_alias_2, REG1_alias_3,
+        alias REG1 REG1_def REG1_alias_1, REG1_alias_2, REG1_alias_3,
                             REG1_alias_4, REG1_alias_5, REG1_alias_6,
                             REG1_alias_7, REG1_alias_8, REG1_alias_9,
                             REG1_alias_10, REG1_alias_11, REG1_alias_12;
@@ -41,8 +41,8 @@ addrmap reg_top {
         REG1_alias_11.FIELD_0 -> onwrite = wzc;
         REG1_alias_12.FIELD_0 -> onwrite = wzt;
 
-		// implement internal registers
-		addrmap {
+        // implement internal registers
+        addrmap {
             hj_genrtl = false;
 
             // test reset values
@@ -50,7 +50,7 @@ addrmap reg_top {
                        shared_26, shared_27, shared_28, shared_29, shared_210,
                        shared_211, shared_212;
 
-            shared_21 -> hj_syncresetsignal = "srst_1";
+            shared_21.FIELD_0 -> hj_syncresetsignal = "srst_1";
             shared_21.FIELD_0 -> sw = r;
             shared_22.FIELD_0 -> sw = w;
             shared_23.FIELD_0 -> sw = w1;
@@ -69,8 +69,8 @@ addrmap reg_top {
             hj_genrtl = false;
             // test reset values
             shared_reg shared_31;
-            shared_31 -> hj_syncresetsignal = "srst_2";
+            shared_31.FIELD_0 -> hj_syncresetsignal = "srst_2";
         } test_3;
 
-	} reg_block_1;
+    } reg_block_1;
 };

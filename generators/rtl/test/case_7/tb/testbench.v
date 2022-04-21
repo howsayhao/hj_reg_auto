@@ -204,6 +204,7 @@ end
 /********************************************************************
 ***************** test stimulus initialization **********************
 *********************************************************************/
+reg [ADDR_WIDTH-1:0] addrs [0:TOTAL_ACCESS_NUM-1];
 reg [DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_ACCESS_NUM-1];
 
 initial begin
@@ -240,7 +241,8 @@ initial begin
     reg7_next_value = 32'b0;
     reg7_pulse = 1'b0;
 
-    // get expected hardware value of registers
+    // get addresses and expected hardware value of registers
+    $readmemh("tb/access_addr_hex.txt", addrs);
     $readmemh("tb/expected_hw_value_hex.txt", expected_hw_value);
 end
 
@@ -252,7 +254,7 @@ integer err_cnt;
 
 initial begin
     // see whether swacc and swmod is asserted and deasserted
-    $monitor($time, " swacc=%b, swmod=%b \n", swacc_out, swmod_out);
+    $monitor($time, " swacc=%b, swmod=%b", swacc_out, swmod_out);
 end
 
 initial begin
@@ -282,17 +284,17 @@ initial begin
         $display($time, " end write operation");
 
         if (PWDATA != actual_hw_value[i]) begin
-            $display($time, " error: APB write, addr=%h,  expected=%h, actual=%h",
-                     PADDR, PWDATA, actual_hw_value[i]);
             err_cnt = err_cnt + 1;
+            $display($time, " error %1d: APB write, addr=%h,  expected=%h, actual=%h",
+                     err_cnt, PADDR, PWDATA, actual_hw_value[i]);
         end
 
         // assert global asynchronous resets
-        rstn = 1'b0; #0;
+        rstn = 1'b0; #1;
         if (actual_hw_value[i] != expected_hw_value[i]) begin
-            $display($time, " error: global async reset, expected=%h, actual=%h",
-                     expected_hw_value[i], actual_hw_value[i]);
             err_cnt = err_cnt + 1;
+            $display($time, " error %1d: global async reset, expected=%h, actual=%h",
+                     err_cnt, expected_hw_value[i], actual_hw_value[i]);
         end
         @(posedge clk); #1;
         rstn = 1'b1;
@@ -314,9 +316,9 @@ initial begin
     @(posedge clk); #1;
     srst_1 = 1'b0;
     if (actual_hw_value[0] != expected_hw_value[0]) begin
-        $display($time, " error: reg1.srst_1 sync reset, hw value: expected=%h, actual=%h",
-                 expected_hw_value[0], actual_hw_value[0]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: reg1.srst_1 sync reset, hw value: expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[0], actual_hw_value[0]);
     end
 
     // REG1_SRST: srst_2
@@ -331,9 +333,9 @@ initial begin
     @(posedge clk); #1;
     srst_2 = 1'b0;
     if (actual_hw_value[0] != expected_hw_value[0]) begin
-        $display($time, " error: reg1.srst_2 sync reset, hw value: expected=%h, actual=%h",
-                 expected_hw_value[0], actual_hw_value[0]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: reg1.srst_2 sync reset, hw value: expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[0], actual_hw_value[0]);
     end
 
     // REG1_SRST, REG2_SRST: srst_3
@@ -352,15 +354,15 @@ initial begin
     @(posedge clk); #1;
     srst_3 = 1'b0;
     if (actual_hw_value[0] != expected_hw_value[0]) begin
-        $display($time, " error: reg1.srst_3 sync reset, hw value: expected=%h, actual=%h",
-                 expected_hw_value[0], actual_hw_value[0]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: reg1.srst_3 sync reset, hw value: expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[0], actual_hw_value[0]);
     end
 
     if (actual_hw_value[1] != expected_hw_value[1]) begin
-        $display($time, " error: reg2.srst_3 sync reset, hw value: expected=%h, actual=%h",
-                 expected_hw_value[1], actual_hw_value[1]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: reg2.srst_3 sync reset, hw value: expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[1], actual_hw_value[1]);
     end
 
     // REG2_SRST: srst_4
@@ -375,9 +377,9 @@ initial begin
     @(posedge clk); #1;
     srst_4 = 1'b0;
     if (actual_hw_value[0] != expected_hw_value[0]) begin
-        $display($time, " error: reg2.srst_4 sync reset, hw value: expected=%h, actual=%h",
-                 expected_hw_value[1], actual_hw_value[1]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: reg2.srst_4 sync reset, hw value: expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[1], actual_hw_value[1]);
     end
 
     // REG2_SRST: srst_5
@@ -392,9 +394,9 @@ initial begin
     @(posedge clk); #1;
     srst_5 = 1'b0;
     if (actual_hw_value[1] != expected_hw_value[1]) begin
-        $display($time, " error: reg2.srst_5 sync reset, hw value: expected=%h, actual=%h",
-                 expected_hw_value[1], actual_hw_value[1]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: reg2.srst_5 sync reset, hw value: expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[1], actual_hw_value[1]);
     end
 
     #(CLK_PERIOD*5);
@@ -448,9 +450,9 @@ initial begin
             reg6_pulse = 1'b0;
             reg6_next_value = 32'h0;
             if (actual_hw_value[5] != 32'h12345678) begin
-                $display($time, " error: reg6 hw value, expected=%h, actual=%h",
-                         32'h12345678, actual_hw_value[5]);
                 err_cnt = err_cnt + 1;
+                $display($time, " error %1d: reg6 hw value, expected=%h, actual=%h",
+                         err_cnt, 32'h12345678, actual_hw_value[5]);
             end
 
             wait(regslv_reg_top__reg_block_1_dut.x__REG7_PRECEDENCE_HW__FIELD_0.sw_wr);
@@ -460,15 +462,15 @@ initial begin
             @(posedge clk); #1;
             reg7_pulse = 1'b0;
             reg7_next_value = 32'h0;
-            if (actual_hw_value[5] != 32'h87654321) begin
-                $display($time, " error: reg7 hw value, expected=%h, actual=%h",
-                         32'h87654321, actual_hw_value[6]);
+            if (actual_hw_value[6] != 32'h87654321) begin
                 err_cnt = err_cnt + 1;
+                $display($time, " error %1d: reg7 hw value, expected=%h, actual=%h",
+                         err_cnt, 32'h87654321, actual_hw_value[6]);
             end
         end
     join
 
-    $display("test process done, error count: %d", err_cnt);
+    $display("test process done, error count: %1d", err_cnt);
     #(CLK_PERIOD*2);
     $finish;
 end

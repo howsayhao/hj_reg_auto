@@ -157,6 +157,9 @@ regslv_reg_top__reg_block_1_dut (
 // bus interface:
 //      reg_native_if: regslv_reg_top__reg_block_1 <-> snapshot_reg_mem
 //      reg_native_if: snapshot_reg_mem <-> ext_mem_1
+parameter EXT_MEM_1_DATA_WIDTH = EXT_MEM_DATA_WIDTH;
+parameter EXT_MEM_1_ADDR_WIDTH = EXT_MEM_ADDR_WIDTH;
+
 logic snapshot_reg_mem_1__ext_mem_1__req_vld;
 logic snapshot_reg_mem_1__ext_mem_1__req_rdy;
 logic snapshot_reg_mem_1__ext_mem_1__ack_vld;
@@ -167,7 +170,7 @@ logic [EXT_MEM_1_DATA_WIDTH-1:0] snapshot_reg_mem_1__ext_mem_1__wr_data;
 logic [EXT_MEM_1_DATA_WIDTH-1:0] snapshot_reg_mem_1__ext_mem_1__rd_data;
 
 snap_reg #(
-    .ADDR_WIDTH(ADDR_WIDTH)
+    .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
     .MEM_WIDTH(EXT_MEM_1_DATA_WIDTH))
 snapshot_reg_mem_1 (
@@ -200,8 +203,6 @@ snapshot_reg_mem_1 (
 //      reg_native_if: snapshot_reg_mem_1 <-> ext_mem_1
 // directly connected upstream:
 //      snapshot register: snapshot_reg_mem_1
-parameter EXT_MEM_1_DATA_WIDTH = EXT_MEM_DATA_WIDTH;
-parameter EXT_MEM_1_ADDR_WIDTH = EXT_MEM_ADDR_WIDTH;
 parameter EXT_MEM_1_BASE_ADDR = 64'h20;
 
 // convert bus address to external memory address
@@ -312,10 +313,10 @@ initial begin
 
             if (ext_mem_1.mem[i*SNAPSHOT_ENTRY_NUM+j] !=
                 expected_mem_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j]) begin
-                $display($time, " access addr=%h, mem expected=%h, actual=%h",
-                         PADDR, expected_mem_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j],
-                         ext_mem_1.mem[i*SNAPSHOT_ENTRY_NUM+j]);
                 err_cnt = err_cnt + 1;
+                $display($time, " error %1d: access addr=%h, mem expected=%h, actual=%h",
+                         err_cnt, PADDR, expected_mem_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j],
+                         ext_mem_1.mem[i*SNAPSHOT_ENTRY_NUM+j]);
             end
             // change memory values before last snapshot write operation
             if (j == 1) begin
@@ -341,10 +342,10 @@ initial begin
             wait(PREADY);
             #0 $display($time, " read data=%h", PRDATA);
             if (PRDATA != expected_read_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j]) begin
-                $display($time, " access addr=%h, mem expected=%h, actual=%h",
-                         PADDR, expected_read_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j],
-                         PRDATA);
                 err_cnt = err_cnt + 1;
+                $display($time, " error %1d: access addr=%h, mem expected=%h, actual=%h",
+                         err_cnt, PADDR, expected_read_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j],
+                         PRDATA);
             end
 
             @(posedge clk); #1;
@@ -358,7 +359,7 @@ initial begin
         end
     end
 
-    $display("test process done, error count: %d", err_cnt);
+    $display("test process done, error count: %1d", err_cnt);
     #(CLK_PERIOD*2);
     $finish;
 end

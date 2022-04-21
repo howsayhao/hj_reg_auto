@@ -607,9 +607,9 @@ always begin: TIMEOUT_HANDLE
     bus__mst__clear = 1'b0;
 
     if (mst__bus__interrupt) begin
+        err_cnt = err_cnt + 1;
         $display($time, " error %1d: interrupt signal is not cleared",
                  err_cnt);
-        err_cnt = err_cnt + 1;
     end
 end
 endmodule

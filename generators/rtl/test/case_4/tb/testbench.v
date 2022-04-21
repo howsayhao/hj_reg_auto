@@ -127,15 +127,27 @@ regslv_reg_top__reg_block_1_dut (
     .ext_wr_data(),
     .ext_rd_data({DATA_WIDTH{1'b0}}),
     // hardware access input ports
-	.REG1_ONREAD_NA__FIELD_0__next_value(32'b0),
-	.REG1_ONREAD_NA__FIELD_0__pulse(1'b0),
-	.REG1_ONREAD_NA__FIELD_0__curr_value(actual_hw_value[0]),
-	.REG2_ONREAD_RCLR__FIELD_0__next_value(32'b0),
-	.REG2_ONREAD_RCLR__FIELD_0__pulse(1'b0),
-	.REG2_ONREAD_RCLR__FIELD_0__curr_value(actual_hw_value[1]),
-	.REG3_ONREAD_RSET__FIELD_0__next_value(32'b0),
-	.REG3_ONREAD_RSET__FIELD_0__pulse(1'b0),
-	.REG3_ONREAD_RSET__FIELD_0__curr_value(actual_hw_value[2])
+	.REG1_ONWRITE_NA__FIELD_0__next_value(32'b0),
+	.REG1_ONWRITE_NA__FIELD_0__pulse(1'b0),
+	.REG1_ONWRITE_NA__FIELD_0__curr_value(actual_hw_value[0]),
+	.REG2_ONWRITE_WOCLR__FIELD_0__next_value(32'b0),
+	.REG2_ONWRITE_WOCLR__FIELD_0__pulse(1'b0),
+	.REG2_ONWRITE_WOCLR__FIELD_0__curr_value(actual_hw_value[1]),
+	.REG3_ONWRITE_WOSET__FIELD_0__next_value(32'b0),
+	.REG3_ONWRITE_WOSET__FIELD_0__pulse(1'b0),
+	.REG3_ONWRITE_WOSET__FIELD_0__curr_value(actual_hw_value[2]),
+	.REG4_ONWRITE_WOT__FIELD_0__next_value(32'b0),
+	.REG4_ONWRITE_WOT__FIELD_0__pulse(1'b0),
+	.REG4_ONWRITE_WOT__FIELD_0__curr_value(actual_hw_value[3]),
+	.REG5_ONWRITE_WZS__FIELD_0__next_value(32'b0),
+	.REG5_ONWRITE_WZS__FIELD_0__pulse(1'b0),
+	.REG5_ONWRITE_WZS__FIELD_0__curr_value(actual_hw_value[4]),
+	.REG6_ONWRITE_WZC__FIELD_0__next_value(32'b0),
+	.REG6_ONWRITE_WZC__FIELD_0__pulse(1'b0),
+	.REG6_ONWRITE_WZC__FIELD_0__curr_value(actual_hw_value[5]),
+	.REG7_ONWRITE_WZT__FIELD_0__next_value(32'b0),
+	.REG7_ONWRITE_WZT__FIELD_0__pulse(1'b0),
+	.REG7_ONWRITE_WZT__FIELD_0__curr_value(actual_hw_value[6])
 );
 
 
@@ -200,7 +212,6 @@ initial begin
     @(posedge clk); #1;
 
     // APB write and read operations
-    $display($time, " start continous APB operations");
     for (integer i = 0; i < TOTAL_ACCESS_NUM; i = i + 1) begin
         // APB write operation
         @(posedge clk); #1;
@@ -221,8 +232,8 @@ initial begin
         $display($time, " end write operation");
         if (expected_hw_value[i*3] != actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: write addr=%h, expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3], actual_hw_value[i]);
+            $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i*3], actual_hw_value[i]);
         end
 
         // APB read operation
@@ -240,16 +251,16 @@ initial begin
         #0 $display($time, " read data=%h", PRDATA);
         if (PRDATA != expected_read_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: read(sw) addr=%h, sw expected=%h, PRDATA=%h",
-                     PADDR, expected_read_value[i], PRDATA);
+            $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, PRDATA=%h",
+                     err_cnt, PADDR, expected_read_value[i], PRDATA);
         end
         @(posedge clk); #1;
         PSEL = 1'b0;
         $display($time, " end read operation");
         if (expected_hw_value[i*3+1] != actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: read(hw) in addr=%h, hw expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3+1], actual_hw_value[i]);
+            $display($time, " error %1d: read(hw) in addr=%h, hw expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i*3+1], actual_hw_value[i]);
         end
 
         // another APB write operation
@@ -271,12 +282,12 @@ initial begin
         $display($time, " end write operation");
         if (expected_hw_value[i*3+2] != actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
-            $display($time, " error: write addr=%h, expected=%h, actual=%h",
-                     PADDR, expected_hw_value[i*3+2], actual_hw_value[i]);
+            $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i*3+2], actual_hw_value[i]);
         end
     end
 
-    $display("test process done, error count: %d", err_cnt);
+    $display("test process done, error count: %1d", err_cnt);
     #(CLK_PERIOD*2);
     $finish;
 end

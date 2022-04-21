@@ -12,8 +12,8 @@ module regmst_reg_top(
 //********************************EXTERNAL module connection port END*********************************//
 //********************************INTERNAL field connection port START********************************//
 //*********************************INTERNAL field connection port END*********************************//
-	srst_1,
-	srst_2,
+	,
+	,
 	clk,
 	rstn,
 	PSEL,
@@ -55,8 +55,8 @@ output global_sync_reset_out;
 input clear;
 output interrupt;
 //declare the syn_rst
-input srst_1;
-input srst_2;
+input ;
+input ;
 //declare the portwidth of external module
 output [EXT_NUM-1:0] ext_req_vld;
 input [EXT_NUM-1:0] ext_req_rdy;

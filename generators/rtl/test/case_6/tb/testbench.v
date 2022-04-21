@@ -213,9 +213,9 @@ initial begin
 
     // test register: REG1_HW_RO
     if (expected_hw_value[0] != actual_hw_value[0]) begin
-        $display($time, " error: REG1 hardware access, expected=%h, actual=%h",
-                 expected_hw_value[0], actual_hw_value[0]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: REG1 hardware access, expected=%h, actual=%h",
+                 err_cnt, expected_hw_value[0], actual_hw_value[0]);
     end
 
     // APB write operation
@@ -235,14 +235,14 @@ initial begin
 
     // test register: REG1_HW_RO (after software modification)
     if (expected_hw_value[1] != actual_hw_value[0]) begin
-        $display($time, " error: REG1 hardware access, expected=%h, actual=%h",
-                 0, expected_hw_value[1], actual_hw_value[0]);
         err_cnt = err_cnt + 1;
+        $display($time, " error %1d: REG%d hardware access, expected=%h, actual=%h",
+                 err_cnt, 1, expected_hw_value[1], actual_hw_value[0]);
     end
 
     // test register: REG2_HW_RW, REG3_HW_CLR, REG4_HW_SET
     @(posedge clk); #1;
-    $display($time, " start hardware write: REG2, REG3, REG4")
+    $display($time, " start hardware write: REG2, REG3, REG4");
     REG2_HW_RW__FIELD_0__pulse = 1'b1;
     REG2_HW_RW__FIELD_0__next_value = 32'h12345678;
     // no need to assert pulse due to hwclr and hwset properties
@@ -252,17 +252,17 @@ initial begin
     @(posedge clk); #1;
     REG2_HW_RW__FIELD_0__pulse = 1'b0;
 
-    $display($time, " end hardware write: REG2, REG3, REG4")
+    $display($time, " end hardware write: REG2, REG3, REG4");
     for (integer i = 1; i < 4; i = i + 1) begin
         if (expected_hw_value[i+1] != actual_hw_value[i]) begin
-            $display($time, " error: REG%d hardware access, expected=%h, actual=%h",
-                     i+1, expected_hw_value[i+1], actual_hw_value[i]);
             err_cnt = err_cnt + 1;
+            $display($time, " error %1d: REG%d hardware access, expected=%h, actual=%h",
+                     err_cnt, i+1, expected_hw_value[i+1], actual_hw_value[i]);
         end
     end
 
 
-    $display("test process done, error count: %d", err_cnt);
+    $display("test process done, error count: %1d", err_cnt);
     #(CLK_PERIOD*2);
     $finish;
 end

@@ -70,52 +70,78 @@ regslv_dut (
     // hardware access input ports
     .test_21_REG1_SW_RW__FIELD_8__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_8__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_8__curr_value(),
     .test_21_REG1_SW_RW__FIELD_7__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_7__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_7__curr_value(),
     .test_21_REG1_SW_RW__FIELD_6__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_6__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_6__curr_value(),
     .test_21_REG1_SW_RW__FIELD_5__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_5__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_5__curr_value(),
     .test_21_REG1_SW_RW__FIELD_4__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_4__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_4__curr_value(),
     .test_21_REG1_SW_RW__FIELD_3__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_3__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_3__curr_value(),
     .test_21_REG1_SW_RW__FIELD_2__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_2__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_2__curr_value(),
     .test_21_REG1_SW_RW__FIELD_1__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_1__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_1__curr_value(),
     .test_21_REG1_SW_RW__FIELD_0__next_value(2'b0),
     .test_21_REG1_SW_RW__FIELD_0__pulse(1'b0),
+    .test_21_REG1_SW_RW__FIELD_0__curr_value(),
     .test_21_REG2_SW_W__FIELD_6__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_6__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_6__curr_value(),
     .test_21_REG2_SW_W__FIELD_5__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_5__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_5__curr_value(),
     .test_21_REG2_SW_W__FIELD_4__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_4__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_4__curr_value(),
     .test_21_REG2_SW_W__FIELD_3__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_3__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_3__curr_value(),
     .test_21_REG2_SW_W__FIELD_2__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_2__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_2__curr_value(),
     .test_21_REG2_SW_W__FIELD_1__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_1__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_1__curr_value(),
     .test_21_REG2_SW_W__FIELD_0__next_value(2'b0),
     .test_21_REG2_SW_W__FIELD_0__pulse(1'b0),
+    .test_21_REG2_SW_W__FIELD_0__curr_value(),
     .test_21_REG3_HW__FIELD_3__next_value(2'b0),
     .test_21_REG3_HW__FIELD_3__pulse(1'b0),
+    .test_21_REG3_HW__FIELD_3__curr_value(),
     .test_21_REG3_HW__FIELD_2__next_value(2'b0),
     .test_21_REG3_HW__FIELD_2__pulse(1'b0),
+    .test_21_REG3_HW__FIELD_2__curr_value(),
+    .test_21_REG3_HW__FIELD_1__curr_value(),
     .test_21_REG3_HW__FIELD_0__next_value(2'b0),
     .test_21_REG3_HW__FIELD_0__pulse(1'b0),
     .test_21_REG4_PRECEDENCE__FIELD_1__next_value(2'b0),
     .test_21_REG4_PRECEDENCE__FIELD_1__pulse(1'b0),
+    .test_21_REG4_PRECEDENCE__FIELD_1__curr_value(),
     .test_21_REG4_PRECEDENCE__FIELD_0__next_value(2'b0),
     .test_21_REG4_PRECEDENCE__FIELD_0__pulse(1'b0),
+    .test_21_REG4_PRECEDENCE__FIELD_0__curr_value(),
     .test_21_REG5_SINGLEPULSE__FIELD_0__next_value(1'b0),
     .test_21_REG5_SINGLEPULSE__FIELD_0__pulse(1'b0),
+    .test_21_REG5_SINGLEPULSE__FIELD_0__curr_value(),
     .test_21_REG6_SW_ACC_MOD__FIELD_0__next_value(2'b0),
     .test_21_REG6_SW_ACC_MOD__FIELD_0__pulse(1'b0),
+    .test_21_REG6_SW_ACC_MOD__FIELD_0__curr_value(),
+    .test_21_REG6_SW_ACC_MOD__FIELD_0__swmod_out(),
+	.test_21_REG6_SW_ACC_MOD__FIELD_0__swacc_out(),
     .test_22_shared_2__FIELD_0__next_value(32'b0),
-    .test_22_shared_2__FIELD_0__pulse(1'b0)
+    .test_22_shared_2__FIELD_0__pulse(1'b0),
+    .test_22_shared_2__FIELD_0__curr_value()
 );
 
 // instantiate external memory
@@ -192,8 +218,8 @@ initial begin
     test_21_srst_2 = 1'b0;
 
     // get addresses of internal registers and external memory entries
-    $readmemh("regslv_tb_internal_addr_hex.txt", internal_addrs);
-    $readmemh("regslv_tb_external_addr_hex.txt", external_addrs);
+    $readmemh("tb/regslv_tb_internal_addr_hex.txt", internal_addrs);
+    $readmemh("tb/regslv_tb_external_addr_hex.txt", external_addrs);
 end
 
 /********************************************************************

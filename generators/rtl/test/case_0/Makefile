@@ -1,36 +1,41 @@
 simv_name = simv
-src = dw/right_find_1st_one.v  dw/one_hot_mux.v dw/one_hot_mux_ff.v \
-	dw/one_hot_mux_2d.v dw/split_mux.v dw/split_mux_2d.v \
-	dw/priority_mux.v dw/priority_mux_2d.v \
-	field.v sw_ctrl.v hw_ctrl.v \
-	slv_fsm.v mst_fsm.v \
-	xregister.vh common_funcs.vh \
-	gen/regmst_reg_top.v gen/regslv_reg_block_1.v \
-	gen/regslv_reg_block_2.v gen/regslv_test_11.v \
-	tb/ext_mem.v tb/regmst_tb.v
+rtl_src = file.list
 
-VCS_OPS = -R -full64 -sverilog +v2k -timescale=1ns/1ns  \
+regslv_tb = tb/regslv_tb.v
+regmst_tb = tb/regmst_tb.v
+
+VCS_OPS = -full64 -sverilog +v2k -timescale=1ns/1ns  \
 		-debug_acc+all                                  \
 		+warn=all                                       \
 		+notimingcheck                                  \
 		-kdb                                            \
 		+nospecify                                      \
 		+vcs+flush+all                                  \
-		-o $(simv_name)
+		-o $(simv_name)                                 \
+		-f $(rtl_src)
 
 # verdi dump wave compile option
 VERDI_OPS = -P ${VERDI_HOME}/share/PLI/VCS/linux64/novas.tab \
 			${VERDI_HOME}/share/PLI/VCS/linux64/pli.a \
 			+fsdb+autoflush
 
-sim: $(simv_name)
+vcs_regslv: $(rtl_src)
+	bsub -Is vcs $(VCS_OPS) $(regslv_tb) $(VERDI_OPS)
+
+vcs_regmst: $(rtl_src)
+	bsub -Is vcs $(VCS_OPS) $(regmst_tb) $(VERDI_OPS)
+
+sim_regslv: vcs_regslv
 	./$(simv_name)
 
-vcs: $(src)
-	bsub -Is vcs $(VCS_OPS) $(src) $(VERDI_OPS)
+sim_regmst: vcs_regmst
+	./$(simv_name)
 
-verdi: vcs $(src)
-	bsub -Is verdi -sv $(src) -ssf *.fsdb
+verdi_regslv: sim_regslv $(rtl_src)
+	bsub -Is verdi -sv -f $(rtl_src) $(regslv_tb) -ssf *.fsdb
+
+verdi_regmst: sim_regmst $(rtl_src)
+	bsub -Is verdi -sv -f $(rtl_src) $(regmst_tb) -ssf *.fsdb
 
 .PHONY: clean
 clean:
