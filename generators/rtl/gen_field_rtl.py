@@ -45,7 +45,7 @@ def gen_field_rtl(register):
             # collect the alias register's corresponding fields information
 
             for alias in register.alias_reg:
-                alias_reg_name = '_'.join(r_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                alias_reg_name = '_'.join(alias.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                 sw_wr_data_str_list.append(alias_reg_name + '_wr_data' + '[%d:%d]'%(f_obj.msb,f_obj.lsb))
 
                 sw_type.append(alias.children[i].sw)

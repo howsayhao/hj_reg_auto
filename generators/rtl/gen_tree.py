@@ -41,6 +41,7 @@ class Root_str(object):
             elif(isinstance(child, SignalNode)):
                 new_signal = create_obj(child, self.rtl_obj)
                 signal_name = child.get_path_segment()
+                new_signal.hierachy.append(signal_name)
                 new_signal.hierachy_name = signal_name
                 self.rtl_obj.children.append(new_signal)
                 self.global_signal_map.append(new_signal)
