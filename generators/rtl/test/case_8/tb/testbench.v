@@ -206,7 +206,7 @@ snapshot_reg_mem_1 (
 parameter EXT_MEM_1_BASE_ADDR = 64'h20;
 
 // convert bus address to external memory address
-logic [ADDR_WIDTH-1:0] ext_mem_11__addr;
+logic [ADDR_WIDTH-1:0] ext_mem_1__addr;
 assign ext_mem_1__addr = snapshot_reg_mem_1__ext_mem_1__addr - EXT_MEM_1_BASE_ADDR;
 
 ext_mem #(
@@ -220,7 +220,7 @@ ext_mem_1 (
     .ack_rdy(1'b1),
     .wr_en(snapshot_reg_mem_1__ext_mem_1__wr_en),
     .rd_en(snapshot_reg_mem_1__ext_mem_1__rd_en),
-    .addr(ext_mem_1__addr[3+EXT_MEM_1_ADDR_WIDTH:3]),
+    .addr(ext_mem_1__addr[4+EXT_MEM_1_ADDR_WIDTH-1:4]),
     .wr_data(snapshot_reg_mem_1__ext_mem_1__wr_data),
     .rd_data(snapshot_reg_mem_1__ext_mem_1__rd_data)
 );
@@ -328,7 +328,7 @@ initial begin
     // NOTE: now all memory entries should be all 1s
     // APB read operations to the external memory
     for (integer i = 0; i < EXT_MEM_ENTRY; i = i + 1) begin
-        for (integer j = SNAPSHOT_ENTRY_NUM-1; j >= 0; j = j - 1) begin
+        for (integer j = 0; j <= SNAPSHOT_ENTRY_NUM-1; j = j + 1) begin
             @(posedge clk); #1;
             PSEL = 1'b1;
             PENABLE = 1'b0;
@@ -341,10 +341,10 @@ initial begin
 
             wait(PREADY);
             #0 $display($time, " read data=%h", PRDATA);
-            if (PRDATA != expected_read_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j]) begin
+            if (PRDATA != expected_read_value[i*SNAPSHOT_ENTRY_NUM+j]) begin
                 err_cnt = err_cnt + 1;
                 $display($time, " error %1d: access addr=%h, mem expected=%h, actual=%h",
-                         err_cnt, PADDR, expected_read_value[(i+1)*SNAPSHOT_ENTRY_NUM-1-j],
+                         err_cnt, PADDR, expected_read_value[i*SNAPSHOT_ENTRY_NUM+j],
                          PRDATA);
             end
 
@@ -353,7 +353,7 @@ initial begin
             $display($time, " end read operation");
 
             // change memory values after first snapshot read operation
-            if (j == SNAPSHOT_ENTRY_NUM-1) begin
+            if (j == 0) begin
                 ext_mem_1.mem[i] = 128'haaaaaaaa_aaaaaaaa_aaaaaaaa_aaaaaaaa;
             end
         end

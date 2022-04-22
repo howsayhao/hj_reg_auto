@@ -12,8 +12,6 @@
 `define reg_block_1_REG1_alias_8 64'h20//external
 `define reg_block_1_REG1_alias_9 64'h24//external
 `define reg_block_1_REG1_alias_10 64'h28//external
-`define reg_block_1_REG1_alias_11 64'h2c//external
-`define reg_block_1_REG1_alias_12 64'h30//external
 `define reg_block_1_test_2_shared_21 64'h40//external
 `define reg_block_1_test_2_shared_22 64'h44//external
 `define reg_block_1_test_2_shared_23 64'h48//external
@@ -24,7 +22,5 @@
 `define reg_block_1_test_2_shared_28 64'h5c//external
 `define reg_block_1_test_2_shared_29 64'h60//external
 `define reg_block_1_test_2_shared_210 64'h64//external
-`define reg_block_1_test_2_shared_211 64'h68//external
-`define reg_block_1_test_2_shared_212 64'h6c//external
-`define reg_block_1_test_3_shared_31 64'h70//external
+`define reg_block_1_test_3_shared_31 64'h68//external
 `endif

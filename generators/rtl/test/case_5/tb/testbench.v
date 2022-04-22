@@ -3,7 +3,7 @@
 // testbench for case 5: alias and shared registers
 module reg_tb;
 
-parameter TOTAL_ACCESS_NUM = 26;
+parameter TOTAL_ACCESS_NUM = 22;
 parameter TOTAL_PHYSICAL_NUM = 2;
 parameter ADDR_WIDTH = 64;
 parameter DATA_WIDTH = 32;
@@ -70,6 +70,9 @@ regmst_reg_top_dut (
     .interrupt(mst__bus__interrupt),
     .clear(bus__mst__clear),
     .global_sync_reset_out(mst__ext__glb_srst),
+    // sync reset signals
+    .srst_1(1'b0),
+    .srst_2(1'b0),
     // clock domain crossing signal
     .cdc_pulse_out(),
     // reg_native_if connected to external memory and downstream regslv
@@ -131,11 +134,11 @@ regslv_reg_top__reg_block_1_dut (
     .ext_rd_data({DATA_WIDTH{1'b0}}),
     // hardware access input ports
     .REG1__FIELD_0__next_value(32'b0),
-	.REG1__FIELD_0__pulse(1'b0),
-	.REG1__FIELD_0__curr_value(actual_hw_value[0]),
-	.test_2_shared_21__FIELD_0__next_value(32'b0),
-	.test_2_shared_21__FIELD_0__pulse(1'b0),
-	.test_2_shared_21__FIELD_0__curr_value(actual_hw_value[1]),
+    .REG1__FIELD_0__pulse(1'b0),
+    .REG1__FIELD_0__curr_value(actual_hw_value[0]),
+    .test_2_shared_21__FIELD_0__next_value(32'b0),
+    .test_2_shared_21__FIELD_0__pulse(1'b0),
+    .test_2_shared_21__FIELD_0__curr_value(actual_hw_value[1])
 );
 
 
@@ -201,7 +204,6 @@ initial begin
     @(posedge clk); #1;
 
     // APB write and read operations
-    $display($time, " start continous APB operations");
     for (integer i = 0; i < TOTAL_ACCESS_NUM; i = i + 1) begin
         if (i < TOTAL_ACCESS_NUM/TOTAL_PHYSICAL_NUM)
             phy_idx = 0;
@@ -281,6 +283,7 @@ initial begin
                      err_cnt, PADDR, expected_hw_value[i*3+2], actual_hw_value[phy_idx]);
         end
     end
+
 
     $display("test process done, error count: %1d", err_cnt);
     #(CLK_PERIOD*2);

@@ -59,8 +59,8 @@ regmst_reg_top #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regmst_reg_top (
 	//APB interface instance
 	.clk(clk),.rstn(rstn),.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE), .PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR)
-	,.()
-	,.()
+	,.srst_1(srst_1)
+	,.srst_2(srst_2)
 	,.clear(clear), .interrupt(interrupt)
 	//reg_slv downstream interface instance
 	,.ext_req_vld(regmst_reg_top_ext_req_vld),.ext_req_rdy(regmst_reg_top_ext_req_rdy),.ext_ack_vld(regmst_reg_top_ext_ack_vld),.ext_ack_rdy(regmst_reg_top_ext_ack_rdy),.ext_rd_data(regmst_reg_top_ext_rd_data)
@@ -74,8 +74,8 @@ regslv_reg_top__reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH)
 	.clk(clk),.rstn(rstn),.req_vld(regmst_reg_top_ext_req_vld[0]),.req_rdy(regmst_reg_top_ext_req_rdy[0])
 	,.wr_en(regmst_reg_top_wr_en),.rd_en(regmst_reg_top_rd_en),.addr(regmst_reg_top_addr),.wr_data(regmst_reg_top_wr_data)
 	,.ack_vld(regmst_reg_top_ext_ack_vld[0]),.ack_rdy(regmst_reg_top_ext_ack_rdy),.rd_data(regmst_reg_top_ext_rd_data[0])
-	,.()
-	,.()
+	,.srst_1(srst_1)
+	,.srst_2(srst_2)
 	//reg_slv downstream interface instance
 	,.ext_req_vld(regslv_reg_top__reg_block_1_ext_req_vld),.ext_req_rdy(regslv_reg_top__reg_block_1_ext_req_rdy),.ext_ack_vld(regslv_reg_top__reg_block_1_ext_ack_vld),.ext_ack_rdy(regslv_reg_top__reg_block_1_ext_ack_rdy),.ext_rd_data(regslv_reg_top__reg_block_1_ext_rd_data)
 	,.ext_wr_en(regslv_reg_top__reg_block_1_wr_en),.ext_rd_en(regslv_reg_top__reg_block_1_rd_en),.ext_wr_data(regslv_reg_top__reg_block_1_wr_data),.ext_addr(regslv_reg_top__reg_block_1_addr),.cdc_pulse_out(regslv_reg_top__reg_block_1_cdc_pulse_out)

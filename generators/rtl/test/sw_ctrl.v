@@ -40,7 +40,7 @@ module sw_ctrl (field_value,
         assign swmod_out = sw_modify;
       end
       if(SWACC)begin:g_SWACC
-        assign swacc_out = |sw_rd & |sw_wr;
+        assign swacc_out = (|sw_rd) | (|sw_wr);
       end
    endgenerate
 

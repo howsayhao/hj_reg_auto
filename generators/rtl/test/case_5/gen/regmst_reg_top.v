@@ -12,8 +12,8 @@ module regmst_reg_top(
 //********************************EXTERNAL module connection port END*********************************//
 //********************************INTERNAL field connection port START********************************//
 //*********************************INTERNAL field connection port END*********************************//
-	,
-	,
+	srst_1,
+	srst_2,
 	clk,
 	rstn,
 	PSEL,
@@ -55,8 +55,8 @@ output global_sync_reset_out;
 input clear;
 output interrupt;
 //declare the syn_rst
-input ;
-input ;
+input srst_1;
+input srst_2;
 //declare the portwidth of external module
 output [EXT_NUM-1:0] ext_req_vld;
 input [EXT_NUM-1:0] ext_req_rdy;
@@ -151,7 +151,7 @@ always_comb begin
 		ext_sel = {EXT_NUM{1'b0}};
 		dummy_reg = 1'b0;
 	unique case (addr_for_decode)
-		64'h0,64'h4,64'h8,64'hc,64'h10,64'h14,64'h18,64'h1c,64'h20,64'h24,64'h28,64'h2c,64'h30,64'h40,64'h44,64'h48,64'h4c,64'h50,64'h54,64'h58,64'h5c,64'h60,64'h64,64'h68,64'h6c,64'h70:ext_sel[0] = 1'b1;//external module reg_block_1
+		64'h0,64'h4,64'h8,64'hc,64'h10,64'h14,64'h18,64'h1c,64'h20,64'h24,64'h28,64'h40,64'h44,64'h48,64'h4c,64'h50,64'h54,64'h58,64'h5c,64'h60,64'h64,64'h68:ext_sel[0] = 1'b1;//external module reg_block_1
 		default: dummy_reg = 1'b1;
 	endcase
 end

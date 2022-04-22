@@ -138,7 +138,7 @@ regslv_dut (
     .test_21_REG6_SW_ACC_MOD__FIELD_0__pulse(1'b0),
     .test_21_REG6_SW_ACC_MOD__FIELD_0__curr_value(),
     .test_21_REG6_SW_ACC_MOD__FIELD_0__swmod_out(),
-	.test_21_REG6_SW_ACC_MOD__FIELD_0__swacc_out(),
+    .test_21_REG6_SW_ACC_MOD__FIELD_0__swacc_out(),
     .test_22_shared_2__FIELD_0__next_value(32'b0),
     .test_22_shared_2__FIELD_0__pulse(1'b0),
     .test_22_shared_2__FIELD_0__curr_value()
