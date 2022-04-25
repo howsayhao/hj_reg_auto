@@ -12,6 +12,7 @@ module ext_mem (
     parameter MEM_ENTRIES = 1 << ADDR_WIDTH;
     // FIXME: This delay is arbitrary
     parameter DELAY = 0;
+    parameter DEBUG_ERR = 0;
 
     localparam  VALID = 1'b1,
                 INVALID = 1'b0;
@@ -73,11 +74,19 @@ module ext_mem (
             req_rdy = INVALID;
     end
 
-    // Ack handshake: ack_vld, ack_rdy
-    always @(posedge clk) begin : ACK
-        if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_vld)
-            ack_vld <= VALID;
-        else
-            ack_vld <= INVALID;
-    end
+    // Ack handshake: ack_vld
+    // set DEBUG_ERR to simulate memory error: keep ack_vld deassert
+    generate
+        if (!DEBUG_ERR) begin: GEN_ACK
+            always @(posedge clk) begin
+                if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_vld)
+                    ack_vld <= VALID;
+                else
+                    ack_vld <= INVALID;
+            end
+        end else begin
+            always @(posedge clk) ack_vld <= INVALID;
+        end
+    endgenerate
+
 endmodule
