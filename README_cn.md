@@ -57,25 +57,41 @@ Excel解析器会执行以下检查：
 - **BASIC_FORMAT :** 以正则表达式方式约束的基础格式，包括表格项是否齐全，位置是否正确，特定的单元格内容等。
 
   1. 基地址必须为 `hex`并以 `0X(x)`作前缀
+
   2. 地址偏移必须为 `hex`并以 `0X(x)`作前缀
+
   3. 寄存器位宽只能为 `32 bit`或 `64 bit`
+
   4. 域的读写属性是被支持的
+
   5. 域的比特位范围为 `xx:xx`格式
+
   6. 复位值为 `hex`并以 `0X(x)`作前缀
+
   7. 域的同步复位信号，若没有则为 `None`，也可有一个或多个，多个的情况以 `,`分隔
+
 - **REG_NAME :** 在同一张Excel工作表中描述的寄存器名字和简写不允许重复。
+
 - **REG_ADDR :** 对寄存器地址偏移分配的合法性。
 
   1. 按寄存器字节长度的整数倍进行地址对齐（在SystemRDL中称为 `regalign`方式）
+
   2. 在同一张Excel工作表中不允许地址重叠
+
 - **FIELD_DEFINITION :** 域定义部分的合法性。
 
   1. 定义多个域时的比特位序自高向低排列
+
   2. 每个域的比特位范围按 `[high_bit]:[low_bit]`排布
+
   3. 域比特位无重叠（3.1），无遗漏（3.2）
+
   4. 复位值合法, 不能超过该域能表示的最大值
+
   5. 除保留域 `Reserved`以外域名称无重复
+
   6. 保留域 `Reserved`的同步复位信号只能为 `None`
+
   7. 同一个域的同步复位信号不能重复
 
 解析过程中，若以上所述的任一规则不被满足，Excel解析器都会报错并提示错误信息和出错位置。
@@ -142,8 +158,6 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
 
   - PeakRDL-uvm  [https://github.com/SystemRDL/PeakRDL-uvm](https://github.com/SystemRDL/PeakRDL-uvm)
 
-> 后续会将这些开源Python库集成到工具里，移除依赖要求
-
 ### **3.2 命令选项与参数**
 
 - `-h,--help`
@@ -183,6 +197,7 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
   `-l, --language [cn | en]`
 
   指定生成模板的语言格式：`cn/en`，默认为 `cn`。
+
 - `parse`
 
   子命令，对输入的Excel(.xlsx)/SystemRDL(.rdl)进行语法和规则检查，并解析为 `systemrdl-compiler`中定义的可遍历层级模型（hierarchical model），有以下命令选项。
@@ -217,6 +232,7 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
   `-gdir, --gen_dir [GEN_DIR]`
 
   当使用 `-g, --generate`选项时，该选项指定生成文件的目录，默认为当前目录。
+
 - `generate`
 
   子命令，用于生成RTL Module，HTML Docs，UVM RAL，C Header Files，有以下命令选项。
@@ -289,4 +305,4 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
   hrda generate -l test.list -gdir ./test -gall
   ```
 
-> 若执行`hrda`失败，请检查`python`和`hrda`是否在`PATH`中
+> 若执行`hrda`失败，请检查`hrda`是否在`PATH`中，以及3.1节提到的Python版本和依赖是否满足。
