@@ -1,8 +1,8 @@
 reg REG_def {
-		regwidth = 32;
+		regwidth = 64;
 		field {
 			sw = rw;
-		} FIELD_0[31:0];
+		} FIELD_0[63:0];
 };
 
 mem ext_mem_def {

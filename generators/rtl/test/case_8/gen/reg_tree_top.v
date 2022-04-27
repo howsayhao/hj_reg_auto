@@ -19,9 +19,6 @@ module reg_tree
 	,output regmst_reg_top_cdc_pulse_out
 	,output regslv_reg_top__reg_block_1_cdc_pulse_out
 	//field interface port
-	,input [32-1:0]REG1__FIELD_0__next_value
-	,input [1-1:0]REG1__FIELD_0__pulse
-	,output [32-1:0]REG1__FIELD_0__curr_value
 	//field interface end
 	//sync_reset interface start
 	//sync_reset interface end
@@ -84,7 +81,6 @@ regslv_reg_top__reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH)
 	,.ext_req_vld(regslv_reg_top__reg_block_1_ext_req_vld),.ext_req_rdy(regslv_reg_top__reg_block_1_ext_req_rdy),.ext_ack_vld(regslv_reg_top__reg_block_1_ext_ack_vld),.ext_ack_rdy(regslv_reg_top__reg_block_1_ext_ack_rdy),.ext_rd_data(regslv_reg_top__reg_block_1_ext_rd_data)
 	,.ext_wr_en(regslv_reg_top__reg_block_1_wr_en),.ext_rd_en(regslv_reg_top__reg_block_1_rd_en),.ext_wr_data(regslv_reg_top__reg_block_1_wr_data),.ext_addr(regslv_reg_top__reg_block_1_addr),.cdc_pulse_out(regslv_reg_top__reg_block_1_cdc_pulse_out)
 	,.global_sync_reset_out(regslv_reg_top__reg_block_1_fsm_sync_reset),.global_sync_reset_in(regmst_reg_top_fsm_sync_reset)//field ports instance
-	,.REG1__FIELD_0__next_value(REG1__FIELD_0__next_value),.REG1__FIELD_0__pulse(REG1__FIELD_0__pulse),.REG1__FIELD_0__curr_value(REG1__FIELD_0__curr_value)
 	
 	);
 endmodule
