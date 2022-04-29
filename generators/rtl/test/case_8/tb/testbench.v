@@ -103,15 +103,15 @@ regmst_reg_top_dut (
     // clock domain crossing signal
     .cdc_pulse_out(),
     // reg_native_if connected to external memory and downstream regslv
-    .reg_top__reg_block_1_req_vld(reg_top__reg_block_1_req_vld),
-    .reg_top__reg_block_1_req_rdy(reg_top__reg_block_1_req_rdy),
-    .reg_top__reg_block_1_ack_vld(reg_top__reg_block_1_ack_vld),
-    .reg_top__reg_block_1_ack_rdy(reg_top__reg_block_1_ack_rdy),
-    .reg_top__reg_block_1_wr_en(reg_top__reg_block_1_wr_en),
-    .reg_top__reg_block_1_rd_en(reg_top__reg_block_1_rd_en),
-    .reg_top__reg_block_1_addr(reg_top__reg_block_1_addr),
-    .reg_top__reg_block_1_wr_data(reg_top__reg_block_1_wr_data),
-    .reg_top__reg_block_1_rd_data(reg_top__reg_block_1_rd_data)
+    .reg_block_1_req_vld(reg_top__reg_block_1_req_vld),
+    .reg_block_1_req_rdy(reg_top__reg_block_1_req_rdy),
+    .reg_block_1_ack_vld(reg_top__reg_block_1_ack_vld),
+    .reg_block_1_ack_rdy(reg_top__reg_block_1_ack_rdy),
+    .reg_block_1_wr_en(reg_top__reg_block_1_wr_en),
+    .reg_block_1_rd_en(reg_top__reg_block_1_rd_en),
+    .reg_block_1_addr(reg_top__reg_block_1_addr),
+    .reg_block_1_wr_data(reg_top__reg_block_1_wr_data),
+    .reg_block_1_rd_data(reg_top__reg_block_1_rd_data)
 );
 
 
@@ -274,67 +274,55 @@ integer err_cnt;
 
 task apb_write (
     input [BUS_ADDR_WIDTH-1:0] wr_addr,
-    input [BUS_DATA_WIDTH-1:0] wr_data,
-    output apb_sel,
-    output apb_enable,
-    output apb_write,
-    output [BUS_ADDR_WIDTH-1:0] apb_addr,
-    output [BUS_DATA_WIDTH-1:0] apb_wdata,
-    input apb_ready);
+    input [BUS_DATA_WIDTH-1:0] wr_data);
 
     @(posedge clk); #1;
-    apb_sel = 1'b1;
-    apb_enable = 1'b0;
-    apb_write = 1'b1;
-    apb_addr = wr_addr;
-    apb_wdata = wr_data;
-    $display($time, " start write operation: addr=%h data=%h", apb_addr, apb_wdata);
+    PSEL = 1'b1;
+    PENABLE = 1'b0;
+    PWRITE = 1'b1;
+    PADDR = wr_addr;
+    PWDATA = wr_data;
+    $display($time, " start write operation: addr=%h data=%h", PADDR, PWDATA);
 
     @(posedge clk); #1;
-    apb_enable = 1'b1;
+    PENABLE = 1'b1;
 
-    wait(apb_ready);
+    wait(PREADY);
     @(posedge clk); #1;
-    apb_sel = 1'b0;
+    PSEL = 1'b0;
     $display($time, " end write operation");
 endtask
 
 task apb_read (
     input [BUS_ADDR_WIDTH-1:0] rd_addr,
-    output apb_sel,
-    output apb_enable,
-    output apb_write,
-    output [BUS_ADDR_WIDTH-1:0] apb_addr,
-    input [BUS_DATA_WIDTH-1:0] apb_rdata,
-    input apb_ready,
     input [BUS_DATA_WIDTH-1:0] expected_val);
 
     @(posedge clk); #1;
-    apb_sel = 1'b1;
-    apb_enable = 1'b0;
-    apb_write = 1'b0;
-    apb_addr = rd_addr;
-    $display($time, " start read operation: addr=%h", apb_addr);
+    PSEL = 1'b1;
+    PENABLE = 1'b0;
+    PWRITE = 1'b0;
+    PADDR = rd_addr;
+    $display($time, " start read operation: addr=%h", PADDR);
 
     @(posedge clk); #1;
-    apb_enable = 1'b1;
+    PENABLE = 1'b1;
 
-    wait(apb_ready);
-    #1 $display($time, " read data=%h", apb_rdata);
-    if (apb_rdata != expected_val) begin
+    wait(PREADY);
+    #1 $display($time, " read data=%h", PRDATA);
+    if (PRDATA != expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
-                 err_cnt, apb_addr, expected_val, apb_rdata);
+                 err_cnt, PADDR, expected_val, PRDATA);
     end
     @(posedge clk); #1;
-    apb_sel = 1'b0;
+    PSEL = 1'b0;
     $display($time, " end read operation");
 endtask
 
 task hw_reg_write (
     input [INT_REG_DATA_WIDTH-1:0] val,
-    output pulse,
-    output [INT_REG_DATA_WIDTH-1:0] hw_acc_port);
+    ref pulse,
+    ref [INT_REG_DATA_WIDTH-1:0] hw_acc_port);
 
     @(posedge clk); #1;
     hw_acc_port = val;
@@ -348,7 +336,7 @@ initial begin
     wait(rstn);
 
     // APB write operations to the internal register: high addr
-    apb_write(addrs[1], 32'h1111_1111, PSEL, PENABLE, PWRITE, PADDR, PWDATA, PREADY);
+    apb_write(addrs[1], 32'h1111_1111);
     if (expected_reg_value[0] != REG1__FIELD_0__curr_value) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
@@ -360,7 +348,7 @@ initial begin
     hw_reg_write(64'haaaaaaaa_aaaaaaaa, REG1__FIELD_0__pulse, REG1__FIELD_0__next_value);
 
     // APB write operations to the internal register: low addr
-    apb_write(addrs[0], 32'h2222_2222, PSEL, PENABLE, PWRITE, PADDR, PWDATA, PREADY);
+    apb_write(addrs[0], 32'h2222_2222);
     if (expected_reg_value[1] != REG1__FIELD_0__curr_value) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
@@ -369,13 +357,13 @@ initial begin
     end
 
     // APB read operations to the internal register: low addr
-    apb_read(addrs[0], PSEL, PENABLE, PWRITE, PADDR, PRDATA, PREADY, expected_read_value[0]);
+    apb_read(addrs[0], expected_read_value[0]);
 
     // change register values during two read operations
     hw_reg_write(64'haaaaaaaa_aaaaaaaa, REG1__FIELD_0__pulse, REG1__FIELD_0__next_value);
 
     // APB read operations to the internal register: high addr
-    apb_read(addrs[1], PSEL, PENABLE, PWRITE, PADDR, PRDATA, PREADY, expected_read_value[1]);
+    apb_read(addrs[1], expected_read_value[1]);
 
 
     // APB write operations to the external memory
@@ -383,7 +371,7 @@ initial begin
         for (integer j = EXT_MEM_SNAPSHOT_BUS_ENTRY-1; j >= 0; j = j - 1) begin
             // write 0xffffffff to the external memory (ext_mem_1)
             apb_write(addrs[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j+INT_ACCESS_NUM],
-                      {BUS_DATA_WIDTH{1'b1}}, PSEL, PENABLE, PWRITE, PADDR, PWDATA, PREADY);
+                      {BUS_DATA_WIDTH{1'b1}});
 
             if (ext_mem_1.mem[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j] !=
                 expected_mem_value[(i+1)*EXT_MEM_SNAPSHOT_BUS_ENTRY-1-j]) begin
@@ -404,7 +392,6 @@ initial begin
     for (integer i = 0; i < EXT_MEM_ENTRY; i = i + 1) begin
         for (integer j = 0; j <= EXT_MEM_SNAPSHOT_BUS_ENTRY-1; j = j + 1) begin
             apb_read(addrs[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j+INT_ACCESS_NUM],
-                     PSEL, PENABLE, PWRITE, PADDR, PRDATA, PREADY,
                      expected_read_value[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j+INT_ACCESS_NUM]);
 
             // change memory values after first snapshot read operation
@@ -415,12 +402,7 @@ initial begin
     end
 
     $display("test process done, error count: %1d", err_cnt);
-    // #(CLK_PERIOD*2);
-    // $finish;
-end
-
-initial begin
-    #(CLK_PERIOD*20000);
+    #(CLK_PERIOD*2);
     $finish;
 end
 

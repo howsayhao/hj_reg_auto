@@ -51,7 +51,7 @@ module snapshot_reg         (// upstream control signal
             else if (snap_rd_en[0])
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= reg_rd_data[i*DATA_WIDTH +: REM_WIDTH];
 	          else if (snap_wr_en[i])
-              snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= snap_wr_data[0 +: REM_WIDTH];
+              snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= snap_wr_data[i*DATA_WIDTH +: REM_WIDTH];
             else
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= snapshot_ff[i*DATA_WIDTH +: REM_WIDTH];
         else
@@ -61,7 +61,7 @@ module snapshot_reg         (// upstream control signal
 	          else if (snap_rd_en[0])
 	            snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= reg_rd_data[i*DATA_WIDTH +: DATA_WIDTH];
             else if (snap_wr_en[i])
-              snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= snap_wr_data[0 +: DATA_WIDTH];
+              snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= snap_wr_data[i*DATA_WIDTH +: DATA_WIDTH];
             else
               snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH];
    endgenerate

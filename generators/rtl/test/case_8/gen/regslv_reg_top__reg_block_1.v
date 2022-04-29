@@ -144,6 +144,14 @@ module regslv_reg_top__reg_block_1(
 	wire            ext_mem_1_req_vld   ;
 	wire            ext_mem_1_req_rdy   ;
 	wire            ext_mem_1_ack_vld   ;
+	wire            ext_mem_1_wr_en_int     ;
+	wire            ext_mem_1_rd_en_int     ;
+	wire [1-1:0]   ext_mem_1_addr_int      ;
+	wire [128-1:0]   ext_mem_1_wr_data_int   ;
+	wire [128-1:0]   ext_mem_1_rd_data_int   ;
+	wire            ext_mem_1_req_vld_int   ;
+	wire            ext_mem_1_req_rdy_int   ;
+	wire            ext_mem_1_ack_vld_int   ;
 
 
 //*********************************EXTERNAL CONNECTION INSTANT START**********************************//
@@ -151,6 +159,14 @@ module regslv_reg_top__reg_block_1(
 	assign ext_rd_en   = fsm__slv__rd_en;
 	assign ext_addr    = fsm__slv__addr;
 	assign ext_wr_data = fsm__slv__wr_data;
+	assign ext_mem_1_wr_en       =   ext_mem_1_wr_en_int        ;
+	assign ext_mem_1_rd_en       =   ext_mem_1_rd_en_int        ;
+	assign ext_mem_1_addr        =   ext_mem_1_addr_int         ;
+	assign ext_mem_1_wr_data     =   ext_mem_1_wr_data_int      ;
+	assign ext_mem_1_rd_data_int =   ext_mem_1_rd_data          ;
+	assign ext_mem_1_req_vld     =   ext_mem_1_req_vld_int      ;
+	assign ext_mem_1_req_rdy_int =   ext_mem_1_req_rdy          ;
+	assign ext_mem_1_ack_vld_int =   ext_mem_1_ack_vld          ;
 	assign ext_mem_1_snapshot_wr_en        = ext_wr_en             ;
 	assign ext_mem_1_snapshot_rd_en        = ext_rd_en             ;
 	assign ext_mem_1_snapshot_addr         = ext_addr              ;
@@ -309,10 +325,10 @@ module regslv_reg_top__reg_block_1(
 		(
 		.clk                     (clk)                               ,
 		.rst_n                   (rstn)                              ,
-		.snap_wr_en              ({REG1__snap_0_wr_en,REG1__snap_1_wr_en})                              ,
-		.snap_rd_en              ({REG1__snap_0_rd_en,REG1__snap_1_rd_en})                              ,
-		.snap_wr_data            ({REG1__snap_0_wr_data,REG1__snap_1_wr_data})                              ,
-		.snap_rd_data            ({REG1__snap_0_o,REG1__snap_1_o})                              ,
+		.snap_wr_en              ({REG1__snap_1_wr_en,REG1__snap_0_wr_en})                              ,
+		.snap_rd_en              ({REG1__snap_1_rd_en,REG1__snap_0_rd_en})                              ,
+		.snap_wr_data            ({REG1__snap_1_wr_data,REG1__snap_0_wr_data})                              ,
+		.snap_rd_data            ({REG1__snap_1_o,REG1__snap_0_o})                              ,
 		.reg_wr_en               (REG1_snapshot_wr_en)                 ,
 		.reg_rd_en               (REG1_snapshot_rd_en)                 ,
 		.reg_wr_data             (REG1_snapshot_wr_data)               ,
@@ -339,14 +355,14 @@ module regslv_reg_top__reg_block_1(
 		.entry_write_protect_en  (1'b0)                             ,
 		.entry_vld               (1'b1)                             ,
 		.entry_vld_nxt           ()                                  ,
-		.mem_addr                (ext_mem_1_addr)                           ,
-		.mem_wr_en               (ext_mem_1_wr_en)                          ,
-		.mem_rd_en               (ext_mem_1_rd_en)                          ,
-		.mem_wr_data             (ext_mem_1_wr_data)                        ,
-		.mem_rd_data             (ext_mem_1_rd_data)                        ,
-		.mem_req_vld             (ext_mem_1_req_vld)                        ,
-		.mem_req_rdy             (ext_mem_1_req_rdy)                        ,
-		.mem_ack_vld             (ext_mem_1_ack_vld)                        
+		.mem_addr                (ext_mem_1_addr_int)                           ,
+		.mem_wr_en               (ext_mem_1_wr_en_int)                          ,
+		.mem_rd_en               (ext_mem_1_rd_en_int)                          ,
+		.mem_wr_data             (ext_mem_1_wr_data_int)                        ,
+		.mem_rd_data             (ext_mem_1_rd_data_int)                        ,
+		.mem_req_vld             (ext_mem_1_req_vld_int)                        ,
+		.mem_req_rdy             (ext_mem_1_req_rdy_int)                        ,
+		.mem_ack_vld             (ext_mem_1_ack_vld_int)                        
 	);
 //*******************************EXTERNAL MEMORY SNAPSHOT REGISTER END********************************//
 endmodule

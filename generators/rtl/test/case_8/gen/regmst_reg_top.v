@@ -1,14 +1,14 @@
 `include "xregister.vh"
 module regmst_reg_top(
 //*************************************EXTERNAL MODULE PORT START*************************************//
-	reg_top__reg_block_1_req_vld,
-	reg_top__reg_block_1_req_rdy,
-	reg_top__reg_block_1_wr_en,reg_top__reg_block_1_rd_en,
-	reg_top__reg_block_1_addr,
-	reg_top__reg_block_1_wr_data,
-	reg_top__reg_block_1_ack_vld,
-	reg_top__reg_block_1_ack_rdy,
-	reg_top__reg_block_1_rd_data,
+	reg_block_1_req_vld,
+	reg_block_1_req_rdy,
+	reg_block_1_wr_en,reg_block_1_rd_en,
+	reg_block_1_addr,
+	reg_block_1_wr_data,
+	reg_block_1_ack_vld,
+	reg_block_1_ack_rdy,
+	reg_block_1_rd_data,
 //**************************************EXTERNAL MODULE PORT END**************************************//
 
 //*************************************INTERNAL FIELD PORT START**************************************//
@@ -58,14 +58,14 @@ module regmst_reg_top(
 	input                      clear                   ;
 	output                     interrupt               ;
 	//declare the syn_rst
-	output                     reg_top__reg_block_1_req_vld              ;
-	input                      reg_top__reg_block_1_req_rdy              ;
-	output                     reg_top__reg_block_1_wr_en,reg_top__reg_block_1_rd_en       ;
-	output                     reg_top__reg_block_1_addr                 ;
-	output                     reg_top__reg_block_1_wr_data              ;
-	input                      reg_top__reg_block_1_ack_vld              ;
-	output                     reg_top__reg_block_1_ack_rdy              ;
-	input                      reg_top__reg_block_1_rd_data              ;
+	output                     reg_block_1_req_vld              ;
+	input                      reg_block_1_req_rdy              ;
+	output                     reg_block_1_wr_en,reg_block_1_rd_en       ;
+	output                     reg_block_1_addr                 ;
+	output                     reg_block_1_wr_data              ;
+	input                      reg_block_1_ack_vld              ;
+	output                     reg_block_1_ack_rdy              ;
+	input                      reg_block_1_rd_data              ;
 	output                     cdc_pulse_out;
 //****************************INTERNAL REGISTER IN/OUT PORTS DEFINE START*****************************//
 	//declare the portwidth of external module
@@ -122,14 +122,22 @@ module regmst_reg_top(
 	assign rd_sel = {REG_NUM{internal_rd_en}} & reg_sel;
 //****************************************WIRE DECLARATION END****************************************//
 
-	wire            reg_top__reg_block_1_wr_en     ;
-	wire            reg_top__reg_block_1_rd_en     ;
-	wire [64-1:0]   reg_top__reg_block_1_addr      ;
-	wire [32-1:0]   reg_top__reg_block_1_wr_data   ;
-	wire [32-1:0]   reg_top__reg_block_1_rd_data   ;
-	wire            reg_top__reg_block_1_req_vld   ;
-	wire            reg_top__reg_block_1_req_rdy   ;
-	wire            reg_top__reg_block_1_ack_vld   ;
+	wire            reg_block_1_wr_en     ;
+	wire            reg_block_1_rd_en     ;
+	wire [64-1:0]   reg_block_1_addr      ;
+	wire [32-1:0]   reg_block_1_wr_data   ;
+	wire [32-1:0]   reg_block_1_rd_data   ;
+	wire            reg_block_1_req_vld   ;
+	wire            reg_block_1_req_rdy   ;
+	wire            reg_block_1_ack_vld   ;
+	wire            reg_block_1_wr_en_int     ;
+	wire            reg_block_1_rd_en_int     ;
+	wire [64-1:0]   reg_block_1_addr_int      ;
+	wire [32-1:0]   reg_block_1_wr_data_int   ;
+	wire [32-1:0]   reg_block_1_rd_data_int   ;
+	wire            reg_block_1_req_vld_int   ;
+	wire            reg_block_1_req_rdy_int   ;
+	wire            reg_block_1_ack_vld_int   ;
 
 
 //*********************************EXTERNAL CONNECTION INSTANT START**********************************//
@@ -137,14 +145,22 @@ module regmst_reg_top(
 	assign ext_rd_en   = fsm__slv__rd_en;
 	assign ext_addr    = fsm__slv__addr;
 	assign ext_wr_data = fsm__slv__wr_data;
-	assign reg_top__reg_block_1_wr_en                 = ext_wr_en             ;
-	assign reg_top__reg_block_1_rd_en                 = ext_rd_en             ;
-	assign reg_top__reg_block_1_addr                  = ext_addr              ;
-	assign reg_top__reg_block_1_wr_data = ext_wr_data                         ;
-	assign ext_rd_data[0]          = reg_top__reg_block_1_rd_data            ;
-	assign reg_top__reg_block_1_req_vld               = ext_req_vld[0]       ;
-	assign ext_req_rdy[0]          = reg_top__reg_block_1_req_rdy            ;
-	assign ext_ack_vld[0]          = reg_top__reg_block_1_ack_vld            ;
+	assign reg_block_1_wr_en_int                   = ext_wr_en                 ;
+	assign reg_block_1_rd_en_int                   = ext_rd_en                 ;
+	assign reg_block_1_addr_int                    = ext_addr                  ;
+	assign reg_block_1_wr_data_int                 = ext_wr_data               ;
+	assign ext_rd_data[0]                = reg_block_1_rd_data_int            ;
+	assign reg_block_1_req_vld_int                 = ext_req_vld[0]           ;
+	assign ext_req_rdy[0]                = reg_block_1_req_rdy_int            ;
+	assign ext_ack_vld[0]                = reg_block_1_ack_vld_int            ;
+	assign reg_block_1_wr_en       =   reg_block_1_wr_en_int            ;
+	assign reg_block_1_rd_en       =   reg_block_1_rd_en_int            ;
+	assign reg_block_1_addr        =   reg_block_1_addr_int             ;
+	assign reg_block_1_wr_data     =   reg_block_1_wr_data_int          ;
+	assign reg_block_1_rd_data_int =   reg_block_1_rd_data              ;
+	assign reg_block_1_req_vld     =   reg_block_1_req_vld_int          ;
+	assign reg_block_1_req_rdy_int =   reg_block_1_req_rdy              ;
+	assign reg_block_1_ack_vld_int =   reg_block_1_ack_vld              ;
 	//reg_block_1 connection, external[0];
 	assign ext_req_vld[0] = ext_sel[0] & fsm__slv__req_vld;
 	assign ext_ack[0] = ext_ack_vld[0] & ext_sel[0];
