@@ -453,6 +453,25 @@ class addrmap_str(object):
         define_str = ''
         define_str += '`ifndef __%s_vh__\n'%(self.module_name)
         define_str += '`define __%s_vh__\n'%(self.module_name)
+        for addr in self.internal_addr_map:
+            for register in addr.registers:
+                register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                addr.register_names.append('`' + register.hierachy_name)
+                rtl_reg_name = register.hierachy_name
+                rtl_reg_addr = '64\'h' + self.get_hex(register.addr)
+                define_str += '`define %s %s//internal\n'%(rtl_reg_name,rtl_reg_addr)
+
+        for addr in self.external_addr_map:
+            for register in addr.registers:
+                register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                addr.register_names.append('`' + register.hierachy_name)
+                rtl_reg_name = register.hierachy_name
+                if(isinstance(register.addr,str)):
+                    rtl_reg_addr = register.addr
+                else:
+                    rtl_reg_addr = '64\'h' + self.get_hex(register.addr)
+                define_str += '`define %s %s//external\n'%(rtl_reg_name,rtl_reg_addr)
+        define_str += '`endif'
         define_str += '//' + 'Address Definition Here'.center(100,"*") + '//\n'
         define_str += '`endif'
         decode_str = ''
