@@ -20,7 +20,6 @@ The Excel parser check all Excel files provided by the designer, including basic
 
 To learn what rules are checked, see Chapter <u>**Excel Worksheet Guideline**</u>. If any of rules are violated, Excel parser will raise error and error message will display the position where error occurs.
 
-
 ### **SystemRDL Parser/Compiler**
 
 SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in section 3.1 for detailed information. SystemRDL Compiler is able to parse, compile and check RDL input files followed by SystemRDL 2.0 Spec to generate a traversable hierarchical register model, with the basic workflow shown in the following diagram.
@@ -118,13 +117,49 @@ Typically, expect for the upper interface of `regmst`, every module with registe
 
 ### **Register Access Slave (regslv)**
 
+<span id="pics_field_rtl_infra"></span>
+![ ](docs/pics/regslv_rtl_infra.svg)
+
+The general architecture of `regslv` is shown above. **Every `addrmap` in SystemRDL or a worksheet in Excel corresponds to a generated `regslv` module**, and the RTL module name (and Verilog/SystemVerilog filename) is `regslv_xxx`, where `xxx` is the `addrmap` instance name in SystemRDL or Excel worksheet filename.
+
+Each `regslv` module has its own registers based on the design description. `regslv` can also forward access interface (`reg_native__if`) to downstream `regslv` modules if there are nested `addrmap` instances in SystemRDL, and to memory instances (usually memory wrappers), or other 3rd party IPs. Therefore, for external memories and other 3rd party IPs, designers are obliged to implement interface translation logic (a bridge) between `reg_native_if` and memory/IP access interfaces.
+
 #### **slv_fsm**
+
+`slv_fsm` handles transactions at the input `reg_native_if` from upstream `regslv` or `regmst` modules and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown below.
 
 #### **external_decoder**
 
+```verilog
+always_comb begin
+    int_selected = 1'b0;
+    ext_sel = {EXT_NUM{1'b0}};
+    none_selected = 1'b0;
+    unique casez (global_address)
+        64'h0,64'h4: int_selected = 1'b1;   //
+        64'h2?,64'h3?: ext_sel[0] = 1'b1;   // external module ext_mem_1
+        default: none_selected = 1'b1;
+    endcase
+end
+```
+
 #### **internal_decoder**
 
+```verilog
+always_comb begin
+    reg_sel = {REG_NUM{1'b0}};
+    dummy_reg = 1'b0;
+    unique casez (regfile_addr)
+        64'h0:reg_sel[0] = 1'b1;//['REG1', '_snap_0']
+        64'h4:reg_sel[1] = 1'b1;//['REG1', '_snap_1']
+        default: dummy_reg = 1'b1;
+    endcase
+end
+```
+
 #### **split_mux (internal_mux, external_mux, ultimate_mux)**
+
+`split_mux` is a one-hot multiplexor with a parameter to specify `group size`. When number of input candidcates exceed `group size`, a two-level multiplexor network is constructed and D flip-flops are inserted between the first and second level to improve timing.
 
 #### **snapshot register/memory entry**
 
@@ -138,7 +173,7 @@ Typically, expect for the upper interface of `regmst`, every module with registe
 ![ ](docs/pics/field_rtl_infra.svg)
 
 The `field` module implements various hardware and
-software access types defined in Excel worksheets and SystemRDL descriptions. When alias or shared property is defined in SystemRDL, a corresponding number of software control (`sw_ctrl`) logic will be generated. 
+software access types defined in Excel worksheets and SystemRDL descriptions. When alias or shared property is defined in SystemRDL, a corresponding number of software control (`sw_ctrl`) logic will be generated.
 
 All supported access types are listed in `xregister.vh`:
 
@@ -173,11 +208,9 @@ All supported access types are listed in `xregister.vh`:
 
 Additionally, there are some other features that can be implemented and generated in RTL. See more in [SystemRDL Coding Guideline](#systemrdl-coding-guideline).
 
-`field` is concatenated to form `register` and mapped into address space for software access, as shown below. 
-
+`field` is concatenated to form `register` and mapped into address space for software access, as shown below.
 
 ### **Performance Evaluation**
-
 
 ## **SystemRDL Coding Guideline**
 
@@ -200,10 +233,7 @@ A component in SystemRDL is the basic building block or a container which contai
 - `addrmap`: similar to `regfile` on packing register and allocating addresses.
    Additionally, it defines the **RTL code generation boundary**. Each definition of `addrmap` with `hj_genrtl` property set to `True` will be generated to an `regslv` module, see Chapter
 
-
 Additionally, HRDA does not support non-structural components, such as `signal`. But signals are indeed used to describe field synchronous resets in a special way: defining a user-defined property, see Chapter
-
-
 
 ### **Correspondence to RTL**
 
@@ -427,9 +457,9 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
 Before trying all below examples, please ensure that you can execute `hrda` command. If execution of `hrda` fails, first check that `hrda` is in `PATH`, if not, try one of following possible solutions:
 
-  - switch to the source directory of the tool
-  - add the executable `hrda` to `PATH`
-  - use `module` tool and `module load` command for configuration.
+- switch to the source directory of the tool
+- add the executable `hrda` to `PATH`
+- use `module` tool and `module load` command for configuration.
 
 If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrda excel_template -h`, `hrda parse -h`, `hrda generate -h` to get command/sub-command information. Then you can try following examples:
 
