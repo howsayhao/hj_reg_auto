@@ -6,8 +6,60 @@ property hj_syncresetsignal {
     type = string;
 };
 
+// Define clock domain crossing properties for regslv' regfile blocks and memories
+// When the property is used in regslv/mst, it means the regfile inside the regslv/mst needs cdc handling and rtl would includes this
+// When the property is used in memory, it means the memory outside the regslv/mst needs cdc handling and rtl would include this
+// When the property is used in 3rd IP, it means the 3rd IP outside the regslv/mst needs cdc handling,
+// however, rtl would ignore this and straight foward the interface
+// The property is not permitted to use in internal addrmap
+property hj_cdc {
+    component = addrmap | mem;
+    type = boolean;
+};
+
 // Define whether to generate independent regslv blocks
 property hj_genrtl {
     component = addrmap;
     type = boolean;
+};
+
+property hj_flatten_addrmap {
+    component = addrmap;
+    type = boolean;
+};
+
+// Define whether to skip the 1st DFF in regslv/mst for internal regfile, the property is not permitted to use in internal addrmap, default value = False
+property hj_skip_reg_mux_dff_0{
+    component = addrmap;
+    type = boolean;
+};
+
+// Define whether to skip the 2nd DFF in regslv/mst for internal regfile, the property is not permitted to use in internal addrmap, default value = True
+property hj_skip_reg_mux_dff_1{
+    component = addrmap;
+    type = boolean;
+};
+
+// Define whether to skip the 1st DFF in regslv/mst for external module, the property is not permitted to use in internal addrmap, default value = False
+property hj_skip_ext_mux_dff_0{
+    component = addrmap;
+    type = boolean;
+};
+
+// Define whether to skip the wnd DFF in regslv/mst for external module, the property is not permitted to use in internal addrmap, default value = True
+property hj_skip_ext_mux_dff_1{
+    component = addrmap;
+    type = boolean;
+};
+
+// Define the max num of mux can handle for internal regfile, values more than this would generate two level split_mux, default value = 128
+property hj_reg_mux_size{
+    component = addrmap;
+    type = longint;
+};
+
+// Define the max num of mux can handle for external module, values more than this would generate two level split_mux, default value = 128
+property hj_ext_mux_size{
+    component = addrmap;
+    type = longint;
 };
