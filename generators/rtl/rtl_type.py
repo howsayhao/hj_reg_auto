@@ -1,5 +1,5 @@
 class reg_slv_if(object):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         self.obj = obj
         self.clk = 'clk'
         self.rstn = 'rstn'
@@ -17,19 +17,19 @@ class reg_slv_if(object):
         self.global_sync = ''
 
 class reg_slv_if_m(object):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         pass
 
 # a class contains external registers maps to common external top module's addr
 class addrpointer(object):
-    def __init__(self, addr):
+    def __init__(self, addr) -> None:
         self.addr = addr
         self.registers = []
         self.register_names = []
         self.addr_str = []
 
 class RTL_NODE(object):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         self.obj = obj
         self.name = ""
         self.desc = ""
@@ -41,7 +41,7 @@ class RTL_NODE(object):
         self.external_top = None
 
 class Signal(RTL_NODE):
-    def __init__(self, obj, width = "1"):
+    def __init__(self, obj, width = "1") -> None:
         RTL_NODE.__init__(self,obj)
         self.width = width
         self.dir = 'dual'
@@ -50,14 +50,14 @@ class Signal(RTL_NODE):
 
 
 class Field(RTL_NODE):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         RTL_NODE.__init__(self,obj)
         self.alias = False
         self.alias_field = []
         self.fieldwidth = 0
         self.reset = 0
         self.next = ""
-        self.resetsignal = "rstn"
+        self.resetsignal = "regfile_rstn"
         self.syncresetsignal = ""
         self.syncresetsignal = ""
 
@@ -80,12 +80,18 @@ class Field(RTL_NODE):
 
 
 class Reg(RTL_NODE):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         RTL_NODE.__init__(self,obj)
         self.id = 0
         self.alias = False
         self.alias_origin = ""
         self.shared_origin = ""
+        # for snapshot
+        self.snap = False
+        self.snap_origin = None
+        self.snap_id = 0
+        self.snap_reg = []
+
         self.origin_reg = None
         self.alias_reg = []
         # regfile properties
@@ -97,14 +103,14 @@ class Reg(RTL_NODE):
 
 
 class Regfile(RTL_NODE):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         RTL_NODE.__init__(self,obj)
         self.alignment = ""
         self.addr = 0
 
 
 class Memory(RTL_NODE):
-    def __init__(self, obj):
+    def __init__(self, obj) -> None:
         RTL_NODE.__init__(self,obj)
         self.mementries = 0
         self.memwidth = 16
@@ -115,10 +121,16 @@ class Memory(RTL_NODE):
         self.ref = ""
         self.ref_id = 0
 
+        self.addr_sub = 0
+        self.valid_width = 0
+        self.entry_width = 0
+
+        self.cdc_clk = ""
+
 
 
 class Addressmap(RTL_NODE):
-    def __init__(self,obj):
+    def __init__(self,obj) -> None:
         RTL_NODE.__init__(self,obj)
         self.alignment = ""
         self.sharedextbus = False
@@ -126,8 +138,9 @@ class Addressmap(RTL_NODE):
         self.addressing = "bigendien"
         self.external = True
         self.addr = 0
+        self.cdc_clock = ""
 
 
 class Root(RTL_NODE):
-    def __init__(self,obj):
+    def __init__(self,obj) -> None:
         RTL_NODE.__init__(self,obj)

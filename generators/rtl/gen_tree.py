@@ -154,16 +154,6 @@ class Root_str(object):
             self.def_str += 'assign %s_ext_req_rdy[%d] = %s_req_rdy;\n'%(module.ref, module.ref_id, wire_name)
             self.def_str += 'assign %s_ext_rd_data[%d] = %s_rd_data;\n'%(module.ref, module.ref_id, wire_name)
         self.port_str += '//external IP/memory port declare\n'
-        # for slv in self.reg_slv:
-        #     # the slv need ports for third party or memory, some common ports would be generated
-        #     if(slv.thirdparty_num > 0):
-        #         module_name = 'regslv_' + slv.module_name
-        #         self.port_str += '\t,output %s_addr\n'%(module_name)
-        #         self.port_str += '\t,output %s_wr_en\n'%(module_name)
-        #         self.port_str += '\t,output %s_rd_en\n'%(module_name)
-        #         self.port_str += '\t,output %s_wr_data\n'%(module_name)
-        #         self.port_str += '\t,output %s_fsm_sync_reset\n'%(module_name)
-        # self.port_str += '//external IP/memory port end\n'
 
     # write the top rtl file for including others
     def write(self):

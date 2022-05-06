@@ -100,7 +100,7 @@ def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:
         new_obj.swmod = node.get_property('swmod')
         new_obj.swacc = node.get_property('swacc')
         new_obj.singlepulse = node.get_property('singlepulse')
-        if(new_obj.onwrite != '`NA' and new_obj.singlepulse is True):
+        if(new_obj.onwrite != '`NA' and new_obj.singlepulse is True and new_obj.parent.external is False):
             try:
                 sys.exit(1)
             except:
@@ -110,7 +110,7 @@ def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:
         new_obj.hwclr = node.get_property('hwclr')
         new_obj.hwset = node.get_property('hwset')
         # detect the corruption
-        if(new_obj.hw == 'ro' and (new_obj.hwclr is True or new_obj.hwset is True)):
+        if(new_obj.hw == 'ro' and (new_obj.hwclr is True or new_obj.hwset is True and new_obj.parent.external is False)):
             try:
                 sys.exit(1)
             except:
