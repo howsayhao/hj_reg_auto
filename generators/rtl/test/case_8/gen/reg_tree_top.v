@@ -23,11 +23,6 @@ module reg_tree
 	//sync_reset interface start
 	//sync_reset interface end
 //external IP/memory port declare
-	,output regslv_reg_top__reg_block_1__ext_mem_1_req_vld
-	,input regslv_reg_top__reg_block_1__ext_mem_1_ack_vld
-	,input regslv_reg_top__reg_block_1__ext_mem_1_req_rdy
-	,output regslv_reg_top__reg_block_1__ext_mem_1_ack_rdy
-	,input [`DATA_WIDTH-1:0]regslv_reg_top__reg_block_1__ext_mem_1_rd_data
 //external IP/memory port declare
 );
 //parameter instance here
@@ -53,12 +48,6 @@ logic regslv_reg_top__reg_block_1_fsm_sync_reset;
 logic [`DATA_WIDTH-1:0]regslv_reg_top__reg_block_1_wr_data;
 logic [`ADDR_WIDTH-1:0] regslv_reg_top__reg_block_1_addr;
 //external IP/memory port define
-//external: ext_mem_1 ref:regslv_reg_top__reg_block_1  wire connection define
-assign regslv_reg_top__reg_block_1__ext_mem_1_req_vld = regslv_reg_top__reg_block_1_ext_req_vld[0];
-assign regslv_reg_top__reg_block_1__ext_mem_1_ack_rdy = regslv_reg_top__reg_block_1_ext_ack_rdy;
-assign regslv_reg_top__reg_block_1_ext_ack_vld[0] = regslv_reg_top__reg_block_1__ext_mem_1_ack_vld;
-assign regslv_reg_top__reg_block_1_ext_req_rdy[0] = regslv_reg_top__reg_block_1__ext_mem_1_req_rdy;
-assign regslv_reg_top__reg_block_1_ext_rd_data[0] = regslv_reg_top__reg_block_1__ext_mem_1_rd_data;
 //reg module instance here
 regmst_reg_top #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regmst_reg_top (

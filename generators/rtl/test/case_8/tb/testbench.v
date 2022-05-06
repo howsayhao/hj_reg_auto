@@ -1,5 +1,8 @@
-// testbench for case 8: snapshot register dealing with data width
-// mismatch between APB interface and internal registers/external memories
+////////////////////////////////////////////////////////////////////////////////
+// case 8 testbench:
+//      1. snapshot modules dealing with data width
+//      mismatch between APB interface and internal registers/external memories
+//      2. clock domain crossing (CDC)
 //
 // upper bus interface: APB
 //      addr width: 32
@@ -15,7 +18,17 @@
 //      data width: 128
 //      number of bus access: 8
 //      number of bus entry in snapshot module: 4
-`timescale 1ns/1ns
+///////////////////////////////////////////////////////////////////////////////
+
+`timescale 1ns/1ps
+
+// clock frequency:
+//      clk_1 (bus interface and regslv native): 50MHz
+//      clk_2 (internal registers): 400MHz
+//      clk_3 (external memory): 200MHz
+`define CLK_1_PERIOD 20
+`define CLK_2_PERIOD 2.5
+`define CLK_3_PERIOD 5
 
 module reg_tb;
 
@@ -23,13 +36,13 @@ module reg_tb;
 parameter BUS_ADDR_WIDTH = 64;
 parameter BUS_DATA_WIDTH = 32;
 
-// internal register definition
+// internal register parameters
 parameter INT_REG_ENTRY = 1;
 parameter INT_REG_DATA_WIDTH = 64;
 parameter INT_ACCESS_NUM = 2;
 parameter INT_SNAPSHOT_BUS_ENTRY = INT_ACCESS_NUM / INT_REG_ENTRY;
 
-// external memory definition
+// external memory parameters
 parameter EXT_MEM_ADDR_WIDTH = 1;
 parameter EXT_MEM_ENTRY = 1 << EXT_MEM_ADDR_WIDTH;
 parameter EXT_MEM_DATA_WIDTH = 128;
@@ -39,8 +52,12 @@ parameter EXT_MEM_SNAPSHOT_BUS_ENTRY = EXT_ACCESS_NUM / EXT_MEM_ENTRY;
 parameter TOTAL_ACCESS_NUM = INT_ACCESS_NUM + EXT_ACCESS_NUM;
 
 
-logic clk;
-logic rstn;
+logic clk_1;
+logic clk_2;
+logic clk_3;
+logic rst_1_n;
+logic rst_2_n;
+logic rst_3_n;
 
 // APB interface
 logic PSEL;
@@ -59,6 +76,10 @@ logic bus__reg_top__clear;
 
 
 // module: regmst_reg_top DUT
+//      internal register: 0
+//      external instance: 1
+//      clock: clk_1
+//
 // bus interface:
 //      APB interface: testbench stimulus <-> regmst_reg_top
 //      reg_native_if: regmst_reg_top <-> regslv_reg_top__reg_block_1
@@ -72,9 +93,7 @@ parameter REGMST_REG_TOP_INT_NUM = 0;
 parameter REGMST_REG_TOP_EXT_NUM = 1;
 
 logic reg_top__reg_block_1_req_vld;
-logic reg_top__reg_block_1_req_rdy;
 logic reg_top__reg_block_1_ack_vld;
-logic reg_top__reg_block_1_ack_rdy;
 logic reg_top__reg_block_1_wr_en;
 logic reg_top__reg_block_1_rd_en;
 logic [BUS_ADDR_WIDTH-1:0] reg_top__reg_block_1_addr;
@@ -85,9 +104,19 @@ regmst_reg_top #(
     .ADDR_WIDTH(BUS_ADDR_WIDTH),
     .DATA_WIDTH(BUS_DATA_WIDTH))
 regmst_reg_top_dut (
-    .clk(clk),
-    .rstn(rstn),
+    // reg_native_if connected to external memory and downstream regslv
+    .reg_block_1_clk(clk_1),
+    .reg_block_1_rstn(rst_1_n),
+    .reg_block_1_req_vld(reg_top__reg_block_1_req_vld),
+    .reg_block_1_ack_vld(reg_top__reg_block_1_ack_vld),
+    .reg_block_1_wr_en(reg_top__reg_block_1_wr_en),
+    .reg_block_1_rd_en(reg_top__reg_block_1_rd_en),
+    .reg_block_1_addr(reg_top__reg_block_1_addr),
+    .reg_block_1_wr_data(reg_top__reg_block_1_wr_data),
+    .reg_block_1_rd_data(reg_top__reg_block_1_rd_data),
     // APB interface
+    .PCLK(clk_1),
+    .PRESETn(rst_1_n),
     .PSEL(PSEL),
     .PENABLE(PENABLE),
     .PREADY(PREADY),
@@ -96,26 +125,18 @@ regmst_reg_top_dut (
     .PADDR(PADDR),
     .PWDATA(PWDATA),
     .PRDATA(PRDATA),
-    // interrupt and clear
-    .interrupt(reg_top__bus__interrupt),
+    // interrupt, clear and synchronous reset signals
     .clear(bus__reg_top__clear),
-    .global_sync_reset_out(reg_top__downstream__glb_srst),
-    // clock domain crossing signal
-    .cdc_pulse_out(),
-    // reg_native_if connected to external memory and downstream regslv
-    .reg_block_1_req_vld(reg_top__reg_block_1_req_vld),
-    .reg_block_1_req_rdy(reg_top__reg_block_1_req_rdy),
-    .reg_block_1_ack_vld(reg_top__reg_block_1_ack_vld),
-    .reg_block_1_ack_rdy(reg_top__reg_block_1_ack_rdy),
-    .reg_block_1_wr_en(reg_top__reg_block_1_wr_en),
-    .reg_block_1_rd_en(reg_top__reg_block_1_rd_en),
-    .reg_block_1_addr(reg_top__reg_block_1_addr),
-    .reg_block_1_wr_data(reg_top__reg_block_1_wr_data),
-    .reg_block_1_rd_data(reg_top__reg_block_1_rd_data)
+    .interrupt(reg_top__bus__interrupt),
+    .global_sync_reset_out(reg_top__downstream__glb_srst)
 );
 
 
 // module: regslv_reg_top__reg_block_1 DUT
+//      internal register: 1
+//      external instance: 1
+//      clock: clk_1, clk_2, clk_3
+//
 // bus interface:
 //      reg_native_if: regmst_reg_top <-> regslv_reg_top__reg_block_1
 //      reg_native_if: regslv_reg_top__reg_block_1 <-> ext_mem_1
@@ -126,13 +147,11 @@ regmst_reg_top_dut (
 // other signals:
 //      input glb_srst, output glb_srst,
 //      hardware access ports for internal registers
-parameter REGSLV_REG_BLOCK_1_EXT_NUM = 1;
 parameter REGSLV_REG_BLOCK_1_INT_NUM = 1;
+parameter REGSLV_REG_BLOCK_1_EXT_NUM = 1;
 
 logic regslv_reg_top__reg_block_1__ext_mem_1_req_vld;
-logic regslv_reg_top__reg_block_1__ext_mem_1_req_rdy;
 logic regslv_reg_top__reg_block_1__ext_mem_1_ack_vld;
-logic regslv_reg_top__reg_block_1__ext_mem_1_ack_rdy;
 logic regslv_reg_top__reg_block_1__ext_mem_1_wr_en;
 logic regslv_reg_top__reg_block_1__ext_mem_1_rd_en;
 logic [EXT_MEM_ADDR_WIDTH-1:0] regslv_reg_top__reg_block_1__ext__addr;
@@ -149,13 +168,27 @@ regslv_reg_top__reg_block_1 #(
     .ADDR_WIDTH(BUS_ADDR_WIDTH),
     .DATA_WIDTH(BUS_DATA_WIDTH))
 regslv_reg_top__reg_block_1_dut (
-    .clk(clk),
-    .rstn(rstn),
+    // external memory reg_native_if
+    .ext_mem_1_clk(clk_3),
+    .ext_mem_1_rstn(rst_3_n),
+    .ext_mem_1_req_vld(regslv_reg_top__reg_block_1__ext_mem_1_req_vld),
+    .ext_mem_1_ack_vld(regslv_reg_top__reg_block_1__ext_mem_1_ack_vld),
+    .ext_mem_1_wr_en(regslv_reg_top__reg_block_1__ext_mem_1_wr_en),
+    .ext_mem_1_rd_en(regslv_reg_top__reg_block_1__ext_mem_1_rd_en),
+    .ext_mem_1_addr(regslv_reg_top__reg_block_1__ext__addr),
+    .ext_mem_1_wr_data(regslv_reg_top__reg_block_1__ext__wr_data),
+    .ext_mem_1_rd_data(regslv_reg_top__reg_block_1__ext__rd_data),
+    // internal register hardware access ports
+    .regfile_clk(clk_2),
+    .regfile_rstn(rst_2_n),
+    .REG1__FIELD_0__next_value(REG1__FIELD_0__next_value),
+	.REG1__FIELD_0__pulse(REG1__FIELD_0__pulse),
+	.REG1__FIELD_0__curr_value(REG1__FIELD_0__curr_value),
     // upstream reg_native_if (from regmst_reg_top)
+    .fsm_clk(clk_1),
+    .fsm_rstn(rst_1_n),
     .req_vld(reg_top__reg_block_1_req_vld),
-    .req_rdy(reg_top__reg_block_1_req_rdy),
     .ack_vld(reg_top__reg_block_1_ack_vld),
-    .ack_rdy(reg_top__reg_block_1_ack_rdy),
     .wr_en(reg_top__reg_block_1_wr_en),
     .rd_en(reg_top__reg_block_1_rd_en),
     .addr(reg_top__reg_block_1_addr),
@@ -163,27 +196,15 @@ regslv_reg_top__reg_block_1_dut (
     .rd_data(reg_top__reg_block_1_rd_data),
     // synchronous reset signals
     .global_sync_reset_in(reg_top__downstream__glb_srst),
-    .global_sync_reset_out(regslv_reg_top__reg_block_1__ext__glb_srst),
-    // clock domain crossing signal
-    .cdc_pulse_out(),
-    // external memory reg_native_if
-    .ext_mem_1_req_vld(regslv_reg_top__reg_block_1__ext_mem_1_req_vld),
-    .ext_mem_1_req_rdy(regslv_reg_top__reg_block_1__ext_mem_1_req_rdy),
-    .ext_mem_1_ack_vld(regslv_reg_top__reg_block_1__ext_mem_1_ack_vld),
-    .ext_mem_1_ack_rdy(regslv_reg_top__reg_block_1__ext_mem_1_ack_rdy),
-    .ext_mem_1_wr_en(regslv_reg_top__reg_block_1__ext_mem_1_wr_en),
-    .ext_mem_1_rd_en(regslv_reg_top__reg_block_1__ext_mem_1_rd_en),
-    .ext_mem_1_addr(regslv_reg_top__reg_block_1__ext__addr),
-    .ext_mem_1_wr_data(regslv_reg_top__reg_block_1__ext__wr_data),
-    .ext_mem_1_rd_data(regslv_reg_top__reg_block_1__ext__rd_data),
-    // hardware access ports
-    .REG1__FIELD_0__next_value(REG1__FIELD_0__next_value),
-	.REG1__FIELD_0__pulse(REG1__FIELD_0__pulse),
-	.REG1__FIELD_0__curr_value(REG1__FIELD_0__curr_value)
+    .global_sync_reset_out(regslv_reg_top__reg_block_1__ext__glb_srst)
 );
 
 
 // module: ext_mem_1 DUT
+//      entry: 2
+//      width: 128
+//      clock: clk_3
+//
 // bus interface:
 //      reg_native_if: regslv_reg_top__reg_block_1 <-> ext_mem_1
 // directly connected upstream:
@@ -192,11 +213,9 @@ ext_mem #(
     .DATA_WIDTH(EXT_MEM_DATA_WIDTH),
     .ADDR_WIDTH(EXT_MEM_ADDR_WIDTH))
 ext_mem_1 (
-    .clk(clk),
+    .clk(clk_3),
     .req_vld(regslv_reg_top__reg_block_1__ext_mem_1_req_vld),
-    .req_rdy(regslv_reg_top__reg_block_1__ext_mem_1_req_rdy),
     .ack_vld(regslv_reg_top__reg_block_1__ext_mem_1_ack_vld),
-    .ack_rdy(regslv_reg_top__reg_block_1__ext_mem_1_ack_rdy),
     .wr_en(regslv_reg_top__reg_block_1__ext_mem_1_wr_en),
     .rd_en(regslv_reg_top__reg_block_1__ext_mem_1_rd_en),
     .addr(regslv_reg_top__reg_block_1__ext__addr),
@@ -217,16 +236,22 @@ initial begin
     $fsdbDumpMDA();
 end
 
-// generate 50MHz clock
-localparam CLK_PERIOD = 20;
-always #(CLK_PERIOD/2) clk = ~clk;
+// generate different clock domains
+always #(`CLK_1_PERIOD/2) clk_1 = ~clk_1;
+always #(`CLK_2_PERIOD/2) clk_2 = ~clk_2;
+always #(`CLK_3_PERIOD/2) clk_3 = ~clk_3;
 
-// generate low-active reset signal
+// generate low-active asynchronous reset signals
 initial begin
     clk = 1'b0;
-    rstn = 1'b0;
-    // deassert reset signal after several clock cycles
-    #(CLK_PERIOD*10) rstn = 1;
+    rst_1_n = 1'b0;
+    rst_2_n = 1'b0;
+    rst_3_n = 1'b0;
+    // deassert reset signals after several clk_1 cycles
+    #(`CLK_1_PERIOD*10);
+    rst_1_n = 1'b1;
+    rst_2_n = 1'b1;
+    rst_3_n = 1'b1;
 end
 
 /********************************************************************
@@ -256,7 +281,7 @@ initial begin
     bus__reg_top__clear = 1'b0;
 
     // all register hardware ports initialized to 0
-    REG1__FIELD_0__next_value = 64'h0;
+    REG1__FIELD_0__next_value = {INT_REG_DATA_WIDTH{1'b0}};
     REG1__FIELD_0__pulse = 1'b0;
 
     // get addresses, expected mem/reg values and bus read values
@@ -276,7 +301,7 @@ task apb_write (
     input [BUS_ADDR_WIDTH-1:0] wr_addr,
     input [BUS_DATA_WIDTH-1:0] wr_data);
 
-    @(posedge clk); #1;
+    @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
     PSEL = 1'b1;
     PENABLE = 1'b0;
     PWRITE = 1'b1;
@@ -284,11 +309,11 @@ task apb_write (
     PWDATA = wr_data;
     $display($time, " start write operation: addr=%h data=%h", PADDR, PWDATA);
 
-    @(posedge clk); #1;
+    @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
     PENABLE = 1'b1;
 
     wait(PREADY);
-    @(posedge clk); #1;
+    @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
     PSEL = 1'b0;
     $display($time, " end write operation");
 endtask
@@ -297,24 +322,25 @@ task apb_read (
     input [BUS_ADDR_WIDTH-1:0] rd_addr,
     input [BUS_DATA_WIDTH-1:0] expected_val);
 
-    @(posedge clk); #1;
+    @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
     PSEL = 1'b1;
     PENABLE = 1'b0;
     PWRITE = 1'b0;
     PADDR = rd_addr;
     $display($time, " start read operation: addr=%h", PADDR);
 
-    @(posedge clk); #1;
+    @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
     PENABLE = 1'b1;
 
     wait(PREADY);
-    #1 $display($time, " read data=%h", PRDATA);
+    #(`CLK_1_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
     if (PRDATA != expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
     end
-    @(posedge clk); #1;
+
+    @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
     PSEL = 1'b0;
     $display($time, " end read operation");
 endtask
@@ -324,16 +350,19 @@ task hw_reg_write (
     ref pulse,
     ref [INT_REG_DATA_WIDTH-1:0] hw_acc_port);
 
-    @(posedge clk); #1;
+    @(posedge clk_2); #(`CLK_2_PERIOD*0.1);
     hw_acc_port = val;
     pulse = 1'b1;
-    @(posedge clk); #1;
+
+    @(posedge clk_2); #(`CLK_2_PERIOD*0.1);
     pulse = 1'b0;
 endtask
 
 initial begin
     err_cnt = 0;
-    wait(rstn);
+    wait(rst_1_n);
+    wait(rst_2_n);
+    wait(rst_3_n);
 
     // APB write operations to the internal register: high addr
     apb_write(addrs[1], 32'h1111_1111);
@@ -402,7 +431,7 @@ initial begin
     end
 
     $display("test process done, error count: %1d", err_cnt);
-    #(CLK_PERIOD*2);
+    #(CLK_1_PERIOD*2);
     $finish;
 end
 
