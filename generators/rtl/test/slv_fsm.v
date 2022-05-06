@@ -21,25 +21,19 @@ module slv_fsm
         fsm__slv__wr_en,
         fsm__slv__rd_en,
 
-        mst__fsm__ack_rdy,
-        fsm__slv__ack_rdy,
-        fsm__mst__req_rdy,
-        slv__fsm__req_rdy,
-
         external_reg_selected,
 
         fsm__slv__req_vld,
 
         slv__fsm__rd_data,
         slv__fsm__ack_vld,
-        cdc_pulse_out
+        cs_is_idle
     );
 
 
 // state decode
 localparam   S_IDLE = 2'd0; // no operation
-localparam   S_WAIT_SLV_RDY = 2'd1; // if slave is not ready, S_WAIT_SLV_RDY slave slv__fsm__req_rdy
-localparam   S_WAIT_SLV_ACK =  2'd2; // S_WAIT_SLV_RDY slave fsm__mst__ack_vld
+localparam   S_WAIT_SLV_ACK =  2'd1; // S_WAIT_SLV_RDY slave fsm__mst__ack_vld
 //reg_slv_if in
 input clk;
 input rstn;
@@ -59,16 +53,12 @@ output fsm__slv__wr_en;
 output fsm__slv__rd_en;
 // reg_slv_if handshake
 input mst__fsm__req_vld;
-input mst__fsm__ack_rdy;
-input slv__fsm__req_rdy;// LP_EXT_NUM external modules and 1 internal modules slv__fsm__req_rdy = {ext_req_rdy,internal}
-output fsm__slv__ack_rdy;
-output reg fsm__mst__req_rdy;
 output fsm__mst__ack_vld;
 output fsm__slv__req_vld;
 output [DATA_WIDTH-1:0] fsm__mst__rd_data;
 //
 input external_reg_selected;
-output reg cdc_pulse_out;
+output cs_is_idle;
 
 // machine state value
 reg [1:0] next_state;
@@ -80,15 +70,7 @@ reg [DATA_WIDTH-1:0]mst__fsm__wr_data_ff;
 reg mst__fsm__wr_en_ff;
 reg mst__fsm__rd_en_ff;
 reg fsm__slv__req_vld_ff;
-reg fsm__slv__ack_rdy_ff;
 // to see if the module selected is accessable
-
-// generate value pulse_out
-always_ff@(posedge clk or negedge rstn)begin
-    if(!rstn) cdc_pulse_out <= 1'b0;
-    else if(next_state != state) cdc_pulse_out <= 1'b1;
-    else cdc_pulse_out <= 1'b0;
-end
 
 // state transfer
 always_ff@(posedge clk or negedge rstn)begin
@@ -105,18 +87,12 @@ always_comb begin
     case(state)
         // if mst__fsm__sync_reset, next_state back to IDLE, else check req_vld from the master as well as req_rdy and ack_vld from the slave
         S_IDLE:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE :
+            next_state = mst__fsm__sync_reset ? S_IDLE : 
                                                 !mst__fsm__req_vld ? S_IDLE :
-                                                                     slv__fsm__ack_vld ? S_IDLE :
-                                                                                         external_reg_selected & slv__fsm__req_rdy ? S_WAIT_SLV_ACK : S_WAIT_SLV_RDY;
-        end
-        S_WAIT_SLV_RDY:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE :
-                                                slv__fsm__ack_vld ? S_IDLE :
-                                                                    external_reg_selected & slv__fsm__req_rdy ? S_WAIT_SLV_ACK : S_WAIT_SLV_RDY;
+                                                                     slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK;
         end
         S_WAIT_SLV_ACK:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE :
+            next_state = mst__fsm__sync_reset ? S_IDLE : 
                                                 slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK;
         end
         default: next_state = S_IDLE;
@@ -134,33 +110,21 @@ always_ff@(posedge clk or negedge rstn)begin
         mst__fsm__addr_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__addr : mst__fsm__addr_ff;
         mst__fsm__wr_data_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__wr_data : fsm__slv__wr_data;
 
-        // case1: external_reg_selected && state == S_IDLE && next_state == S_WAIT_SLV_ACK
-        //        when master launches a requistion for external_reg while external_reg is rdy, latch the control signal for 1 cycle
-        // case2: next_state == S_WAIT_SLV_RDY
-        //        when master launches a requistion for external_reg while reg is not rdy, latch the control signal until slv_rdy back
-        mst__fsm__wr_en_ff <= (external_reg_selected && state == S_IDLE && next_state == S_WAIT_SLV_ACK) ? mst__fsm__wr_en :
-                                                                                                           (next_state == S_WAIT_SLV_RDY) ? mst__fsm__wr_en : 1'b0;
-        mst__fsm__rd_en_ff <= (external_reg_selected && state == S_IDLE && next_state == S_WAIT_SLV_ACK) ? mst__fsm__rd_en :
-                                                                                                           (next_state == S_WAIT_SLV_RDY) ? mst__fsm__rd_en : 1'b0;
+        // internal operation only need latch for 1 cycle
+        mst__fsm__wr_en_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__wr_en :
+                                                                          (next_state == S_WAIT_SLV_ACK) ? mst__fsm__wr_en & external_reg_selected : 1'b0;
+        mst__fsm__rd_en_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__rd_en :
+                                                                          (next_state == S_WAIT_SLV_ACK) ? mst__fsm__rd_en & external_reg_selected : 1'b0;                                                                                                                  
     end
 end
 
 // for output handshake signal
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
-        fsm__slv__req_vld_ff <= 0;
-        fsm__mst__req_rdy <= 0;
-        fsm__slv__ack_rdy_ff <= 0;
+        fsm__slv__req_vld_ff <= 0; 
     end
     else begin
-        // case1: external_reg_selected && state == S_IDLE && next_state == S_WAIT_SLV_ACK
-        //        when master launches a requistion for external_reg while external_reg is rdy, latch the control signal fsm__slv__req_vld_ff for 1 cycle
-        // case2: next_state == S_WAIT_SLV_RDY
-        //        when master launches a requistion for external_reg while reg is not rdy, latch the control signal until slv_rdy back
-        fsm__slv__req_vld_ff <= (external_reg_selected && state == S_IDLE && next_state == S_WAIT_SLV_ACK) ? 1'b1 :
-                                                                                                             (next_state == S_WAIT_SLV_RDY) ? 1'b1 : 1'b0;
-        fsm__mst__req_rdy <=  (next_state == S_IDLE) ? 1'b1 : 1'b0;
-        fsm__slv__ack_rdy_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;
+        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;    
     end
 end
 
@@ -173,8 +137,6 @@ assign fsm__slv__addr = (state == S_IDLE) ? {ADDR_WIDTH{1'b0}} : mst__fsm__addr_
 assign fsm__slv__wr_data = (state == S_IDLE) ? {DATA_WIDTH{1'b0}} : mst__fsm__wr_data_ff;
 assign fsm__slv__wr_en = (state == S_IDLE) ? 1'b0 : mst__fsm__wr_en_ff;
 assign fsm__slv__rd_en = (state == S_IDLE) ? 1'b0 : mst__fsm__rd_en_ff;
-// assign handshake output signal
-assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
-assign fsm__slv__ack_rdy = fsm__slv__ack_rdy_ff;
+assign cs_is_idle = (state == S_IDLE) ? 1'b1 : 1'b0;
 
 endmodule

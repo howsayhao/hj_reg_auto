@@ -5,7 +5,7 @@ module snapshot_reg_mem     (// upstream control signal
                              wr_en, rd_data, 
                              rd_en, wr_data, 
                              // upstream handshake
-                             req_vld,req_rdy,
+                             req_vld,
                              ack_vld,
                              // other signals
                              entry_write_protect_en, 
@@ -15,7 +15,7 @@ module snapshot_reg_mem     (// upstream control signal
                              mem_rd_en, mem_rd_data, 
                              mem_wr_en, mem_wr_data, 
                              // downstream(memory) handshake
-                             mem_req_vld, mem_req_rdy,
+                             mem_req_vld,
                              mem_ack_vld,
                              clk, rst_n);
 
@@ -39,20 +39,17 @@ module snapshot_reg_mem     (// upstream control signal
    localparam RESERVERD_BITS     = log2(MEM_WIDTH)-log2(BYTE_WIDTH);
 
    localparam IDLE     = 7'b0000001;
-   localparam WT_HW    = 7'b0000010;
-   localparam SNAPSHOT = 7'b0000100;
-   localparam OP_DATA  = 7'b0001000;
+   localparam SNAPSHOT = 7'b0000010;
+   localparam OP_DATA  = 7'b0000100;
    localparam _IDLE_     = 0; 
-   localparam _WT_HW_ = 1; 
-   localparam _SNAPSHOT_   = 2; 
-   localparam _OP_DATA_ = 3;
+   localparam _SNAPSHOT_   = 1; 
+   localparam _OP_DATA_ = 2;
    
 
    input [ADDR_WIDTH-1:0] addr;
    input [DATA_WIDTH-1:0]       wr_data;
    output [DATA_WIDTH-1:0]      rd_data;
    input                      req_vld;
-   output                     req_rdy;
    output                     ack_vld;
    input                      wr_en,rd_en;
    input                      entry_write_protect_en;
@@ -64,7 +61,6 @@ module snapshot_reg_mem     (// upstream control signal
    input [MEM_WIDTH-1:0]         mem_rd_data;
    output [MEM_WIDTH-1:0]        mem_wr_data;
    
-   input mem_req_rdy;
    output mem_req_vld;
    input mem_ack_vld;
    input clk, rst_n;
@@ -141,10 +137,9 @@ module snapshot_reg_mem     (// upstream control signal
    assign snap_rd_vld = snap_rd_ff[0] ? mem_ack_vld_ff : sw_ctrl_cs[_OP_DATA_];
    assign snap_wr_vld = snap_wr_ff[0] ? mem_ack_vld | entry_write_protect_en : sw_ctrl_cs[_OP_DATA_];
    
-   assign req_rdy = sw_ctrl_cs[_IDLE_];
    assign ack_vld = snap_rd_vld | snap_wr_vld;
 
-   assign mem_req_vld = (sw_ctrl_cs[_IDLE_] & sw_ctrl_ns[_SNAPSHOT_]) | sw_ctrl_cs[_WT_HW_];
+   assign mem_req_vld = (sw_ctrl_cs[_IDLE_] & sw_ctrl_ns[_SNAPSHOT_]);
 
 
    genvar i;
@@ -200,19 +195,11 @@ module snapshot_reg_mem     (// upstream control signal
        sw_ctrl_cs[_IDLE_]:
          if(req_vld)
              if (mem_access)
-                if (!mem_req_rdy)
-                sw_ctrl_ns = WT_HW;
-                else 
                 sw_ctrl_ns = SNAPSHOT;
              else 
                 sw_ctrl_ns = OP_DATA;
          else
            sw_ctrl_ns = IDLE;
-       sw_ctrl_cs[_WT_HW_]:
-         if (!mem_req_rdy)
-           sw_ctrl_ns = WT_HW;
-         else
-           sw_ctrl_ns = SNAPSHOT;
        sw_ctrl_cs[_SNAPSHOT_]:
          if(ack_vld)
            sw_ctrl_ns = IDLE;
@@ -226,10 +213,9 @@ module snapshot_reg_mem     (// upstream control signal
    
 
    assign mem_addr  = sw_ctrl_cs[_IDLE_] ? valid_addr[VALID_WIDTH-1:VALID_WIDTH-ENTRY_WIDTH] : valid_addr_ff[VALID_WIDTH-1:VALID_WIDTH-ENTRY_WIDTH]; 
-   assign mem_rd_en = snap_rd_ff[0] & ((sw_ctrl_cs[_IDLE_]     & sw_ctrl_ns[_SNAPSHOT_] & entry_vld) | 
-                         (sw_ctrl_cs[_WT_HW_] & sw_ctrl_ns[_SNAPSHOT_] & entry_vld_ff));
+   assign mem_rd_en = snap_rd_ff[0] & entry_vld & (sw_ctrl_cs[_IDLE_] & sw_ctrl_ns[_SNAPSHOT_] | sw_ctrl_cs[_SNAPSHOT_]);
    assign mem_wr_en = snap_wr_ff[0] & !entry_write_protect_en & 
-                         ((sw_ctrl_cs[_IDLE_] & sw_ctrl_ns[_SNAPSHOT_]) | (sw_ctrl_cs[_WT_HW_] & sw_ctrl_ns[_SNAPSHOT_]));
+                         (sw_ctrl_cs[_IDLE_] & sw_ctrl_ns[_SNAPSHOT_] | sw_ctrl_cs[_SNAPSHOT_]);
    generate 
       if (MEM_WIDTH > DATA_WIDTH)
         assign mem_wr_data = {snapshot_ff[MEM_WIDTH-1:DATA_WIDTH], wr_data[DATA_WIDTH-1:0]};
