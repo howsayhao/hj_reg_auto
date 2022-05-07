@@ -17,16 +17,16 @@ def gen_field_rtl(register):
 
         sw_wr_str_list.append('%s_wr_en'%register_name)
         sw_rd_str_list.append('%s_rd_en'%register_name)
-        
+
         for r_obj in register.alias_reg:
             alias_register_name = '_'.join(r_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
             sw_wr_str_list.append('%s_wr_en'%alias_register_name)
             sw_rd_str_list.append('%s_rd_en'%alias_register_name)
-        
+
         i = 0
         for f_obj in register.children:
             alias_num = len(register.alias_reg)
-            
+
             sw_wr_data_str_list= []
             sw_wr_data_str_list.append(register_name + '_wr_data' + '[%d:%d]'%(f_obj.msb,f_obj.lsb))
 
@@ -46,11 +46,11 @@ def gen_field_rtl(register):
             sync_reset += f_obj.syncresetsignal
 
             # collect the alias register's corresponding fields information
-            
+
             for alias in register.alias_reg:
                 alias_reg_name = '_'.join(alias.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                 sw_wr_data_str_list.append(alias_reg_name + '_wr_data' + '[%d:%d]'%(f_obj.msb,f_obj.lsb))
-                
+
                 sw_type.append(alias.children[i].sw)
                 sw_onread_type.append(alias.children[i].onread)
                 sw_onwrite_type.append(alias.children[i].onwrite)
@@ -76,7 +76,7 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
             f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(f_obj.hierachy[-1])
-            
+
 
             sw_wr_data_str = ','.join(sw_wr_data_str_list)
             sw_wr_str = ','.join(sw_wr_str_list)

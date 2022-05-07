@@ -87,12 +87,12 @@ always_comb begin
     case(state)
         // if mst__fsm__sync_reset, next_state back to IDLE, else check req_vld from the master as well as req_rdy and ack_vld from the slave
         S_IDLE:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE : 
+            next_state = mst__fsm__sync_reset ? S_IDLE :
                                                 !mst__fsm__req_vld ? S_IDLE :
                                                                      slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK;
         end
         S_WAIT_SLV_ACK:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE : 
+            next_state = mst__fsm__sync_reset ? S_IDLE :
                                                 slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK;
         end
         default: next_state = S_IDLE;
@@ -114,17 +114,17 @@ always_ff@(posedge clk or negedge rstn)begin
         mst__fsm__wr_en_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__wr_en :
                                                                           (next_state == S_WAIT_SLV_ACK) ? mst__fsm__wr_en & external_reg_selected : 1'b0;
         mst__fsm__rd_en_ff <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__rd_en :
-                                                                          (next_state == S_WAIT_SLV_ACK) ? mst__fsm__rd_en & external_reg_selected : 1'b0;                                                                                                                  
+                                                                          (next_state == S_WAIT_SLV_ACK) ? mst__fsm__rd_en & external_reg_selected : 1'b0;
     end
 end
 
 // for output handshake signal
 always_ff@(posedge clk or negedge rstn)begin
     if(!rstn)begin
-        fsm__slv__req_vld_ff <= 0; 
+        fsm__slv__req_vld_ff <= 0;
     end
     else begin
-        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;    
+        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;
     end
 end
 
@@ -133,6 +133,7 @@ assign fsm__mst__rd_data = slv__fsm__ack_vld ? slv__fsm__rd_data : {DATA_WIDTH{1
 assign fsm__mst__ack_vld = slv__fsm__ack_vld;
 
 // assign fsm_slv output signal, IDLE state: wired to input, other working state to latch
+assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
 assign fsm__slv__addr = (state == S_IDLE) ? {ADDR_WIDTH{1'b0}} : mst__fsm__addr_ff;
 assign fsm__slv__wr_data = (state == S_IDLE) ? {DATA_WIDTH{1'b0}} : mst__fsm__wr_data_ff;
 assign fsm__slv__wr_en = (state == S_IDLE) ? 1'b0 : mst__fsm__wr_en_ff;

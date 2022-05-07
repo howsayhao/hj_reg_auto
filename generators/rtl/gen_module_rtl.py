@@ -153,7 +153,10 @@ def get_fsm_wire():
     fsm_wire_rtl = ''
     fsm_wire_rtl += '\t// declare the handshake signal for fsm\n'
     fsm_wire_rtl += '\twire                   slv__fsm__ack_vld		;\n'
+    fsm_wire_rtl += '\treg                    fsm__slv__req_vld_ff  ;\n'
+    fsm_wire_rtl += '\twire                   fsm__slv__req_vld_int ;\n'
     fsm_wire_rtl += '\twire                   fsm__slv__req_vld		;\n'
+    fsm_wire_rtl += '\treg                    new_ack_launched		;\n'
     fsm_wire_rtl += '\t// signal for fsm\n'
     fsm_wire_rtl += '\twire 						fsm__slv__wr_en		;\n'
     fsm_wire_rtl += '\twire 						fsm__slv__rd_en		;\n'
@@ -162,6 +165,8 @@ def get_fsm_wire():
     fsm_wire_rtl += '\twire [DATA_WIDTH-1:0]  		slv__fsm__rd_data	;\n'
     fsm_wire_rtl += '\t// fsm state indicator \n'
     fsm_wire_rtl += '\twire				   		cs_is_idle			;\n'
+    fsm_wire_rtl += '\treg                new_ack_lanuch            ;\n'
+
     return fsm_wire_rtl
 
 def get_decoder_wire():
@@ -212,6 +217,7 @@ def get_regfile_wire(cdc):
     regfile_wire_rtl += '\twire [REG_NUM-1:0] rd_sel;\n'
     regfile_wire_rtl += '\twire [EXT_NUM-1:0]                     regfile_req_vld      ;\n'
     regfile_wire_rtl += '\twire                                   regfile_ack_vld      ;\n'
+    regfile_wire_rtl += '\twire                                   regfile_rd_ack_vld   ;\n'
     regfile_wire_rtl += '\twire                                   regfile_wr_en        ;\n'
     regfile_wire_rtl += '\twire                                   regfile_rd_en        ;\n'
     regfile_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  regfile_addr         ;\n'
@@ -329,7 +335,7 @@ def get_ext_connect(ext_list):
             ext_connect_rtl += '\tassign %s_wr_data_fsm            =   ext_wr_data_fsm             ;\n'%(module_name)
             ext_connect_rtl += '\tassign ext_rd_data_fsm[%d]       =   %s_rd_data_fsm              ;\n'%(id, module_name)
 
-        ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld ;\n'%(id, id)
+        ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld_int ;\n'%(id, id)
         ext_connect_rtl += '\tassign ext_ack_fsm[%d]           =   ext_sel[%d] & ext_ack_vld_fsm   ;\n'%(id, id)
         return ext_connect_rtl
 
@@ -408,6 +414,20 @@ def get_fsm_ins(module_name, master):
                                 '\t\t.cs_is_idle(cs_is_idle),' + \
                                 '\t\t.mst__fsm__sync_reset(global_sync_reset_in),\n' + \
                                 '\t\t.fsm__slv__sync_reset(global_sync_reset_out)\n' + '\t);\n'
+        fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
+        fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
+        fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
+        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
+        fsm_rtl += '\t\tend\n'
+        fsm_rtl += '\t\telse begin\n'
+        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
+        fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
+        fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
+        fsm_rtl += '\t\t\telse new_ack_launched <= 1\'b0;\n'
+        fsm_rtl += '\t\tend\n'
+        fsm_rtl += '\tend\n'
+        fsm_rtl += '\n'
+        fsm_rtl += '\tassign fsm__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
     else:
         fsm_rtl +=              '\tmst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n' + \
                                 '\t\tmst_fsm_%s (\n'%(module_name) + \
@@ -421,6 +441,21 @@ def get_fsm_ins(module_name, master):
                                 '\t\t.fsm__slv__sync_reset(global_sync_reset_out),\n' + \
                                 '\t\t.clear(clear), .interrupt(interrupt)\n' + \
                                 '\t\t);\n'
+        fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
+        fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
+        fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
+        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
+        fsm_rtl += '\t\tend\n'
+        fsm_rtl += '\t\telse begin\n'
+        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
+        fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
+        fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
+        fsm_rtl += '\t\t\telse new_ack_launched <= 1\'b0;\n'
+        fsm_rtl += '\t\tend\n'
+        fsm_rtl += '\tend\n'
+        fsm_rtl += '\n'
+        fsm_rtl += '\tassign fsm__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
+
     return fsm_rtl
 
 
@@ -436,7 +471,7 @@ def get_split_mux_ins(M,N,reg_mux_size,skip_reg_mux_dff_0,skip_reg_mux_dff_1,ext
         split_mux_rtl += '\tsplit_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(%d), .SKIP_DFF_0(%d), .SKIP_DFF_1(%d)) rd_split_mux\n'%(reg_mux_size,skip_reg_dff_0,skip_reg_dff_1)
         split_mux_rtl += '\t(.clk(regfile_clk), .rst_n(regfile_rstn),\n'
         split_mux_rtl += '\t.din({regfile_reg_rd_data_in,{DATA_WIDTH{1\'b0}}}), .sel({rd_sel, dummy_reg}),\n'
-        split_mux_rtl += '\t.dout(regfile_rd_data), .dout_vld(regfile_ack_vld)\n'
+        split_mux_rtl += '\t.dout(regfile_rd_data), .dout_vld(regfile_rd_ack_vld)\n'
         split_mux_rtl += '\t);\n'
     if(M > 0):
         split_mux_rtl += '\t// external mux @regslv domain\n'
@@ -484,22 +519,22 @@ def get_mem_cdc_rtl(ext_list):
 
             mem_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
             mem_cdc_rtl += '\talways_ff@(posedge fsm_clk or negedge fsm_rstn)begin\n'
-            mem_cdc_rtl += '\t\tif(fsm_rstn)\n'
+            mem_cdc_rtl += '\t\tif(~fsm_rstn)\n'
             mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = 1\'b0;\n'%(module_name)
             mem_cdc_rtl += '\t\telse\n'
             mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = %s_req_vld_fsm;\n'%(module_name, module_name)
             mem_cdc_rtl += '\tend\n'
 
-            mem_cdc_rtl += '\n\tassign mem_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name)
+            mem_cdc_rtl += '\n\tassign %s_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name, module_name)
 
             mem_cdc_rtl += '\n\talways_ff@(posedge %s_clk or negedge %s_rstn)begin\n'%(module_name, module_name)
-            mem_cdc_rtl += '\t\tif(%s_rstn)\n'%(module_name)
+            mem_cdc_rtl += '\t\tif(~%s_rstn)\n'%(module_name)
             mem_cdc_rtl += '\t\t\t%s_ack_vld_ff = 1\'b0;\n'%(module_name)
             mem_cdc_rtl += '\t\telse\n'
             mem_cdc_rtl += '\t\t\t%s_ack_vld_ff = %s_ack_vld;\n'%(module_name, module_name)
             mem_cdc_rtl += '\tend\n'
 
-            mem_cdc_rtl += '\n\tassign mem_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name)
+            mem_cdc_rtl += '\n\tassign %s_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name, module_name)
             mem_cdc_rtl += '\n' + value_transmitter_ins(ext_module)
         else:
             mem_cdc_rtl += '\tassign %s_req_vld       = %s_req_vld_fsm    ;\n'%(module_name, module_name)
@@ -522,6 +557,11 @@ def get_regfile_cdc(cdc):
     regfile_cdc_rtl += '\tassign %s_wr_data_fsm = int_selected ? fsm__slv__wr_data : 0;\n'%(module_name)
     regfile_cdc_rtl += '\tassign %s_addr_fsm = int_selected ? fsm__slv__addr : 0;\n'%(module_name)
 
+    regfile_cdc_rtl += '\tassign wr_sel = {REG_NUM{%s_wr_en}} & reg_sel;\n'%(module_name)
+    regfile_cdc_rtl += '\tassign rd_sel = {REG_NUM{%s_rd_en}} & reg_sel;\n'%(module_name)
+
+    regfile_cdc_rtl += '\tassign %s_ack_vld = %s_rd_ack_vld | %s_wr_en;\n'%(module_name, module_name, module_name)
+
     if(cdc):
         regfile_cdc_rtl += '\n\tassign %s_value_out_fsm = {%s_req_vld_fsm, %s_wr_en_fsm, %s_rd_en_fsm, %s_wr_data_fsm, %s_addr_fsm};\n'%(module_name, module_name, module_name, module_name, module_name, module_name)
         regfile_cdc_rtl += '\tassign {%s_req_vld, %s_wr_en, %s_rd_en, %s_wr_data, %s_addr} =  %s_value_out;\n'%(module_name, module_name, module_name, module_name, module_name, module_name)
@@ -531,22 +571,22 @@ def get_regfile_cdc(cdc):
 
         regfile_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
         regfile_cdc_rtl += '\talways_ff@(posedge fsm_clk or negedge fsm_rstn)begin\n'
-        regfile_cdc_rtl += '\t\tif(fsm_rstn)\n'
+        regfile_cdc_rtl += '\t\tif(~fsm_rstn)\n'
         regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = 1\'b0;\n'%(module_name)
         regfile_cdc_rtl += '\t\telse\n'
         regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = %s_req_vld_fsm;\n'%(module_name, module_name)
         regfile_cdc_rtl += '\tend\n'
 
-        regfile_cdc_rtl += '\n\tassign mem_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name)
+        regfile_cdc_rtl += '\n\tassign %s_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name, module_name)
 
         regfile_cdc_rtl += '\n\talways_ff@(posedge %s_clk or negedge %s_rstn)begin\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\t\tif(%s_rstn)\n'%(module_name)
+        regfile_cdc_rtl += '\t\tif(~%s_rstn)\n'%(module_name)
         regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff = 1\'b0;\n'%(module_name)
         regfile_cdc_rtl += '\t\telse\n'
         regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff = %s_ack_vld;\n'%(module_name, module_name)
         regfile_cdc_rtl += '\tend\n'
 
-        regfile_cdc_rtl += '\n\tassign mem_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name)
+        regfile_cdc_rtl += '\n\tassign %s_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name, module_name)
 
         int_regfile = Regfile('internal_regfile')
         int_regfile.module_name = 'regfile'

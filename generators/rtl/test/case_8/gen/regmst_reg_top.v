@@ -84,7 +84,10 @@ module regmst_reg_top(
 //***************************************WIRE DECLARATION START***************************************//
 	// declare the handshake signal for fsm
 	wire                   slv__fsm__ack_vld		;
+	reg                    fsm__slv__req_vld_ff  ;
+	wire                   fsm__slv__req_vld_int ;
 	wire                   fsm__slv__req_vld		;
+	reg                    new_ack_launched		;
 	// signal for fsm
 	wire 						fsm__slv__wr_en		;
 	wire 						fsm__slv__rd_en		;
@@ -93,6 +96,7 @@ module regmst_reg_top(
 	wire [DATA_WIDTH-1:0]  		slv__fsm__rd_data	;
 	// fsm state indicator 
 	wire				   		cs_is_idle			;
+	reg                new_ack_lanuch            ;
 
 	// signal for decoder
 	// signal for global decoder @regslv domain
@@ -134,6 +138,7 @@ module regmst_reg_top(
 	wire [REG_NUM-1:0] rd_sel;
 	wire [EXT_NUM-1:0]                     regfile_req_vld      ;
 	wire                                   regfile_ack_vld      ;
+	wire                                   regfile_rd_ack_vld   ;
 	wire                                   regfile_wr_en        ;
 	wire                                   regfile_rd_en        ;
 	wire [ADDR_WIDTH-1:0]                  regfile_addr         ;
@@ -181,7 +186,7 @@ module regmst_reg_top(
 	assign reg_block_1_addr_fsm               =   ext_addr_fsm                ;
 	assign reg_block_1_wr_data_fsm            =   ext_wr_data_fsm             ;
 	assign ext_rd_data_fsm[0]       =   reg_block_1_rd_data_fsm              ;
-	assign ext_req_vld_fsm[0]       =   ext_sel[0] & fsm__slv__req_vld ;
+	assign ext_req_vld_fsm[0]       =   ext_sel[0] & fsm__slv__req_vld_int ;
 	assign ext_ack_fsm[0]           =   ext_sel[0] & ext_ack_vld_fsm   ;
 //************************************EXTERNAL WIRE CONNECTION END************************************//
 
@@ -222,6 +227,20 @@ module regmst_reg_top(
 		.cs_is_idle(cs_is_idle),		.fsm__slv__sync_reset(global_sync_reset_out),
 		.clear(clear), .interrupt(interrupt)
 		);
+	always@(posedge fsm_clk or negedge fsm_rstn) begin
+		if(~fsm_rstn)begin
+			new_ack_launched <= 1'b0;
+			fsm__slv__req_vld_ff <= 1'b0;
+		end
+		else begin
+			fsm__slv__req_vld_ff <= fsm__slv__req_vld;
+			if(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1'b0;
+			else if(| ext_ack_fsm) new_ack_launched <= 1'b1;
+			else new_ack_launched <= 1'b0;
+		end
+	end
+
+	assign fsm__req_vld_int = fsm__slv__req_vld & !new_ack_launched;
 //*************************************STATE MACHINE INSTANCE END*************************************//
 
 
@@ -263,6 +282,9 @@ module regmst_reg_top(
 	assign regfile_rd_en_fsm = fsm__slv__rd_en & int_selected;
 	assign regfile_wr_data_fsm = int_selected ? fsm__slv__wr_data : 0;
 	assign regfile_addr_fsm = int_selected ? fsm__slv__addr : 0;
+	assign wr_sel = {REG_NUM{regfile_wr_en}} & reg_sel;
+	assign rd_sel = {REG_NUM{regfile_rd_en}} & reg_sel;
+	assign regfile_ack_vld = regfile_rd_ack_vld | regfile_wr_en;
 	assign regfile_req_vld       = regfile_req_vld_fsm    ;
 	assign regfile_ack_vld_fsm   = regfile_ack_vld        ;
 	assign regfile_wr_en         = regfile_wr_en_fsm      ;

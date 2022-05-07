@@ -88,7 +88,10 @@ module regslv_reg_top__reg_block_1(
 //***************************************WIRE DECLARATION START***************************************//
 	// declare the handshake signal for fsm
 	wire                   slv__fsm__ack_vld		;
+	reg                    fsm__slv__req_vld_ff  ;
+	wire                   fsm__slv__req_vld_int ;
 	wire                   fsm__slv__req_vld		;
+	reg                    new_ack_launched		;
 	// signal for fsm
 	wire 						fsm__slv__wr_en		;
 	wire 						fsm__slv__rd_en		;
@@ -97,6 +100,7 @@ module regslv_reg_top__reg_block_1(
 	wire [DATA_WIDTH-1:0]  		slv__fsm__rd_data	;
 	// fsm state indicator 
 	wire				   		cs_is_idle			;
+	reg                new_ack_lanuch            ;
 
 	// signal for decoder
 	// signal for global decoder @regslv domain
@@ -138,6 +142,7 @@ module regslv_reg_top__reg_block_1(
 	wire [REG_NUM-1:0] rd_sel;
 	wire [EXT_NUM-1:0]                     regfile_req_vld      ;
 	wire                                   regfile_ack_vld      ;
+	wire                                   regfile_rd_ack_vld   ;
 	wire                                   regfile_wr_en        ;
 	wire                                   regfile_rd_en        ;
 	wire [ADDR_WIDTH-1:0]                  regfile_addr         ;
@@ -217,7 +222,7 @@ module regslv_reg_top__reg_block_1(
 	assign ext_mem_1_snapshot_addr_fsm      =   ext_addr_fsm                ;
 	assign ext_mem_1_snapshot_wr_data_fsm   =   ext_wr_data_fsm             ;
 	assign ext_rd_data_fsm[0]       =   ext_mem_1_snapshot_rd_data_fsm     ;
-	assign ext_req_vld_fsm[0]       =   ext_sel[0] & fsm__slv__req_vld ;
+	assign ext_req_vld_fsm[0]       =   ext_sel[0] & fsm__slv__req_vld_int ;
 	assign ext_ack_fsm[0]           =   ext_sel[0] & ext_ack_vld_fsm   ;
 //************************************EXTERNAL WIRE CONNECTION END************************************//
 
@@ -260,6 +265,20 @@ module regslv_reg_top__reg_block_1(
 		.cs_is_idle(cs_is_idle),		.mst__fsm__sync_reset(global_sync_reset_in),
 		.fsm__slv__sync_reset(global_sync_reset_out)
 	);
+	always@(posedge fsm_clk or negedge fsm_rstn) begin
+		if(~fsm_rstn)begin
+			new_ack_launched <= 1'b0;
+			fsm__slv__req_vld_ff <= 1'b0;
+		end
+		else begin
+			fsm__slv__req_vld_ff <= fsm__slv__req_vld;
+			if(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1'b0;
+			else if(| ext_ack_fsm) new_ack_launched <= 1'b1;
+			else new_ack_launched <= 1'b0;
+		end
+	end
+
+	assign fsm__req_vld_int = fsm__slv__req_vld & !new_ack_launched;
 //*************************************STATE MACHINE INSTANCE END*************************************//
 
 
@@ -268,7 +287,7 @@ module regslv_reg_top__reg_block_1(
 	split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(128), .SKIP_DFF_0(1), .SKIP_DFF_1(1)) rd_split_mux
 	(.clk(regfile_clk), .rst_n(regfile_rstn),
 	.din({regfile_reg_rd_data_in,{DATA_WIDTH{1'b0}}}), .sel({rd_sel, dummy_reg}),
-	.dout(regfile_rd_data), .dout_vld(regfile_ack_vld)
+	.dout(regfile_rd_data), .dout_vld(regfile_rd_ack_vld)
 	);
 	// external mux @regslv domain
 	split_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(128), .SKIP_DFF_0(0), .SKIP_DFF_1(0)) ext_rd_split_mux
@@ -323,22 +342,22 @@ module regslv_reg_top__reg_block_1(
 
 	// create the pulse to deliver the value
 	always_ff@(posedge fsm_clk or negedge fsm_rstn)begin
-		if(fsm_rstn)
+		if(~fsm_rstn)
 			ext_mem_1_req_vld_fsm_ff = 1'b0;
 		else
 			ext_mem_1_req_vld_fsm_ff = ext_mem_1_req_vld_fsm;
 	end
 
-	assign mem_sel_pulse = ~ext_mem_1_req_vld_fsm_ff & ext_mem_1_req_vld_fsm;
+	assign ext_mem_1_sel_pulse = ~ext_mem_1_req_vld_fsm_ff & ext_mem_1_req_vld_fsm;
 
 	always_ff@(posedge ext_mem_1_clk or negedge ext_mem_1_rstn)begin
-		if(ext_mem_1_rstn)
+		if(~ext_mem_1_rstn)
 			ext_mem_1_ack_vld_ff = 1'b0;
 		else
 			ext_mem_1_ack_vld_ff = ext_mem_1_ack_vld;
 	end
 
-	assign mem_ack_pulse = ~ext_mem_1_ack_vld_ff & ext_mem_1_ack_vld;
+	assign ext_mem_1_ack_pulse = ~ext_mem_1_ack_vld_ff & ext_mem_1_ack_vld;
 
 	// fsm to ext_mem_1
 	value_transmitter
@@ -379,6 +398,9 @@ module regslv_reg_top__reg_block_1(
 	assign regfile_rd_en_fsm = fsm__slv__rd_en & int_selected;
 	assign regfile_wr_data_fsm = int_selected ? fsm__slv__wr_data : 0;
 	assign regfile_addr_fsm = int_selected ? fsm__slv__addr : 0;
+	assign wr_sel = {REG_NUM{regfile_wr_en}} & reg_sel;
+	assign rd_sel = {REG_NUM{regfile_rd_en}} & reg_sel;
+	assign regfile_ack_vld = regfile_rd_ack_vld | regfile_wr_en;
 
 	assign regfile_value_out_fsm = {regfile_req_vld_fsm, regfile_wr_en_fsm, regfile_rd_en_fsm, regfile_wr_data_fsm, regfile_addr_fsm};
 	assign {regfile_req_vld, regfile_wr_en, regfile_rd_en, regfile_wr_data, regfile_addr} =  regfile_value_out;
@@ -388,22 +410,22 @@ module regslv_reg_top__reg_block_1(
 
 	// create the pulse to deliver the value
 	always_ff@(posedge fsm_clk or negedge fsm_rstn)begin
-		if(fsm_rstn)
+		if(~fsm_rstn)
 			regfile_req_vld_fsm_ff = 1'b0;
 		else
 			regfile_req_vld_fsm_ff = regfile_req_vld_fsm;
 	end
 
-	assign mem_sel_pulse = ~regfile_req_vld_fsm_ff & regfile_req_vld_fsm;
+	assign regfile_sel_pulse = ~regfile_req_vld_fsm_ff & regfile_req_vld_fsm;
 
 	always_ff@(posedge regfile_clk or negedge regfile_rstn)begin
-		if(regfile_rstn)
+		if(~regfile_rstn)
 			regfile_ack_vld_ff = 1'b0;
 		else
 			regfile_ack_vld_ff = regfile_ack_vld;
 	end
 
-	assign mem_ack_pulse = ~regfile_ack_vld_ff & regfile_ack_vld;
+	assign regfile_ack_pulse = ~regfile_ack_vld_ff & regfile_ack_vld;
 
 	// fsm to regfile
 	value_transmitter

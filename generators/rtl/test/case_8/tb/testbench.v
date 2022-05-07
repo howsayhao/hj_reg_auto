@@ -243,7 +243,9 @@ always #(`CLK_3_PERIOD/2) clk_3 = ~clk_3;
 
 // generate low-active asynchronous reset signals
 initial begin
-    clk = 1'b0;
+    clk_1 = 1'b0;
+    clk_2 = 1'b0;
+    clk_3 = 1'b0;
     rst_1_n = 1'b0;
     rst_2_n = 1'b0;
     rst_3_n = 1'b0;
@@ -431,7 +433,7 @@ initial begin
     end
 
     $display("test process done, error count: %1d", err_cnt);
-    #(CLK_1_PERIOD*2);
+    #(`CLK_1_PERIOD*2);
     $finish;
 end
 
