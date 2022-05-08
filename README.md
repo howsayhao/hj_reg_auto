@@ -10,6 +10,7 @@ For modules with few registers and simple address mapping, Excel worksheet is re
 
 The overall tool flow is shown as the figure below.
 
+<span id="pics_tool_flow"></span>
 ![tool_flow](docs/pics/tool_flow.svg)
 
 ### **Register Template Generator**
@@ -18,7 +19,7 @@ The overall tool flow is shown as the figure below.
 
 The Excel parser check all Excel files provided by the designer, including basic format and design rules, and then converts the parsed register specification model into SystemRDL code, which will be submitted to the `SystemRDL Compiler` later. Intermediate SystemRDL code generation also allows the designer to add more complicated features supported by SystemRDL.
 
-To learn what rules are checked, see Chapter <u>**Excel Worksheet Guideline**</u>. If any of rules are violated, Excel parser will raise error and error message will display the position where error occurs.
+To learn what rules are checked, see [Excel Worksheet Guideline](#excel-worksheet-guideline). If any of rules are violated, Excel parser will raise error and error message will display the position where error occurs.
 
 ### **SystemRDL Parser/Compiler**
 
