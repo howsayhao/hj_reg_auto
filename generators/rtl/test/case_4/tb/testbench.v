@@ -1,6 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+// case 4 testbench:
+//      software access properties: onwrite=na/woclr/woset/wot/wzc/wzs/wzt
+//
+// upper bus interface: APB
+//      addr width: 32
+//      data width: 64
+// internal register:
+//      entry: 7
+//      data width: 32
+//      FIXME
+///////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ns/1ns
 
-// testbench for case 4: software access properties: onwrite=na/woclr/woset/wot/wzc/wzs/wzt
 module reg_tb;
 
 parameter TOTAL_ACCESS_NUM = 7;

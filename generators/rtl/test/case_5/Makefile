@@ -22,7 +22,7 @@ gen_rtl: $(rdl_src)
 	hrda generate -f $(rdl_src) -gdir ./gen -grtl
 	mv ./gen/rtl/* ./gen && rm -rf ./gen/rtl
 
-vcs: gen_rtl $(rtl_src)
+vcs: $(rtl_src)
 	bsub -Is vcs $(VCS_OPS) $(VERDI_OPS)
 
 sim: vcs
@@ -33,7 +33,6 @@ verdi: sim $(rtl_src)
 
 .PHONY: clean
 clean:
-	rm -rf gen/*
 	rm -rf *csrc
 	rm -rf ./*.daidir
 	rm -rf *fsdb*

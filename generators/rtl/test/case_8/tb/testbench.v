@@ -49,7 +49,7 @@ parameter EXT_MEM_DATA_WIDTH = 128;
 parameter EXT_ACCESS_NUM = 8;
 parameter EXT_MEM_SNAPSHOT_BUS_ENTRY = EXT_ACCESS_NUM / EXT_MEM_ENTRY;
 
-parameter TOTAL_ACCESS_NUM = INT_ACCESS_NUM + EXT_ACCESS_NUM;
+parameter TOTAL_LOGICAL_NUM = INT_ACCESS_NUM + EXT_ACCESS_NUM;
 
 
 logic clk_1;
@@ -266,10 +266,10 @@ initial begin
     end
 end
 
-reg [BUS_ADDR_WIDTH-1:0] addrs [0:TOTAL_ACCESS_NUM-1];
+reg [BUS_ADDR_WIDTH-1:0] addrs [0:TOTAL_LOGICAL_NUM-1];
 reg [INT_REG_DATA_WIDTH-1:0] expected_reg_value [0:INT_ACCESS_NUM-1];
 reg [EXT_MEM_DATA_WIDTH-1:0] expected_mem_value [0:EXT_ACCESS_NUM-1];
-reg [BUS_DATA_WIDTH-1:0] expected_read_value [0:TOTAL_ACCESS_NUM-1];
+reg [BUS_DATA_WIDTH-1:0] expected_read_value [0:TOTAL_LOGICAL_NUM-1];
 
 initial begin
     // all APB input initialized to 0

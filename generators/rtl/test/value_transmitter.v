@@ -37,7 +37,7 @@ module value_transmitter
 
 // domain clk_a
     always_ff@(posedge clk_a or negedge rst_a_n)begin
-        if(rst_a_n) 
+        if(~rst_a_n)
             pulse_in_ff <=  0;
         else if(pulse_in)
             pulse_in_ff <= 1'b1;
@@ -46,7 +46,7 @@ module value_transmitter
     end
 
     always_ff@(posedge clk_a or negedge rst_a_n)begin
-        if(rst_a_n) 
+        if(~rst_a_n)
             value_in_ff <=  0;
         else if(pulse_in)
             value_in_ff <= value_in;
@@ -56,7 +56,7 @@ module value_transmitter
 
 // domain clk_b
     always_ff@(posedge clk_b or negedge rst_b_n)begin
-        if(rst_b_n) 
+        if(~rst_b_n)
             pulse_out_ff <=  0;
         else if(pulse_out_int)
             pulse_out_ff <= 1'b1;
@@ -65,10 +65,10 @@ module value_transmitter
     end
 
     always_ff@(posedge clk_b or negedge rst_b_n)begin
-        if(rst_b_n) 
+        if(~rst_b_n)
             value_out_ff <=0;
         else if(pulse_out_int)
-            value_out_ff <= value_out;
+            value_out_ff <= value_out_int;
         else if(value_out_ack)
             value_out_ff <= 0;
         else

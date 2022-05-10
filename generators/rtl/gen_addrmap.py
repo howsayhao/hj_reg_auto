@@ -199,7 +199,7 @@ class addrmap_str(object):
             flatten_addrmap = False
             if(isinstance(child, AddrmapNode)):
                 genrtl = child.get_property('hj_genrtl') if('hj_genrtl' in child.inst.properties) else False
-                flatten_addrmap = child.get_property('hj_flatten_addrmap') if('hj_flatten_addrmap' in child.inst.properties) else False
+                flatten_addrmap = child.get_property('hj_flatten_addrmap') if('hj_flatten_addrmap' in child.inst.properties) else True
 
                 # for regslv gen_rtl
                 if(genrtl is True and child not in self.Root.genrtl_node):
@@ -208,10 +208,10 @@ class addrmap_str(object):
                     ext_addr.write()
                     self.Root.children.append(ext_addr)
                     self.Root.genrtl_node.append(child)
-                    self.ext_module.append(new_obj)
                     new_obj.DATA_WIDTH = 32
                     new_obj.ADDR_WIDTH = 64
                     new_obj.id = len(self.ext_module) - 1
+                    self.ext_module.append(new_obj)
                     self.ext_instance(ext_addr)
                     self.inst += 1
 
@@ -219,7 +219,10 @@ class addrmap_str(object):
                 elif(genrtl is False and flatten_addrmap is False):
                     rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy)
-                    self.ext_module.append(ext_addr)
+                    new_obj.DATA_WIDTH = 32
+                    new_obj.ADDR_WIDTH = 64
+                    new_obj.id = len(self.ext_module) - 1
+                    self.ext_module.append(new_obj)
                     self.ext_instance(ext_addr)
 
                 # external property mark so related blocked won't gen
@@ -362,7 +365,7 @@ class addrmap_str(object):
                     self.shared_register_map.append(new_obj)
 
     # handle the regs' alias and shared situation
-    def reg_alias_shared_handle(self) -> None:
+    def reg_alias_shared_handle(self):
         """
         register with alias or shared information would be marked and recorded in alias/shared_register_map
         both registers' properties would be gathered together and instantiated on ONE register
@@ -453,6 +456,7 @@ class addrmap_str(object):
         define_str = ''
         define_str += '`ifndef __%s_vh__\n'%(self.module_name)
         define_str += '`define __%s_vh__\n'%(self.module_name)
+        define_str += '//' + 'Address Definition Here'.center(100,"*") + '//\n'
         for addr in self.internal_addr_map:
             for register in addr.registers:
                 register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
@@ -471,8 +475,6 @@ class addrmap_str(object):
                 else:
                     rtl_reg_addr = '64\'h' + self.get_hex(register.addr)
                 define_str += '`define %s %s//external\n'%(rtl_reg_name,rtl_reg_addr)
-        define_str += '`endif'
-        define_str += '//' + 'Address Definition Here'.center(100,"*") + '//\n'
         define_str += '`endif'
         decode_str = ''
         return[define_str,decode_str]
@@ -501,6 +503,7 @@ class addrmap_str(object):
     def get_module_rtl(self) -> None:
         # collect all parts of rtl together into whole .v file
         self.rtl += '`include "xregister.vh"\n'
+        self.rtl += '`default_nettype none\n'
         if(self.master is True):
             self.rtl += 'module ' + 'regmst_' + self.module_name + '(\n'
         else:
@@ -511,7 +514,7 @@ class addrmap_str(object):
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'INTERNAL FIELD PORT START'.center(100,"*") + '//\n'
-        self.rtl += get_regfile_port(self.internal_register_map + self.snap_register_map, self.cdc)
+        self.rtl += get_regfile_port(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map)
         self.rtl += '//' + 'INTERNAL FIELD PORT END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
@@ -535,7 +538,7 @@ class addrmap_str(object):
         self.rtl += '//' + 'PORT DECLARATION START'.center(100,"*") + '//\n'
         self.rtl += get_regslv_define(self.master)
         self.rtl += get_ext_define(self.ext_module)
-        self.rtl += get_regfile_define(self.internal_register_map + self.snap_register_map, self.cdc)
+        self.rtl += get_regfile_define(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map)
         self.rtl += '//' + 'PORT DECLARATION END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
@@ -546,14 +549,16 @@ class addrmap_str(object):
         self.rtl += get_regfile_wire(self.cdc)
         self.rtl += get_internal_reg_wire(self.internal_register_map)
         self.rtl += get_snaped_reg_wire(self.snap_register_map)
-        self.rtl += get_external_wire(self.ext_module)
+        if(self.ext_module != []):
+            self.rtl += get_external_wire(self.ext_module)
         self.rtl += '//' + 'WIRE DECLARATION END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
-        self.rtl += '//' + 'EXTERNAL WIRE CONNECTION START'.center(100,"*") + '//\n'
-        self.rtl += get_ext_connect(self.ext_module)
-        self.rtl += '//' + 'EXTERNAL WIRE CONNECTION END'.center(100,"*") + '//\n'
-        self.rtl += '\n\n'
+        if(self.ext_module != []):
+            self.rtl += '//' + 'EXTERNAL WIRE CONNECTION START'.center(100,"*") + '//\n'
+            self.rtl += get_ext_connect(self.ext_module)
+            self.rtl += '//' + 'EXTERNAL WIRE CONNECTION END'.center(100,"*") + '//\n'
+            self.rtl += '\n\n'
 
         self.rtl += '//' + 'ADDRESS DECODER START'.center(100,"*") + '//\n'
         self.rtl += get_decoder(self.internal_addr_map, self.external_addr_map, self.master)
@@ -600,7 +605,8 @@ class addrmap_str(object):
         self.rtl += '//' + 'REG/FIELD INSTANCE END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
-        self.rtl += 'endmodule'
+        self.rtl += 'endmodule\n'
+        self.rtl += '`default_nettype wire'
     # convert addr or reset value from int(decimal) to str(hex)
     def get_hex(self,dec_d:int) -> str:
         if(dec_d is None):

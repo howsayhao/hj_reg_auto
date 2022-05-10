@@ -22,7 +22,7 @@ def get_ext_port(ext_list):
         ext_port_rtl += '\t%s_rd_data           ,\n'%(module_name)
     return ext_port_rtl
 
-def get_regfile_port(reg_list, cdc):
+def get_regfile_port(reg_list, cdc, sync_reset_list):
     regfile_port_rtl = ''
     regfile_port_rtl += '\t// ports of internal regfile\n'
     if(cdc):
@@ -40,6 +40,9 @@ def get_regfile_port(reg_list, cdc):
                 regfile_port_rtl += '\t%s__curr_value        ,\n'%(field_name)
                 regfile_port_rtl += '\t%s__swmod_out         ,\n'%(field_name) if field.swmod else ''
                 regfile_port_rtl += '\t%s__swacc_out         ,\n'%(field_name) if field.swacc else ''
+    for signal in sync_reset_list:
+        signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        regfile_port_rtl += '\t%s        ,\n'%(signal_name)
     return regfile_port_rtl
 
 def get_regslv_port(master):
@@ -124,7 +127,7 @@ def get_ext_define(ext_list):
         ext_define_rtl += '\tinput  [%d-1:0]    %s_rd_data           ;\n'%(ext_module.DATA_WIDTH, module_name)
     return ext_define_rtl
 
-def get_regfile_define(reg_list, cdc):
+def get_regfile_define(reg_list, cdc, sync_reset_list):
     regfile_define_rtl = ''
     regfile_define_rtl += '\t//ports define of internal regfile\n'
     if(cdc):
@@ -145,6 +148,11 @@ def get_regfile_define(reg_list, cdc):
                 regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value        ;\n'%(field.fieldwidth, field_name)
                 regfile_define_rtl += '\toutput             %s__swmod_out         ;\n'%(field_name) if field.swmod else ''
                 regfile_define_rtl += '\toutput             %s__swacc_out         ;\n'%(field_name) if field.swacc else ''
+
+    for signal in sync_reset_list:
+        signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        regfile_define_rtl += 'input \t%s        ;\n'%(signal_name)
+
     return regfile_define_rtl
 
 
@@ -153,10 +161,10 @@ def get_fsm_wire():
     fsm_wire_rtl = ''
     fsm_wire_rtl += '\t// declare the handshake signal for fsm\n'
     fsm_wire_rtl += '\twire                   slv__fsm__ack_vld		;\n'
+    fsm_wire_rtl += '\treg                    new_ack_launched		;\n'
     fsm_wire_rtl += '\treg                    fsm__slv__req_vld_ff  ;\n'
     fsm_wire_rtl += '\twire                   fsm__slv__req_vld_int ;\n'
-    fsm_wire_rtl += '\twire                   fsm__slv__req_vld		;\n'
-    fsm_wire_rtl += '\treg                    new_ack_launched		;\n'
+    fsm_wire_rtl += '\treg                    fsm__slv__req_vld     ;\n'
     fsm_wire_rtl += '\t// signal for fsm\n'
     fsm_wire_rtl += '\twire 						fsm__slv__wr_en		;\n'
     fsm_wire_rtl += '\twire 						fsm__slv__rd_en		;\n'
@@ -335,8 +343,8 @@ def get_ext_connect(ext_list):
             ext_connect_rtl += '\tassign %s_wr_data_fsm            =   ext_wr_data_fsm             ;\n'%(module_name)
             ext_connect_rtl += '\tassign ext_rd_data_fsm[%d]       =   %s_rd_data_fsm              ;\n'%(id, module_name)
 
-        ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld_int ;\n'%(id, id)
-        ext_connect_rtl += '\tassign ext_ack_fsm[%d]           =   ext_sel[%d] & ext_ack_vld_fsm   ;\n'%(id, id)
+        ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld_int  ;\n'%(id, id)
+        ext_connect_rtl += '\tassign ext_ack_fsm[%d]           =   ext_sel[%d] & ext_ack_vld_fsm        ;\n'%(id, id)
         return ext_connect_rtl
 
 
@@ -427,7 +435,7 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\tend\n'
         fsm_rtl += '\tend\n'
         fsm_rtl += '\n'
-        fsm_rtl += '\tassign fsm__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
+        fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
     else:
         fsm_rtl +=              '\tmst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n' + \
                                 '\t\tmst_fsm_%s (\n'%(module_name) + \
@@ -454,7 +462,7 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\tend\n'
         fsm_rtl += '\tend\n'
         fsm_rtl += '\n'
-        fsm_rtl += '\tassign fsm__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
+        fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
 
     return fsm_rtl
 

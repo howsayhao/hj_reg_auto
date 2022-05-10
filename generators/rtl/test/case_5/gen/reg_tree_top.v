@@ -1,6 +1,6 @@
 `define ADDR_WIDTH 7'd64
 `define DATA_WIDTH 6'd32
-module reg_tree 
+module reg_tree
 (
 	//reg_mst interface port
 	 input clk
@@ -66,7 +66,7 @@ regmst_reg_top #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	,.ext_req_vld(regmst_reg_top_ext_req_vld),.ext_req_rdy(regmst_reg_top_ext_req_rdy),.ext_ack_vld(regmst_reg_top_ext_ack_vld),.ext_ack_rdy(regmst_reg_top_ext_ack_rdy),.ext_rd_data(regmst_reg_top_ext_rd_data)
 	,.ext_wr_en(regmst_reg_top_wr_en),.ext_rd_en(regmst_reg_top_rd_en),.ext_wr_data(regmst_reg_top_wr_data),.ext_addr(regmst_reg_top_addr),.cdc_pulse_out(regmst_reg_top_cdc_pulse_out)
 	,.global_sync_reset_out(regmst_reg_top_fsm_sync_reset)//field ports instance
-	
+
 	);
 regslv_reg_top__reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_reg_top__reg_block_1 (
@@ -82,6 +82,6 @@ regslv_reg_top__reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH)
 	,.global_sync_reset_out(regslv_reg_top__reg_block_1_fsm_sync_reset),.global_sync_reset_in(regmst_reg_top_fsm_sync_reset)//field ports instance
 	,.REG1__FIELD_0__next_value(REG1__FIELD_0__next_value),.REG1__FIELD_0__pulse(REG1__FIELD_0__pulse),.test_2_shared_21__FIELD_0__next_value(test_2_shared_21__FIELD_0__next_value)
 	,.test_2_shared_21__FIELD_0__pulse(test_2_shared_21__FIELD_0__pulse),.REG1__FIELD_0__curr_value(REG1__FIELD_0__curr_value),.test_2_shared_21__FIELD_0__curr_value(test_2_shared_21__FIELD_0__curr_value)
-	
+
 	);
 endmodule

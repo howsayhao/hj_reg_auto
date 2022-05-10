@@ -1,16 +1,39 @@
-`timescale 1ns/1ns
+////////////////////////////////////////////////////////////////////////////////
+// case 6 testbench:
+//      hardware access properties: hw=r/rw, hwclr, hwset
+//
+// upper bus interface: APB
+//      addr width: 32
+//      data width: 64
+// internal register:
+//      entry: 4
+//      data width: 32
+//
+///////////////////////////////////////////////////////////////////////////////
 
-// testbench for case 6: hardware access properties: hw=r/rw, hwclr, hwset
+`timescale 1ns/1ps
+
+// clock frequency:
+//      clk (bus interface and regslv native): 50MHz
+`define CLK_PERIOD 20
+
 module reg_tb;
 
-parameter TOTAL_ACCESS_NUM = 4;
-parameter ADDR_WIDTH = 64;
-parameter DATA_WIDTH = 32;
+// bus definition
+parameter BUS_ADDR_WIDTH = 64;
+parameter BUS_DATA_WIDTH = 32;
 
-logic [DATA_WIDTH-1:0] actual_hw_value [0:TOTAL_ACCESS_NUM-1];
+// internal register parameters
+parameter INT_REG_ENTRY = 4;
+parameter INT_REG_DATA_WIDTH = 32;
+parameter INT_ACCESS_NUM = 4;
+
+parameter TOTAL_LOGICAL_NUM = 4;
+
+logic [BUS_DATA_WIDTH-1:0] actual_hw_value [0:TOTAL_LOGICAL_NUM-1];
 
 logic clk;
-logic rstn;
+logic rst_n;
 
 // APB interface
 logic PSEL;
@@ -18,17 +41,21 @@ logic PENABLE;
 logic PREADY;
 logic PWRITE;
 logic PSLVERR;
-logic [ADDR_WIDTH-1:0] PADDR;
-logic [DATA_WIDTH-1:0] PWDATA;
-logic [DATA_WIDTH-1:0] PRDATA;
+logic [BUS_ADDR_WIDTH-1:0] PADDR;
+logic [BUS_DATA_WIDTH-1:0] PWDATA;
+logic [BUS_DATA_WIDTH-1:0] PRDATA;
 
 // interrupt, clear and sync reset
-logic mst__bus__interrupt;
-logic mst__ext__glb_srst;
-logic bus__mst__clear;
+logic reg_top__bus__interrupt;
+logic reg_top__downstream__glb_srst;
+logic bus__reg_top__clear;
 
 
 // module: regmst_reg_top DUT
+//      internal register: 0
+//      external instance: 1
+//      clock: clk
+//
 // bus interface:
 //      APB interface: testbench stimulus <-> regmst
 //      reg_native_if: regmst <-> regslv_reg_top__reg_block_1
@@ -38,25 +65,32 @@ logic bus__mst__clear;
 //      regslv: regslv_reg_top__reg_block_1
 // other signals:
 //      interrupt, glb_srst, clear
+parameter REGMST_REG_TOP_INT_NUM = 0;
 parameter REGMST_REG_TOP_EXT_NUM = 1;
 
-logic [REGMST_REG_TOP_EXT_NUM-1:0] mst__ext__req_vld;
-logic [REGMST_REG_TOP_EXT_NUM-1:0] mst__ext__req_rdy;
-logic [REGMST_REG_TOP_EXT_NUM-1:0] mst__ext__ack_vld;
-logic mst__ext__ack_rdy;
-logic mst__ext__wr_en;
-logic mst__ext__rd_en;
-logic [ADDR_WIDTH-1:0] mst__ext__addr;
-logic [DATA_WIDTH-1:0] mst__ext__wr_data;
-logic [REGMST_REG_TOP_EXT_NUM-1:0] [DATA_WIDTH-1:0] mst__ext__rd_data;
+logic reg_top__reg_block_1_req_vld;
+logic reg_top__reg_block_1_ack_vld;
+logic reg_top__reg_block_1_wr_en;
+logic reg_top__reg_block_1_rd_en;
+logic [BUS_ADDR_WIDTH-1:0] reg_top__reg_block_1_addr;
+logic [BUS_DATA_WIDTH-1:0] reg_top__reg_block_1_wr_data;
+logic [BUS_DATA_WIDTH-1:0] reg_top__reg_block_1_rd_data;
 
 regmst_reg_top #(
-    .ADDR_WIDTH(ADDR_WIDTH),
-    .DATA_WIDTH(DATA_WIDTH))
+    .ADDR_WIDTH(BUS_ADDR_WIDTH),
+    .DATA_WIDTH(BUS_DATA_WIDTH))
 regmst_reg_top_dut (
-    .clk(clk),
-    .rstn(rstn),
+    // reg_native_if connected to the downstream regslv
+    .reg_block_1_req_vld(reg_top__reg_block_1_req_vld),
+    .reg_block_1_ack_vld(reg_top__reg_block_1_ack_vld),
+    .reg_block_1_wr_en(reg_top__reg_block_1_wr_en),
+    .reg_block_1_rd_en(reg_top__reg_block_1_rd_en),
+    .reg_block_1_addr(reg_top__reg_block_1_addr),
+    .reg_block_1_wr_data(reg_top__reg_block_1_wr_data),
+    .reg_block_1_rd_data(reg_top__reg_block_1_rd_data),
     // APB interface
+    .PCLK(clk),
+    .PRESETn(rst_n),
     .PSEL(PSEL),
     .PENABLE(PENABLE),
     .PREADY(PREADY),
@@ -65,26 +99,18 @@ regmst_reg_top_dut (
     .PADDR(PADDR),
     .PWDATA(PWDATA),
     .PRDATA(PRDATA),
-    // interrupt and clear
-    .interrupt(mst__bus__interrupt),
-    .clear(bus__mst__clear),
-    .global_sync_reset_out(mst__ext__glb_srst),
-    // clock domain crossing signal
-    .cdc_pulse_out(),
-    // reg_native_if connected to external memory and downstream regslv
-    .ext_req_vld(mst__ext__req_vld),
-    .ext_req_rdy(mst__ext__req_rdy),
-    .ext_ack_vld(mst__ext__ack_vld),
-    .ext_ack_rdy(mst__ext__ack_rdy),
-    .ext_wr_en(mst__ext__wr_en),
-    .ext_rd_en(mst__ext__rd_en),
-    .ext_addr(mst__ext__addr),
-    .ext_wr_data(mst__ext__wr_data),
-    .ext_rd_data(mst__ext__rd_data)
+    // interrupt, clear and synchronous reset signals
+    .clear(bus__reg_top__clear),
+    .interrupt(reg_top__bus__interrupt),
+    .global_sync_reset_out(reg_top__downstream__glb_srst)
 );
 
 
 // module: regslv_reg_top__reg_block_1 DUT
+//      internal register: 4
+//      external instance: 0
+//      clock: clk
+//
 // bus interface:
 //      reg_native_if: regmst_reg_top <-> regslv_reg_top__reg_block_1
 // directly connected upstream:
@@ -95,44 +121,17 @@ regmst_reg_top_dut (
 parameter REGSLV_REG_BLOCK_1_EXT_NUM = 0;
 parameter REGSLV_REG_BLOCK_1_INT_NUM = 4;
 
-logic [DATA_WIDTH-1:0] REG2_HW_RW__FIELD_0__next_value;
+logic [BUS_DATA_WIDTH-1:0] REG2_HW_RW__FIELD_0__next_value;
 logic REG2_HW_RW__FIELD_0__pulse;
-logic [DATA_WIDTH-1:0] REG3_HW_CLR__FIELD_0__next_value;
+logic [BUS_DATA_WIDTH-1:0] REG3_HW_CLR__FIELD_0__next_value;
 logic REG3_HW_CLR__FIELD_0__pulse;
-logic [DATA_WIDTH-1:0] REG4_HW_SET__FIELD_0__next_value;
+logic [BUS_DATA_WIDTH-1:0] REG4_HW_SET__FIELD_0__next_value;
 logic REG4_HW_SET__FIELD_0__pulse;
 
 regslv_reg_top__reg_block_1 #(
-    .ADDR_WIDTH(ADDR_WIDTH),
-    .DATA_WIDTH(DATA_WIDTH))
+    .ADDR_WIDTH(BUS_ADDR_WIDTH),
+    .DATA_WIDTH(BUS_DATA_WIDTH))
 regslv_reg_top__reg_block_1_dut (
-    .clk(clk),
-    .rstn(rstn),
-    // upstream reg_native_if
-    .req_vld(mst__ext__req_vld),
-    .req_rdy(mst__ext__req_rdy),
-    .ack_vld(mst__ext__ack_vld),
-    .ack_rdy(mst__ext__ack_rdy),
-    .wr_en(mst__ext__wr_en),
-    .rd_en(mst__ext__rd_en),
-    .addr(mst__ext__addr),
-    .wr_data(mst__ext__wr_data),
-    .rd_data(mst__ext__rd_data),
-    // synchronous reset signals
-    .global_sync_reset_in(mst__ext__glb_srst),
-    .global_sync_reset_out(),
-    // clock domain crossing signal
-    .cdc_pulse_out(),
-    // external memory reg_native_if
-    .ext_req_vld(),
-    .ext_req_rdy(1'b0),
-    .ext_ack_vld(1'b0),
-    .ext_ack_rdy(),
-    .ext_wr_en(),
-    .ext_rd_en(),
-    .ext_addr(),
-    .ext_wr_data(),
-    .ext_rd_data({DATA_WIDTH{1'b0}}),
     // hardware access input ports
     .REG1_HW_RO__FIELD_0__curr_value(actual_hw_value[0]),
 	.REG2_HW_RW__FIELD_0__next_value(REG2_HW_RW__FIELD_0__next_value),
@@ -143,7 +142,21 @@ regslv_reg_top__reg_block_1_dut (
 	.REG3_HW_CLR__FIELD_0__curr_value(actual_hw_value[2]),
 	.REG4_HW_SET__FIELD_0__next_value(REG4_HW_SET__FIELD_0__next_value),
 	.REG4_HW_SET__FIELD_0__pulse(REG4_HW_SET__FIELD_0__pulse),
-	.REG4_HW_SET__FIELD_0__curr_value(actual_hw_value[3])
+	.REG4_HW_SET__FIELD_0__curr_value(actual_hw_value[3]),
+    // clock and reset
+    .fsm_clk(clk),
+    .fsm_rstn(rst_n),
+    // upstream reg_native_if
+    .req_vld(reg_top__reg_block_1_req_vld),
+    .ack_vld(reg_top__reg_block_1_ack_vld),
+    .wr_en(reg_top__reg_block_1_wr_en),
+    .rd_en(reg_top__reg_block_1_rd_en),
+    .addr(reg_top__reg_block_1_addr),
+    .wr_data(reg_top__reg_block_1_wr_data),
+    .rd_data(reg_top__reg_block_1_rd_data),
+    // synchronous reset signals
+    .global_sync_reset_in(reg_top__downstream__glb_srst),
+    .global_sync_reset_out()
 );
 
 
@@ -160,33 +173,32 @@ initial begin
 end
 
 // generate 50MHz clock
-localparam CLK_PERIOD = 20;
-always #(CLK_PERIOD/2) clk = ~clk;
+always #(`CLK_PERIOD/2) clk = ~clk;
 
 // generate low-active reset signal
 initial begin
     clk = 1'b0;
-    rstn = 1'b0;
+    rst_n = 1'b0;
     // deassert reset signal after several clock cycles
-    #(CLK_PERIOD*10) rstn = 1;
+    #(`CLK_PERIOD*10) rst_n = 1;
 end
 
 
 /********************************************************************
 ***************** test stimulus initialization **********************
 *********************************************************************/
-reg [DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_ACCESS_NUM-1];
+reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_LOGICAL_NUM-1];
 
 initial begin
     // all APB input initialized to 0
     PSEL = 1'b0;
     PENABLE = 1'b0;
     PWRITE = 1'b0;
-    PADDR = {ADDR_WIDTH{1'b0}};
-    PWDATA = {DATA_WIDTH{1'b0}};
+    PADDR = {BUS_ADDR_WIDTH{1'b0}};
+    PWDATA = {BUS_DATA_WIDTH{1'b0}};
 
     // interrupt clear signal initialized to 0
-    bus__mst__clear = 1'b0;
+    bus__reg_top__clear = 1'b0;
 
     // hardware access ports initialized to 0
     REG2_HW_RW__FIELD_0__next_value = 32'b0;
@@ -206,10 +218,71 @@ end
 *********************************************************************/
 integer err_cnt;
 
+task apb_write (
+    input [BUS_ADDR_WIDTH-1:0] wr_addr,
+    input [BUS_DATA_WIDTH-1:0] wr_data);
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    PSEL = 1'b1;
+    PENABLE = 1'b0;
+    PWRITE = 1'b1;
+    PADDR = wr_addr;
+    PWDATA = wr_data;
+    $display($time, " start write operation: addr=%h data=%h", PADDR, PWDATA);
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    PENABLE = 1'b1;
+
+    wait(PREADY);
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    PSEL = 1'b0;
+    $display($time, " end write operation");
+endtask
+
+task apb_read (
+    input [BUS_ADDR_WIDTH-1:0] rd_addr,
+    input [BUS_DATA_WIDTH-1:0] expected_val);
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    PSEL = 1'b1;
+    PENABLE = 1'b0;
+    PWRITE = 1'b0;
+    PADDR = rd_addr;
+    $display($time, " start read operation: addr=%h", PADDR);
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    PENABLE = 1'b1;
+
+    wait(PREADY);
+    #(`CLK_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
+    if (PRDATA != expected_val) begin
+        err_cnt = err_cnt + 1;
+        $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, actual=%h",
+                 err_cnt, PADDR, expected_val, PRDATA);
+    end
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    PSEL = 1'b0;
+    $display($time, " end read operation");
+endtask
+
+task hw_reg_write (
+    input [INT_REG_DATA_WIDTH-1:0] val,
+    ref pulse,
+    ref [INT_REG_DATA_WIDTH-1:0] hw_acc_port);
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    hw_acc_port = val;
+    pulse = 1'b1;
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    pulse = 1'b0;
+endtask
+
 initial begin
     err_cnt = 0;
-    wait(rstn);
-    @(posedge clk); #1;
+    wait(rst_n);
+    @(posedge clk); #(`CLK_PERIOD*0.1);
 
     // test register: REG1_HW_RO
     if (expected_hw_value[0] != actual_hw_value[0]) begin
@@ -219,19 +292,8 @@ initial begin
     end
 
     // APB write operation
-    PSEL = 1'b1;
-    PENABLE = 1'b0;
-    PWRITE = 1'b1;
-    PADDR = 64'b0;
     // write 0x12345678 to REG1_HW_RO_FIELD_0
-    PWDATA = 32'h12345678;
-    $display($time, " start APB write operation: addr=%h data=%h", PADDR, PWDATA);
-    @(posedge clk); #1;
-    PENABLE = 1'b1;
-    wait(PREADY);
-    @(posedge clk); #1;
-    PSEL = 1'b0;
-    $display($time, " end APB write operation");
+    apb_write({BUS_ADDR_WIDTH{1'b0}}, 32'h1234_5678);
 
     // test register: REG1_HW_RO (after software modification)
     if (expected_hw_value[1] != actual_hw_value[0]) begin
@@ -241,16 +303,13 @@ initial begin
     end
 
     // test register: REG2_HW_RW, REG3_HW_CLR, REG4_HW_SET
-    @(posedge clk); #1;
+    @(posedge clk); #(`CLK_PERIOD*0.1);
     $display($time, " start hardware write: REG2, REG3, REG4");
-    REG2_HW_RW__FIELD_0__pulse = 1'b1;
-    REG2_HW_RW__FIELD_0__next_value = 32'h12345678;
+    hw_reg_write(32'h1234_5678, REG2_HW_RW__FIELD_0__pulse, REG2_HW_RW__FIELD_0__next_value);
     // no need to assert pulse due to hwclr and hwset properties
-    REG3_HW_CLR__FIELD_0__next_value = 32'hffffffff;
-    REG4_HW_SET__FIELD_0__next_value = 32'hffffffff;
-
-    @(posedge clk); #1;
-    REG2_HW_RW__FIELD_0__pulse = 1'b0;
+    REG3_HW_CLR__FIELD_0__next_value = 32'hffff_ffff;
+    REG4_HW_SET__FIELD_0__next_value = 32'hffff_ffff;
+    @(posedge clk); #(`CLK_PERIOD*0.1);
 
     $display($time, " end hardware write: REG2, REG3, REG4");
     for (integer i = 1; i < 4; i = i + 1) begin
@@ -263,7 +322,7 @@ initial begin
 
 
     $display("test process done, error count: %1d", err_cnt);
-    #(CLK_PERIOD*2);
+    #(`CLK_PERIOD*2);
     $finish;
 end
 

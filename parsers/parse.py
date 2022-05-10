@@ -8,6 +8,7 @@ import utils.message as message
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from systemrdl import RDLCompileError, RDLCompiler
+from peakrdl.ipxact import IPXACTImporter
 
 from .excel.args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
 
@@ -373,7 +374,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
         `to_generate_rdl == True`且`original_files`只包含Excel Worksheet时,
         需要生成一个顶层addrmap, 该参数指定顶层addrmap名称, 默认为`excel_top`
     """
-    ori_rdl_files, ori_excel_files= [], []
+    ori_rdl_ipxact_files, ori_excel_files= [], []
     # 预先定义的RDL files, 如user-defined properties
     pre_defined_files = [
         os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "test", "user_defined.rdl")
@@ -391,10 +392,10 @@ def parse(original_files:list, list_file:str, gen_dir:str,
                     sys.exit(1)
 
                 ff = os.path.splitext(file)[-1]
-                if ff in (".rdl", ".xlsx"):
+                if ff in (".rdl", ".xml", ".xlsx"):
                     all_files.append(file)
                     if ff == ".rdl":
-                        ori_rdl_files.append(file)
+                        ori_rdl_ipxact_files.append(file)
                     elif ff == ".xlsx":
                         ori_excel_files.append(file)
                 else:
@@ -425,7 +426,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
                     if ff in (".rdl", ".xlsx"):
                         all_files.append(line)
                         if ff == ".rdl":
-                            ori_rdl_files.append(line)
+                            ori_rdl_ipxact_files.append(line)
                         elif ff == ".xlsx":
                             ori_excel_files.append(line)
                     else:
@@ -441,12 +442,12 @@ def parse(original_files:list, list_file:str, gen_dir:str,
                                   top_name=excel_top_name,
                                   gen_rdl_dir=gen_dir,
                                   generate_rdl=to_generate_rdl,
-                                  gen_extra_top=(ori_rdl_files==[]))
+                                  gen_extra_top=(ori_rdl_ipxact_files==[]))
 
     if excel_rdl_files is None:
         if to_generate_rdl:
             message.info("input files only include SystemRDL(.rdl) files")
-        if ori_rdl_files == []:
+        if ori_rdl_ipxact_files == []:
             return None
     else:
         # 把原来的Excel files替换为生成后的RDL files
@@ -458,7 +459,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
         # 如果输入全是Excel Worksheet,
         # 则生成的excel_rdl_files的最后会有一个包含top addrmap的RDL file,
         # 需要加入到RDL parse的列表中去
-        if ori_rdl_files == []:
+        if ori_rdl_ipxact_files == []:
             all_files.append(next(f_iter))
 
     return parse_rdl(all_files)
@@ -535,7 +536,7 @@ def parse_rdl(files:list[str]):
 
     Parameter
     ---------
-    `files` : 需要解析的RDL文件名, 以`list`形式组织
+    `files` : 需要解析的SystemRDL和IP-XACT XML文件名, 以`list`形式组织
 
     Return
     ------
@@ -546,10 +547,14 @@ def parse_rdl(files:list[str]):
         return None
 
     rdlc = RDLCompiler()
+    ipxact = IPXACTImporter(rdlc)
 
     try:
         for file in files:
-            rdlc.compile_file(file)
+            if file.endswith(".xml"):
+                ipxact.import_file(file)
+            else:
+                rdlc.compile_file(file)
 
         root = rdlc.elaborate()
     except RDLCompileError:

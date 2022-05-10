@@ -1,11 +1,11 @@
 `include "xregister.vh"
 
 module snapshot_reg         (// upstream control signal
-                             snap_wr_en, snap_rd_data, 
-                             snap_rd_en, snap_wr_data, 
+                             snap_wr_en, snap_rd_data,
+                             snap_rd_en, snap_wr_data,
                              // downstram(register) control signal
-                             reg_rd_en, reg_rd_data, 
-                             reg_wr_en, reg_wr_data, 
+                             reg_rd_en, reg_rd_data,
+                             reg_wr_en, reg_wr_data,
                              clk, rst_n);
 
    `include "common_funcs.vh"
@@ -21,7 +21,7 @@ module snapshot_reg         (// upstream control signal
 
    localparam BYTE_WIDTH = 8;
    localparam RESERVERD_BITS     = log2(REG_WIDTH)-log2(BYTE_WIDTH);
-   
+
 
    input  [DATA_WIDTH*PARTITION_CNT-1:0]       snap_wr_data;
    output [PARTITION_CNT-1:0] [DATA_WIDTH-1:0]       snap_rd_data;
@@ -30,7 +30,7 @@ module snapshot_reg         (// upstream control signal
    output                      reg_rd_en, reg_wr_en;
    input [REG_WIDTH-1:0]         reg_rd_data;
    output [REG_WIDTH-1:0]        reg_wr_data;
-   
+
    input clk, rst_n;
 
    wire [REG_WIDTH-1:0]      reg_wr_data;
@@ -73,14 +73,14 @@ module snapshot_reg         (// upstream control signal
    assign padded_reg = {{PAD_WIDTH{1'b0}}, reg_rd_data[REG_WIDTH-1:0]};
 
    assign snap_rd_data = snap_rd_en[0] ? padded_reg : padded_snapshot;
-   
+
    assign reg_rd_en = snap_rd_en[0];
    assign reg_wr_en = snap_wr_en[0];
 
    generate
       if (REG_WIDTH > DATA_WIDTH)
         assign reg_wr_data = {snapshot_ff[REG_WIDTH-1:DATA_WIDTH], snap_wr_data[DATA_WIDTH-1:0]};
-      else 
+      else
         assign reg_wr_data = snap_wr_data[REG_WIDTH-1:0];
    endgenerate
 

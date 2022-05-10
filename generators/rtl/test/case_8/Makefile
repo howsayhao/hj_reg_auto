@@ -2,7 +2,7 @@ simv_name = simv
 rtl_src = file.list
 rdl_src = tb/testbench.rdl
 
-VCS_OPS = -full64 -sverilog +v2k -timescale=1ns/1ns     \
+VCS_OPS = -full64 -sverilog +v2k -timescale=1ns/1ps     \
 		-debug_acc+all                                  \
 		+warn=all                                       \
 		+notimingcheck                                  \
