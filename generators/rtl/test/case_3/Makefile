@@ -2,7 +2,7 @@ simv_name = simv
 rtl_src = file.list
 rdl_src = tb/testbench.rdl
 
-VCS_OPS = -full64 -sverilog +v2k -timescale=1ns/1ns     \
+VCS_OPS = -full64 -sverilog +v2k -timescale=1ns/1ps     \
 		-debug_acc+all                                  \
 		+warn=all                                       \
 		+notimingcheck                                  \
@@ -22,7 +22,7 @@ gen_rtl: $(rdl_src)
 	hrda generate -f $(rdl_src) -gdir ./gen -grtl
 	mv ./gen/rtl/* ./gen && rm -rf ./gen/rtl
 
-vcs: gen_rtl $(rtl_src)
+vcs: $(rtl_src)
 	bsub -Is vcs $(VCS_OPS) $(VERDI_OPS)
 
 sim: vcs
@@ -33,7 +33,6 @@ verdi: sim $(rtl_src)
 
 .PHONY: clean
 clean:
-	rm -rf gen/*
 	rm -rf *csrc
 	rm -rf ./*.daidir
 	rm -rf *fsdb*

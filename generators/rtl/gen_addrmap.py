@@ -210,8 +210,8 @@ class addrmap_str(object):
                     self.Root.genrtl_node.append(child)
                     new_obj.DATA_WIDTH = 32
                     new_obj.ADDR_WIDTH = 64
-                    new_obj.id = len(self.ext_module) - 1
                     self.ext_module.append(new_obj)
+                    new_obj.id = len(self.ext_module) - 1
                     self.ext_instance(ext_addr)
                     self.inst += 1
 
@@ -221,8 +221,8 @@ class addrmap_str(object):
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy)
                     new_obj.DATA_WIDTH = 32
                     new_obj.ADDR_WIDTH = 64
-                    new_obj.id = len(self.ext_module) - 1
                     self.ext_module.append(new_obj)
+                    new_obj.id = len(self.ext_module) - 1
                     self.ext_instance(ext_addr)
 
                 # external property mark so related blocked won't gen
@@ -311,7 +311,7 @@ class addrmap_str(object):
                 cdc = child.get_property('hj_cdc') if('hj_cdc' in child.inst.properties) else None
                 if(isinstance(new_obj, Addressmap)):
                     if(cdc is not None and genrtl is False and flatten_addrmap is True):
-                        message.error('Internal Addrmap Cannot Have Different Clock!'%(new_obj.obj))
+                        message.error('Internal Addrmap %s Cannot Have Different Clock!'%(new_obj.obj))
                         sys.exit(1)
                 new_obj.cdc = cdc
 

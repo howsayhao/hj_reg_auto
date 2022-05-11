@@ -22,6 +22,6 @@ def export_rtl(root:RootNode, out_dir:str):
         Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
         Reg_sub_tree.scan()
     except:
-        message.error("rtl export failed")
+        message.error("rtl export failed due to previous error")
     else:
         message.info("save rtl in directory: %s" % (rtl_dir))

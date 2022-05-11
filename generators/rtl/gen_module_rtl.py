@@ -10,7 +10,7 @@ def get_ext_port(ext_list):
     for ext_module in ext_list:
         module_name = ext_module.module_name
         ext_port_rtl += '\t// ports of %s\n'%(module_name)
-        if(ext_module.cdc):
+        if(ext_module.cdc and isinstance(ext_module, Memory)):
             ext_port_rtl += '\t%s_clk               ,\n'%(module_name)
             ext_port_rtl += '\t%s_rstn              ,\n'%(module_name)
         ext_port_rtl += '\t%s_req_vld           ,\n'%(module_name)
@@ -115,7 +115,7 @@ def get_ext_define(ext_list):
     for ext_module in ext_list:
         module_name = ext_module.module_name
         ext_define_rtl += '\t// ports define of %s\n'%(module_name)
-        if(ext_module.cdc):
+        if(ext_module.cdc and isinstance(ext_module, Memory)):
             ext_define_rtl += '\tinput              %s_clk               ;\n'%(module_name)
             ext_define_rtl += '\tinput              %s_rstn              ;\n'%(module_name)
         ext_define_rtl += '\toutput             %s_req_vld           ;\n'%(module_name)
@@ -288,7 +288,7 @@ def get_external_wire(ext_list):
         ext_wire_rtl += '\twire [%d-1:0]      %s_wr_data   ;\n'%(ext_module.DATA_WIDTH, module_name)
         ext_wire_rtl += '\twire [%d-1:0]      %s_rd_data   ;\n'%(ext_module.DATA_WIDTH, module_name)
 
-        if(ext_module.cdc):
+        if(ext_module.cdc and isinstance(ext_module, Memory)):
             ext_wire_rtl += '\t// %s signal to handle cdc\n'%(module_name)
             ext_wire_rtl += '\tlogic [%d-1:0] %s_value_out_fsm;\n'%(ext_module.DATA_WIDTH + ext_module.ADDR_WIDTH + 3 , module_name)
             ext_wire_rtl += '\tlogic [%d-1:0] %s_value_out    ;\n'%(ext_module.DATA_WIDTH + ext_module.ADDR_WIDTH + 3 , module_name)

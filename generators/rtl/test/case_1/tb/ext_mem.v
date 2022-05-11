@@ -1,10 +1,9 @@
 module ext_mem (
     // reg_native if ports
     clk,
-    req_vld, req_rdy,
+    req_vld, ack_vld,
     wr_en, rd_en,
-    addr, wr_data, rd_data,
-    ack_vld, ack_rdy
+    addr, wr_data, rd_data
 );
 
     parameter DATA_WIDTH = 32;
@@ -17,30 +16,22 @@ module ext_mem (
     localparam  VALID = 1'b1,
                 INVALID = 1'b0;
 
-    input       clk;
+    input   clk;
+    input   req_vld;
+    input   wr_en;
+    input   rd_en;
+    input   [ADDR_WIDTH-1:0]    addr;
+    input   [DATA_WIDTH-1:0]    wr_data;
+    output  [DATA_WIDTH-1:0]    rd_data;
+    output  reg     ack_vld;
 
-    input       req_vld;
-    output      req_rdy;
-
-    input       wr_en;
-    input       rd_en;
-
-    input [ADDR_WIDTH-1:0]    addr;
-    input [DATA_WIDTH-1:0]    wr_data;
-    output [DATA_WIDTH-1:0]   rd_data;
-
-    output      ack_vld;
-    input       ack_rdy;
-
-    reg req_rdy;
-    reg ack_vld;
     reg req_vld_ff;
     reg wr_en_ff;
     reg rd_en_ff;
-    reg [ADDR_WIDTH-1:0]  addr_ff;
-    reg [DATA_WIDTH-1:0]  wr_data_ff;
-    reg [DATA_WIDTH-1:0]  rd_data;
-    reg [DATA_WIDTH-1:0]  mem [0:MEM_ENTRIES-1];
+    reg [ADDR_WIDTH-1:0]    addr_ff;
+    reg [DATA_WIDTH-1:0]    wr_data_ff;
+    reg [DATA_WIDTH-1:0]    rd_data;
+    reg [DATA_WIDTH-1:0]    mem [0:MEM_ENTRIES-1];
 
     // All inputs are registered
     always @(posedge clk) begin
@@ -65,19 +56,10 @@ module ext_mem (
             // $display($time, " Reading %m addr=%h rd_data=%h", addr_ff, mem[addr_ff]);
     end
 
-    // Req handshake: req_vld, req_rdy
-    always @(posedge clk) begin: REQ
-        // assert req_rdy for one cycle
-        if (req_vld && ~req_rdy)
-            req_rdy = VALID;
-        else
-            req_rdy = INVALID;
-    end
-
     // Ack handshake: ack_vld
     // set DEBUG_ERR to simulate memory error: keep ack_vld deassert
     generate
-        if (!DEBUG_ERR) begin: GEN_ACK
+        if (~DEBUG_ERR) begin: GEN_ACK
             always @(posedge clk) begin
                 if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_vld)
                     ack_vld <= VALID;

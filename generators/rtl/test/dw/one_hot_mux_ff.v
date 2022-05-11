@@ -1,4 +1,4 @@
-module one_hot_mux_ff (clk, rst_n,
+module one_hot_mux_ff(clk, rst_n,
     din, sel, sel_ff, dout_ff);
     parameter WIDTH     = 32;
     parameter CNT       = 5;
@@ -34,6 +34,5 @@ module one_hot_mux_ff (clk, rst_n,
     one_hot_mux (.din (din),
                  .sel (sel),
                  .dout (dout),
-                 .err ()
-                 );
+                 .err ());
 endmodule

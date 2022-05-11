@@ -17,12 +17,12 @@ module one_hot_mux_2d
     input   [CNT-1:0] [WIDTH-1:0]   din ;
     input   [CNT-1:0]               sel;
     output  [WIDTH-1:0]             dout;
-    output err;
+    output  err;
 
     wire    [CNT-1:0] [WIDTH-1:0]   data_2d ;
     wire    [WIDTH-1:0] [CNT-1:0]   data_2d_t;
     wire    [WIDTH-1:0]             dout;
-    wire err;
+    wire    err;
 
 
     genvar cnt, w;

@@ -12,6 +12,7 @@ addrmap test_1 {
 };
 
 mem ext_mem_def {
+	hj_cdc = true;
     mementries = 64;
     memwidth = 32;
 };
@@ -19,9 +20,11 @@ mem ext_mem_def {
 addrmap reg_top {
 	addrmap {
 		hj_genrtl = true;
+		hj_cdc = true;
 
 		// implement downstream regslv
 		test_1 test_11;
+		test_11 -> 	hj_cdc = true;
 		// implement internal registers
 		test_1 test_12;
 		test_12 -> hj_genrtl = false;
@@ -33,6 +36,7 @@ addrmap reg_top {
 
 	addrmap {
 		hj_genrtl = true;
+		hj_cdc = true;
 		// implement internal registers
 		test_1 test_21;
 		test_21 -> hj_genrtl = false;

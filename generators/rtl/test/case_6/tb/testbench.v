@@ -68,26 +68,26 @@ logic bus__reg_top__clear;
 parameter REGMST_REG_TOP_INT_NUM = 0;
 parameter REGMST_REG_TOP_EXT_NUM = 1;
 
-logic reg_top__reg_block_1_req_vld;
-logic reg_top__reg_block_1_ack_vld;
-logic reg_top__reg_block_1_wr_en;
-logic reg_top__reg_block_1_rd_en;
-logic [BUS_ADDR_WIDTH-1:0] reg_top__reg_block_1_addr;
-logic [BUS_DATA_WIDTH-1:0] reg_top__reg_block_1_wr_data;
-logic [BUS_DATA_WIDTH-1:0] reg_top__reg_block_1_rd_data;
+logic reg_top__reg_block_1__req_vld;
+logic reg_top__reg_block_1__ack_vld;
+logic reg_top__reg_block_1__wr_en;
+logic reg_top__reg_block_1__rd_en;
+logic [BUS_ADDR_WIDTH-1:0] reg_top__reg_block_1__addr;
+logic [BUS_DATA_WIDTH-1:0] reg_top__reg_block_1__wr_data;
+logic [BUS_DATA_WIDTH-1:0] reg_top__reg_block_1__rd_data;
 
 regmst_reg_top #(
     .ADDR_WIDTH(BUS_ADDR_WIDTH),
     .DATA_WIDTH(BUS_DATA_WIDTH))
 regmst_reg_top_dut (
     // reg_native_if connected to the downstream regslv
-    .reg_block_1_req_vld(reg_top__reg_block_1_req_vld),
-    .reg_block_1_ack_vld(reg_top__reg_block_1_ack_vld),
-    .reg_block_1_wr_en(reg_top__reg_block_1_wr_en),
-    .reg_block_1_rd_en(reg_top__reg_block_1_rd_en),
-    .reg_block_1_addr(reg_top__reg_block_1_addr),
-    .reg_block_1_wr_data(reg_top__reg_block_1_wr_data),
-    .reg_block_1_rd_data(reg_top__reg_block_1_rd_data),
+    .reg_block_1_req_vld(reg_top__reg_block_1__req_vld),
+    .reg_block_1_ack_vld(reg_top__reg_block_1__ack_vld),
+    .reg_block_1_wr_en(reg_top__reg_block_1__wr_en),
+    .reg_block_1_rd_en(reg_top__reg_block_1__rd_en),
+    .reg_block_1_addr(reg_top__reg_block_1__addr),
+    .reg_block_1_wr_data(reg_top__reg_block_1__wr_data),
+    .reg_block_1_rd_data(reg_top__reg_block_1__rd_data),
     // APB interface
     .PCLK(clk),
     .PRESETn(rst_n),
@@ -147,13 +147,13 @@ regslv_reg_top__reg_block_1_dut (
     .fsm_clk(clk),
     .fsm_rstn(rst_n),
     // upstream reg_native_if
-    .req_vld(reg_top__reg_block_1_req_vld),
-    .ack_vld(reg_top__reg_block_1_ack_vld),
-    .wr_en(reg_top__reg_block_1_wr_en),
-    .rd_en(reg_top__reg_block_1_rd_en),
-    .addr(reg_top__reg_block_1_addr),
-    .wr_data(reg_top__reg_block_1_wr_data),
-    .rd_data(reg_top__reg_block_1_rd_data),
+    .req_vld(reg_top__reg_block_1__req_vld),
+    .ack_vld(reg_top__reg_block_1__ack_vld),
+    .wr_en(reg_top__reg_block_1__wr_en),
+    .rd_en(reg_top__reg_block_1__rd_en),
+    .addr(reg_top__reg_block_1__addr),
+    .wr_data(reg_top__reg_block_1__wr_data),
+    .rd_data(reg_top__reg_block_1__rd_data),
     // synchronous reset signals
     .global_sync_reset_in(reg_top__downstream__glb_srst),
     .global_sync_reset_out()

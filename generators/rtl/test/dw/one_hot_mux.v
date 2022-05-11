@@ -25,9 +25,9 @@ module one_hot_mux (
 
     one_hot_mux_2d #(.WIDTH (WIDTH), .CNT (CNT), .ONE_HOT_CHECK (ONE_HOT_CHECK))
     one_hot_mux_2d
-    (   .din (din_2d),
-        .sel (sel),
-        .dout (dout),
-        .err (err));
+        (.din (din_2d),
+         .sel (sel),
+         .dout (dout),
+         .err (err));
 
 endmodule

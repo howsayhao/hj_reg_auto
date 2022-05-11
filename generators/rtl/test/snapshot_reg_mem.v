@@ -144,7 +144,7 @@ module snapshot_reg_mem     (// upstream control signal
 
    genvar i;
    generate
-      for (i=0; i<RESERVERD_BITS; i=i+1) begin: g_operation_decoder
+      for (i=0; i<PARTITION_CNT; i=i+1) begin: g_operation_decoder
         assign snap_wr[i] = addr[RESERVERD_BITS-1:0] == i * (DATA_WIDTH / BYTE_WIDTH) ? wr_en : 1'b0;
         assign snap_rd[i] = addr[RESERVERD_BITS-1:0] == i * (DATA_WIDTH / BYTE_WIDTH) ? rd_en : 1'b0;
       end
