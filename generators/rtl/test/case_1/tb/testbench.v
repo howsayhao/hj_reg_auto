@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// case 2 testbench:
+// case 1 testbench:
 //      1. APB write and read for multi-layer register tree topology
 //      2. clock domain crossing (CDC)
 //
@@ -59,6 +59,7 @@ parameter EXT_MEM_23_ADDR_WIDTH = EXT_MEM_ADDR_WIDTH;
 
 parameter TOTAL_LOGICAL_NUM = INT_ACCESS_NUM + EXT_ACCESS_NUM;
 
+logic [BUS_DATA_WIDTH-1:0] actual_hw_value [0:TOTAL_LOGICAL_NUM-1];
 
 logic clk_1;
 logic clk_2;
@@ -229,28 +230,28 @@ regslv_reg_top__reg_block_1_dut (
     .regfile_rstn(rst_2_n),
     .test_12_REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_12_REG1__FIELD_0__pulse(1'b0),
-    .test_12_REG1__FIELD_0__curr_value(),
+    .test_12_REG1__FIELD_0__curr_value(actual_hw_value[4]),
     .test_12_REG2__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_12_REG2__FIELD_0__pulse(1'b0),
-    .test_12_REG2__FIELD_0__curr_value(),
+    .test_12_REG2__FIELD_0__curr_value(actual_hw_value[5]),
     .test_12_REG3__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_12_REG3__FIELD_0__pulse(1'b0),
-    .test_12_REG3__FIELD_0__curr_value(),
+    .test_12_REG3__FIELD_0__curr_value(actual_hw_value[6]),
     .test_12_REG4__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_12_REG4__FIELD_0__pulse(1'b0),
-    .test_12_REG4__FIELD_0__curr_value(),
+    .test_12_REG4__FIELD_0__curr_value(actual_hw_value[7]),
     .test_13_REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_13_REG1__FIELD_0__pulse(1'b0),
-    .test_13_REG1__FIELD_0__curr_value(),
+    .test_13_REG1__FIELD_0__curr_value(actual_hw_value[8]),
     .test_13_REG2__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_13_REG2__FIELD_0__pulse(1'b0),
-    .test_13_REG2__FIELD_0__curr_value(),
+    .test_13_REG2__FIELD_0__curr_value(actual_hw_value[9]),
     .test_13_REG3__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_13_REG3__FIELD_0__pulse(1'b0),
-    .test_13_REG3__FIELD_0__curr_value(),
+    .test_13_REG3__FIELD_0__curr_value(actual_hw_value[10]),
     .test_13_REG4__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_13_REG4__FIELD_0__pulse(1'b0),
-    .test_13_REG4__FIELD_0__curr_value(),
+    .test_13_REG4__FIELD_0__curr_value(actual_hw_value[11]),
     // upstream reg_native_if (from regmst_reg_top)
     .fsm_clk(clk_1),
     .fsm_rstn(rst_1_n),
@@ -290,16 +291,16 @@ regslv_reg_top__reg_block_1__test_11_dut (
     // hardware access ports
     .REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .REG1__FIELD_0__pulse(1'b0),
-    .REG1__FIELD_0__curr_value(),
+    .REG1__FIELD_0__curr_value(actual_hw_value[0]),
     .REG2__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .REG2__FIELD_0__pulse(1'b0),
-    .REG2__FIELD_0__curr_value(),
+    .REG2__FIELD_0__curr_value(actual_hw_value[1]),
     .REG3__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .REG3__FIELD_0__pulse(1'b0),
-    .REG3__FIELD_0__curr_value(),
+    .REG3__FIELD_0__curr_value(actual_hw_value[2]),
     .REG4__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .REG4__FIELD_0__pulse(1'b0),
-    .REG4__FIELD_0__curr_value(),
+    .REG4__FIELD_0__curr_value(actual_hw_value[3]),
     // upstream reg_native_if
     .fsm_clk(clk_1),
     .fsm_rstn(rst_1_n),
@@ -406,40 +407,40 @@ regslv_reg_top__reg_block_2_dut (
     .regfile_rstn(rst_2_n),
     .test_21_REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_21_REG1__FIELD_0__pulse(1'b0),
-    .test_21_REG1__FIELD_0__curr_value(),
+    .test_21_REG1__FIELD_0__curr_value(actual_hw_value[76]),
     .test_21_REG2__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_21_REG2__FIELD_0__pulse(1'b0),
-    .test_21_REG2__FIELD_0__curr_value(),
+    .test_21_REG2__FIELD_0__curr_value(actual_hw_value[77]),
     .test_21_REG3__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_21_REG3__FIELD_0__pulse(1'b0),
-    .test_21_REG3__FIELD_0__curr_value(),
+    .test_21_REG3__FIELD_0__curr_value(actual_hw_value[78]),
     .test_21_REG4__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_21_REG4__FIELD_0__pulse(1'b0),
-    .test_21_REG4__FIELD_0__curr_value(),
+    .test_21_REG4__FIELD_0__curr_value(actual_hw_value[79]),
     .test_22_REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_22_REG1__FIELD_0__pulse(1'b0),
-    .test_22_REG1__FIELD_0__curr_value(),
+    .test_22_REG1__FIELD_0__curr_value(actual_hw_value[80]),
     .test_22_REG2__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_22_REG2__FIELD_0__pulse(1'b0),
-    .test_22_REG2__FIELD_0__curr_value(),
+    .test_22_REG2__FIELD_0__curr_value(actual_hw_value[81]),
     .test_22_REG3__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_22_REG3__FIELD_0__pulse(1'b0),
-    .test_22_REG3__FIELD_0__curr_value(),
+    .test_22_REG3__FIELD_0__curr_value(actual_hw_value[82]),
     .test_22_REG4__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_22_REG4__FIELD_0__pulse(1'b0),
-    .test_22_REG4__FIELD_0__curr_value(),
+    .test_22_REG4__FIELD_0__curr_value(actual_hw_value[83]),
     .test_23_REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_23_REG1__FIELD_0__pulse(1'b0),
-    .test_23_REG1__FIELD_0__curr_value(),
+    .test_23_REG1__FIELD_0__curr_value(actual_hw_value[84]),
     .test_23_REG2__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_23_REG2__FIELD_0__pulse(1'b0),
-    .test_23_REG2__FIELD_0__curr_value(),
+    .test_23_REG2__FIELD_0__curr_value(actual_hw_value[85]),
     .test_23_REG3__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_23_REG3__FIELD_0__pulse(1'b0),
-    .test_23_REG3__FIELD_0__curr_value(),
+    .test_23_REG3__FIELD_0__curr_value(actual_hw_value[86]),
     .test_23_REG4__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .test_23_REG4__FIELD_0__pulse(1'b0),
-    .test_23_REG4__FIELD_0__curr_value(),
+    .test_23_REG4__FIELD_0__curr_value(actual_hw_value[87]),
     // upstream reg_native_if (from regmst_reg_top)
     .fsm_clk(clk_1),
     .fsm_rstn(rst_1_n),
@@ -591,7 +592,7 @@ end
 *********************************************************************/
 // all external memory entries initialized to 0
 initial begin
-    for (integer i = 0; i < (1<<EXT_MEM_ADDR_WIDTH); i = i + 1) begin
+    for (integer i = 0; i < EXT_MEM_ENTRY; i = i + 1) begin
         ext_mem_11.mem[i] = {EXT_MEM_DATA_WIDTH{1'b0}};
         ext_mem_21.mem[i] = {EXT_MEM_DATA_WIDTH{1'b0}};
         ext_mem_22.mem[i] = {EXT_MEM_DATA_WIDTH{1'b0}};
@@ -600,7 +601,19 @@ initial begin
     end
 end
 
+always @(*) begin
+    for (integer i = 0; i < EXT_MEM_ENTRY; i = i + 1) begin
+        actual_hw_value[12+i] = ext_mem_11.mem[i];
+        actual_hw_value[88+i] = ext_mem_21.mem[i];
+        actual_hw_value[152+i] = ext_mem_22.mem[i];
+        actual_hw_value[216+i] = ext_mem_23.mem[i];
+        actual_hw_value[280+i] = ext_mem_in_top.mem[i];
+    end
+end
+
 reg [BUS_ADDR_WIDTH-1:0] addrs [0:TOTAL_LOGICAL_NUM-1];
+reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_LOGICAL_NUM-1];
+reg [BUS_DATA_WIDTH-1:0] expected_read_value [0:TOTAL_LOGICAL_NUM-1];
 
 initial begin
     // all APB input initialized to 0
@@ -613,8 +626,10 @@ initial begin
     // interrupt clear signal initialized to invalid(0)
     bus__reg_top__clear = 1'b0;
 
-    // get addresses of internal registers
+    // get addresses, expected hardware value and read value of internal registers
     $readmemh("tb/access_addr_hex.txt", addrs);
+    $readmemh("tb/expected_hw_value_hex.txt", expected_hw_value);
+    $readmemh("tb/expected_read_value_hex.txt", expected_read_value);
 end
 
 
@@ -696,29 +711,15 @@ initial begin: APB_OPS
         // APB write operation
         // NOTE: test write data can be arbitrary
         apb_write_no_gap(addrs[i], addrs[i][BUS_DATA_WIDTH-1:0]);
+        if (expected_hw_value[i] != actual_hw_value[i]) begin
+            err_cnt = err_cnt + 1;
+            $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                     err_cnt, PADDR, expected_hw_value[i], actual_hw_value[i]);
+        end
 
         // APB read operation
         // NOTE: there is no gap between write and read operation
-        PSEL = 1'b1;
-        PENABLE = 1'b0;
-        PWRITE = 1'b0;
-        PADDR = addrs[i];
-        $display($time, " start read operation: addr=%h", PADDR);
-
-        @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
-        PENABLE = 1'b1;
-
-        wait(PREADY);
-        #(`CLK_1_PERIOD*0.1) $display($time, " read data=%h", PRDATA);
-        if ((PWDATA != PRDATA) && ~PSLVERR) begin
-            err_cnt = err_cnt + 1;
-            $display($time, " error %1d: write data=%h, read data=%h, not match",
-                     err_cnt, PWDATA, PRDATA);
-        end
-
-        @(posedge clk_1); #(`CLK_1_PERIOD*0.1);
-        PSEL = 1'b0;
-        $display($time, " end read operation");
+        apb_read_no_gap(addrs[i], expected_read_value[i]);
     end
 
 
