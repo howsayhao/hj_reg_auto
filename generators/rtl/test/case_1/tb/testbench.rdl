@@ -12,7 +12,7 @@ addrmap test_1 {
 };
 
 mem ext_mem_def {
-	hj_cdc = true;
+	//hj_cdc = true;
     mementries = 64;
     memwidth = 32;
 };

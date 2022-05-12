@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // case 2 testbench:
-//      software access properties: software access properties: sw=r/rw/rw1/w/w1
+//      software access properties: sw=r/rw/rw1/w/w1
 //
 // upper bus interface: APB
 //      addr width: 32
@@ -184,9 +184,9 @@ end
 /********************************************************************
 ******************* test stimulus initialization ********************
 *********************************************************************/
-reg [ADDR_WIDTH-1:0] addrs [0:TOTAL_ACCESS_NUM-1];
-reg [DATA_WIDTH-1:0] expected_hw_value [0:(TOTAL_ACCESS_NUM)*3-1];
-reg [DATA_WIDTH-1:0] expected_read_value [0:TOTAL_ACCESS_NUM-1];
+reg [BUS_ADDR_WIDTH-1:0] addrs [0:TOTAL_LOGICAL_NUM-1];
+reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:(TOTAL_LOGICAL_NUM)*3-1];
+reg [BUS_DATA_WIDTH-1:0] expected_read_value [0:TOTAL_LOGICAL_NUM-1];
 
 initial begin
     // all APB input initialized to 0
@@ -308,6 +308,9 @@ initial begin
 
     $display("test process done, error count: %1d", err_cnt);
     #(`CLK_PERIOD*2);
+    if (err_cnt != 0) begin
+        $error("test aborted due to errors");
+    end
     $finish;
 end
 

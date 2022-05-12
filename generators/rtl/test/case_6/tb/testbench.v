@@ -187,7 +187,7 @@ end
 /********************************************************************
 ***************** test stimulus initialization **********************
 *********************************************************************/
-reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_LOGICAL_NUM-1];
+reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:TOTAL_LOGICAL_NUM+1-1];
 
 initial begin
     // all APB input initialized to 0
@@ -323,6 +323,9 @@ initial begin
 
     $display("test process done, error count: %1d", err_cnt);
     #(`CLK_PERIOD*2);
+    if (err_cnt != 0) begin
+        $error("test aborted due to errors");
+    end
     $finish;
 end
 

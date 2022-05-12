@@ -118,6 +118,7 @@ class addrmap_str(object):
     # show exit component information
     def exit(self, node:Node):
         self.indent -= 1
+        # print('\t'*self.indent + 'exiting ' + node.get_path_segment())
         self.hierarchy.pop(-1)
 
     # generate module rtl file(.v file)
@@ -311,8 +312,10 @@ class addrmap_str(object):
                 cdc = child.get_property('hj_cdc') if('hj_cdc' in child.inst.properties) else None
                 if(isinstance(new_obj, Addressmap)):
                     if(cdc is not None and genrtl is False and flatten_addrmap is True):
-                        message.error('Internal Addrmap %s Cannot Have Different Clock!'%(new_obj.obj))
-                        sys.exit(1)
+                        try:
+                            sys.exit(1)
+                        except:
+                            print('Internal Addrmap Cannot Have Different Clock!'%(new_obj.obj))
                 new_obj.cdc = cdc
 
             # collect information of new_obj created into class-self-strcture
@@ -326,11 +329,12 @@ class addrmap_str(object):
     def obj_handling(self, node:Node, new_obj:RTL_NODE, parent_obj:RTL_NODE):
         if(isinstance(node, SignalNode) and new_obj.external is False):
             self.signal_map.append(new_obj)
-        if(isinstance(node, FieldNode)):
+        if(isinstance(node, FieldNode) and new_obj.external is False):
             syn_rst = []
             if('hj_syncresetsignal' in node.inst.properties):
                 signal_map = self.signal_map + self.global_signal_map
                 for signal in node.get_property('hj_syncresetsignal').split(','):
+                    # avoid blank space in signal_name
                     signal = signal.replace(' ','')
                     # search the signal defined in addrmap before
                     signal_is_defined = 0
@@ -340,6 +344,13 @@ class addrmap_str(object):
                             ref_signal.hierachy_name = signal_name
                             syn_rst.append(signal_name)
                             signal_is_defined = 1
+
+                            # when global signal is used in internal, it would show on the port
+                            if(ref_signal in self.signal_map):
+                                pass
+                            else:
+                                self.signal_map.append(ref_signal)
+
                     if(not signal_is_defined and not parent_obj.external):
                         message.error("Signal %s in Field %s(%s) Hasn't Been Defined Yet!"%(signal,node.get_path_segment(),parent_obj.hierachy))
                         sys.exit(1)

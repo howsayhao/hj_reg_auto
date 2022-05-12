@@ -35,7 +35,7 @@ def get_regfile_port(reg_list, cdc, sync_reset_list):
             for field in reg.children:
                 field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
                 regfile_port_rtl += '\t// ports of %s\n'%(field.hierachy)
-                regfile_port_rtl += '\t%s__next_value        ,\n'%(field_name)
+                regfile_port_rtl += '\t%s__next_value        ,\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_port_rtl += '\t%s__pulse             ,\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_port_rtl += '\t%s__curr_value        ,\n'%(field_name)
                 regfile_port_rtl += '\t%s__swmod_out         ,\n'%(field_name) if field.swmod else ''
@@ -143,7 +143,7 @@ def get_regfile_define(reg_list, cdc, sync_reset_list):
             for field in reg.children:
                 field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
                 regfile_define_rtl += '\t// ports of %s\n'%(field.hierachy)
-                regfile_define_rtl += '\tinput  [%d-1:0]    %s__next_value        ;\n'%(field.fieldwidth, field_name)
+                regfile_define_rtl += '\tinput  [%d-1:0]    %s__next_value        ;\n'%(field.fieldwidth, field_name) if (field.hw != "`HW_RO") else ''
                 regfile_define_rtl += '\tinput              %s__pulse             ;\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value        ;\n'%(field.fieldwidth, field_name)
                 regfile_define_rtl += '\toutput             %s__swmod_out         ;\n'%(field_name) if field.swmod else ''
@@ -151,7 +151,7 @@ def get_regfile_define(reg_list, cdc, sync_reset_list):
 
     for signal in sync_reset_list:
         signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-        regfile_define_rtl += 'input \t%s        ;\n'%(signal_name)
+        regfile_define_rtl += '\tinput \t%s;\n'%(signal_name)
 
     return regfile_define_rtl
 
@@ -212,7 +212,7 @@ def get_splitmux_wire():
 def get_regfile_wire(cdc):
     regfile_wire_rtl = ''
     regfile_wire_rtl += '\n\t// regfile signal in regslv domain\n'
-    regfile_wire_rtl += '\twire [EXT_NUM-1:0]                     regfile_req_vld_fsm      ;\n'
+    regfile_wire_rtl += '\twire                                   regfile_req_vld_fsm      ;\n'
     regfile_wire_rtl += '\twire                                   regfile_ack_vld_fsm      ;\n'
     regfile_wire_rtl += '\twire                                   regfile_wr_en_fsm        ;\n'
     regfile_wire_rtl += '\twire                                   regfile_rd_en_fsm        ;\n'
@@ -223,7 +223,7 @@ def get_regfile_wire(cdc):
     regfile_wire_rtl += '\n\t// regfile signal in regfile domain\n'
     regfile_wire_rtl += '\twire [REG_NUM-1:0] wr_sel;\n'
     regfile_wire_rtl += '\twire [REG_NUM-1:0] rd_sel;\n'
-    regfile_wire_rtl += '\twire [EXT_NUM-1:0]                     regfile_req_vld      ;\n'
+    regfile_wire_rtl += '\twire                                   regfile_req_vld      ;\n'
     regfile_wire_rtl += '\twire                                   regfile_ack_vld      ;\n'
     regfile_wire_rtl += '\twire                                   regfile_rd_ack_vld   ;\n'
     regfile_wire_rtl += '\twire                                   regfile_wr_en        ;\n'
@@ -344,8 +344,8 @@ def get_ext_connect(ext_list):
             ext_connect_rtl += '\tassign ext_rd_data_fsm[%d]       =   %s_rd_data_fsm              ;\n'%(id, module_name)
 
         ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld_int  ;\n'%(id, id)
-        ext_connect_rtl += '\tassign ext_ack_fsm[%d]           =   ext_sel[%d] & ext_ack_vld_fsm        ;\n'%(id, id)
-        return ext_connect_rtl
+        ext_connect_rtl += '\tassign ext_ack_fsm[%d]           =   ext_sel[%d] & ext_ack_vld_fsm[%s]        ;\n'%(id, id, id)
+    return ext_connect_rtl
 
 
 # get decoder rtl
@@ -353,9 +353,9 @@ def get_decoder(int_addr_list, ext_addr_list, master):
     decoder_rtl = ''
     decoder_rtl = '\t// global fsm_decoder @regslv domain\n'
     if(master):
-        decoder_rtl += '\tassign global_address   = cs_is_idle ? PADDR : fsm__slv__addr;\n'
+        decoder_rtl += '\tassign global_address   = PADDR;\n'
     else:
-        decoder_rtl += '\tassign global_address   = cs_is_idle ? addr : fsm__slv__addr;\n'
+        decoder_rtl += '\tassign global_address   = addr;\n'
     decoder_rtl += '\tassign ext_selected     = | ext_sel;\n'
     decoder_rtl += '\talways_comb begin\n'
     decoder_rtl += '\t\t\tint_selected = 1\'b0;\n'
@@ -496,11 +496,11 @@ def get_ultimate_mux(M,N):
     # get output select
     ultimate_mux_rtl += '\t// select which to read out and transfer the corresponding vld signal @regslv domain\n'
     if(M > 0 and N > 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld_fsm ? regfile_rd_data_fsm : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = regfile_ack_vld_fsm | ext_reg_ack_vld_fsm;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected | regfile_ack_vld_fsm | ext_reg_ack_vld_fsm;\n'
     elif(M == 0 and N > 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld_fsm ? regfile_rd_data_fsm : 0;\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = regfile_ack_vld_fsm;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : 0;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected | regfile_ack_vld_fsm;\n'
     elif(M > 0 and N == 0):
         ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1\'b0}} : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
         ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected | ext_reg_ack_vld_fsm;\n'
@@ -772,7 +772,6 @@ def snapshot_mem_ins(ext_list):
         if(isinstance(module, Memory)):
             memory = module
             mem_name = '_'.join(memory.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-            snapshot_str = ''
             snapshot_str +=  '\tsnapshot_reg_mem\n' + \
                         '\t\t#(.DATA_WIDTH(%d), .MEM_WIDTH(%d), .SUB(%d),'%(32, memory.memwidth, memory.addr_sub) + \
                         '\t.ADDR_WIDTH(64), .VALID_WIDTH(%s), .ENTRY_WIDTH(%s))\n'%(memory.valid_width, memory.entry_width) + \

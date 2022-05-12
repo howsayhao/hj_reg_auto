@@ -446,7 +446,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
 
     if excel_rdl_files is None:
         if to_generate_rdl:
-            message.info("input files only include SystemRDL(.rdl) files")
+            message.info("input files do not consist of Excel worksheet(.xlsx) files")
         if ori_rdl_ipxact_files == []:
             return None
     else:
@@ -457,7 +457,7 @@ def parse(original_files:list, list_file:str, gen_dir:str,
                 all_files[idx] = next(f_iter)
 
         # 如果输入全是Excel Worksheet,
-        # 则生成的excel_rdl_files的最后会有一个包含top addrmap的RDL file,
+        # 则生成的excel_rdl_files的最后会有一个包含top_addrmap的RDL file,
         # 需要加入到RDL parse的列表中去
         if ori_rdl_ipxact_files == []:
             all_files.append(next(f_iter))

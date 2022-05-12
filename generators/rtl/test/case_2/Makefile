@@ -19,6 +19,7 @@ VERDI_OPS = -P $(VERDI_HOME)/share/PLI/VCS/linux64/novas.tab \
 
 
 gen_rtl: $(rdl_src)
+	rm -rf ./gen && mkdir gen
 	hrda generate -f $(rdl_src) -gdir ./gen -grtl
 	mv ./gen/rtl/* ./gen && rm -rf ./gen/rtl
 

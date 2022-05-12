@@ -72,17 +72,6 @@ def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:
         new_obj.fieldwidth = node.get_property('fieldwidth')
         new_obj.next = node.get_property('next')
         syn_rst = []
-        # if('hj_syncresetsignal' in node.inst.properties):
-        #     signal_map = self.signal_map + global_signal_map
-        #     for signal in node.get_property('hj_syncresetsignal').split(','):
-        #         signal = signal.replace(' ','')
-        #         for ref_signal in signal_map:
-        #             if(signal == ref_signal.obj and set(parent_obj.hierachy)>set(ref_signal.hierachy[:-1])):
-        #                 signal_name = '_'.join(ref_signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-        #                 ref_signal.hierachy_name = signal_name
-        #                 syn_rst.append(signal_name)
-
-        # new_obj.syncresetsignal = node.get_property('hj_syncresetsignal') if('hj_syncresetsignal' in node.inst.properties) else ''
         new_obj.syncresetsignal = syn_rst
         new_obj.reset = str(new_obj.fieldwidth) + '\'h' + get_hex(node.get_property('reset'))
 

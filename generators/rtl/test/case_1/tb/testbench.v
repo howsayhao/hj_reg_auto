@@ -723,7 +723,10 @@ initial begin: APB_OPS
 
 
     $display("test process done, error count: %1d", err_cnt);
-    #(`CLK_1_PERIOD*10);
+    #(`CLK_1_PERIOD*2);
+    if (err_cnt != 0) begin
+        $error("test aborted due to errors");
+    end
     $finish;
 end
 

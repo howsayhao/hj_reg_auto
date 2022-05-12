@@ -303,6 +303,9 @@ initial begin
 
     $display("test process done, error count: %1d", err_cnt);
     #(`CLK_PERIOD*2);
+    if (err_cnt != 0) begin
+        $error("test aborted due to errors");
+    end
     $finish;
 end
 
