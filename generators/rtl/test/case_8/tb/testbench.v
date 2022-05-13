@@ -334,7 +334,7 @@ task apb_read (
 
     wait(PREADY);
     #(`CLK_1_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
-    if (PRDATA != expected_val) begin
+    if (PRDATA !== expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
@@ -366,7 +366,7 @@ initial begin
 
     // APB write operations to the internal register: high addr
     apb_write(addrs[1], 32'h1111_1111);
-    if (expected_reg_value[0] != REG1__FIELD_0__curr_value) begin
+    if (expected_reg_value[0] !== REG1__FIELD_0__curr_value) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
                  err_cnt, PADDR, expected_reg_value[0],
@@ -378,7 +378,7 @@ initial begin
 
     // APB write operations to the internal register: low addr
     apb_write(addrs[0], 32'h2222_2222);
-    if (expected_reg_value[1] != REG1__FIELD_0__curr_value) begin
+    if (expected_reg_value[1] !== REG1__FIELD_0__curr_value) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
                  err_cnt, PADDR, expected_reg_value[1],
@@ -402,12 +402,12 @@ initial begin
             apb_write(addrs[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j+INT_ACCESS_NUM],
                       {BUS_DATA_WIDTH{1'b1}});
 
-            if (ext_mem_1.mem[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j] !=
+            if (ext_mem_1.mem[i] !==
                 expected_mem_value[(i+1)*EXT_MEM_SNAPSHOT_BUS_ENTRY-1-j]) begin
                 err_cnt = err_cnt + 1;
                 $display($time, " error %1d: access addr=%h, mem expected=%h, actual=%h",
                          err_cnt, PADDR, expected_mem_value[(i+1)*EXT_MEM_SNAPSHOT_BUS_ENTRY-1-j],
-                         ext_mem_1.mem[i*EXT_MEM_SNAPSHOT_BUS_ENTRY+j]);
+                         ext_mem_1.mem[i]);
             end
             // change memory values before last snapshot write operation
             if (j == 1) begin

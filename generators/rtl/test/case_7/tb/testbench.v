@@ -302,7 +302,7 @@ task apb_read (
 
     wait(PREADY);
     #(`CLK_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
-    if (PRDATA != expected_val) begin
+    if (PRDATA !== expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
@@ -341,7 +341,7 @@ initial begin
     for (integer i = 0; i < TOTAL_LOGICAL_NUM; i = i + 1) begin
         // APB write operation
         apb_write(addrs[i], 32'h1234_5678);
-        if (PWDATA != actual_hw_value[i]) begin
+        if (PWDATA !== actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: APB write, addr=%h,  expected=%h, actual=%h",
                      err_cnt, PADDR, PWDATA, actual_hw_value[i]);
@@ -349,7 +349,7 @@ initial begin
 
         // assert global asynchronous resets
         rst_n = 1'b0; #(`CLK_PERIOD*0.1);
-        if (actual_hw_value[i] != expected_hw_value[i]) begin
+        if (actual_hw_value[i] !== expected_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: global async reset, expected=%h, actual=%h",
                      err_cnt, expected_hw_value[i], actual_hw_value[i]);
@@ -368,7 +368,7 @@ initial begin
     srst_1 = 1'b1;
     @(posedge clk); #(`CLK_PERIOD*0.1);
     srst_1 = 1'b0;
-    if (actual_hw_value[0] != expected_hw_value[0]) begin
+    if (actual_hw_value[0] !== expected_hw_value[0]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: reg1.srst_1 sync reset, hw value: expected=%h, actual=%h",
                  err_cnt, expected_hw_value[0], actual_hw_value[0]);
@@ -380,7 +380,7 @@ initial begin
     srst_2 = 1'b1;
     @(posedge clk); #(`CLK_PERIOD*0.1);
     srst_2 = 1'b0;
-    if (actual_hw_value[0] != expected_hw_value[0]) begin
+    if (actual_hw_value[0] !== expected_hw_value[0]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: reg1.srst_2 sync reset, hw value: expected=%h, actual=%h",
                  err_cnt, expected_hw_value[0], actual_hw_value[0]);
@@ -393,13 +393,13 @@ initial begin
     srst_3 = 1'b1;
     @(posedge clk); #(`CLK_PERIOD*0.1);
     srst_3 = 1'b0;
-    if (actual_hw_value[0] != expected_hw_value[0]) begin
+    if (actual_hw_value[0] !== expected_hw_value[0]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: reg1.srst_3 sync reset, hw value: expected=%h, actual=%h",
                  err_cnt, expected_hw_value[0], actual_hw_value[0]);
     end
 
-    if (actual_hw_value[1] != expected_hw_value[1]) begin
+    if (actual_hw_value[1] !== expected_hw_value[1]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: reg2.srst_3 sync reset, hw value: expected=%h, actual=%h",
                  err_cnt, expected_hw_value[1], actual_hw_value[1]);
@@ -411,7 +411,7 @@ initial begin
     srst_4 = 1'b1;
     @(posedge clk); #(`CLK_PERIOD*0.1);
     srst_4 = 1'b0;
-    if (actual_hw_value[1] != expected_hw_value[1]) begin
+    if (actual_hw_value[1] !== expected_hw_value[1]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: reg2.srst_4 sync reset, hw value: expected=%h, actual=%h",
                  err_cnt, expected_hw_value[1], actual_hw_value[1]);
@@ -423,7 +423,7 @@ initial begin
     srst_5 = 1'b1;
     @(posedge clk); #(`CLK_PERIOD*0.1);
     srst_5 = 1'b0;
-    if (actual_hw_value[1] != expected_hw_value[1]) begin
+    if (actual_hw_value[1] !== expected_hw_value[1]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: reg2.srst_5 sync reset, hw value: expected=%h, actual=%h",
                  err_cnt, expected_hw_value[1], actual_hw_value[1]);
@@ -453,7 +453,7 @@ initial begin
             @(posedge clk); #(`CLK_PERIOD*0.1);
             reg6_pulse = 1'b0;
             reg6_next_value = 32'h0;
-            if (actual_hw_value[5] != 32'h1234_5678) begin
+            if (actual_hw_value[5] !== 32'h1234_5678) begin
                 err_cnt = err_cnt + 1;
                 $display($time, " error %1d: reg6 hw value, expected=%h, actual=%h",
                          err_cnt, 32'h1234_5678, actual_hw_value[5]);
@@ -466,7 +466,7 @@ initial begin
             @(posedge clk); #(`CLK_PERIOD*0.1);
             reg7_pulse = 1'b0;
             reg7_next_value = 32'h0;
-            if (actual_hw_value[6] != 32'h87654321) begin
+            if (actual_hw_value[6] !== 32'h8765_4321) begin
                 err_cnt = err_cnt + 1;
                 $display($time, " error %1d: reg7 hw value, expected=%h, actual=%h",
                          err_cnt, 32'h87654321, actual_hw_value[6]);

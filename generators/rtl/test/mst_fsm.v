@@ -7,32 +7,31 @@ module mst_fsm
     (
         PCLK,
         PRESETn,
-        PADDR,
-        PWRITE,
         PSEL,
         PENABLE,
-        PWDATA,
-        PRDATA,
         PREADY,
         PSLVERR,
-        
-        // for interrupt this signal may be float
-        clear,
+        PADDR,
+        PWRITE,
+        PWDATA,
+        PRDATA,
+
         //  control signal
+        fsm__slv__req_vld,
+        slv__fsm__ack_vld,
         fsm__slv__addr,
-        fsm__slv__wr_data,
         fsm__slv__wr_en,
         fsm__slv__rd_en,
-        fsm__slv__sync_reset,
-        interrupt,
-
-        fsm__slv__req_vld,
+        fsm__slv__wr_data,
+        slv__fsm__rd_data,
 
         external_reg_selected,
-        // these may be float for no slv_module
-        slv__fsm__rd_data,
-        slv__fsm__ack_vld,
-        cs_is_idle
+        ext_ack_is_back,
+        fsm__slv__sync_reset,
+
+        clear,
+        // for interrupt this signal may be float
+        interrupt
     );
 
 
@@ -63,7 +62,7 @@ output reg fsm__slv__rd_en;
 output fsm__slv__sync_reset;
 output reg interrupt;
 
-output cs_is_idle;
+input ext_ack_is_back;
 // SLV_NUM external modules
 input external_reg_selected;
 
@@ -128,7 +127,7 @@ always_ff@(posedge PCLK or negedge PRESETn)begin
     else begin
         fsm__slv__addr <= (state == S_SETUP && next_state != S_SETUP) ? PADDR : fsm__slv__addr;
         fsm__slv__wr_data <= (state == S_SETUP && next_state != S_SETUP) ? PWDATA : fsm__slv__wr_data;
-        
+
         fsm__slv__wr_en <= (state == S_SETUP && next_state != S_SETUP) ? PWRITE :
                                                                          (next_state == S_WAIT_SLV_ACK) ? PWRITE & external_reg_selected : 1'b0;
         fsm__slv__rd_en <= (state == S_SETUP && next_state != S_SETUP) ? !PWRITE :
@@ -146,7 +145,10 @@ always_ff@(posedge PCLK or negedge PRESETn)begin
         //        when APB launches a requistion for external_reg while external_reg is rdy, latch the control signal for 1 cycle
         // case2: next_state == S_WAIT_SLV_RDY
         //        when APB launches a requistion for external_reg while external_reg is not rdy, latch the control signal until slv_rdy back
-        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;
+        if(ext_ack_is_back) fsm__slv__req_vld_ff <= 1'b0;
+        else if(state == S_SETUP && next_state == S_WAIT_SLV_ACK) fsm__slv__req_vld_ff <= 1'b1;
+        else if(next_state == S_SETUP) fsm__slv__req_vld_ff <= 1'b0;
+        else fsm__slv__req_vld_ff <= fsm__slv__req_vld_ff;
     end
 end
 
@@ -203,8 +205,7 @@ end
 
 
 assign PREADY = (state == S_ACCESS) ? slv__fsm__ack_vld_ff : slv__fsm__ack_vld | op_time_out;
-assign PRDATA = (state == S_ACCESS) ? slv__fsm__rd_data_ff : 
+assign PRDATA = (state == S_ACCESS) ? slv__fsm__rd_data_ff :
                                       op_time_out ? 32'hdead_1eaf : slv__fsm__rd_data;
 assign PSLVERR = op_time_out;
-assign cs_is_idle = (state == S_SETUP) ? 1'b1 : 1'b0;
 endmodule

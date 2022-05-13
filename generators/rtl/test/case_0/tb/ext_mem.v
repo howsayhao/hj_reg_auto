@@ -63,6 +63,8 @@ module ext_mem (
         if (req_vld_ff && rd_en_ff)
             rd_data <= mem[addr_ff];
             // $display($time, " Reading %m addr=%h rd_data=%h", addr_ff, mem[addr_ff]);
+        else
+            rd_data <= {DATA_WIDTH{1'b0}};
     end
 
     // Req handshake: req_vld, req_rdy

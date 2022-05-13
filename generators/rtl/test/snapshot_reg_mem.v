@@ -1,23 +1,29 @@
 `include "xregister.vh"
 
 module snapshot_reg_mem     (// upstream control signal
+                             clk,
+                             rst_n,
                              addr,
-                             wr_en, rd_data,
-                             rd_en, wr_data,
+                             wr_en,
+                             rd_en,
+                             wr_data,
+                             rd_data,
                              // upstream handshake
                              req_vld,
                              ack_vld,
                              // other signals
                              entry_write_protect_en,
-                             entry_vld, entry_vld_nxt,
+                             entry_vld,
+                             entry_vld_nxt,
                              // downstram(memory) control signal
                              mem_addr,
-                             mem_rd_en, mem_rd_data,
-                             mem_wr_en, mem_wr_data,
+                             mem_wr_en,
+                             mem_rd_en,
+                             mem_wr_data,
+                             mem_rd_data,
                              // downstream(memory) handshake
                              mem_req_vld,
-                             mem_ack_vld,
-                             clk, rst_n);
+                             mem_ack_vld);
 
    `include "common_funcs.vh"
 

@@ -243,7 +243,7 @@ task apb_read (
 
     wait(PREADY);
     #(`CLK_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
-    if (PRDATA != expected_val) begin
+    if (PRDATA !== expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
@@ -277,7 +277,7 @@ initial begin
         // APB write operation
         // all register will be written to 0x12345678
         apb_write(addrs[i], 32'h1234_5678);
-        if (expected_hw_value[i*3] != actual_hw_value[i]) begin
+        if (expected_hw_value[i*3] !== actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i*3], actual_hw_value[i]);
@@ -285,7 +285,7 @@ initial begin
 
         // APB read operation
         apb_read(addrs[i], expected_read_value[i]);
-        if (expected_hw_value[i*3+1] != actual_hw_value[i]) begin
+        if (expected_hw_value[i*3+1] !== actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: read(hw) in addr=%h, hw expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i*3+1], actual_hw_value[i]);
@@ -294,7 +294,7 @@ initial begin
         // another APB write operation
         // all register will be written to 0xffffffff
         apb_write(addrs[i], {INT_REG_DATA_WIDTH{1'b1}});
-        if (expected_hw_value[i*3+2] != actual_hw_value[i]) begin
+        if (expected_hw_value[i*3+2] !== actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i*3+2], actual_hw_value[i]);

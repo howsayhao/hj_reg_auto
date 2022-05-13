@@ -54,12 +54,14 @@ module ext_mem (
         if (req_vld_ff && rd_en_ff)
             rd_data <= mem[addr_ff];
             // $display($time, " Reading %m addr=%h rd_data=%h", addr_ff, mem[addr_ff]);
+        else
+            rd_data <= {DATA_WIDTH{1'b0}};
     end
 
     // Ack handshake: ack_vld
     // set DEBUG_ERR to simulate memory error: keep ack_vld deassert
     generate
-        if (~DEBUG_ERR) begin: GEN_ACK
+        if (!DEBUG_ERR) begin: GEN_ACK
             always @(posedge clk) begin
                 if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_vld)
                     ack_vld <= VALID;

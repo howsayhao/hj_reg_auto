@@ -7,27 +7,26 @@ module slv_fsm
         clk,
         rstn,
         mst__fsm__req_vld,
-        mst__fsm__rd_en,
-        mst__fsm__wr_en,
-        mst__fsm__addr,
-        mst__fsm__wr_data,
-        mst__fsm__sync_reset,
-        fsm__mst__rd_data,
         fsm__mst__ack_vld,
+        mst__fsm__addr,
+        mst__fsm__wr_en,
+        mst__fsm__rd_en,
+        fsm__mst__rd_data,
+        mst__fsm__wr_data,
         //  control signal
-        fsm__slv__sync_reset,
+        fsm__slv__req_vld,
+        slv__fsm__ack_vld,
         fsm__slv__addr,
-        fsm__slv__wr_data,
         fsm__slv__wr_en,
+        fsm__slv__wr_data,
         fsm__slv__rd_en,
+        slv__fsm__rd_data,
 
         external_reg_selected,
+        ext_ack_is_back,
 
-        fsm__slv__req_vld,
-
-        slv__fsm__rd_data,
-        slv__fsm__ack_vld,
-        cs_is_idle
+        mst__fsm__sync_reset,
+        fsm__slv__sync_reset
     );
 
 
@@ -58,7 +57,7 @@ output fsm__slv__req_vld;
 output [DATA_WIDTH-1:0] fsm__mst__rd_data;
 //
 input external_reg_selected;
-output cs_is_idle;
+input ext_ack_is_back;
 
 // machine state value
 reg [1:0] next_state;
@@ -124,20 +123,22 @@ always_ff@(posedge clk or negedge rstn)begin
         fsm__slv__req_vld_ff <= 0;
     end
     else begin
-        fsm__slv__req_vld_ff <= (next_state == S_WAIT_SLV_ACK) ? 1'b1 : 1'b0;
+        if(ext_ack_is_back) fsm__slv__req_vld_ff <= 1'b0;
+        else if(state == S_IDLE && next_state == S_WAIT_SLV_ACK) fsm__slv__req_vld_ff <= 1'b1;
+        else if(next_state == S_IDLE) fsm__slv__req_vld_ff <= 1'b0;
+        else fsm__slv__req_vld_ff <= fsm__slv__req_vld_ff;
     end
 end
 
 assign fsm__slv__sync_reset = mst__fsm__sync_reset;
 assign fsm__mst__rd_data = slv__fsm__ack_vld ? slv__fsm__rd_data : {DATA_WIDTH{1'b0}};
 assign fsm__mst__ack_vld = slv__fsm__ack_vld;
+assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
 
 // assign fsm_slv output signal, IDLE state: wired to input, other working state to latch
-assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
 assign fsm__slv__addr = (state == S_IDLE) ? {ADDR_WIDTH{1'b0}} : mst__fsm__addr_ff;
 assign fsm__slv__wr_data = (state == S_IDLE) ? {DATA_WIDTH{1'b0}} : mst__fsm__wr_data_ff;
 assign fsm__slv__wr_en = (state == S_IDLE) ? 1'b0 : mst__fsm__wr_en_ff;
 assign fsm__slv__rd_en = (state == S_IDLE) ? 1'b0 : mst__fsm__rd_en_ff;
-assign cs_is_idle = (state == S_IDLE) ? 1'b1 : 1'b0;
 
 endmodule

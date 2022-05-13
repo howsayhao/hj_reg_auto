@@ -673,7 +673,7 @@ task apb_read_no_gap (
 
     wait(PREADY);
     #(`CLK_1_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
-    if (PRDATA != expected_val) begin
+    if (PRDATA !== expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: access addr=%h, expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
@@ -711,7 +711,7 @@ initial begin: APB_OPS
         // APB write operation
         // NOTE: test write data can be arbitrary
         apb_write_no_gap(addrs[i], addrs[i][BUS_DATA_WIDTH-1:0]);
-        if (expected_hw_value[i] != actual_hw_value[i]) begin
+        if (expected_hw_value[i] !== actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i], actual_hw_value[i]);

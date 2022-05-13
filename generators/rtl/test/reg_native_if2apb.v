@@ -78,3 +78,5 @@ assign PADDR = addr;
 assign PWDATA = wr_data;
 assign rd_data = PRDATA;
 assign ack_vld = PREADY;
+
+endmodule

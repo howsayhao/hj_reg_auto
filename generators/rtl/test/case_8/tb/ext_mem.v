@@ -47,6 +47,8 @@ module ext_mem (
         if (req_vld_ff && wr_en_ff)
             mem[addr_ff] <= wr_data_ff;
             // $display($time, " Writing %m addr=%h wr_data=%h", addr_ff, wr_data_ff);
+        else
+            rd_data <= {DATA_WIDTH{1'b0}};
     end
 
     // Read Operation : rd_en = 1, req_vld = 1
@@ -59,7 +61,7 @@ module ext_mem (
     // Ack handshake: ack_vld
     // set DEBUG_ERR to simulate memory error: keep ack_vld deassert
     generate
-        if (~DEBUG_ERR) begin: GEN_ACK
+        if (!DEBUG_ERR) begin: GEN_ACK
             always @(posedge clk) begin
                 if (req_vld_ff && (wr_en_ff || rd_en_ff) && ~ack_vld)
                     ack_vld <= VALID;

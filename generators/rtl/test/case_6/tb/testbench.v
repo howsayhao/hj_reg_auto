@@ -255,7 +255,7 @@ task apb_read (
 
     wait(PREADY);
     #(`CLK_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
-    if (PRDATA != expected_val) begin
+    if (PRDATA !== expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
@@ -285,7 +285,7 @@ initial begin
     @(posedge clk); #(`CLK_PERIOD*0.1);
 
     // test register: REG1_HW_RO
-    if (expected_hw_value[0] != actual_hw_value[0]) begin
+    if (expected_hw_value[0] !== actual_hw_value[0]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: REG1 hardware access, expected=%h, actual=%h",
                  err_cnt, expected_hw_value[0], actual_hw_value[0]);
@@ -296,7 +296,7 @@ initial begin
     apb_write({BUS_ADDR_WIDTH{1'b0}}, 32'h1234_5678);
 
     // test register: REG1_HW_RO (after software modification)
-    if (expected_hw_value[1] != actual_hw_value[0]) begin
+    if (expected_hw_value[1] !== actual_hw_value[0]) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: REG%d hardware access, expected=%h, actual=%h",
                  err_cnt, 1, expected_hw_value[1], actual_hw_value[0]);
@@ -313,7 +313,7 @@ initial begin
 
     $display($time, " end hardware write: REG2, REG3, REG4");
     for (integer i = 1; i < 4; i = i + 1) begin
-        if (expected_hw_value[i+1] != actual_hw_value[i]) begin
+        if (expected_hw_value[i+1] !== actual_hw_value[i]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: REG%d hardware access, expected=%h, actual=%h",
                      err_cnt, i+1, expected_hw_value[i+1], actual_hw_value[i]);

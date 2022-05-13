@@ -157,13 +157,13 @@ def get_regfile_define(reg_list, cdc, sync_reset_list):
 
 
 # get wire define rtl
-def get_fsm_wire():
+def get_fsm_wire(ext_list):
     fsm_wire_rtl = ''
     fsm_wire_rtl += '\t// declare the handshake signal for fsm\n'
     fsm_wire_rtl += '\twire                   slv__fsm__ack_vld		;\n'
-    fsm_wire_rtl += '\treg                    new_ack_launched		;\n'
-    fsm_wire_rtl += '\treg                    fsm__slv__req_vld_ff  ;\n'
-    fsm_wire_rtl += '\twire                   fsm__slv__req_vld_int ;\n'
+    # fsm_wire_rtl += '\treg                    new_ack_launched		;\n'
+    # fsm_wire_rtl += '\treg                    fsm__slv__req_vld_ff  ;\n'
+    # fsm_wire_rtl += '\twire                   fsm__slv__req_vld_int ;\n'
     fsm_wire_rtl += '\treg                    fsm__slv__req_vld     ;\n'
     fsm_wire_rtl += '\t// signal for fsm\n'
     fsm_wire_rtl += '\twire 						fsm__slv__wr_en		;\n'
@@ -172,8 +172,10 @@ def get_fsm_wire():
     fsm_wire_rtl += '\twire [DATA_WIDTH-1:0] 		fsm__slv__wr_data	;\n'
     fsm_wire_rtl += '\twire [DATA_WIDTH-1:0]  		slv__fsm__rd_data	;\n'
     fsm_wire_rtl += '\t// fsm state indicator \n'
-    fsm_wire_rtl += '\twire				   		cs_is_idle			;\n'
-    fsm_wire_rtl += '\treg                new_ack_lanuch            ;\n'
+    # fsm_wire_rtl += '\twire				   		cs_is_idle			;\n'
+    fsm_wire_rtl += '\twire                     ext_ack_is_back        ;\n'
+    if(len(ext_list) == 0):
+        fsm_wire_rtl += '\tassign ext_ack_is_back = 1\'b0;\n'
 
     return fsm_wire_rtl
 
@@ -321,6 +323,7 @@ def get_ext_connect(ext_list):
     ext_connect_rtl += '\tassign ext_rd_en_fsm   = fsm__slv__rd_en      ;\n'
     ext_connect_rtl += '\tassign ext_addr_fsm    = fsm__slv__addr       ;\n'
     ext_connect_rtl += '\tassign ext_wr_data_fsm = fsm__slv__wr_data    ;\n'
+    ext_connect_rtl += '\tassign ext_ack_is_back = | ext_ack_fsm        ;\n'
     for ext_module in ext_list:
         module_name = ext_module.module_name
         id = ext_module.id
@@ -343,7 +346,7 @@ def get_ext_connect(ext_list):
             ext_connect_rtl += '\tassign %s_wr_data_fsm            =   ext_wr_data_fsm             ;\n'%(module_name)
             ext_connect_rtl += '\tassign ext_rd_data_fsm[%d]       =   %s_rd_data_fsm              ;\n'%(id, module_name)
 
-        ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld_int  ;\n'%(id, id)
+        ext_connect_rtl += '\tassign ext_req_vld_fsm[%d]       =   ext_sel[%d] & fsm__slv__req_vld  ;\n'%(id, id)
         ext_connect_rtl += '\tassign ext_ack_fsm[%d]           =   ext_sel[%d] & ext_ack_vld_fsm[%s]        ;\n'%(id, id, id)
     return ext_connect_rtl
 
@@ -412,57 +415,83 @@ def get_decoder(int_addr_list, ext_addr_list, master):
 def get_fsm_ins(module_name, master):
     fsm_rtl = ''
     if(master is False):
-        fsm_rtl +=              '\tslv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n' + \
-                                '\t\tslv_fsm_%s (\n'%(module_name) + \
-                                '\t\t.clk(fsm_clk), .rstn(fsm_rstn), .mst__fsm__req_vld(req_vld), .mst__fsm__wr_en(wr_en), .mst__fsm__rd_en(rd_en), .mst__fsm__addr(addr), .mst__fsm__wr_data(wr_data),\n' + \
-                                '\t\t.slv__fsm__rd_data(slv__fsm__rd_data), .slv__fsm__ack_vld(slv__fsm__ack_vld), .fsm__slv__req_vld(fsm__slv__req_vld),\n' + \
-                                '\t\t.fsm__slv__wr_en(fsm__slv__wr_en), .fsm__slv__rd_en(fsm__slv__rd_en), .fsm__slv__addr(fsm__slv__addr), .fsm__slv__wr_data(fsm__slv__wr_data),\n' + \
-                                '\t\t.fsm__mst__rd_data(rd_data), .fsm__mst__ack_vld(ack_vld),\n' + \
-                                '\t\t.external_reg_selected(ext_selected),\n' + \
-                                '\t\t.cs_is_idle(cs_is_idle),' + \
-                                '\t\t.mst__fsm__sync_reset(global_sync_reset_in),\n' + \
-                                '\t\t.fsm__slv__sync_reset(global_sync_reset_out)\n' + '\t);\n'
-        fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
-        fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
-        fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
-        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
-        fsm_rtl += '\t\tend\n'
-        fsm_rtl += '\t\telse begin\n'
-        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
-        fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
-        fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
-        fsm_rtl += '\t\t\telse new_ack_launched <= 1\'b0;\n'
-        fsm_rtl += '\t\tend\n'
-        fsm_rtl += '\tend\n'
-        fsm_rtl += '\n'
-        fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
+        fsm_rtl += '\tslv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n'
+        fsm_rtl += '\t\tslv_fsm_%s (\n'%(module_name)
+        fsm_rtl += '\t\t.clk(fsm_clk),\n'
+        fsm_rtl += '\t\t.rstn(fsm_rstn),\n'
+        fsm_rtl += '\t\t.mst__fsm__req_vld(req_vld),\n'
+        fsm_rtl += '\t\t.fsm__mst__ack_vld(ack_vld),\n'
+        fsm_rtl += '\t\t.mst__fsm__addr(addr),\n'
+        fsm_rtl += '\t\t.mst__fsm__wr_en(wr_en),\n'
+        fsm_rtl += '\t\t.mst__fsm__rd_en(rd_en),\n'
+        fsm_rtl += '\t\t.mst__fsm__wr_data(wr_data),\n'
+        fsm_rtl += '\t\t.fsm__mst__rd_data(rd_data),\n'
+        fsm_rtl += '\t\t.fsm__slv__req_vld(fsm__slv__req_vld),\n'
+        fsm_rtl += '\t\t.slv__fsm__ack_vld(slv__fsm__ack_vld),\n'
+        fsm_rtl += '\t\t.fsm__slv__addr(fsm__slv__addr),\n'
+        fsm_rtl += '\t\t.fsm__slv__wr_en(fsm__slv__wr_en),\n'
+        fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
+        fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
+        fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
+        fsm_rtl += '\t\t.external_reg_selected(ext_selected),\n'
+        fsm_rtl += '\t\t.ext_ack_is_back(ext_ack_is_back),\n'
+        fsm_rtl += '\t\t.mst__fsm__sync_reset(global_sync_reset_in),\n'
+        fsm_rtl += '\t\t.fsm__slv__sync_reset(global_sync_reset_out)\n'
+        fsm_rtl += '\t);\n'
+        # fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
+        # fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
+        # fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
+        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
+        # fsm_rtl += '\t\tend\n'
+        # fsm_rtl += '\t\telse begin\n'
+        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
+        # fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
+        # fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
+        # fsm_rtl += '\t\t\telse new_ack_launched <= new_ack_launched;\n'
+        # fsm_rtl += '\t\tend\n'
+        # fsm_rtl += '\tend\n'
+        # fsm_rtl += '\n'
+        # fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
     else:
-        fsm_rtl +=              '\tmst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n' + \
-                                '\t\tmst_fsm_%s (\n'%(module_name) + \
-                                '\t\t.PCLK(PCLK), .PRESETn(PRESETn), .fsm__slv__req_vld(fsm__slv__req_vld),\n' + \
-                                '\t\t.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE),\n' + \
-                                '\t\t.PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR),\n' + \
-                                '\t\t.slv__fsm__rd_data(slv__fsm__rd_data), .slv__fsm__ack_vld(slv__fsm__ack_vld),\n' + \
-                                '\t\t.fsm__slv__wr_en(fsm__slv__wr_en), .fsm__slv__rd_en(fsm__slv__rd_en), .fsm__slv__addr(fsm__slv__addr), .fsm__slv__wr_data(fsm__slv__wr_data),\n' + \
-                                '\t\t.external_reg_selected(ext_selected),\n' + \
-                                '\t\t.cs_is_idle(cs_is_idle),' + \
-                                '\t\t.fsm__slv__sync_reset(global_sync_reset_out),\n' + \
-                                '\t\t.clear(clear), .interrupt(interrupt)\n' + \
-                                '\t\t);\n'
-        fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
-        fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
-        fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
-        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
-        fsm_rtl += '\t\tend\n'
-        fsm_rtl += '\t\telse begin\n'
-        fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
-        fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
-        fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
-        fsm_rtl += '\t\t\telse new_ack_launched <= 1\'b0;\n'
-        fsm_rtl += '\t\tend\n'
-        fsm_rtl += '\tend\n'
-        fsm_rtl += '\n'
-        fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
+        fsm_rtl += '\tmst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n'
+        fsm_rtl += '\t\tmst_fsm_%s (\n'%(module_name)
+        fsm_rtl += '\t\t.PCLK(PCLK),\n'
+        fsm_rtl += '\t\t.PRESETn(PRESETn),\n'
+        fsm_rtl += '\t\t.PSEL(PSEL),\n'
+        fsm_rtl += '\t\t.PENABLE(PENABLE),\n'
+        fsm_rtl += '\t\t.PREADY(PREADY),\n'
+        fsm_rtl += '\t\t.PSLVERR(PSLVERR),\n'
+        fsm_rtl += '\t\t.PADDR(PADDR),\n'
+        fsm_rtl += '\t\t.PWRITE(PWRITE),\n'
+        fsm_rtl += '\t\t.PWDATA(PWDATA),\n'
+        fsm_rtl += '\t\t.PRDATA(PRDATA),\n'
+        fsm_rtl += '\t\t.fsm__slv__req_vld(fsm__slv__req_vld),\n'
+        fsm_rtl += '\t\t.slv__fsm__ack_vld(slv__fsm__ack_vld),\n'
+        fsm_rtl += '\t\t.fsm__slv__addr(fsm__slv__addr),\n'
+        fsm_rtl += '\t\t.fsm__slv__wr_en(fsm__slv__wr_en),\n'
+        fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
+        fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
+        fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
+        fsm_rtl += '\t\t.external_reg_selected(ext_selected),\n'
+        fsm_rtl += '\t\t.ext_ack_is_back(ext_ack_is_back),\n'
+        fsm_rtl += '\t\t.fsm__slv__sync_reset(global_sync_reset_out),\n'
+        fsm_rtl += '\t\t.clear(clear),\n'
+        fsm_rtl += '\t\t.interrupt(interrupt)\n'
+        fsm_rtl += '\t\t);\n'
+        # fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
+        # fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
+        # fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
+        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
+        # fsm_rtl += '\t\tend\n'
+        # fsm_rtl += '\t\telse begin\n'
+        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
+        # fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
+        # fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
+        # fsm_rtl += '\t\t\telse new_ack_launched <= new_ack_launched;\n'
+        # fsm_rtl += '\t\tend\n'
+        # fsm_rtl += '\tend\n'
+        # fsm_rtl += '\n'
+        # fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
 
     return fsm_rtl
 
@@ -478,7 +507,7 @@ def get_split_mux_ins(M,N,reg_mux_size,skip_reg_mux_dff_0,skip_reg_mux_dff_1,ext
         split_mux_rtl += '\t// regfile mux @regfile domain\n'
         split_mux_rtl += '\tsplit_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(%d), .SKIP_DFF_0(%d), .SKIP_DFF_1(%d)) rd_split_mux\n'%(reg_mux_size,skip_reg_dff_0,skip_reg_dff_1)
         split_mux_rtl += '\t(.clk(regfile_clk), .rst_n(regfile_rstn),\n'
-        split_mux_rtl += '\t.din({regfile_reg_rd_data_in,{DATA_WIDTH{1\'b0}}}), .sel({rd_sel, dummy_reg}),\n'
+        split_mux_rtl += '\t.din({regfile_reg_rd_data_in,{DATA_WIDTH{1\'b0}}}), .sel({rd_sel, dummy_reg & regfile_req_vld}),\n'
         split_mux_rtl += '\t.dout(regfile_rd_data), .dout_vld(regfile_rd_ack_vld)\n'
         split_mux_rtl += '\t);\n'
     if(M > 0):
@@ -496,14 +525,14 @@ def get_ultimate_mux(M,N):
     # get output select
     ultimate_mux_rtl += '\t// select which to read out and transfer the corresponding vld signal @regslv domain\n'
     if(M > 0 and N > 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected | regfile_ack_vld_fsm | ext_reg_ack_vld_fsm;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | regfile_ack_vld_fsm | ext_reg_ack_vld_fsm;\n'
     elif(M == 0 and N > 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : 0;\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected | regfile_ack_vld_fsm;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : 0;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | regfile_ack_vld_fsm;\n'
     elif(M > 0 and N == 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1\'b0}} : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected | ext_reg_ack_vld_fsm;\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1\'b0}} : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
+        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | ext_reg_ack_vld_fsm;\n'
     else:
         try:
             sys.exit(1)
@@ -772,32 +801,47 @@ def snapshot_mem_ins(ext_list):
         if(isinstance(module, Memory)):
             memory = module
             mem_name = '_'.join(memory.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-            snapshot_str +=  '\tsnapshot_reg_mem\n' + \
-                        '\t\t#(.DATA_WIDTH(%d), .MEM_WIDTH(%d), .SUB(%d),'%(32, memory.memwidth, memory.addr_sub) + \
-                        '\t.ADDR_WIDTH(64), .VALID_WIDTH(%s), .ENTRY_WIDTH(%s))\n'%(memory.valid_width, memory.entry_width) + \
-                        '\t%s_snapshot_reg_mem\n'%(mem_name) + \
-                        '\t\t(\n' + \
-                        '\t\t.clk                     (fsm_clk)                               ,\n' + \
-                        '\t\t.rst_n                   (fsm_rstn)                              ,\n' + \
-                        '\t\t.addr                    (%s_snapshot_addr_fsm)                  ,\n'%(mem_name) + \
-                        '\t\t.wr_en                   (%s_snapshot_wr_en_fsm)                 ,\n'%(mem_name) + \
-                        '\t\t.rd_en                   (%s_snapshot_rd_en_fsm)                 ,\n'%(mem_name) + \
-                        '\t\t.wr_data                 (%s_snapshot_wr_data_fsm)               ,\n'%(mem_name) + \
-                        '\t\t.rd_data                 (%s_snapshot_rd_data_fsm)               ,\n'%(mem_name) + \
-                        '\t\t.req_vld                 (%s_snapshot_req_vld_fsm)               ,\n'%(mem_name) + \
-                        '\t\t.ack_vld                 (%s_snapshot_ack_vld_fsm)               ,\n'%(mem_name) + \
-                        '\t\t.entry_write_protect_en  (1\'b0)                             ,\n' + \
-                        '\t\t.entry_vld               (1\'b1)                             ,\n' + \
-                        '\t\t.entry_vld_nxt           ()                                  ,\n' + \
-                        '\t\t.mem_addr                (%s_addr_fsm)                           ,\n'%(mem_name) + \
-                        '\t\t.mem_wr_en               (%s_wr_en_fsm)                          ,\n'%(mem_name) + \
-                        '\t\t.mem_rd_en               (%s_rd_en_fsm)                          ,\n'%(mem_name) + \
-                        '\t\t.mem_wr_data             (%s_wr_data_fsm)                        ,\n'%(mem_name) + \
-                        '\t\t.mem_rd_data             (%s_rd_data_fsm)                        ,\n'%(mem_name) + \
-                        '\t\t.mem_req_vld             (%s_req_vld_fsm)                        ,\n'%(mem_name) + \
-                        '\t\t.mem_ack_vld             (%s_ack_vld_fsm)                        \n'%(mem_name) + \
-                        '\t);\n'
-
+            if(memory.memwidth > 32):
+                snapshot_str +=  '\tsnapshot_reg_mem\n' + \
+                            '\t\t#(.DATA_WIDTH(%d), .MEM_WIDTH(%d), .SUB(%d), .BASE(%d),\n'%(32, memory.memwidth, memory.addr_sub, memory.addr) + \
+                            '\t.ADDR_WIDTH(64), .VALID_WIDTH(%s), .ENTRY_WIDTH(%s))\n'%(memory.valid_width, memory.entry_width) + \
+                            '\t%s_snapshot_reg_mem\n'%(mem_name) + \
+                            '\t\t(\n' + \
+                            '\t\t.clk                     (fsm_clk)                               ,\n' + \
+                            '\t\t.rst_n                   (fsm_rstn)                              ,\n' + \
+                            '\t\t.addr                    (%s_snapshot_addr_fsm)                  ,\n'%(mem_name) + \
+                            '\t\t.wr_en                   (%s_snapshot_wr_en_fsm)                 ,\n'%(mem_name) + \
+                            '\t\t.rd_en                   (%s_snapshot_rd_en_fsm)                 ,\n'%(mem_name) + \
+                            '\t\t.wr_data                 (%s_snapshot_wr_data_fsm)               ,\n'%(mem_name) + \
+                            '\t\t.rd_data                 (%s_snapshot_rd_data_fsm)               ,\n'%(mem_name) + \
+                            '\t\t.req_vld                 (%s_snapshot_req_vld_fsm)               ,\n'%(mem_name) + \
+                            '\t\t.ack_vld                 (%s_snapshot_ack_vld_fsm)               ,\n'%(mem_name) + \
+                            '\t\t.entry_write_protect_en  (1\'b0)                             ,\n' + \
+                            '\t\t.entry_vld               (1\'b1)                             ,\n' + \
+                            '\t\t.entry_vld_nxt           ()                                  ,\n' + \
+                            '\t\t.mem_addr                (%s_addr_fsm)                           ,\n'%(mem_name) + \
+                            '\t\t.mem_wr_en               (%s_wr_en_fsm)                          ,\n'%(mem_name) + \
+                            '\t\t.mem_rd_en               (%s_rd_en_fsm)                          ,\n'%(mem_name) + \
+                            '\t\t.mem_wr_data             (%s_wr_data_fsm)                        ,\n'%(mem_name) + \
+                            '\t\t.mem_rd_data             (%s_rd_data_fsm)                        ,\n'%(mem_name) + \
+                            '\t\t.mem_req_vld             (%s_req_vld_fsm)                        ,\n'%(mem_name) + \
+                            '\t\t.mem_ack_vld             (%s_ack_vld_fsm)                        \n'%(mem_name) + \
+                            '\t);\n'
+            elif(memory.memwidth == 32):
+                snapshot_str += 'wire [ADDR_WIDTH-1:0] %s_valid_addr_fsm ;\n'%(mem_name)
+                if(memory.addr_sub):
+                    snapshot_str += 'assign %s_valid_addr_fsm  = %s_snapshot_addr_fsm - %d   ;\n'%(mem_name, mem_name, memory.addr)
+                else:
+                    snapshot_str += 'assign %s_valid_addr_fsm  = %s_snapshot_addr_fsm              ;\n'%(mem_name, mem_name)
+                snapshot_str += 'assign %s_addr_fsm     = %s_valid_addr_fsm[%d-1:%d-%d]  ;\n'%(mem_name,mem_name,memory.valid_width,memory.valid_width,memory.entry_width)
+                snapshot_str += 'assign %s_wr_en_fsm        = %s_snapshot_wr_en_fsm            \n;'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_rd_en_fsm        = %s_snapshot_rd_en_fsm            \n;'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_wr_data_fsm      = %s_snapshot_wr_data_fsm          \n;'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_snapshot_rd_data_fsm      = %s_rd_data_fsm          \n;'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_req_vld_fsm      = %s_snapshot_req_vld_fsm          \n;'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_snapshot_ack_vld_fsm      = %s_ack_vld_fsm          \n;'%(mem_name,mem_name)
+            else:
+                print("Memwidth Mismatch!")
     return snapshot_str
 
 

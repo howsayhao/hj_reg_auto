@@ -1,5 +1,3 @@
-from dataclasses import field
-import sys
 # field instantion
 def gen_field_rtl(register):
     fstr = ''

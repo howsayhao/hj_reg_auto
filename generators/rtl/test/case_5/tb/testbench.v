@@ -50,6 +50,7 @@ logic [BUS_DATA_WIDTH-1:0] PRDATA;
 logic reg_top__bus__interrupt;
 logic reg_top__downstream__glb_srst;
 logic bus__reg_top__clear;
+logic srst_1, srst_2;
 
 
 // module: regmst_reg_top DUT
@@ -122,6 +123,9 @@ regmst_reg_top_dut (
 parameter REGSLV_REG_BLOCK_1_EXT_NUM = 0;
 parameter REGSLV_REG_BLOCK_1_INT_NUM = 22;
 
+logic [INT_REG_DATA_WIDTH-1:0] test_2_shared_21__FIELD_0__next_value;
+logic test_2_shared_21__FIELD_0__pulse;
+
 regslv_reg_top__reg_block_1 #(
     .ADDR_WIDTH(BUS_ADDR_WIDTH),
     .DATA_WIDTH(BUS_DATA_WIDTH))
@@ -130,8 +134,8 @@ regslv_reg_top__reg_block_1_dut (
     .REG1__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
     .REG1__FIELD_0__pulse(1'b0),
     .REG1__FIELD_0__curr_value(actual_hw_value[0]),
-    .test_2_shared_21__FIELD_0__next_value({INT_REG_DATA_WIDTH{1'b0}}),
-    .test_2_shared_21__FIELD_0__pulse(1'b0),
+    .test_2_shared_21__FIELD_0__next_value(test_2_shared_21__FIELD_0__next_value),
+    .test_2_shared_21__FIELD_0__pulse(test_2_shared_21__FIELD_0__pulse),
     .test_2_shared_21__FIELD_0__curr_value(actual_hw_value[1]),
     // clock and reset
     .fsm_clk(clk),
@@ -146,7 +150,9 @@ regslv_reg_top__reg_block_1_dut (
     .rd_data(reg_top__reg_block_1__rd_data),
     // synchronous reset signals
     .global_sync_reset_in(reg_top__downstream__glb_srst),
-    .global_sync_reset_out()
+    .global_sync_reset_out(),
+    .srst_1(srst_1),
+    .srst_2(srst_2)
 );
 
 
@@ -178,7 +184,7 @@ end
 ******************* test stimulus initialization ********************
 *********************************************************************/
 reg [BUS_ADDR_WIDTH-1:0] addrs [0:TOTAL_LOGICAL_NUM-1];
-reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:(TOTAL_LOGICAL_NUM)*3-1];
+reg [BUS_DATA_WIDTH-1:0] expected_hw_value [0:(TOTAL_LOGICAL_NUM)*3-1+2];
 reg [BUS_DATA_WIDTH-1:0] expected_read_value [0:TOTAL_LOGICAL_NUM-1];
 
 initial begin
@@ -189,8 +195,13 @@ initial begin
     PADDR = {BUS_ADDR_WIDTH{1'b0}};
     PWDATA = {BUS_DATA_WIDTH{1'b0}};
 
+    test_2_shared_21__FIELD_0__next_value = {INT_REG_DATA_WIDTH{1'b0}};
+    test_2_shared_21__FIELD_0__pulse = 1'b0;
+
     // interrupt clear signal initialized to 0
     bus__reg_top__clear = 1'b0;
+    srst_1 = 1'b0;
+    srst_2 = 1'b0;
 
     // get addresses, expected hardware value and read value of internal registers
     $readmemh("tb/access_addr_hex.txt", addrs);
@@ -242,7 +253,7 @@ task apb_read (
 
     wait(PREADY);
     #(`CLK_PERIOD*0.1); $display($time, " read data=%h", PRDATA);
-    if (PRDATA != expected_val) begin
+    if (PRDATA !== expected_val) begin
         err_cnt = err_cnt + 1;
         $display($time, " error %1d: read(sw) addr=%h, sw expected=%h, actual=%h",
                  err_cnt, PADDR, expected_val, PRDATA);
@@ -281,7 +292,7 @@ initial begin
         // APB write operation
         // all register will be written to 0x00000000
         apb_write(addrs[i], {BUS_DATA_WIDTH{1'b0}});
-        if (expected_hw_value[i*3] != actual_hw_value[phy_idx]) begin
+        if (expected_hw_value[i*3] !== actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i*3], actual_hw_value[phy_idx]);
@@ -289,7 +300,7 @@ initial begin
 
         // APB read operation
         apb_read(addrs[i], expected_read_value[i]);
-        if (expected_hw_value[i*3+1] != actual_hw_value[phy_idx]) begin
+        if (expected_hw_value[i*3+1] !== actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: read(hw) in addr=%h, hw expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i*3+1], actual_hw_value[phy_idx]);
@@ -297,12 +308,39 @@ initial begin
 
         // another APB write operation
         apb_write(addrs[i], {BUS_DATA_WIDTH{1'b1}});
-        if (expected_hw_value[i*3+2] != actual_hw_value[phy_idx]) begin
+        if (expected_hw_value[i*3+2] !== actual_hw_value[phy_idx]) begin
             err_cnt = err_cnt + 1;
             $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
                      err_cnt, PADDR, expected_hw_value[i*3+2], actual_hw_value[phy_idx]);
         end
     end
+
+    // test synchronous reset signals
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    srst_1 = 1'b1;
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    srst_1 = 1'b0;
+    if (expected_hw_value[TOTAL_LOGICAL_NUM*3] !== actual_hw_value[1]) begin
+        err_cnt = err_cnt + 1;
+        $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                 err_cnt, PADDR, expected_hw_value[TOTAL_LOGICAL_NUM*3], actual_hw_value[1]);
+    end
+
+    hw_reg_write({INT_REG_DATA_WIDTH{1'b0}}, test_2_shared_21__FIELD_0__pulse,
+                 test_2_shared_21__FIELD_0__next_value);
+
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    srst_2 = 1'b1;
+    @(posedge clk); #(`CLK_PERIOD*0.1);
+    srst_2 = 1'b0;
+    if (expected_hw_value[TOTAL_LOGICAL_NUM*3+1] !== actual_hw_value[1]) begin
+        err_cnt = err_cnt + 1;
+        $display($time, " error %1d: write addr=%h, expected=%h, actual=%h",
+                 err_cnt, PADDR, expected_hw_value[TOTAL_LOGICAL_NUM*3+1], actual_hw_value[1]);
+    end
+
+    hw_reg_write({INT_REG_DATA_WIDTH{1'b0}}, test_2_shared_21__FIELD_0__pulse,
+                 test_2_shared_21__FIELD_0__next_value);
 
 
     $display("test process done, error count: %1d", err_cnt);

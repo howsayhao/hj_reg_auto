@@ -149,9 +149,10 @@ class addrmap_str(object):
     # get information from node tree and generate corresponding rtl str
     def get_internal_strcture(self):
         """
-        traverses the whole node-structure parsed by complier
-        creates the corresponding rtl_type tree structure
+        get_internal_strcture:  traverses the whole node-structure parsed by complier
+                                creates the corresponding rtl_type tree structure
         """
+
         print('\n###start traverse %s###'%self.module_name)
         self.rtl_obj = create_obj(node = self.node,parent_obj = None)
         self.rtl_obj.external = False
@@ -168,6 +169,7 @@ class addrmap_str(object):
         fw.write(define_str)
         fw.close()
         shutil.move(file_name,self.folder_name)
+        # self.decode_logic = decode_str
 
         # generate different parts of the whole rtl
         self.N = len(self.internal_addr_map)
@@ -554,7 +556,7 @@ class addrmap_str(object):
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'WIRE DECLARATION START'.center(100,"*") + '//\n'
-        self.rtl += get_fsm_wire()
+        self.rtl += get_fsm_wire(self.ext_module)
         self.rtl += get_decoder_wire()
         self.rtl += get_splitmux_wire()
         self.rtl += get_regfile_wire(self.cdc)
