@@ -25,7 +25,7 @@ To learn what rules are checked, see [Excel Worksheet Guideline](#excel-workshee
 
 SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in section 3.1 for detailed information. SystemRDL Compiler is able to parse, compile and check RDL input files followed by SystemRDL 2.0 Spec to generate a traversable hierarchical register model, with the basic workflow shown in the following diagram.
 
-![systemrdl_compiler](docs/pics/systemrdl-compiler.svg)
+![systemrdl_compiler](docs/pics/systemrdl_compiler.svg)
 
 Simple example:
 
@@ -43,11 +43,11 @@ addrmap top {
 
 Once compiled, the register model can be described like this:
 
-![ ](docs/pics/rdlcompiler_ex1.png)
+![ ](docs/pics/rdlcompiler_ex1.svg)
 
 or another `Node` overlay:
 
-![ ](docs/pics/rdlcompiler_ex2.png)
+![ ](docs/pics/rdlcompiler_ex2.svg)
 
 The model bridges the front-end and the back-end of this tool. The front-end parser ultimately generates this model, and everything on the back-end is based on this model as input.
 
