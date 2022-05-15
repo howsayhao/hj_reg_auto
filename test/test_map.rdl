@@ -113,7 +113,6 @@ addrmap test_map_1 {
 
 	alias TEM23 tem_alias_3 TEM23_alias @0X114;
 	TEM23_alias.FIELD_2 -> rclr;
-	TEM23_alias.FIELD_3 -> reset = 0x0;
 };
 
 reg shared_tem{
@@ -138,16 +137,19 @@ addrmap test_map_2 {
 
 addrmap test_map_3 {
 	hj_genrtl = false;
-	shared_tem shared_3;
+	shared_tem shared_3[5];
+	shared_3 -> hdl_path = "shared_3";
 	shared_3 -> name = "SHARED_IN_TEST_MAP_3";
 	shared_3.FIELD_1 -> sw = r;
 	shared_3.FIELD_1 -> onread = rclr;
 };
 
 addrmap root_map {
+	hdl_path = "regmst_root_map";
 	test_map_1 test_map_1_inst;
+	test_map_1_inst -> hdl_path = "test_map_1_inst";
 	test_map_2 test_map_2_inst;
 	test_map_3 test_map_3_inst;
 	ipxact_block_example ipxact_block_example_inst;
-	ipxact_block_example_inst -> hdl_path = ""
+	ipxact_block_example_inst -> hdl_path = "ipxact_block_example";
 };

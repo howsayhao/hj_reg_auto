@@ -6,6 +6,7 @@ import sys
 from generators.rtl.export import export_rtl
 
 import utils.message as message
+import generators.preprocess as preprocess
 from generators.html.export import export_html
 from generators.uvm.export import export_uvm
 from parsers.excel.gen_temp import generate_excel
@@ -196,6 +197,8 @@ class CommandRunner:
         if not os.path.exists(args.gen_dir):
             message.error("-gd/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
             sys.exit(1)
+
+        preprocess.preprocess(root)
 
         if args.gen_all or args.gen_rtl:
             export_rtl(root, args.gen_dir)

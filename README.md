@@ -25,7 +25,7 @@ To learn what rules are checked, see [Excel Worksheet Guideline](#excel-workshee
 
 SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in section 3.1 for detailed information. SystemRDL Compiler is able to parse, compile and check RDL input files followed by SystemRDL 2.0 Spec to generate a traversable hierarchical register model, with the basic workflow shown in the following diagram.
 
-![systemrdl_compiler](docs/pics/systemrdl-compiler.png)
+![systemrdl_compiler](docs/pics/systemrdl-compiler.svg)
 
 Simple example:
 

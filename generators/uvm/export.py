@@ -6,7 +6,7 @@ from systemrdl.node import RootNode
 
 def export_uvm(root:RootNode, out_dir:str):
     """
-    输出HTML形式的寄存器说明文档
+    Export UVM RAL model package
 
     Parameter
     ---------
@@ -19,6 +19,6 @@ def export_uvm(root:RootNode, out_dir:str):
     try:
         exporter.export(root, export_file, reuse_class_definitions=False)
     except:
-        message.error("uvm export failed")
+        message.error("UVM RAL exporter aborted due to previous errors")
     else:
-        message.info("save uvm ral model in: %s" % (export_file))
+        message.info("save UVM RAL model in: %s" % (export_file))
