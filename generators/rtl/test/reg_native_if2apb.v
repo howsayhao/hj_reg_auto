@@ -59,6 +59,8 @@ always_comb begin
         S_IDLE:begin
             if(transfer)
              next_state = S_SETUP;
+            else
+             next_state = S_IDLE;
         end
         S_SETUP:begin
             next_state = S_ACCESS;
@@ -66,8 +68,10 @@ always_comb begin
         S_ACCESS:begin
             if(PREADY)
              next_state = S_SETUP;
+            else
+             next_state = S_ACCESS;
         end
-        default: next_state = S_SETUP;
+        default: next_state = S_IDLE;
     endcase
 end
 

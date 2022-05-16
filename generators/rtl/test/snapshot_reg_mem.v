@@ -209,7 +209,7 @@ module snapshot_reg_mem     (// upstream control signal
        sw_ctrl_cs[_SNAPSHOT_]:
          if(ack_vld)
            sw_ctrl_ns = IDLE;
-        else sw_ctrl_ns = SNAPSHOT;
+         else sw_ctrl_ns = SNAPSHOT;
        sw_ctrl_cs[_OP_DATA_]:
            sw_ctrl_ns = IDLE;
        default:

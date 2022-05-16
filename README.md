@@ -1,19 +1,33 @@
-# **Content**
-
 # **HJ-micro Register Design Automation Tool (HRDA Tool)**
 
-## **Introduction**
+## **Revision History**
+
+| Date       | Revision | Description                               |
+| ---------- | -------- | ----------------------------------------- |
+| 2022-03-22 | 0.1      | Add regmst for deadlock detection.        |
+| 2022-05-12 | 0.2      | Support IP-XACT integration in SystemRDL. |
+
+## **1. Introduction**
 
 HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which can be divided into two major parts: front-end and back-end. The front-end comprises template generation which supports for generating register description templates in Excel worksheet (.xlsx) format, and Parser which can parse the **input Excel Worksheet or SystemRDL (.rdl) descriptions** with semantic and predefined rule check. The back-end comprises generator abilities supporting for generating register RTL (Verilog/SystemVerilog) Modules, HTML documents, UVM RAL models and C header files.
 
 For modules with few registers and simple address mapping, Excel worksheet is recommended. For some complicated modules with a large amount of registers and fancy mappings, SystemRDL is more expressive and flexible.
 
-The overall tool flow is shown as the figure below.
+The overall tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
 <span id="pics_tool_flow"></span>
 ![tool_flow](docs/pics/tool_flow.svg)
+<center>
+    <div style="display: inline-block;
+    color: #999;
+    padding: 2px;">Figure 1.1 Register Design Automation (HRDA) tool flow </div>
+</center>
 
 ### **Register Template Generator**
+
+The template generator provide convenience for designers who edit Excel worksheets. It generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. Designers can refer to these templates and revise them to meet their own specifications.
+
+See [Figure ](#) and [Excel Worksheet Guideline](#excel-worksheet-guideline) for detailed information.
 
 ### **Excel Parser**
 
@@ -23,9 +37,15 @@ To learn what rules are checked, see [Excel Worksheet Guideline](#excel-workshee
 
 ### **SystemRDL Parser/Compiler**
 
-SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in section 3.1 for detailed information. SystemRDL Compiler is able to parse, compile and check RDL input files followed by SystemRDL 2.0 Spec to generate a traversable hierarchical register model, with the basic workflow shown in the following diagram.
+SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in [Environment and Dependencies](#environment-and-dependencies) for detailed information. SystemRDL Compiler is able to parse, compile, elaborate and check RDL input files followed by SystemRDL 2.0 Spec to generate a traversable hierarchical register model as a class object in Python. Its basic workflow is shown in [Figure ](#pics_systemrdl_compiler).
 
+<span id="pics_systemrdl_compiler"></span>
 ![systemrdl_compiler](docs/pics/systemrdl_compiler.svg)
+<center>
+    <div style="display: inline-block;
+    color: #999;
+    padding: 5px;">Figure 1.2 SystemRDL compiler workflow </div>
+</center>
 
 Simple example:
 
@@ -45,13 +65,9 @@ Once compiled, the register model can be described like this:
 
 ![ ](docs/pics/rdlcompiler_ex1.svg)
 
-or another `Node` overlay:
-
-![ ](docs/pics/rdlcompiler_ex2.svg)
-
 The model bridges the front-end and the back-end of this tool. The front-end parser ultimately generates this model, and everything on the back-end is based on this model as input.
 
-For a detailed description of this model, see SystemRDL Compiler Documentation : [https://systemrdl-compiler.readthedocs.io/en/stable/index.html](https://systemrdl-compiler.readthedocs.io/en/stable/index.html)
+For a detailed description of this model, see SystemRDL Compiler Documentation : <https://systemrdl-compiler.readthedocs.io/en/stable/index.html>
 
 ### **RTL Generator**
 
@@ -61,17 +77,17 @@ For detailed RTL architecture information, see [RTL Architecture](#rtl-architect
 
 ### **HTML Generator**
 
-The HTML generator relies on the open-source project `PeakRDL-html`, see the link in [Environment and Dependencies](#environment-and-dependencies) for detailed information. A simple example of exported HTML is shown below.
+The HTML generator relies on an open-source project `PeakRDL-html`, see the link in [Environment and Dependencies](#environment-and-dependencies) for detailed information. A simple example of exported HTML is shown below.
 
 ![ ](docs/pics/html_ex1.png)
 
 ### **UVM RAL Generator**
 
-The export of the UVM register model relies on the open-source project `PeakRDL-uvm`, see the link in section 3.1 for detailed information.
+The export of the UVM register model relies on an open-source project `PeakRDL-uvm`, see the link in [Environment and Dependencies](#environment-and-dependencies) for detailed information.
 
 ### **C Header Generator (TBD)**
 
-## **RTL Architecture**
+## **2. RTL Architecture**
 
 Control/Status regsiters are distributed all around the chip in different subsystems, such as PCIe, MMU, SoC interconnect, Generic Interrupt Controller, etc. Not only hardware logic inside the respective subsystem, but also software needs to access them via system bus. HRDA provides a unified RTL architecture to make all these registers accessible by software, or visible to processors, thus all modules forms a network.
 
@@ -81,22 +97,29 @@ Register Network, or `reg_network`, is a multi-root hierarchical network. A typi
 
 <span id="pics_reg_network"></span>
 ![reg_network](docs/pics/reg_network.svg)
+<center>
+    <div style="display: inline-block;
+    color: #999;
+    padding: 5px;">Figure 2.1 register network</div>
+</center>
 
-The entire network consists of many `reg_tree` modules generated by HRDA which may connect to upper `ARM NIC-450 Non-coherent Interconnect`. Register Access Master, or `regmst`, is the root of a `reg_tree`. It translate `APB` transactions to register native access interface, or `reg_native_if`, defined in HRDA. Designers can delicately construct multiple SystemRDL descriptions to get multiple `reg_tree` to form a larger network and support concurrent register access.
+The entire network consists of many `reg_tree` modules generated by HRDA which may connect to upper `ARM NIC-450 Non-coherent Interconnect`. Register Access Master, or `regmst`, is the root of a `reg_tree`. It translates `APB` transactions to register native access interface, or `reg_native_if`, defined in HRDA. Designers can delicately construct multiple SystemRDL descriptions to get multiple `reg_tree` to form a larger network and support concurrent register access.
 
-There may be some submodules in `reg_tree`:
+There are some submodules in `reg_tree`:
 
 - Register Access Master (`regmst`): a module generated by HRDA that serves as the root node of `regmst`. It is responsible for transaction dispatch and monitoring leaf nodes' status, see detailed information in [Register Access Master (regmst)](#register-access-master-regmst).
 
-- Register Access Slave (`regslv`): a module generated by HRDA that contains all **internal** registers described in SystemRDL. `regslv` can be chained to serve as a leaf node in hierarchical `reg_tree`. If a bunch of registers are declared to be **external**, `regslv` will not be generated. See detailed information in [Register Access Slave (regslv)](#register-access-slave-regslv) and [SystemRDL Coding Guideline](#systemrdl-coding-guideline).
+- Register Access Slave (`regslv`): a module generated by HRDA that contains all **internal** registers described in SystemRDL. `regslv` can be chained to serve as a leaf node in hierarchical `reg_tree`. If some registers are declared to be **external** in SystemRDL, `regslv` will not be generated. See detailed information in [Register Access Slave (regslv)](#register-access-slave-regslv).
 
-- Other IPs: registers in other 3rd party IPs can also be accessed by connecting themselves to `reg_tree` via `reg_native_if`.
+- Other IPs: registers in other 3rd party IPs can also be accessed by connecting themselves to `reg_tree` via `reg_native_if`. `reg_native_if` can be forwarded by `regmst` or any `regslv` nodes.
 
-- Memory: external memories can be mapped to the register address space and integrated into the unified management of `reg_network`, at which point the system bus sees no difference in the behavior of memory accesses and register accesses.
+- Memory: external memories can be mapped to the register address space and integrated into the unified management of `reg_network` via `reg_native_if`, at which point the system bus sees no difference in the behavior of memory accesses and register accesses.
+
+All modules above is corresponding to some components defined in the SystemRDL description written the designer. See detailed information in [SystemRDL Coding Guideline](#systemrdl-coding-guideline).
 
 --------------------
 
-**Note:** `reg_network` is not the RTL code generation boundry of HRDA. In other words, there is not a wrapper of `reg_network`. It all depends on designers how to connect `reg_tree` (`regmst` and `regslv`) to the upper interconnect unit like `NIC-450`.
+**Note:** `reg_network` is not the RTL code generation boundry of HRDA. In other words, there is not a wrapper of `reg_network`. Only separate `regmst` and `regslv` modules will be generated as RTL modules, so it all depends on designers how to connect `reg_tree` (`regmst` and `regslv`) to the upper interconnect unit like `NIC-450`.
 
 --------------------
 
@@ -116,9 +139,28 @@ Typically, expect for the upper interface of `regmst`, every module with registe
 
 ### **Register Access Master (regmst)**
 
+`regmst` is the root node of `reg_tree`, and is responsible for monitoring all downstream nodes. [Figure ](#pics_regmst_rtl_infra) shows the architecture of `regmst`.  `regmst` bridges SoC-level interconnect (APB now) and `reg_native_if`. `dispatch_decoder` decodes the target address and `mst_fsm` launches the access to internal registers (if exist), downstream `regslv` modules, 3rd party IPs or external memories. Then `regmst` starts a timer. If timeout is detected in waiting the response, `regmst` responds to upper interconnect with fake data `0xdead1eaf`, and aseerts an interrupt to report the timeout event. The timeout request address is logged in a local register in `regmst`, so software can determine the problematic module by reading this register in `regmst` and triggers a soft-reset within the entire `reg_tree`.  ~regmst~ will assert soft-reset reset signal, which is broadcasted to all `regslv`
+(including ~regslv2mem~ and all ~regslv~ brdiges).  The software reset
+will reset all FSM and bring back the hierarchy below ~regmst~ to
+functional.
+
+<span id="pics_regmst_rtl_infra"></span>
+![ ](docs/pics/regmst_rtl_infra.svg)
+
+
+~regmst~ does not support outstanding request.  So timeout detecting
+logic is quite straitforward (autoref:fig:regmst_op) in FSM:
+1. ~regmst~ decodes target address to determine the output interface
+2. ~regmst~ starts forwarding access to next stage ~regslv~, waits for
+   response, and starts a 10ms timer.
+   1. If response comes back, ~regmst~ sends response back to SoC,
+      reset timer, and transaction is completed.
+   2. If timeout occurs during waiting, ~regmst~ logs the transaction,
+      finishes the transaction with fake data, and raise interrupt.
+
 ### **Register Access Slave (regslv)**
 
-<span id="pics_field_rtl_infra"></span>
+<span id="pics_regslv_rtl_infra"></span>
 ![ ](docs/pics/regslv_rtl_infra.svg)
 
 The general architecture of `regslv` is shown above. **Every `addrmap` in SystemRDL or a worksheet in Excel corresponds to a generated `regslv` module**, and the RTL module name (and Verilog/SystemVerilog filename) is `regslv_xxx`, where `xxx` is the `addrmap` instance name in SystemRDL or Excel worksheet filename.

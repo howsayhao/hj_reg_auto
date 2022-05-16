@@ -49,7 +49,7 @@ module regmst_reg_top(
 	PRDATA                  ,
 	clear                   ,
 	interrupt               ,
-	global_sync_reset_out
+	global_sync_reset_out    
 //*****************************************STANDARD PORT END******************************************//
 );
 
@@ -117,9 +117,6 @@ module regmst_reg_top(
 //***************************************WIRE DECLARATION START***************************************//
 	// declare the handshake signal for fsm
 	wire                   slv__fsm__ack_vld		;
-	reg                    new_ack_launched		;
-	reg                    fsm__slv__req_vld_ff  ;
-	wire                   fsm__slv__req_vld_int ;
 	reg                    fsm__slv__req_vld     ;
 	// signal for fsm
 	wire 						fsm__slv__wr_en		;
@@ -127,9 +124,8 @@ module regmst_reg_top(
 	wire [ADDR_WIDTH-1:0] 		fsm__slv__addr		;
 	wire [DATA_WIDTH-1:0] 		fsm__slv__wr_data	;
 	wire [DATA_WIDTH-1:0]  		slv__fsm__rd_data	;
-	// fsm state indicator
-	wire				   		cs_is_idle			;
-	reg                new_ack_lanuch            ;
+	// fsm state indicator 
+	wire                     ext_ack_is_back        ;
 
 	// signal for decoder
 	// signal for global decoder @regslv domain
@@ -158,7 +154,7 @@ module regmst_reg_top(
 	wire                                   ext_reg_ack_vld_fsm  ;
 
 	// regfile signal in regslv domain
-	wire [EXT_NUM-1:0]                     regfile_req_vld_fsm      ;
+	wire                                   regfile_req_vld_fsm      ;
 	wire                                   regfile_ack_vld_fsm      ;
 	wire                                   regfile_wr_en_fsm        ;
 	wire                                   regfile_rd_en_fsm        ;
@@ -169,7 +165,7 @@ module regmst_reg_top(
 	// regfile signal in regfile domain
 	wire [REG_NUM-1:0] wr_sel;
 	wire [REG_NUM-1:0] rd_sel;
-	wire [EXT_NUM-1:0]                     regfile_req_vld      ;
+	wire                                   regfile_req_vld      ;
 	wire                                   regfile_ack_vld      ;
 	wire                                   regfile_rd_ack_vld   ;
 	wire                                   regfile_wr_en        ;
@@ -251,22 +247,43 @@ module regmst_reg_top(
 	assign ext_rd_en_fsm   = fsm__slv__rd_en      ;
 	assign ext_addr_fsm    = fsm__slv__addr       ;
 	assign ext_wr_data_fsm = fsm__slv__wr_data    ;
+	assign ext_ack_is_back = | ext_ack_fsm        ;
 	// wire connection of reg_block_1
-	assign reg_block_1_req_vld_fsm            =   ext_req_vld_fsm[-1]         ;
-	assign ext_ack_vld_fsm[-1]       =   reg_block_1_ack_vld_fsm              ;
+	assign reg_block_1_req_vld_fsm            =   ext_req_vld_fsm[0]         ;
+	assign ext_ack_vld_fsm[0]       =   reg_block_1_ack_vld_fsm              ;
 	assign reg_block_1_wr_en_fsm              =   ext_wr_en_fsm               ;
 	assign reg_block_1_rd_en_fsm              =   ext_rd_en_fsm               ;
 	assign reg_block_1_addr_fsm               =   ext_addr_fsm                ;
 	assign reg_block_1_wr_data_fsm            =   ext_wr_data_fsm             ;
-	assign ext_rd_data_fsm[-1]       =   reg_block_1_rd_data_fsm              ;
-	assign ext_req_vld_fsm[-1]       =   ext_sel[-1] & fsm__slv__req_vld_int  ;
-	assign ext_ack_fsm[-1]           =   ext_sel[-1] & ext_ack_vld_fsm        ;
+	assign ext_rd_data_fsm[0]       =   reg_block_1_rd_data_fsm              ;
+	assign ext_req_vld_fsm[0]       =   ext_sel[0] & fsm__slv__req_vld  ;
+	assign ext_ack_fsm[0]           =   ext_sel[0] & ext_ack_vld_fsm[0]        ;
+	// wire connection of reg_block_2
+	assign reg_block_2_req_vld_fsm            =   ext_req_vld_fsm[1]         ;
+	assign ext_ack_vld_fsm[1]       =   reg_block_2_ack_vld_fsm              ;
+	assign reg_block_2_wr_en_fsm              =   ext_wr_en_fsm               ;
+	assign reg_block_2_rd_en_fsm              =   ext_rd_en_fsm               ;
+	assign reg_block_2_addr_fsm               =   ext_addr_fsm                ;
+	assign reg_block_2_wr_data_fsm            =   ext_wr_data_fsm             ;
+	assign ext_rd_data_fsm[1]       =   reg_block_2_rd_data_fsm              ;
+	assign ext_req_vld_fsm[1]       =   ext_sel[1] & fsm__slv__req_vld  ;
+	assign ext_ack_fsm[1]           =   ext_sel[1] & ext_ack_vld_fsm[1]        ;
+	// wire connection of ext_mem_in_top
+	assign ext_mem_in_top_snapshot_req_vld_fsm   =   ext_req_vld_fsm[2]         ;
+	assign ext_ack_vld_fsm[2]       =   ext_mem_in_top_snapshot_ack_vld_fsm     ;
+	assign ext_mem_in_top_snapshot_wr_en_fsm     =   ext_wr_en_fsm               ;
+	assign ext_mem_in_top_snapshot_rd_en_fsm     =   ext_rd_en_fsm               ;
+	assign ext_mem_in_top_snapshot_addr_fsm      =   ext_addr_fsm                ;
+	assign ext_mem_in_top_snapshot_wr_data_fsm   =   ext_wr_data_fsm             ;
+	assign ext_rd_data_fsm[2]       =   ext_mem_in_top_snapshot_rd_data_fsm     ;
+	assign ext_req_vld_fsm[2]       =   ext_sel[2] & fsm__slv__req_vld  ;
+	assign ext_ack_fsm[2]           =   ext_sel[2] & ext_ack_vld_fsm[2]        ;
 //************************************EXTERNAL WIRE CONNECTION END************************************//
 
 
 //***************************************ADDRESS DECODER START****************************************//
 	// global fsm_decoder @regslv domain
-	assign global_address   = cs_is_idle ? PADDR : fsm__slv__addr;
+	assign global_address   = PADDR;
 	assign ext_selected     = | ext_sel;
 	always_comb begin
 			int_selected = 1'b0;
@@ -293,29 +310,29 @@ module regmst_reg_top(
 //************************************STATE MACHINE INSTANCE START************************************//
 	mst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
 		mst_fsm_reg_top (
-		.PCLK(PCLK), .PRESETn(PRESETn), .fsm__slv__req_vld(fsm__slv__req_vld),
-		.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE),
-		.PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR),
-		.slv__fsm__rd_data(slv__fsm__rd_data), .slv__fsm__ack_vld(slv__fsm__ack_vld),
-		.fsm__slv__wr_en(fsm__slv__wr_en), .fsm__slv__rd_en(fsm__slv__rd_en), .fsm__slv__addr(fsm__slv__addr), .fsm__slv__wr_data(fsm__slv__wr_data),
+		.PCLK(PCLK),
+		.PRESETn(PRESETn),
+		.PSEL(PSEL),
+		.PENABLE(PENABLE),
+		.PREADY(PREADY),
+		.PSLVERR(PSLVERR),
+		.PADDR(PADDR),
+		.PWRITE(PWRITE),
+		.PWDATA(PWDATA),
+		.PRDATA(PRDATA),
+		.fsm__slv__req_vld(fsm__slv__req_vld),
+		.slv__fsm__ack_vld(slv__fsm__ack_vld),
+		.fsm__slv__addr(fsm__slv__addr),
+		.fsm__slv__wr_en(fsm__slv__wr_en),
+		.fsm__slv__rd_en(fsm__slv__rd_en),
+		.fsm__slv__wr_data(fsm__slv__wr_data),
+		.slv__fsm__rd_data(slv__fsm__rd_data),
 		.external_reg_selected(ext_selected),
-		.cs_is_idle(cs_is_idle),		.fsm__slv__sync_reset(global_sync_reset_out),
-		.clear(clear), .interrupt(interrupt)
+		.ext_ack_is_back(ext_ack_is_back),
+		.fsm__slv__sync_reset(global_sync_reset_out),
+		.clear(clear),
+		.interrupt(interrupt)
 		);
-	always@(posedge fsm_clk or negedge fsm_rstn) begin
-		if(~fsm_rstn)begin
-			new_ack_launched <= 1'b0;
-			fsm__slv__req_vld_ff <= 1'b0;
-		end
-		else begin
-			fsm__slv__req_vld_ff <= fsm__slv__req_vld;
-			if(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1'b0;
-			else if(| ext_ack_fsm) new_ack_launched <= 1'b1;
-			else new_ack_launched <= 1'b0;
-		end
-	end
-
-	assign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;
 //*************************************STATE MACHINE INSTANCE END*************************************//
 
 
@@ -331,37 +348,22 @@ module regmst_reg_top(
 
 //*****************************************ULTIMATE MUX START*****************************************//
 	// select which to read out and transfer the corresponding vld signal @regslv domain
-	assign slv__fsm__rd_data = none_selected ? {DATA_WIDTH{1'b0}} : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);
-	assign slv__fsm__ack_vld = none_selected | ext_reg_ack_vld_fsm;
+	assign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1'b0}} : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);
+	assign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | ext_reg_ack_vld_fsm;
 //******************************************ULTIMATE MUX END******************************************//
 
 
 //******************************EXTERNAL MEMORY SNAPSHOT REGISTER START*******************************//
-	snapshot_reg_mem
-		#(.DATA_WIDTH(32), .MEM_WIDTH(32), .SUB(0),	.ADDR_WIDTH(64), .VALID_WIDTH(8), .ENTRY_WIDTH(6))
-	ext_mem_in_top_snapshot_reg_mem
-		(
-		.clk                     (fsm_clk)                               ,
-		.rst_n                   (fsm_rstn)                              ,
-		.addr                    (ext_mem_in_top_snapshot_addr_fsm)                  ,
-		.wr_en                   (ext_mem_in_top_snapshot_wr_en_fsm)                 ,
-		.rd_en                   (ext_mem_in_top_snapshot_rd_en_fsm)                 ,
-		.wr_data                 (ext_mem_in_top_snapshot_wr_data_fsm)               ,
-		.rd_data                 (ext_mem_in_top_snapshot_rd_data_fsm)               ,
-		.req_vld                 (ext_mem_in_top_snapshot_req_vld_fsm)               ,
-		.ack_vld                 (ext_mem_in_top_snapshot_ack_vld_fsm)               ,
-		.entry_write_protect_en  (1'b0)                             ,
-		.entry_vld               (1'b1)                             ,
-		.entry_vld_nxt           ()                                  ,
-		.mem_addr                (ext_mem_in_top_addr_fsm)                           ,
-		.mem_wr_en               (ext_mem_in_top_wr_en_fsm)                          ,
-		.mem_rd_en               (ext_mem_in_top_rd_en_fsm)                          ,
-		.mem_wr_data             (ext_mem_in_top_wr_data_fsm)                        ,
-		.mem_rd_data             (ext_mem_in_top_rd_data_fsm)                        ,
-		.mem_req_vld             (ext_mem_in_top_req_vld_fsm)                        ,
-		.mem_ack_vld             (ext_mem_in_top_ack_vld_fsm)
-	);
-//*******************************EXTERNAL MEMORY SNAPSHOT REGISTER END********************************//
+wire [ADDR_WIDTH-1:0] ext_mem_in_top_valid_addr_fsm ;
+assign ext_mem_in_top_valid_addr_fsm  = ext_mem_in_top_snapshot_addr_fsm              ;
+assign ext_mem_in_top_addr_fsm     = ext_mem_in_top_valid_addr_fsm[8-1:8-6]  ;
+assign ext_mem_in_top_wr_en_fsm        = ext_mem_in_top_snapshot_wr_en_fsm            
+;assign ext_mem_in_top_rd_en_fsm        = ext_mem_in_top_snapshot_rd_en_fsm            
+;assign ext_mem_in_top_wr_data_fsm      = ext_mem_in_top_snapshot_wr_data_fsm          
+;assign ext_mem_in_top_snapshot_rd_data_fsm      = ext_mem_in_top_rd_data_fsm          
+;assign ext_mem_in_top_req_vld_fsm      = ext_mem_in_top_snapshot_req_vld_fsm          
+;assign ext_mem_in_top_snapshot_ack_vld_fsm      = ext_mem_in_top_ack_vld_fsm          
+;//*******************************EXTERNAL MEMORY SNAPSHOT REGISTER END********************************//
 
 
 //*****************************EXTERNAL MEMORY CDC DELIVER INSTANT START******************************//
@@ -388,18 +390,18 @@ module regmst_reg_top(
 	// create the pulse to deliver the value
 	always_ff@(posedge fsm_clk or negedge fsm_rstn)begin
 		if(~fsm_rstn)
-			ext_mem_in_top_req_vld_fsm_ff = 1'b0;
+			ext_mem_in_top_req_vld_fsm_ff <= 1'b0;
 		else
-			ext_mem_in_top_req_vld_fsm_ff = ext_mem_in_top_req_vld_fsm;
+			ext_mem_in_top_req_vld_fsm_ff <= ext_mem_in_top_req_vld_fsm;
 	end
 
 	assign ext_mem_in_top_sel_pulse = ~ext_mem_in_top_req_vld_fsm_ff & ext_mem_in_top_req_vld_fsm;
 
 	always_ff@(posedge ext_mem_in_top_clk or negedge ext_mem_in_top_rstn)begin
 		if(~ext_mem_in_top_rstn)
-			ext_mem_in_top_ack_vld_ff = 1'b0;
+			ext_mem_in_top_ack_vld_ff <= 1'b0;
 		else
-			ext_mem_in_top_ack_vld_ff = ext_mem_in_top_ack_vld;
+			ext_mem_in_top_ack_vld_ff <= ext_mem_in_top_ack_vld;
 	end
 
 	assign ext_mem_in_top_ack_pulse = ~ext_mem_in_top_ack_vld_ff & ext_mem_in_top_ack_vld;

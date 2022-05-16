@@ -104,6 +104,7 @@ always_comb begin
             if(PSEL & !PENABLE)
                 if(slv__fsm__ack_vld) next_state = S_ACCESS;
                 else next_state = S_WAIT_SLV_ACK;
+            else next_state = S_SETUP;
         end
         S_WAIT_SLV_ACK:begin
             if(slv__fsm__ack_vld | op_time_out) next_state = S_SETUP;

@@ -1,6 +1,6 @@
 `define ADDR_WIDTH 7'd64
 `define DATA_WIDTH 6'd32
-module reg_tree
+module reg_tree 
 (
 	//reg_mst interface port
 	 input clk
@@ -152,7 +152,7 @@ regmst_reg_top #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	,.ext_req_vld(regmst_reg_top_ext_req_vld),.ext_req_rdy(regmst_reg_top_ext_req_rdy),.ext_ack_vld(regmst_reg_top_ext_ack_vld),.ext_ack_rdy(regmst_reg_top_ext_ack_rdy),.ext_rd_data(regmst_reg_top_ext_rd_data)
 	,.ext_wr_en(regmst_reg_top_wr_en),.ext_rd_en(regmst_reg_top_rd_en),.ext_wr_data(regmst_reg_top_wr_data),.ext_addr(regmst_reg_top_addr),.cdc_pulse_out(regmst_reg_top_cdc_pulse_out)
 	,.global_sync_reset_out(regmst_reg_top_fsm_sync_reset)//field ports instance
-
+	
 	);
 regslv_reg_top__reg_block_1__test_11 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_reg_top__reg_block_1__test_11 (
@@ -168,7 +168,7 @@ regslv_reg_top__reg_block_1__test_11 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DA
 	,.REG2__FIELD_0__pulse(REG2__FIELD_0__pulse),.REG3__FIELD_0__next_value(REG3__FIELD_0__next_value),.REG3__FIELD_0__pulse(REG3__FIELD_0__pulse)
 	,.REG4__FIELD_0__next_value(REG4__FIELD_0__next_value),.REG4__FIELD_0__pulse(REG4__FIELD_0__pulse),.REG1__FIELD_0__curr_value(REG1__FIELD_0__curr_value)
 	,.REG2__FIELD_0__curr_value(REG2__FIELD_0__curr_value),.REG3__FIELD_0__curr_value(REG3__FIELD_0__curr_value),.REG4__FIELD_0__curr_value(REG4__FIELD_0__curr_value)
-
+	
 	);
 regslv_reg_top__reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_reg_top__reg_block_1 (
@@ -188,7 +188,7 @@ regslv_reg_top__reg_block_1 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH)
 	,.test_13_REG4__FIELD_0__pulse(test_13_REG4__FIELD_0__pulse),.test_12_REG1__FIELD_0__curr_value(test_12_REG1__FIELD_0__curr_value),.test_12_REG2__FIELD_0__curr_value(test_12_REG2__FIELD_0__curr_value)
 	,.test_12_REG3__FIELD_0__curr_value(test_12_REG3__FIELD_0__curr_value),.test_12_REG4__FIELD_0__curr_value(test_12_REG4__FIELD_0__curr_value),.test_13_REG1__FIELD_0__curr_value(test_13_REG1__FIELD_0__curr_value)
 	,.test_13_REG2__FIELD_0__curr_value(test_13_REG2__FIELD_0__curr_value),.test_13_REG3__FIELD_0__curr_value(test_13_REG3__FIELD_0__curr_value),.test_13_REG4__FIELD_0__curr_value(test_13_REG4__FIELD_0__curr_value)
-
+	
 	);
 regslv_reg_top__reg_block_2 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))
 	regslv_reg_top__reg_block_2 (
@@ -212,6 +212,6 @@ regslv_reg_top__reg_block_2 #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH)
 	,.test_21_REG4__FIELD_0__curr_value(test_21_REG4__FIELD_0__curr_value),.test_22_REG1__FIELD_0__curr_value(test_22_REG1__FIELD_0__curr_value),.test_22_REG2__FIELD_0__curr_value(test_22_REG2__FIELD_0__curr_value)
 	,.test_22_REG3__FIELD_0__curr_value(test_22_REG3__FIELD_0__curr_value),.test_22_REG4__FIELD_0__curr_value(test_22_REG4__FIELD_0__curr_value),.test_23_REG1__FIELD_0__curr_value(test_23_REG1__FIELD_0__curr_value)
 	,.test_23_REG2__FIELD_0__curr_value(test_23_REG2__FIELD_0__curr_value),.test_23_REG3__FIELD_0__curr_value(test_23_REG3__FIELD_0__curr_value),.test_23_REG4__FIELD_0__curr_value(test_23_REG4__FIELD_0__curr_value)
-
+	
 	);
 endmodule

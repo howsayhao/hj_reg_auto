@@ -161,9 +161,6 @@ def get_fsm_wire(ext_list):
     fsm_wire_rtl = ''
     fsm_wire_rtl += '\t// declare the handshake signal for fsm\n'
     fsm_wire_rtl += '\twire                   slv__fsm__ack_vld		;\n'
-    # fsm_wire_rtl += '\treg                    new_ack_launched		;\n'
-    # fsm_wire_rtl += '\treg                    fsm__slv__req_vld_ff  ;\n'
-    # fsm_wire_rtl += '\twire                   fsm__slv__req_vld_int ;\n'
     fsm_wire_rtl += '\treg                    fsm__slv__req_vld     ;\n'
     fsm_wire_rtl += '\t// signal for fsm\n'
     fsm_wire_rtl += '\twire 						fsm__slv__wr_en		;\n'
@@ -557,18 +554,18 @@ def get_mem_cdc_rtl(ext_list):
             mem_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
             mem_cdc_rtl += '\talways_ff@(posedge fsm_clk or negedge fsm_rstn)begin\n'
             mem_cdc_rtl += '\t\tif(~fsm_rstn)\n'
-            mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = 1\'b0;\n'%(module_name)
+            mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= 1\'b0;\n'%(module_name)
             mem_cdc_rtl += '\t\telse\n'
-            mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = %s_req_vld_fsm;\n'%(module_name, module_name)
+            mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= %s_req_vld_fsm;\n'%(module_name, module_name)
             mem_cdc_rtl += '\tend\n'
 
             mem_cdc_rtl += '\n\tassign %s_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name, module_name)
 
             mem_cdc_rtl += '\n\talways_ff@(posedge %s_clk or negedge %s_rstn)begin\n'%(module_name, module_name)
             mem_cdc_rtl += '\t\tif(~%s_rstn)\n'%(module_name)
-            mem_cdc_rtl += '\t\t\t%s_ack_vld_ff = 1\'b0;\n'%(module_name)
+            mem_cdc_rtl += '\t\t\t%s_ack_vld_ff <= 1\'b0;\n'%(module_name)
             mem_cdc_rtl += '\t\telse\n'
-            mem_cdc_rtl += '\t\t\t%s_ack_vld_ff = %s_ack_vld;\n'%(module_name, module_name)
+            mem_cdc_rtl += '\t\t\t%s_ack_vld_ff <= %s_ack_vld;\n'%(module_name, module_name)
             mem_cdc_rtl += '\tend\n'
 
             mem_cdc_rtl += '\n\tassign %s_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name, module_name)
@@ -609,18 +606,18 @@ def get_regfile_cdc(cdc):
         regfile_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
         regfile_cdc_rtl += '\talways_ff@(posedge fsm_clk or negedge fsm_rstn)begin\n'
         regfile_cdc_rtl += '\t\tif(~fsm_rstn)\n'
-        regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = 1\'b0;\n'%(module_name)
+        regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= 1\'b0;\n'%(module_name)
         regfile_cdc_rtl += '\t\telse\n'
-        regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff = %s_req_vld_fsm;\n'%(module_name, module_name)
+        regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= %s_req_vld_fsm;\n'%(module_name, module_name)
         regfile_cdc_rtl += '\tend\n'
 
         regfile_cdc_rtl += '\n\tassign %s_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name, module_name)
 
         regfile_cdc_rtl += '\n\talways_ff@(posedge %s_clk or negedge %s_rstn)begin\n'%(module_name, module_name)
         regfile_cdc_rtl += '\t\tif(~%s_rstn)\n'%(module_name)
-        regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff = 1\'b0;\n'%(module_name)
+        regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff <= 1\'b0;\n'%(module_name)
         regfile_cdc_rtl += '\t\telse\n'
-        regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff = %s_ack_vld;\n'%(module_name, module_name)
+        regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff <= %s_ack_vld;\n'%(module_name, module_name)
         regfile_cdc_rtl += '\tend\n'
 
         regfile_cdc_rtl += '\n\tassign %s_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name, module_name)
