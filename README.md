@@ -315,7 +315,7 @@ Additionally, there are some other features that can be implemented and generate
 
 ### **Performance Evaluation**
 
-## **SystemRDL Coding Guideline**
+## **3. SystemRDL Coding Guideline**
 
 SystemRDL is a language for the design and delivery of intellectual property (IP) products used in designs. SystemRDL semantics supports the entire life-cycle of registers from specification, model generation, and design verification to maintenance and documentation. Registers are not just limited to traditional configuration registers, but can also refer to register arrays and memories.
 
@@ -414,17 +414,17 @@ addrmap myAmap {
 
 For more details, see [SystemRDL 2.0 Specification](https://www.accellera.org/images/downloads/standards/systemrdl/SystemRDL_2.0_Jan2018.pdf) Chapter 5.1.1.
 
-#### **Component Property**
-
-In SystemRDL, components have various properties to determine their behavior. Each property is associated with at least one data type (such as integer, boolean, string, etc).  In addition to build-in property defined in SystemRDL, user can add *User-defined* properties.
-
---------------------
-
-**Note:** `signal` components only support `signalwidth` property, and all signals are treated and used as synchronous reset of `field` components, thus the user-defined property `hj_syncresetsignal` can be only assigned in `field` components.
-
---------------------
-
 #### **Component Instantiation**
+
+In a similar fashion to defining components, SystemRDL components can be instantiated in two ways.
+
+- A definitively defined component is instantiated in a separate statement, as follows:
+
+  ```systemrdl
+  type_name [#(parameter_instance [, parameter_instance]*)] instance_element [, instance_element]* ;
+  ```
+
+- An anonymously defined component is instantiated in the statement that defines it. For example:
 
 ```systemrdl
 // The following code fragment shows a simple scalar field component instantiation.
@@ -434,17 +434,212 @@ field {} myField; // single bit field instance named "myField"
 field {} myField[8]; // 8 bit field instance named "myField"
 ```
 
+#### **Component Property**
+
+In SystemRDL, components have various properties to determine their behavior. For built-in properties, there are general component properties and specific properties for each component type (`field`, `reg`, `addrmap`, etc.) in SystemRDL. Each property is associated with at least one data type (such as integer, boolean, string, etc). In addition to build-in properties, SystemRDL also supports for user-defined properties, and HRDA tool pre-defines some user-defined properties to assist RTL module generation process, which are concretely specified in [User-defined Property](#user-defined-property).
+
+All general component properties supported by HRDA are described in [Table ](#), and other supported component-specific properties are discussed in following chapters.
+
+<>
+
+Properties can be assigned in two ways. One is at the definition time, for example:
+
+```systemrdl
+field {} outer_field ;
+reg {
+  default name = "default name";
+  field {} f1; // assumes the name "default name" from above
+  field { name = "new name";} f2; // name assignment overrides "default name"
+  outer_field f3 ; // name is undefined, since outer_field is not defined in the
+                   // scope of the default name
+} some_reg;
+```
+
+The other way is called dynamic assignment which uses the `->` operator:
+
+```systemrdl
+reg {
+  field {} f1;
+  f1->name = "New name for Field 1";
+  } some_reg[8];
+
+some_reg->name = "This value is applied to all elements in the array";
+some_reg[3]->name = "Only applied to the 4th item in the array of 8";
+```
+
+Dynamic assignment allows the designer to overwrite or assign properties outside component definitions, thus provides much convenience for component instantiation.
+
 #### **Instance Address Allocation**
+
+//FIXME
+The offset of an instance within an object is always relative to its
+parent object.  If an instance is not explicitly assigned an address
+allocation operator (see [[id:e7170ec2-c26e-434f-b022-5397f4d331b0][Address Allocation Operator]]), the compiler
+assigns the address according to the *alignment* and /addressing
+mode/.  The address of an instance from the top level ~addrmap~ is
+calculated by adding the instance offset and the offset of all its
+parent objects.
 
 ##### **Alignment**
 
+//FIXME
+The *alignment* property defines the byte value of which the
+container's instance addresses shall be a multiple. This property can
+be set for ~addrmaps~ and ~regfiles~ , and its value shall be a power
+of two ($2^N$).  Its value is inherited by all of the container's
+non-addrmap children.  By default, instantiated objects shall be
+aligned to a multiple of their width (e.g., the address of a 64-bit
+register is aligned to the next 8-byte boundary).
+
 ##### **Addressing Mode**
+
+//FIXME
+*addressing* property can only be used in ~addrmap~ component.  There
+are three addressing modes: ~compact~, ~realign~ (the default), and
+~fullalign~.
+
+~compact~ Specifies the components are packed tightly together while
+still being aligned to the ~accesswidth~ parameter:
+
+#+begin_src systemrdl
+addrmap some_map {
+    default accesswidth=32;
+    addressing=compact;
+    reg { field {} a; } a; // Address 0x0 - 0x3: 4 bytes
+    reg { regwidth=64; field {} a; } b; // Address 0x4 - 0x7: lower 32-bit,
+                                        // Address 0x8 - 0xB: higher 32-bit
+                                        // starting address 0x4 tightly follows previous
+                                        // reg "a"
+    reg { field {} a; } c[20]; // Address 0xC  - 0xF:  Element 0
+                               // Address 0x10 - 0x13: Element 1
+                               // Address 0x14 - 0x17: Element 2
+};
+
+
+addrmap some_map {
+    default accesswidth=64;
+    addressing=compact;
+    reg { field {} a; } a; // Address 0x0 - 0x3: 4 bytes
+    reg { regwidth=64; field {} a; } b; // Address 0x8 - 0xB:
+    reg { field {} a; } c[20]; // Address 0x10 - Element 0
+                               // Address 0x14 - Element 1
+                               // Address 0x18 - Element 2
+                               // starting address is 0x10, align to 64-bit, 4 bytes in 0xC-0xF is skipped
+};
+#+end_src
+
+~regalign~ Specifies the components are packed so each component's
+start address is a multiple of its size (in bytes).  Array elements
+are aligned according to the individual element's size (this results
+in no gaps between the array elements).  This generally results in
+simpler address decode logic.
+
+#+begin_src systemrdl
+addrmap some_map {
+  default accesswidth = 32;
+  addressing = regalign;
+  reg { field {} a; } a; // Address 0x0
+  reg { regwidth=64; field {} a; } b; // Address 0x8-0xF, align to 64-bit
+  reg { field {} a; } c[20]; // Address 0x10
+                             // Address 0x14 - Element 1
+                             // Address 0x18 - Element 2
+};
+#+end_src
+
+
+~fullalign~ The assigning of addresses is similar ~regalign~, except
+for arrays.  The alignment value for the first element in an array is
+the size in bytes of the *whole array* (i.e., the size of an array
+element multiplied by the number of elements), *rounded up to nearest
+power of two*.  The second and subsequent elements are aligned
+according to their individual size (so there are no gaps between the
+array elements).
+
+#+begin_src systemrdl
+addrmap some_map {
+  default accesswidth = 32;
+  addressing = fullalign;
+  reg { field {} a; } a; // Address 0
+  reg { regwidth=64; field {} a; } b; // Address 8
+  reg { field {} a; } c[20]; // Address 0x80 - Element 0
+                             // Address 0x84 - Element 1
+                             // Address 0x88 - Element 2
+                             // starting address align to 4*20=80Byte,
+};
+#+end_src
 
 ##### **Address Allocation Operator**
 
+//FIXME
+When instantiating ~reg~, ~regfile~, ~mem~, or ~addrmap~, the address
+may be assigned using one of following address allocation operators
+
+1. ~@~: It specifies the address for the instance.
+   #+begin_src systemrdl
+addrmap top {
+  regfile example{
+    reg some_reg {
+      field {} a;
+      };
+
+    some_reg a @0x0;
+    some_reg b @0x4;
+
+    // Implies address of 8
+    // Address 0xC is not implemented or specified
+    some_reg c;
+
+    some_reg d @0x10;
+    };
+  };
+   #+end_src
+
+2. ~+=~: It specifies the address stride when instantiaing an array of
+   components (controls the spacing of the components).  The address
+   stride is relative to the previous instane's address.  It is only
+   used for arrayed ~addrmap~, ~regfile~, ~reg~, or ~mem~.
+   #+begin_src systemrdl
+addrmap top {
+  regfile example {
+    reg some_reg { field {} a; };
+
+    some_reg a[10]; // So these will consume 40 bytes
+                    // Address 0,4,8,C....
+
+    some_reg b[10] @0x100 += 0x10; // These consume 160-12 bytes of space
+                                   // Address 0x100 to 0x103, 0x110 to 0x113,....
+    };
+  };
+   #+end_src
+
+3. ~%=~: It specifies the aligment of address when instantiaing a
+   component (controls the aligment of the components).  The initial
+   address alignment is relative to the previous instance's address.
+   The ~@~ and ~%=~ operators are mutually exclusive per instance.
+   #+begin_src systemrdl
+addrmap top {
+  regfile example {
+    reg some_reg { field {} a; };
+
+    some_reg a[10]; // So these will consume 40 bytes
+                    // Address 0,4,8,C....
+
+    some_reg b[10] @0x100 += 0x10; // These consume 160-12 bytes of space
+                                   // Address 0x100 to 0x103, 0x110 to 0x113,....
+
+    some_reg c %=0x80; // This means ((address % 0x80) == 0))
+                       // So this would imply an address of 0x200 since
+                       // that is the first address satisfying address>=0x194
+                       // and ((address % 0x80) == 0)
+  };
+};
+   #+end_src
+
 ### **Signal Component**
 
-### **Field Description**
+`signal` components only support `signalwidth` property, and all signals are treated and used as synchronous reset of `field` components, thus the user-defined property `hj_syncresetsignal` can be only assigned in `field` components.
+
+### **Field Component**
 
 #### **Naming Convention**
 
@@ -459,6 +654,65 @@ Each SystemRDL `field` instance will be generated to an RTL `field` module insta
 4. input port for quarlifying update is `<stem>__pulse`: `ring_cfg__rd_ptr__pulse`
 
 #### **Description Guideline**
+
+//FIXME
+SystemRDL defines several properties for describing Field, however,
+only a subset of them are interpreted by the scripts.  Only properties
+documented in this section are allowed for Field description, others
+are prohibited to use.
+
+#+ATTR_LATEX: :environment longtable  :align |l|p{.55\textwidth}|c|c|c|
+#+caption: Field Properties Supported in scripts  \label{tab:field_prop}
+|-------------------+-----------------------------------------------------------------------------------------------------------------------------------+--------------------+---------+---------|
+| Property          | Notes                                                                                                                             | Type               | Default | Dynamic |
+|                   | <40>                                                                                                                              |                    |         |         |
+|-------------------+-----------------------------------------------------------------------------------------------------------------------------------+--------------------+---------+---------|
+| *fieldwidth*      | Width of Field.                                                                                                                   | /longint unsighed/ | 1       | No      |
+| *reset*           | Reset value of Field.                                                                                                             | /bit/              | 0       | Yes     |
+| *resetsignal*     | Reference to signal used as *Asynchornous reset* of the Field.                                                                    | /reference/        |         | Yes     |
+| *hj_syncresetsignal* | Reference to signal used as *Synchronous Reset* of the Field.                                                                     | /reference/        |         | Yes     |
+| *name*            | Specifies a more descriptive name (for documentation purposes).                                                                   | /string/           | ""      | Yes     |
+| *desc*            | Describes the component's purpose.  MarkDown syntax is allowed                                                                    | /string/           | ""      | Yes     |
+| *sw*              | Software access type, one of ~rw~, ~r~, ~w~, ~rw1~, ~w1~, or ~na~.                                                                | /access type/      | ~rw~    | Yes     |
+| *onread*          | Software read side effect, one of ~rclr~, ~rset~, or ~na~.                                                                        | /onreadtype/       | ~na~    | Yes     |
+| *onwrite*         | Software write side effect, one of ~woset~, ~woclr~, ~wot~, ~wzs~, ~wzc~, ~wzt~, or ~na~.                                         | /onwritetype/      | ~na~    | Yes     |
+| *swmod*           | Populate an output signal which is asserted when field is modified by software (written or read with a set or clear side effect). | /boolean/          | false   | Yes     |
+| *swacc*           | Populate an output signal which is asserted when field is read.                                                                   | /boolean/          | false   | Yes     |
+| *singlepulse*     | Populate an output signal which is asserted for one cycle when field is written 1.                                                | /boolean/          | false   | Yes     |
+| *hw*              | Hardware access type, one of ~rw~, or ~r~                                                                                         | /access type/      | ~r~     | No      |
+| *hwclr*           | Hardware clear.  Field is cleared upon assertion on hardware signal in bitwise mode.                                              | /boolean/          | false   | Yes     |
+| *hwset*           | Hardware set.  Field is set upon assertion on hardware signal in bitwise mode.                                                    | /boolean/          | false   | Yes     |
+| *precedence*      | One of ~hw~ or ~sw~, controls whether precedence is granted to hardware (~hw~) or software (~sw~) when contention occurs.         | /precedencetype/   | ~sw~    | Yes     |
+|-------------------+-----------------------------------------------------------------------------------------------------------------------------------+--------------------+---------+---------|
+
+
+*resetsignal* specifies signal used as *Asynchronous reset* for
+the Field.  By default, ~rst_n~ is used as asynchronous reset signal.
+When set to a reference of signal, an input port is populated for the
+signal and the field's asynchronous reset will be connected to the
+signal.
+
+
+*hj_syncresetsignal* is a /User-defined/ property that specifies signal
+(or multiple signals) used as *Synchronous Reset* for the Field.  By
+default, a Field doesn't have Synchronous reset.  User can set
+*hj_syncresetsignal* property more than once to specify multiple
+synchronous reset signals.  Each synchronous reset signal *must* be
+active high and one clock cycle wide.  Reset value of synchronous
+reset is the same as that of asynchronous reset.
+
+
+When *singlepulse* is ~true~, *onwrite* property is ignored.
+
+Current value of Field (~<stem>__curr_value~) is always output to user
+logic.  If *hw* is ~rw~, two more inputs are populated
+(~<stem>__next_value~ and ~<stem>__pulse~) for updating field value
+from user logic.  If value from hardware is expected to be continously
+updated into Field, user should tie ~<stem>__pulse~ to ~1'b1~.  If
+either *hwclr* or *hwset* is ~true~ (they are mutually exclusive),
+~field~ module use ~<stem>__next_value~ in bitwide mode and ignores
+~<stem>__pulse~.  Each pulse in ~<stem>__next_value~ will clear or set
+corresponding bit on Field.
 
 #### **Examples**
 
@@ -480,19 +734,256 @@ field {
 } f5[29:28] = 0;
 ```
 
-### **Register Description**
+### **Register Component**
 
 #### **Naming Convention**
 
+//FIXME
+Each Register is a concatenation of Fields.  No RTL module is
+implemented for Register.  Instead, an ~always_comb~ block is used to
+concatenate Fields ~curr_value~ as below:
+
+```verilog
+// ring_cfg
+always_comb begin
+   ring_cfg[31:0] = 32'd0;
+   ring_cfg[31] = ring_cfg__ring_en__curr_value;
+   ring_cfg[7:4] = ring_cfg__ring_size__curr_value[3:0];
+end
+```
+
+All Fields in a Register share same register ~rd_en~, ~wr_en~, and
+~wr_data~.  Scripts will connect the correct signal from address
+decoder to Field instances.
+
 #### **Description Guideline**
+
+//FIXME
+Register definitions are all considered to be *internal*.  *external*
+is only applied on ~regfile~ instances.
+
+*alias* property ([[cite:&accelleraSystemRDLRegisterDescription2018]]
+ section 10.5) is supported on regsiter instances within regfile.
+
+An /alias register/ is a register that appears in multiple locations
+of the same address map.  It is physically implemented as a single
+register such that a modification of the register at one address
+location appears at all the locations within the address map.  The
+accessibility of this register may be different in each location of
+the address block.
+
+Alias registers are allocated addresses like physical registers and
+are decoded like physical registers, but they perform these operations
+on a previously instantiated register (called the primary
+register).  Since alias registers are not physical, hardware access and
+other hardware operation properties are not used.  Software access
+properties for the alias register can be different from the primary
+register.  For example,
+
+#+begin_src systemrdl
+reg some_intr_r { field { level intr; hw=w; sw=r; woclr; } some_event; };
+addrmap foo {
+  some_intr event1;
+
+  // Create an alias for the DV team to use and modify its properties
+  // so that DV can force interrupt events and allow more rigorous structural
+  // testing of the interrupt.
+  alias event1 some_intr event1_for_dv;
+  event1_for_dv.some_event->woclr = false;
+  event1_for_dv.some_event->woset = true;
+};
+#+end_src
+
+
+*shared* propery, on the other hand, allows same physical register to
+be mapped in several different address space.
+
+
+|-------------+---------------------------------------------------------------+--------------------+---------+---------|
+| Property    | Notes                                                         | Type               | Default | Dynamic |
+|             | <40>                                                          |                    |         |         |
+|-------------+---------------------------------------------------------------+--------------------+---------+---------|
+| *regwidth*  | Width of Register.                                            | /longint unsighed/ | 32      | No      |
+| *shared*    | Defines a register as being shared in different address maps. | /boolean/          | false   | No      |
+|-------------+---------------------------------------------------------------+--------------------+---------+---------|
+
+
 
 #### **Example**
 
-### **Regfile Description**
+### **Regfile Component**
+
+#### **Description Guideline**
+
+//FIXME
+A ~regfile~ is as a logical grouping of one or more registers and
+~regfile~ instances.  It packs registers together and provides address
+allocation support, which is useful for introducing an address gap
+between registers.  The only difference between the ~regfile~ and the
+address map (~addrmap~) is an ~addrmap~ defines an RTL implementation
+boundary where the ~regfile~ does not.  Since ~addrmaps~ define a
+implementation block boundary, there are some specific properties that
+are only specified for address maps and not specified for ~regfiles~.
+
+When ~regfile~ is instantiated within another ~regfile~, scripts
+consider inner ~regfile~ instances are flattened and concatenated to
+form a larger ~regfile~.  So "~regfile~ nesting" is just a technique
+to organize register descriptions.  No *internal* or *external* is
+considered.
+
+Standard SystemRDL allows *external* to be applied on ~regfile~
+instances, but HRDA scripts ignores *external* modifier on ~regfile~
+instance.  ~regfile~ instance is always considered as packer of
+registers.  *external* only applies on ~addrmap~ instances.
+
+
+|-------------+-------------------------------------------------------------------------------------+--------------------+---------+---------|
+| Property    | Notes                                                                               | Type               | Default | Dynamic |
+|             | <40>                                                                                |                    |         |         |
+|-------------+-------------------------------------------------------------------------------------+--------------------+---------+---------|
+| *alignment* | Specifies alignment of all instantiated components in the associated register file. | /longint unsighed/ |         | No      |
+|-------------+-------------------------------------------------------------------------------------+--------------------+---------+---------|
+
+#### **Example**
+
+```systemrdl
+regfile myregfile #(.A (32)) {
+  alignment = 32;
+  reg {} xx;
+}
+```
 
 ### **Memory Description**
 
-### **Addrmap Description**
+#### **Descriptions Guideline**
+
+//FIXME
+Memory instances in ~addrmap~ are always *external*.  When mapping
+memory into register space, the generated ~reg_slv~ module forwards
+access that falls in memory address region to memory access interface.
+Each mapped memory has a dedicated access data path.
+
+Memory definition accepts properties listed in autoref:tab:mem_prop.
+
+
+|--------------+---------------------------------------------------+---------------------+---------+---------|
+| Property     | Notes                                             | Type                | Default | Dynamic |
+|              | <40>                                              |                     |         |         |
+|--------------+---------------------------------------------------+---------------------+---------+---------|
+| *mementries* | The number of memory entries, a.k.a memory depth. | /longint unsighed/  |         | No      |
+| *memwidth*   | The memory entry bit width, a.k.a memory width.   | /logical unsighed/  |         | No      |
+| *sw*         | Programmer's ability to read/write a memory.      | /access type/       | ~rw~    | Yes     |
+|--------------+---------------------------------------------------+---------------------+---------+---------|
+
+
+If *memwidth* is larger than *accesswidth*, each memory entry occupies
+$N$ address slots, where $N$ should be power of 2 ($2^i$) to simplify
+decode logic.  Generated module will implement a snapshot register to
+atomically read/write memory entry.
+
+#### **Example**
+
+```systemrdl
+mem fifo_mem {
+  mementries = 1024;
+  memwidth = 32;
+};
+```
+
+### **Addrmap Component**
+
+#### **Description Guideline**
+
+//FIXME
+An address map component (~addrmap~) contains registers, register
+files, memories, and/or other address maps and assigns address to each
+instance of component.  ~addrmap~ defines the boundaries of an RTL
+implementation.  Each component might have already assigned address
+offset to its contents, ~addrmap~ further adds base address to them.
+After the outter most ~addrmap~ finishes assigning base address, absolute
+address allocation is settled.
+
+HRDA scripts processes each ~addrmap~ definition as below:
+1. ~memory~ instances are always considered *external*.  There will be
+   dedicated ~reg_native_if~ populated for each memory instance.
+2. ~reg~, ~regfile~ are generated according to the definition.  Their
+   contents address are allocated by the enclosing ~addrmap~.
+3. ~addrmap~ instances are handled in different ways depending on
+   value of ~hj_genrtl~, ~hj_flatten_content~ properties in ~addrmap~
+   definition, according to autoref:tab:addrmap_handle
+
+
+
+|-----------+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------|
+| hj_gentrl | hj_flatten_addrmap | handling behavior                                                                                                                          | Usage                                                                    |
+|           |                    | <40>                                                                                                                                       |                                                                          |
+|-----------+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------|
+| false     | false              | Populate a dedicated ~reg_native_if~ for the ~addrmap~ instance.  No ~regslv~ RTL module is generated for the ~addrmap~ definition.        | 3rd party IP register description                                        |
+| false     | true               | All contents in the ~addrmap~ is flattened in current scope, just like ~regfile~ does.  No ~regslv~ RTL module is generated for ~addrmap~. | Use ~shared~ property to map same register into different address spaces |
+| true      | /don't care/       | Populate a dedicated ~reg_natvie_if~ for the ~addrmap~ instances.  And generate ~regslv~ RTL module for the ~addrmap~.                     | Hierarchical ~regslv~ chaining                                           |
+|-----------+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------|
+
+
+All HRDA suppored properties for ~addrmap~ is listed in autoref:tab:addrmap_prop.
+
+#+ATTR_LATEX: :environment longtable  :align |l|p{.55\textwidth}|c|c|c|
+#+caption: Address Map Properties Supported in HRDA scripts  \label{tab:addrmap_prop}
+|----------------+------------------------------------------------------------------------------------------------------------------+--------------------+---------+---------|
+| Property       | Notes                                                                                                            | Type               | Default | Dynamic |
+|                | <40>                                                                                                             |                    |         |         |
+|----------------+------------------------------------------------------------------------------------------------------------------+--------------------+---------+---------|
+| *alignment*    | Specifies alignment of all instantiated components in the address map.                                           | /longint unsighed/ |         | No      |
+| *addressing*   | Controls how addresses are computed in an address map.                                                           | /addressingtype/   |         | No      |
+| *rsvdset*      | The read value of all fields not explicitly defined is set to 1 if rsvdset is ~true~; otherwise, it is set to 0. | /boolean/          | true    | No      |
+|----------------+------------------------------------------------------------------------------------------------------------------+--------------------+---------+---------|
+
+#### **Example**
+
+```systemrdl
+addrmap some_bridge { // Define a Bridge Device
+  desc="overlapping address maps with both shared register space and orthogonal register space";
+  reg status {// Define at least 1 register for the bridge
+    // Shared property tells compiler this register
+    // will be shared by multiple addrmaps
+    shared;
+
+    field {
+      hw=rw;
+      sw=r;
+      } stat1 = 1'b0;
+    };
+
+
+  reg some_axi_reg {
+    field {
+      desc="credits on the AXI interface";
+      } credits[4] = 4'h7;   // End of field: {}
+
+    };  // End of Reg: some_axi_reg
+
+
+  reg some_ahb_reg {
+    field {
+      desc="credits on the AHB Interface";
+      } credits[8] = 8'b00000011 ;
+    };
+
+  addrmap {
+    littleendian;
+
+    some_ahb_reg ahb_credits; // Implies addr = 0
+    status ahb_stat @0x20;    // explicitly at address=20
+    ahb_stat.stat1->desc = "bar"; // Overload the registers property in this instance
+    } ahb;
+
+  addrmap { // Define the Map for the AXI Side of the bridge
+    bigendian; // This map is big endian
+    some_axi_reg axi_credits;   // Implies addr = 0
+    status axi_stat @0x40;      // explicitly at address=40
+    axi_stat.stat1->desc = "foo"; // Overload the registers property in this instance
+    } axi;
+}; // Ends addrmap bridge
+```
 
 ### **User-defined Property**
 
@@ -566,9 +1057,9 @@ property hj_flatten_addrmap {
 
 (TBD)
 
-## **Excel Worksheet Guideline**
+## **4. Excel Worksheet Guideline**
 
-### **Table Format**
+### **4.1 Table Format**
 
 An example Excel worksheet that describes only one register is shown below, in two language (cn/en) versions.
 
@@ -610,7 +1101,7 @@ Register elements are as follows.
 
 Degisners should keep items mentioned above complete, otherwise HRDA will raise error during Excel worksheet parse.
 
-### **Rules**
+### **4.2 Rules**
 
 Follows are rules that designers should not violate when editing Excel worksheets.
 
@@ -652,9 +1143,9 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
   7. no duplicate synchronous reset signal name in one field.
 
-## **Tool Flow Guideline**
+## **5. Tool Flow Guideline**
 
-### **Environment and dependencies**
+### **5.1 Environment and dependencies**
 
 - Available OS: Windows/Linux
 
@@ -666,7 +1157,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
   - PeakRDL-uvm: [https://github.com/SystemRDL/PeakRDL-uvm](https://github.com/SystemRDL/PeakRDL-uvm)
 
-### **Command options and arguments**
+### **5.2 Command options and arguments**
 
 - `-h,--help`
 
@@ -782,7 +1273,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
     Specifying this option explicitly generates all of the above files.
 
-### **Tool Configuration and Usage Examples**
+### **5.3 Tool Configuration and Usage Examples**
 
 Before trying all below examples, please ensure that you can execute `hrda` command. If execution of `hrda` fails, first check that `hrda` is in `PATH`, if not, try one of following possible solutions:
 
@@ -831,3 +1322,8 @@ If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrd
   ```
 
 ## **Miscellaneous**
+
+## **Bibliography**
+
+[1] Accellera: SystemRDL 2.0 Register Description Language
+
