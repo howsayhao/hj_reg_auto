@@ -37,7 +37,7 @@ To learn what rules are checked, see [Excel Worksheet Guideline](#excel-workshee
 
 ### **SystemRDL Parser/Compiler**
 
-SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in [Environment and Dependencies](#environment-and-dependencies) for detailed information. SystemRDL Compiler is able to parse, compile, elaborate and check RDL input files followed by SystemRDL 2.0 Spec to generate a traversable hierarchical register model as a class object in Python. Its basic workflow is shown in [Figure ](#pics_systemrdl_compiler).
+SystemRDL parser relies on an open-source project `SystemRDL Compiler`, see the link in [Environment and Dependencies](#environment-and-dependencies) for detailed information. SystemRDL Compiler is able to parse, compile, elaborate and check RDL input files followed by [SystemRDL 2.0 Specification](https://www.accellera.org/images/downloads/standards/systemrdl/SystemRDL_2.0_Jan2018.pdf) to generate a traversable hierarchical register model as a class object in Python. Its basic workflow is shown in [Figure ](#pics_systemrdl_compiler).
 
 <span id="pics_systemrdl_compiler"></span>
 ![systemrdl_compiler](docs/pics/systemrdl_compiler.svg)
@@ -93,7 +93,7 @@ Control/Status regsiters are distributed all around the chip in different subsys
 
 ### **Register Network**
 
-Register Network, or `reg_network`, is a multi-root hierarchical network. A typical network is shown below.
+Register Network, or `reg_network`, is a multi-root hierarchical network. A typical network is shown in [Figure ](#pics_reg_network).
 
 <span id="pics_reg_network"></span>
 ![reg_network](docs/pics/reg_network.svg)
@@ -125,7 +125,7 @@ All modules above is corresponding to some components defined in the SystemRDL d
 
 ### **Register Native Access Interface (reg_native_if)**
 
-Typically, expect for the upper interface of `regmst`, every module with registers is connected into the register network as a leaf node in `reg_tree` via `reg_native_if`.  `reg_natvie_if` is used under following circumstances in `reg_network`:
+Typically, except that the upper interface of `regmst` is `APB`, every module with registers is connected into the register network as a leaf node in `reg_tree` via `reg_native_if`.  `reg_natvie_if` is used under following circumstances in `reg_network`:
 
 - `regmst/regslv <-> regslv`
 
@@ -133,43 +133,96 @@ Typically, expect for the upper interface of `regmst`, every module with registe
 
 - `regmst/regslv <-> external memories`
 
-#### **write transaction**
+Signals of reg_natvie_if are listed in [Table ](#table_rni_def):
 
-#### **read transaction**
+<span id="table_rni_def"></span>
+| Signal Name | Direction | Width | Description |
+| ----------- | --------- | ----- | ----------- |
+| req_vld | input from upstream, output to downsream | 1 | request valid |
+| ack_vld | output to upstream, input from downsream | 1 | acknowledgement valid |
+| addr | input from upstream, output to downsream | BUS_ADDR_WIDTH | address |
+| wr_en | input from upstream, output to downsream | 1 | write enable |
+| rd_en | input from upstream, output to downsream | 1 | read enable |
+| wr_data | input from upstream, output to downsream | BUS_DATA_WIDTH | address |
+| rd_data | output to upstream, input from downsream | BUS_DATA_WIDTH | address |
+
+where `BUS_ADDR_WIDTH` defaults to 64 bit, and `BUS_DATA_WIDTH` defaults to 32 bit.
+
+As mentioned before, `reg_native_if` can be forwarded to connect memories or 3rd party IPs which serve as slave. The next [Write Transaction](#write-transaction) and [Read Transaction](#read-transaction) section shows basic requirements.
+
+#### **Write Transaction**
+
+There are two methods for write transactions, one is with no wait state (`ack_vld` is asserted once slave detects `req_vld` and `wr_en` raises), the other is with one or more wait states (`ack_vld` is asserted after `req_vld` and `wr_en` have raised for more than one cycles). Address and write data should be valid once `req_vld` and `wr_en` are asserted.
+
+<span id="pics_rni_write_trans_1"></span>
+![ ](docs/pics/reg_native_if/write_trans_1.svg)
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x write transaction with no wait state</div>
+
+<span id="pics_rni_write_trans_2"></span>
+![ ](docs/pics/reg_native_if/write_trans_2.svg)
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x write transaction with one or more wait states</div>
+
+#### **Read Transaction**
+
+There are two methods for read transactions, one is with no wait state (`ack_vld` is asserted once slave detects `req_vld` and `rd_en` raises), the other is with one or more wait states (`ack_vld` is asserted after `req_vld` and `rd_en` have raised for more than one cycles). Address should be valid once `req_vld` and `rd_en` are asserted.
+
+<span id="pics_rni_read_trans_1"></span>
+![ ](docs/pics/reg_native_if/read_trans_1.svg)
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x read transaction with no wait state</div>
+
+<span id="pics_rni_read_trans_2"></span>
+![ ](docs/pics/reg_native_if/read_trans_2.svg)
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x read transaction with one or more wait states</div>
 
 ### **Register Access Master (regmst)**
 
-`regmst` is the root node of `reg_tree`, and is responsible for monitoring all downstream nodes. [Figure ](#pics_regmst_rtl_infra) shows the architecture of `regmst`.  `regmst` bridges SoC-level interconnect (APB now) and `reg_native_if`. `dispatch_decoder` decodes the target address and `mst_fsm` launches the access to internal registers (if exist), downstream `regslv` modules, 3rd party IPs or external memories. Then `regmst` starts a timer. If timeout is detected in waiting the response, `regmst` responds to upper interconnect with fake data `0xdead1eaf`, and aseerts an interrupt to report the timeout event. The timeout request address is logged in a local register in `regmst`, so software can determine the problematic module by reading this register in `regmst` and triggers a soft-reset within the entire `reg_tree`.  ~regmst~ will assert soft-reset reset signal, which is broadcasted to all `regslv`
-(including ~regslv2mem~ and all ~regslv~ brdiges).  The software reset
-will reset all FSM and bring back the hierarchy below ~regmst~ to
-functional.
+The top-level root `addrmap` instance in SystemRDL or a worksheet in Excel corresponds to a generated `regmst` module, and the RTL module name (and Verilog/SystemVerilog filename) is `regmst_xxx`, where `xxx` is the root `addrmap` instance name in SystemRDL or Excel worksheet filename.
+
+`regmst` is the root node of `reg_tree`, and is responsible for monitoring all downstream nodes. [Figure ](#pics_regmst_rtl_infra) shows the architecture of `regmst`. `regmst` bridges SoC-level interconnect (APB now) and `reg_native_if`. `dispatch_decoder` decodes the target address and `mst_fsm` launches the access (read/write) request to internal registers (if exist), downstream `regslv` modules, 3rd party IPs or external memories. Then `regmst` starts a timer. If timeout event occurs in waiting for response from downstream modules, `regmst` responds to upper interconnect with fake data `0xdead1eaf`, and aseerts an interrupt to report the timeout event. At the same time, `regmst` asserts global synchronous reset signals, which is broadcasted to all `regslv` modules and resets all FSM (including some units like `snapshot`) to idle state so that `reg_tree` will not be stuck.
 
 <span id="pics_regmst_rtl_infra"></span>
 ![ ](docs/pics/regmst_rtl_infra.svg)
+<center>
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x regmst block diagram</div>
+</center>
 
+`regmst` does not support outstanding transactions. So timeout detecting logic is quite straitforward in FSM:
 
-~regmst~ does not support outstanding request.  So timeout detecting
-logic is quite straitforward (autoref:fig:regmst_op) in FSM:
-1. ~regmst~ decodes target address to determine the output interface
-2. ~regmst~ starts forwarding access to next stage ~regslv~, waits for
-   response, and starts a 10ms timer.
-   1. If response comes back, ~regmst~ sends response back to SoC,
-      reset timer, and transaction is completed.
-   2. If timeout occurs during waiting, ~regmst~ logs the transaction,
-      finishes the transaction with fake data, and raise interrupt.
+  1. `regmst` decodes target address to determine the output interface
+
+  2. `regmst` starts forwarding access to the corresponding downstream modules (`regslv`, external memory, 3rd party IP), waits for response, and starts a timer.
+
+     - If downstream modules responds with `ack_vld` asserted in `reg_native_if`, `regmst` responds to upper interconnect with `PREADY` asserted in `APB` interface, resets timer, and returns to idle state.
+
+     - If timeout event occurs, `regmst` logs the current address, finishes the transaction with fake data to the upper interconnect, and asserts the interrupt signal.
 
 ### **Register Access Slave (regslv)**
 
 <span id="pics_regslv_rtl_infra"></span>
 ![ ](docs/pics/regslv_rtl_infra.svg)
+<center>
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x regslv block diagram</div>
+</center>
 
-The general architecture of `regslv` is shown above. **Every `addrmap` in SystemRDL or a worksheet in Excel corresponds to a generated `regslv` module**, and the RTL module name (and Verilog/SystemVerilog filename) is `regslv_xxx`, where `xxx` is the `addrmap` instance name in SystemRDL or Excel worksheet filename.
+The general architecture of `regslv` is shown above. Every `addrmap` instance **under the root `addrmap`** in SystemRDL or a worksheet in Excel corresponds to a generated `regslv` module, and the RTL module name (and Verilog/SystemVerilog filename) is `regslv_xxx`, where `xxx` is the `addrmap` instance name in SystemRDL or Excel worksheet filename.
 
 Each `regslv` module has its own registers based on the design description. `regslv` can also forward access interface (`reg_native__if`) to downstream `regslv` modules if there are nested `addrmap` instances in SystemRDL, and to memory instances (usually memory wrappers), or other 3rd party IPs. Therefore, for external memories and other 3rd party IPs, designers are obliged to implement interface translation logic (a bridge) between `reg_native_if` and memory/IP access interfaces.
 
 #### **slv_fsm**
 
-`slv_fsm` handles transactions at the input `reg_native_if` from upstream `regslv` or `regmst` modules and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown below.
+`slv_fsm` handles transactions at the input `reg_native_if` from upstream `regslv` or `regmst` modules and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown in [Figure ](#).
 
 #### **external_decoder**
 
@@ -202,9 +255,9 @@ end
 
 #### **split_mux (internal_mux, external_mux, ultimate_mux)**
 
-`split_mux` is a one-hot multiplexor with a parameter to specify `group size`. When number of input candidcates exceed `group size`, a two-level multiplexor network is constructed and D flip-flops are inserted between the first and second level to improve timing.
+`split_mux` is a one-hot multiplexor with a parameter to specify `group_size`. When number of input candidcates exceed `group_size`, a two-level multiplexor network is constructed and DFFs are inserted between two levels to improve timing performance.
 
-#### **snapshot register/memory entry**
+#### **snapshot module**
 
 #### **clock domain crossing (CDC) solution**
 
@@ -214,6 +267,11 @@ end
 
 <span id="pics_field_rtl_infra"></span>
 ![ ](docs/pics/field_rtl_infra.svg)
+<center>
+<div style="display: inline-block;
+color: #999;
+padding: 5px;">Figure 2.x field block diagram</div>
+</center>
 
 The `field` module implements various hardware and
 software access types defined in Excel worksheets and SystemRDL descriptions. When alias or shared property is defined in SystemRDL, a corresponding number of software control (`sw_ctrl`) logic will be generated.
@@ -251,7 +309,9 @@ All supported access types are listed in `xregister.vh`:
 
 Additionally, there are some other features that can be implemented and generated in RTL. See more in [SystemRDL Coding Guideline](#systemrdl-coding-guideline).
 
-`field` is concatenated to form `register` and mapped into address space for software access, as shown below.
+`field` is concatenated to form `register` and mapped into address space for software access, as shown in [Figure ](#).
+
+
 
 ### **Performance Evaluation**
 
@@ -263,7 +323,7 @@ This chapter is based on the [SystemRDL 2.0 Specification](https://www.accellera
 
 ### **General Rules**
 
-#### **Components**
+#### **Components and Definition**
 
 A component in SystemRDL is the basic building block or a container which contains properties that further describe the component’s behavior. There are several structural components in SystemRDL: `field`, `reg`, `mem`, `regfile`, and `addrmap`. All structural components are supported in HRDA Tool, and their mappings to RTL module are as follows:
 
@@ -274,11 +334,235 @@ A component in SystemRDL is the basic building block or a container which contai
 - `regfile`: pack registers together with support of address allocation
 
 - `addrmap`: similar to `regfile` on packing register and allocating addresses.
-   Additionally, it defines the **RTL code generation boundary**. Each definition of `addrmap` with `hj_genrtl` property set to `True` will be generated to an `regslv` module, see Chapter
+   Additionally, it defines the **RTL code generation boundary**. Each definition of `addrmap` with `hj_genrtl` property set to `True` will be generated to an `regslv` module, see [Table ](#)
 
-Additionally, HRDA does not support non-structural components, such as `signal`. But signals are indeed used to describe field synchronous resets in a special way: defining a user-defined property, see Chapter
+Additionally, HRDA supports one non-structural component, `signal`. Signals are used to describe field synchronous resets. But SystemRDL seems to be not allowed to reference `signal` components in property assignment, but HRDA implement it by defining a user-defined property named `hj_syncresetsignal`, see [Table ](#)
 
-### **Correspondence to RTL**
+SystemRDL components can be defined in two ways: definitively or anonymously.
+
+- Definitive defines a named component type, which is instantiated in a separate statement. The definitive definition is suitable for reuse.
+
+- Anonymous defines an unnamed component type, which is instantiated in the same statement. The anonymous definition is suitable for components that are used once.
+
+A definitive definition of a component appears as follows.
+
+```systemrdl
+component new_component_name [#(parameter_definition [, parameter_definition]*)]
+{[component_body]} [instance_element [, instance_element]*];
+```
+
+An anonymous definition (and instantiation) of a component appears as follows.
+
+```systemrdl
+component {[component_body]} instance_element [, instance_element]*;
+```
+
+More explanations:
+
+- `component` is one of the keywords mentioned above (`field`, `reg`, `regfile`, `addrmap`, `signal`).
+
+- For a definitively defined component, `new_component_name` is the user-specified name for the component.
+
+- For a definitively defined component, `parameter_definition` is the user-specified parameter as defined like this:
+
+  ```systemrdl
+  parameter_type parameter_name [= parameter_value]
+  ```
+
+- For an anonymously defined component, `instance_element` is the description of the instantiation attributes, as defined like this:
+
+  ```systemrdl
+  instance_name [{[constant_expression]}* | [constant_expression : constant_expression]][addr_alloc]
+  ```
+
+- The `component_body` is comprised of zero or more of the following.
+
+  - Default property assignments
+
+  - Property assignments
+
+  - Component instantiations
+
+  - Nested component definitions
+
+- The first instance name of an anonymous definition is also used as the component type name.
+
+- The address allocation operators like stride (`+=`), alignment (`%`), and offset (`@`) of anonymous instances are the same as the definitive instances. See [Address Allocation Operator](#address-allocation-operator) for more information.
+
+Components can be defined in any order, as long as each component is defined before it is instantiated. All structural components (and signals) need to be instantiated before being generated.
+
+Here is an example for register definition, where the register `myReg` is a definitive definition, and the field `data` is an anonymous definition:
+
+```systemrdl
+reg myReg #(longint unsigned SIZE = 32, boolean SHARED = true) {
+  regwidth = SIZE;
+  shared = SHARED;
+  field {} data[SIZE – 1];
+  };
+```
+
+Component definitions can have parameters. Parameter can be overwritten during component instantiation. Here is an example:
+
+```systemrdl
+addrmap myAmap {
+    myReg reg32;
+    myReg reg32_arr[8];
+    myReg #(.SIZE(16)) reg16;
+    myReg #(.SIZE(8), .SHARED(false)) reg8;
+};
+```
+
+For more details, see [SystemRDL 2.0 Specification](https://www.accellera.org/images/downloads/standards/systemrdl/SystemRDL_2.0_Jan2018.pdf) Chapter 5.1.1.
+
+#### **Component Property**
+
+In SystemRDL, components have various properties to determine their behavior. Each property is associated with at least one data type (such as integer, boolean, string, etc).  In addition to build-in property defined in SystemRDL, user can add *User-defined* properties.
+
+--------------------
+
+**Note:** `signal` components only support `signalwidth` property, and all signals are treated and used as synchronous reset of `field` components, thus the user-defined property `hj_syncresetsignal` can be only assigned in `field` components.
+
+--------------------
+
+#### **Component Instantiation**
+
+```systemrdl
+// The following code fragment shows a simple scalar field component instantiation.
+field {} myField; // single bit field instance named "myField"
+
+// The following code fragment shows a simple array field component instantiation.
+field {} myField[8]; // 8 bit field instance named "myField"
+```
+
+#### **Instance Address Allocation**
+
+##### **Alignment**
+
+##### **Addressing Mode**
+
+##### **Address Allocation Operator**
+
+### **Signal Component**
+
+### **Field Description**
+
+#### **Naming Convention**
+
+Each SystemRDL `field` instance will be generated to an RTL `field` module instance. In generated RTL, stem name of field is `<reg_inst_name>__<field_inst_name>`. Other signals belong to the field are named by prefixing/suffixing elements.  e.g., Register instance name is `ring_cfg`, Field instance name is `rd_ptr`:
+
+1. `field` instance name is `x__<stem>` (prefixed with `x__`): `x__ring_cfg__rd_ptr`
+
+2. output port name for current field value is `<stem>__curr_value`: `ring_cfg__rd_ptr__curr_value`
+
+3. input port for update its value from hardware is `<stem>__next_value`: `ring_cfg__rd_ptr__next_value`
+
+4. input port for quarlifying update is `<stem>__pulse`: `ring_cfg__rd_ptr__pulse`
+
+#### **Description Guideline**
+
+#### **Examples**
+
+```systemrdl
+field {sw=rw; hw=r;} f1[15:0] = 1234;
+
+field f2_t {sw=rw; hw=r;};
+
+f2_t f2[16:16] = 0;
+f2_t f3[17:17] = 0;
+
+field {
+    sw=rw; hw=r;
+    hdl_path_slice = '{"f4"};
+} f4[31:30] = 0;
+field {
+    sw=rw; hw=r;
+    hdl_path_slice = '{"f5_29", "f5_28"};
+} f5[29:28] = 0;
+```
+
+### **Register Description**
+
+#### **Naming Convention**
+
+#### **Description Guideline**
+
+#### **Example**
+
+### **Regfile Description**
+
+### **Memory Description**
+
+### **Addrmap Description**
+
+### **User-defined Property**
+
+#### **hj_syncresetsignal**
+
+Assigning `signal` instance name to `hj_syncresetsignal` property in a `field` component will generate an extra input port in the corresponding field RTL module and the parent `regslv` module, as a synchornous reset signal.
+
+Property definition prototype:
+
+```systemrdl
+property hj_syncresetsignal {
+  component = field;
+  type = string;
+}
+```
+
+A simple example:
+
+```systemrdl
+reg REG_def {
+    regwidth = 32;
+    field {
+      sw = rw;
+    } FIELD_0[31:0] = 0xaaaaaaaa;
+};
+signal {} srst_1, srst_2, srst_3;
+
+REG_def REG1_SRST;
+REG1_SRST.FIELD_0 -> hj_syncresetsignal = "srst_1,srst_2,srst_3";
+```
+
+#### **hj_genrtl**
+
+Property definition prototype:
+
+```systemrdl
+property hj_genrtl {
+  component = addrmap;
+  type = boolean;
+  default = true;
+}
+```
+
+#### **hj_flatten_addrmap**
+
+Property definition prototype:
+
+```systemrdl
+property hj_flatten_addrmap {
+  component = addrmap;
+  type = boolean;
+  default = false;
+}
+```
+
+#### **hj_cdc**
+
+#### **hj_skip_reg_mux_dff_0**
+
+#### **hj_skip_reg_mux_dff_1**
+
+#### **hj_skip_ext_mux_dff_0**
+
+#### **hj_skip_ext_mux_dff_1**
+
+#### **hj_reg_mux_size**
+
+#### **hj_ext_mux_size**
+
+### **Correspondence between SystemRDL and RTL**
 
 (TBD)
 
@@ -288,9 +572,11 @@ Additionally, HRDA does not support non-structural components, such as `signal`.
 
 An example Excel worksheet that describes only one register is shown below, in two language (cn/en) versions.
 
-![in cn language](docs/pics/temp_cn.png)
+<span id="pics_excel_temp_cn"></span>
+![ ](docs/pics/temp_cn.png)
 
-![in en language](docs/pics/temp_en.png)
+<span id="pics_excel_temp_en"></span>
+![ ](docs/pics/temp_en.png)
 
 Designers can refer to this template generated by Template Generator, and edit to extend it, like arrange several tables corresponding to more than one registers in the worksheet in a way that a few blank lines separate each table.
 
@@ -322,7 +608,7 @@ Register elements are as follows.
 
   - Synchronous Reset Signals: In addition to the generic asynchronous reset by default, declaration of independent, one or more synchronous reset signals are supported.
 
-Degisners should keep items mentioned above complete.
+Degisners should keep items mentioned above complete, otherwise HRDA will raise error during Excel worksheet parse.
 
 ### **Rules**
 
@@ -388,121 +674,136 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
 - `-v, --version`
 
-  Show `RDA Tool` version.
+  Show tool version.
 
 - `excel_template`
 
   Subcommand to generate register specification templates in Excel worksheet (.xlsx) format with the following command options.
 
-  `-h, --help`
+  - `-h, --help`
 
-  Show help information for this subcommand.
+    Show help information for this subcommand.
 
-  `-d,--dir [DIR]`
+  - `-d,--dir [DIR]`
 
-  Specify the location of the directory where the template will be generated, the default is the current directory.
+    Specify the location of the directory where the template will be generated, the default is the current directory.
 
-  `-n,--name [NAME]`
+  - `-n,--name [NAME]`
 
-  Specify the file name of the generated template, if there is a duplicate name, it will be automatically distinguished by a number, the default is `template.xlsx`.
+    Specify the file name of the generated template, if there is a duplicate name, it will be automatically distinguished by a number, the default is `template.xlsx`.
 
-  `-rnum [RNUM]`
+  - `-rnum [RNUM]`
 
-  Specify the number of registers to be included in the generated template, default is `1`.
+    Specify the number of registers to be included in the generated template, default is `1`.
 
-  `-rname [TEM1 TEM2 ...]`
+  - `-rname [TEM1 TEM2 ...]`
 
-  Specify the name of the register in the generated template, the default is `TEM`, the default name and abbreviation are the same.
+    Specify the name of the register in the generated template, the default is `TEM`, the default name and abbreviation are the same.
 
-  `-l, --language [cn | en]`
+  - `-l, --language [cn | en]`
 
-  Specify the language format of the generated template: `cn/en`, default is `cn`.
+    Specify the language format of the generated template: `cn/en`, default is `cn`.
 
 - `parse`
 
   Sub-command to check the syntax and rules of the input Excel(.xlsx) and SystemRDL(.rdl) files, and compile them into the hierarchical model defined in `systemrdl-compiler`, with the following command options.
 
-  `-h, --help`
+  - `-h, --help`
 
-  Show help information for this subcommand.
+    Show help information for this subcommand.
 
-  `-f, --file [FILE1 FILE2 ...]`
+  - `-f, --file [FILE1 FILE2 ...]`
 
-  Specify the input Excel(.xlsx)/SystemRDL(.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
+    Specify the input Excel(.xlsx)/SystemRDL(.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
 
-  `-l, --list [LIST_FILE]`
+  - `-l, --list [LIST_FILE]`
 
-  Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
+    Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
 
-  Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
+    Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
 
-  `-g, --generate`
+  - `-g, --generate`
 
-  Explicitly specifying this option parses and converts all input Excel (.xlsx) files to SystemRDL (.rdl) files one by one, with separate `addrmap` for each Excel worksheet. When the input is all Excel (.xlsx) files, parser generates an additional SystemRDL (.rdl) file containing the top-level `addrmap`, which instantiates all child `addrmaps`.
+    Explicitly specifying this option parses and converts all input Excel (.xlsx) files to SystemRDL (.rdl) files one by one, with separate `addrmap` for each Excel worksheet. When the input is all Excel (.xlsx) files, parser generates an additional SystemRDL (.rdl) file containing the top-level `addrmap`, which instantiates all child `addrmaps`.
 
-  If this option is not used, Parser will only conduct rule check and parse, thus no additional files will be generated.
+    If this option is not used, Parser will only conduct rule check and parse, thus no additional files will be generated.
 
-  `-m, --module [MODULE_NAME]`
+  - `-m, --module [MODULE_NAME]`
 
-  If `-g, --generate` option is specified, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification. See detailed information in Chapter 2.4: RTL generator.
+    If `-g, --generate` option is specified, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification. See detailed information in Chapter 2.4: RTL generator.
 
-  `-gdir, --gen_dir [GEN_DIR]`
+  - `-gdir, --gen_dir [GEN_DIR]`
 
-  When using the `-g, --generate` option, this option specifies the directory where the files are generated, the default is the current directory.
+    When using the `-g, --generate` option, this option specifies the directory where the files are generated, the default is the current directory.
 
 - `generate`
 
   subcommand for generating RTL Module, HTML Docs, UVM RAL, C Header Files, with the following command options.
 
-  `-h, --help`
+  - `-h, --help`
 
-  Show help information for this subcommand.
+    Show help information for this subcommand.
 
-  `-f, --file [FILE1 FILE2 ...]`
+  - `-f, --file [FILE1 FILE2 ...]`
 
-  Specify the input Excel(.xlsx)/SystemRDL(.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
+    Specify the input Excel (.xlsx) / SystemRDL (.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
 
-  `-l, --list [LIST_FILE]`
+  - `-l, --list [LIST_FILE]`
 
-  Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
+    Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
 
-  Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
+    Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
 
-  `-m, --module [MODULE_NAME]`
+  - `-m, --module [MODULE_NAME]`
 
-  Used for the situation where all input files are Excel worksheets. Like `-m` option in `parse` sub-command, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification. See detailed information in Chapter 2.4: RTL generator.
+    Used in the situation where all input files are Excel worksheets. Like `-m` option in `parse` sub-command, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification.
 
-  `-gdir, --gen_dir [dir]`
+  - `-gdir, --gen_dir [dir]`
 
-  Specify the directory where the generated files will be stored. If the directory does not exist, an error will be reported. Default is the current directory.
+    Specify the directory where the generated files will be stored. If the directory does not exist, an error will be reported. Default is the current directory.
 
-  `-grtl, --gen_rtl`
+  - `-grtl, --gen_rtl`
 
-  Specify this option explicitly to generate RTL Module code.
+    Specify this option explicitly to generate RTL Module code.
 
-  `-ghtml, --gen_html`
+  - `-ghtml, --gen_html`
 
-  Specify this option explicitly to generate the register description in HTML format.
+    Specify this option explicitly to generate the register description in HTML format.
 
-  `-gral, --gen_ral`
+  - `-gral, --gen_ral`
 
-  Specify this option explicitly to generate the UVM RAL verification model.
+    Specify this option explicitly to generate the UVM RAL verification model.
 
-  `-gch,--gen_cheader`
+  - `-gch,--gen_cheader`
 
-  Specifying this option explicitly generates the register C header file.
+    Specifying this option explicitly generates the register C header file.
 
-  `-gall,--gen_all`
+  - `-gall,--gen_all`
 
-  Specifying this option explicitly generates all of the above files.
+    Specifying this option explicitly generates all of the above files.
 
-### **Examples**
+### **Tool Configuration and Usage Examples**
 
 Before trying all below examples, please ensure that you can execute `hrda` command. If execution of `hrda` fails, first check that `hrda` is in `PATH`, if not, try one of following possible solutions:
 
 - switch to the source directory of the tool
+
 - add the executable `hrda` to `PATH`
-- use `module` tool and `module load` command for configuration.
+
+- use `module` tool and `module load` command for configuration, and it follows the RTL Standard Operating Procedure (rtl_sop).
+
+  - clone the `rtl_sop` repository to your local directory:
+
+    ```bash
+    git clone http://10.2.2.2:2000/hj-micro/rtl_sop.git
+    ```
+
+  - load modules:
+
+    ```bash
+    module load [path_to_rtl_sop]/setup
+    module load inhouse/hrda
+    ```
 
 If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrda excel_template -h`, `hrda parse -h`, `hrda generate -h` to get command/sub-command information. Then you can try following examples:
 

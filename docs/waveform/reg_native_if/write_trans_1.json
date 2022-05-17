@@ -1,0 +1,37 @@
+{
+    "signal": [
+        {
+            "name": "clk",
+            "wave": "P..."
+        },
+        {
+            "name": "req_vld",
+            "wave": "010."
+        },
+        {
+            "name": "wr_en",
+            "wave": "010."
+        },
+        {
+            "name": "rd_en",
+            "wave": "0..."
+        },
+        {
+            "name": "addr [63:0]",
+            "wave": "x2x.",
+            "data": "A1"
+        },
+        {
+            "name": "wr_data [31:0]",
+            "wave": "x2x.",
+            "data": "D1"
+        },
+        {
+            "name": "ack_vld",
+            "wave": "010."
+        }
+    ],
+    "config": {
+        "hscale": 2
+    }
+}
