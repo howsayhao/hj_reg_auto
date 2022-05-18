@@ -109,13 +109,17 @@ class PreprocessListener(RDLListener):
 
     def enter_Field(self, node):
         print("\t"*self.indent, "Entering field: %s" % (node.get_path()))
-        field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name=self.reg_name, field_name=node.inst_name)
-        self.rtl_path.append("{}.field_value".format(field_rtl_inst_name))
-        node.inst.properties["hdl_path_slice"] = [".".join(self.rtl_path)]
+
+        if not self.is_in_3rd_party_IP:
+            field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name=self.reg_name, field_name=node.inst_name)
+            self.rtl_path.append("{}.field_value".format(field_rtl_inst_name))
+            node.inst.properties["hdl_path_slice"] = [".".join(self.rtl_path)]
 
     def exit_Field(self, node):
         print("\t"*self.indent, "Exiting field: %s" % (node.get_path()))
-        self.rtl_path.pop()
+
+        if not self.is_in_3rd_party_IP:
+            self.rtl_path.pop()
 
     def enter_Signal(self, node):
         pass
