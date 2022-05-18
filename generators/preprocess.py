@@ -1,3 +1,4 @@
+from dataclasses import field
 import utils.message as message
 
 from systemrdl import RDLWalker
@@ -20,21 +21,28 @@ class PreprocessListener(RDLListener):
         self.is_in_regmst = False
         self.is_in_3rd_party_IP = False
         self.is_in_ext_mem = False
+        self.gen_rtl_module = False
+        self.need_flatten = False
+        self.flatten_node = None
+        self.reg_name = ""
 
     def enter_Addrmap(self, node):
         """
         """
         print("\t"*self.indent, "Entering addrmap: %s" % (node.get_path()))
+        rtl_hierarchy = node.get_path().replace(".", "__")
 
         if isinstance(node.parent, RootNode):
             self.is_in_regmst = True
-            rtl_module_name = "regmst_{}".format(node.inst_name)
+            self.gen_rtl_module = True
+            rtl_module_name = "regmst_{}".format(rtl_hierarchy)
             print("\t"*self.indent, "generate", rtl_module_name)
         else:
             self.is_in_regmst = False
             if node.get_property("hj_genrtl"):
                 self.is_in_regslv = True
-                rtl_module_name = "regslv_{}".format(node.inst_name)
+                self.gen_rtl_module = True
+                rtl_module_name = "regslv_{}".format(rtl_hierarchy)
                 print("\t"*self.indent, "generate", rtl_module_name)
             elif (not node.get_property("hj_genrtl")) and (not node.get_property("hj_flatten_addrmap")):
                 self.is_in_3rd_party_IP = True
@@ -43,25 +51,34 @@ class PreprocessListener(RDLListener):
             else:
                 return
 
-            self.rtl_path.append(rtl_module_name)
+        if (not self.gen_rtl_module) and (not self.is_in_3rd_party_IP):
+            self.need_flatten = True
+            self.flatten_node = node
+        self.rtl_path.append(rtl_module_name)
 
     def exit_Addrmap(self, node):
         """
         """
         print("\t"*self.indent, "Exiting addrmap: %s" % (node.get_path()))
 
+        if (not self.gen_rtl_module) and (not self.is_in_3rd_party_IP):
+            self.need_flatten = False
+            self.flatten_node = None
+
         if isinstance(node.parent, RootNode):
             self.is_in_regmst = False
+            self.gen_rtl_module = False
         else:
             self.is_in_regmst = True
             if node.get_property("hj_genrtl"):
                 self.is_in_regslv = False
+                self.gen_rtl_module = False
             elif (not node.get_property("hj_genrtl")) and (not node.get_property("hj_flatten_addrmap")):
                 self.is_in_3rd_party_IP = False
             else:
                 return
 
-            self.rtl_path.pop()
+        self.rtl_path.pop()
 
     def enter_Mem(self, node):
         print("\t"*self.indent, "Entering memory: %s" % (node.get_path()))
@@ -74,33 +91,31 @@ class PreprocessListener(RDLListener):
     def enter_Regfile(self, node):
         print("\t"*self.indent, "Entering regfile: %s" % (node.get_path()))
 
-        self.rtl_path.append(node.inst_name)
-
     def exit_Regfile(self, node):
         print("\t"*self.indent, "Exiting regfile: %s" % (node.get_path()))
-
-        self.rtl_path.pop()
 
     def enter_Reg(self, node):
         print("\t"*self.indent, "Entering register: %s" % (node.get_path()))
 
-        if self.is_in_regmst:
-            print("registers cannot be defined in regmst modules yet")
-        elif self.is_in_regslv or self.is_in_3rd_party_IP:
-            self.rtl_path.append(node.inst_name)
-            node.inst.properties["hdl_path"] = ".".join(self.rtl_path)
+        if self.need_flatten:
+            self.reg_name = self.flatten_node.inst_name + "_" + self.flatten_node.get_rel_path(node, hier_separator="_")
+        else:
+            self.reg_name = node.inst_name
 
     def exit_Reg(self, node):
         print("\t"*self.indent, "Exiting register: %s" % (node.get_path()))
 
-        if self.is_in_regslv or self.is_in_3rd_party_IP:
-            self.rtl_path.pop()
+        self.reg_name = ""
 
     def enter_Field(self, node):
         print("\t"*self.indent, "Entering field: %s" % (node.get_path()))
+        field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name=self.reg_name, field_name=node.inst_name)
+        self.rtl_path.append("{}.field_value".format(field_rtl_inst_name))
+        node.inst.properties["hdl_path_slice"] = [".".join(self.rtl_path)]
 
     def exit_Field(self, node):
         print("\t"*self.indent, "Exiting field: %s" % (node.get_path()))
+        self.rtl_path.pop()
 
     def enter_Signal(self, node):
         pass

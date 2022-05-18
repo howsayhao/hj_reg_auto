@@ -63,3 +63,9 @@ property hj_ext_mux_size{
     component = addrmap;
     type = longint;
 };
+
+//
+property hj_ext_hdl_path_down{
+    component = addrmap;
+    type = string;
+};
