@@ -27,6 +27,7 @@ class PreprocessListener(RDLListener):
         self.flatten_node = None
         self.reg_name = ""
         self.is_alias = False
+        print("Start preprocessing......\n", "-"*20)
 
     def enter_Addrmap(self, node):
         """
@@ -42,9 +43,14 @@ class PreprocessListener(RDLListener):
             rtl_module_name = "regmst_{}".format(rtl_hierarchy)
             print("\t"*self.indent, "generate", rtl_module_name)
         else:
-            if (self.is_in_regmst) and (node.get_property("hj_genrtl", default=True)):
-                self.rtl_path.pop()
+            if (self.is_in_regmst):
                 self.is_in_regmst = False
+                if (node.get_property("hj_genrtl", default=True)):
+                    # from regmst to downstream regslv
+                    self.rtl_path.pop()
+                else:
+                    # from regmst to flatten addrmap or 3rd party IPs
+                    rtl_hierarchy = node.parent.get_path().replace(".", "__")
 
             if node.get_property("hj_genrtl", default=True):
                 self.is_in_regslv = True
@@ -73,12 +79,13 @@ class PreprocessListener(RDLListener):
             self.flatten_node = None
 
         if isinstance(node.parent, RootNode):
-            self.is_in_regmst = True
+            self.is_in_regmst = False
             self.gen_rtl_module = False
         else:
-            self.is_in_regmst = False
-            self.rtl_path.append("")
-            if node.get_property("hj_genrtl"):
+            if isinstance(node.parent.parent, RootNode):
+                self.is_in_regmst = True
+
+            if node.get_property("hj_genrtl", default=True):
                 self.is_in_regslv = False
                 self.gen_rtl_module = False
             elif (not node.get_property("hj_genrtl")) and (not node.get_property("hj_flatten_addrmap")):
@@ -132,7 +139,7 @@ class PreprocessListener(RDLListener):
             field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name=self.reg_name, field_name=node.inst_name)
             self.rtl_path.append("{}.field_value".format(field_rtl_inst_name))
             node.inst.properties["hdl_path_slice"] = [".".join(self.rtl_path)]
-            print("\t"*self.indent, "generate hdl_path_slice: %s" % (node.inst.properties["hdl_path_slice"]))
+            print("\t"*self.indent, "generate hdl_path_slice: %s" % (node.inst.properties["hdl_path_slice"][0]))
 
     def exit_Field(self, node):
         print("\t"*self.indent, "Exiting field: %s" % (node.get_path()))
