@@ -25,6 +25,7 @@ class PreprocessListener(RDLListener):
         self.need_flatten = False
         self.flatten_node = None
         self.reg_name = ""
+        self.is_alias = False
 
     def enter_Addrmap(self, node):
         """
@@ -33,12 +34,17 @@ class PreprocessListener(RDLListener):
         rtl_hierarchy = node.get_path().replace(".", "__")
 
         if isinstance(node.parent, RootNode):
+            # the model traverses in the root addrmap,
+            # and shall generate a regmst module in RTL
             self.is_in_regmst = True
             self.gen_rtl_module = True
             rtl_module_name = "regmst_{}".format(rtl_hierarchy)
             print("\t"*self.indent, "generate", rtl_module_name)
         else:
-            self.is_in_regmst = False
+            if self.is_in_regmst:
+                self.rtl_path.pop()
+                self.is_in_regmst = False
+
             if node.get_property("hj_genrtl"):
                 self.is_in_regslv = True
                 self.gen_rtl_module = True
@@ -70,6 +76,7 @@ class PreprocessListener(RDLListener):
             self.gen_rtl_module = False
         else:
             self.is_in_regmst = True
+            self.rtl_path.append("")
             if node.get_property("hj_genrtl"):
                 self.is_in_regslv = False
                 self.gen_rtl_module = False
@@ -97,14 +104,24 @@ class PreprocessListener(RDLListener):
     def enter_Reg(self, node):
         print("\t"*self.indent, "Entering register: %s" % (node.get_path()))
 
-        if self.need_flatten:
-            self.reg_name = self.flatten_node.inst_name + "_" + self.flatten_node.get_rel_path(node, hier_separator="_")
+        self.is_alias = node.is_alias
+
+        if self.is_alias:
+            reg_rtl_inst_name = node.alias_primary.inst_name
         else:
-            self.reg_name = node.inst_name
+            reg_rtl_inst_name = node.inst_name
+
+        if self.need_flatten:
+            self.reg_name = "{}_{}_{}".format(self.flatten_node.inst_name,
+                                              self.flatten_node.get_rel_path(node.parent, hier_separator="_"),
+                                              reg_rtl_inst_name)
+        else:
+            self.reg_name = reg_rtl_inst_name
 
     def exit_Reg(self, node):
         print("\t"*self.indent, "Exiting register: %s" % (node.get_path()))
 
+        self.is_alias = False
         self.reg_name = ""
 
     def enter_Field(self, node):
