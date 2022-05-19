@@ -1,4 +1,5 @@
 from dataclasses import field
+from email.policy import default
 import utils.message as message
 
 from systemrdl import RDLWalker
@@ -11,8 +12,8 @@ class PreprocessListener(RDLListener):
     """
     A listener for preprocessing the register model
 
-    1. Traverse the compiled register model and
-    insert hdl_path properties for each `reg` instance
+    1. insert hdl_path properties for each `field` instance
+    2. complete user-defined properties
     """
     def __init__(self):
         self.indent = 0
@@ -41,25 +42,25 @@ class PreprocessListener(RDLListener):
             rtl_module_name = "regmst_{}".format(rtl_hierarchy)
             print("\t"*self.indent, "generate", rtl_module_name)
         else:
-            if self.is_in_regmst:
+            if (self.is_in_regmst) and (node.get_property("hj_genrtl", default=True)):
                 self.rtl_path.pop()
                 self.is_in_regmst = False
 
-            if node.get_property("hj_genrtl"):
+            if node.get_property("hj_genrtl", default=True):
                 self.is_in_regslv = True
                 self.gen_rtl_module = True
                 rtl_module_name = "regslv_{}".format(rtl_hierarchy)
                 print("\t"*self.indent, "generate", rtl_module_name)
-            elif (not node.get_property("hj_genrtl")) and (not node.get_property("hj_flatten_addrmap")):
+            elif (not node.get_property("hj_genrtl", default=True)) and (not node.get_property("hj_flatten_addrmap", default=True)):
                 self.is_in_3rd_party_IP = True
                 rtl_module_name = node.inst_name
                 print("\t"*self.indent, "generate reg_native_if for 3rd party IP: %s" % (node.inst_name))
-            else:
-                return
 
         if (not self.gen_rtl_module) and (not self.is_in_3rd_party_IP):
             self.need_flatten = True
             self.flatten_node = node
+            return
+
         self.rtl_path.append(rtl_module_name)
 
     def exit_Addrmap(self, node):
@@ -72,10 +73,10 @@ class PreprocessListener(RDLListener):
             self.flatten_node = None
 
         if isinstance(node.parent, RootNode):
-            self.is_in_regmst = False
+            self.is_in_regmst = True
             self.gen_rtl_module = False
         else:
-            self.is_in_regmst = True
+            self.is_in_regmst = False
             self.rtl_path.append("")
             if node.get_property("hj_genrtl"):
                 self.is_in_regslv = False
@@ -131,6 +132,7 @@ class PreprocessListener(RDLListener):
             field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name=self.reg_name, field_name=node.inst_name)
             self.rtl_path.append("{}.field_value".format(field_rtl_inst_name))
             node.inst.properties["hdl_path_slice"] = [".".join(self.rtl_path)]
+            print("\t"*self.indent, "generate hdl_path_slice: %s" % (node.inst.properties["hdl_path_slice"]))
 
     def exit_Field(self, node):
         print("\t"*self.indent, "Exiting field: %s" % (node.get_path()))
@@ -145,13 +147,12 @@ class PreprocessListener(RDLListener):
         pass
 
     def enter_Component(self, node):
+        self.indent += 1
         if not isinstance(node, FieldNode):
             print("\t"*self.indent, node.get_path_segment())
-            self.indent += 1
 
     def exit_Component(self, node):
-        if not isinstance(node, FieldNode):
-            self.indent -= 1
+        self.indent -= 1
 
 def preprocess(root:RootNode):
     # Traverse the register model
