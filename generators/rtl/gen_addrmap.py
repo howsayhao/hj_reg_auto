@@ -15,6 +15,7 @@ class addrmap_str(object):
     def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list):
         # rtl module name from the Top addressmap(self.node)'s instance name
         self.module_name = '__'.join(hierarchy[:]) + '__' + node.get_path_segment() if(master is False) else node.get_path_segment()
+        self.parent_module_name = '__'.join(hierarchy[:])
         self.node = node
         # if the master is true, it will gen a reg_mst
         self.master = master
@@ -114,6 +115,7 @@ class addrmap_str(object):
     def enter(self, node:Node):
         node_name = node.get_path_segment()
         self.hierarchy.append(node_name)
+        # print('\t'*self.indent + 'entering ' + node.get_path_segment())
         self.indent += 1
     # show exit component information
     def exit(self, node:Node):
@@ -251,7 +253,7 @@ class addrmap_str(object):
             new_obj.hierachy= rtl_obj.hierachy[:]
             new_obj.hierachy.append(new_obj.obj)
             rtl_obj.children.append(new_obj)
-            new_obj.module_name = '_'.join(new_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+            new_obj.module_name = self.module_name + '__'  +'_'.join(new_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
 
             # handle snap_shot memory situation
             if(isinstance(new_obj, Memory)):
@@ -266,10 +268,25 @@ class addrmap_str(object):
                 addr_start = new_obj.addr
                 addr_end = new_obj.addr + int(mem_bit / 8)
 
-                start_width = math.ceil(math.log2(addr_start))
-                mask_width = start_width // 4
-                start = addr_start // pow(2,4*mask_width)
-                end = addr_end // pow(2,4*mask_width)
+                # get the masked width
+                start_mask_width = 0
+                end_mask_width = 0
+                addr_start_str = hex(addr_start)
+                addr_end_str = hex(addr_end)
+                for str16 in addr_start_str[: : -1]:
+                    if(str16 != '0'):
+                        break
+                    start_mask_width += 1
+                for str16 in addr_end_str[: : -1]:
+                    if(str16 != '0'):
+                        break
+                    end_mask_width += 1
+
+                mask_width = min(start_mask_width,end_mask_width)
+
+                start = int(addr_start_str[:-mask_width], 16)
+                end = int(addr_end_str[:-mask_width], 16)
+
 
                 for set in range(start,end):
                     entry = set - start
@@ -527,7 +544,7 @@ class addrmap_str(object):
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'INTERNAL FIELD PORT START'.center(100,"*") + '//\n'
-        self.rtl += get_regfile_port(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map)
+        self.rtl += get_regfile_port(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map, self.N)
         self.rtl += '//' + 'INTERNAL FIELD PORT END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
@@ -551,15 +568,15 @@ class addrmap_str(object):
         self.rtl += '//' + 'PORT DECLARATION START'.center(100,"*") + '//\n'
         self.rtl += get_regslv_define(self.master)
         self.rtl += get_ext_define(self.ext_module)
-        self.rtl += get_regfile_define(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map)
+        self.rtl += get_regfile_define(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map, self.N)
         self.rtl += '//' + 'PORT DECLARATION END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'WIRE DECLARATION START'.center(100,"*") + '//\n'
         self.rtl += get_fsm_wire(self.ext_module)
-        self.rtl += get_decoder_wire()
-        self.rtl += get_splitmux_wire()
-        self.rtl += get_regfile_wire(self.cdc)
+        self.rtl += get_decoder_wire(self.M, self.N)
+        self.rtl += get_splitmux_wire(self.M, self.N)
+        self.rtl += get_regfile_wire(self.cdc, self.N)
         self.rtl += get_internal_reg_wire(self.internal_register_map)
         self.rtl += get_snaped_reg_wire(self.snap_register_map)
         if(self.ext_module != []):
@@ -604,7 +621,7 @@ class addrmap_str(object):
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'REGFILE CDC DELIVER INSTANT START'.center(100,"*") + '//\n'
-        self.rtl += get_regfile_cdc(self.cdc)
+        self.rtl += get_regfile_cdc(self.cdc, self.N)
         self.rtl += '//' + 'REGFILE CDC DELIVER INSTANT END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 

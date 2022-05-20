@@ -1,5 +1,3 @@
-from dataclasses import field
-from email.policy import default
 import utils.message as message
 
 from systemrdl import RDLWalker
@@ -13,85 +11,112 @@ class PreprocessListener(RDLListener):
     A listener for preprocessing the register model
 
     1. insert hdl_path properties for each `field` instance
-    2. complete user-defined properties
+    2. complement user-defined properties for instances
+        - hj_genrtl
+        - hj_flatten_addrmap
     """
     def __init__(self):
         self.indent = 0
-        self.rtl_path = []
-        self.is_in_regslv = False
         self.is_in_regmst = False
+        self.is_in_regslv = False
+        self.is_in_flatten_addrmap = False
         self.is_in_3rd_party_IP = False
         self.is_in_ext_mem = False
-        self.gen_rtl_module = False
-        self.need_flatten = False
-        self.flatten_node = None
-        self.reg_name = ""
-        self.is_alias = False
-        print("Start preprocessing......\n", "-"*20)
+        self.rtl_path = []
+        self.reg_name = []
+        self.regslv_name = []
+        self.runtime_stack = []
+        print("Start preprocessing......")
 
     def enter_Addrmap(self, node):
         """
+        handle addrmap instances and distinguish different RTL generation methods
+        by recognizing `hj_genrtl` and `hj_flatten_addrmap` properties in SystemRDL
+
+        There may be several RTL generation methods corresponding to `addrmap` instances:
+        - regmst module
+        - regslv module
+        - flatten addrmap (no module)
+        - 3rd party IP
         """
         print("\t"*self.indent, "Entering addrmap: %s" % (node.get_path()))
-        rtl_hierarchy = node.get_path().replace(".", "__")
+
+        # push properties of the parent addrmap instance to stack (protect)
+        # once entering new addrmap instance
+        self.runtime_stack.append((self.is_in_regmst,
+                                   self.is_in_regslv,
+                                   self.is_in_flatten_addrmap,
+                                   self.is_in_3rd_party_IP))
 
         if isinstance(node.parent, RootNode):
-            # the model traverses in the root addrmap,
-            # and shall generate a regmst module in RTL
-            self.is_in_regmst = True
-            self.gen_rtl_module = True
-            rtl_module_name = "regmst_{}".format(rtl_hierarchy)
+            # the model traverses in the root addrmap, and shall generate a regmst module in RTL
+
+            # set properties
+            node.inst.properties["hj_genrtl"] = True
+            node.inst.properties["hj_flatten_addrmap"] = False
+
+            self.is_in_regmst,
+            self.is_in_regslv,
+            self.is_in_flatten_addrmap,
+            self.is_in_3rd_party_IP = True, False, False, False
+
+            rtl_module_name = "regmst_{}".format(node.inst_name)
+            self.rtl_path.append(rtl_module_name)
             print("\t"*self.indent, "generate", rtl_module_name)
+
+        elif node.get_property("hj_genrtl", default=True):
+            # the model traverses in a sub-addrmap, and shall generate a regslv module in RTL
+
+            # set properties
+            node.inst.properties["hj_genrtl"] = True
+            node.inst.properties["hj_flatten_addrmap"] = False
+
+            self.is_in_regmst,
+            self.is_in_regslv,
+            self.is_in_flatten_addrmap,
+            self.is_in_3rd_party_IP = False, True, False, False
+
+            self.regslv_name.append(node.inst_name)
+            rtl_module_name = "regslv_{}".format("__".join(self.regslv_name))
+            self.rtl_path.append(rtl_module_name)
+            print("\t"*self.indent, "generate", rtl_module_name)
+
+        elif node.get_property("hj_flatten_addrmap", default=True):
+            # the model traverses in a sub-addrmap, and shall generate no module in RTL,
+            # all components inside this addrmap will be flatten in the parent scope
+
+            # set properties
+            node.inst.properties["hj_genrtl"] = False
+            node.inst.properties["hj_flatten_addrmap"] = True
+
+            self.is_in_regmst,
+            self.is_in_regslv,
+            self.is_in_flatten_addrmap,
+            self.is_in_3rd_party_IP = False, True, True, False
+
+            self.reg_name.append(node.inst_name)
         else:
-            if (self.is_in_regmst):
-                self.is_in_regmst = False
-                if (node.get_property("hj_genrtl", default=True)):
-                    # from regmst to downstream regslv
-                    self.rtl_path.pop()
-                else:
-                    # from regmst to flatten addrmap or 3rd party IPs
-                    rtl_hierarchy = node.parent.get_path().replace(".", "__")
+            # the model traverses in a sub-addrmap, and shall forward
+            # reg_native_if to 3rd party IP, so no RTL module is generated
 
-            if node.get_property("hj_genrtl", default=True):
-                self.is_in_regslv = True
-                self.gen_rtl_module = True
-                rtl_module_name = "regslv_{}".format(rtl_hierarchy)
-                print("\t"*self.indent, "generate", rtl_module_name)
-            elif (not node.get_property("hj_genrtl", default=True)) and (not node.get_property("hj_flatten_addrmap", default=True)):
-                self.is_in_3rd_party_IP = True
-                rtl_module_name = node.inst_name
-                print("\t"*self.indent, "generate reg_native_if for 3rd party IP: %s" % (node.inst_name))
+            # set properties
+            node.inst.properties["hj_genrtl"] = False
+            node.inst.properties["hj_flatten_addrmap"] = False
 
-        if (not self.gen_rtl_module) and (not self.is_in_3rd_party_IP):
-            self.need_flatten = True
-            self.flatten_node = node
-            return
-
-        self.rtl_path.append(rtl_module_name)
+            self.is_in_regmst,
+            self.is_in_regslv,
+            self.is_in_3rd_party_IP = False, False, True
 
     def exit_Addrmap(self, node):
         """
         """
         print("\t"*self.indent, "Exiting addrmap: %s" % (node.get_path()))
 
-        if (not self.gen_rtl_module) and (not self.is_in_3rd_party_IP):
-            self.need_flatten = False
-            self.flatten_node = None
-
-        if isinstance(node.parent, RootNode):
-            self.is_in_regmst = False
-            self.gen_rtl_module = False
-        else:
-            if isinstance(node.parent.parent, RootNode):
-                self.is_in_regmst = True
-
-            if node.get_property("hj_genrtl", default=True):
-                self.is_in_regslv = False
-                self.gen_rtl_module = False
-            elif (not node.get_property("hj_genrtl")) and (not node.get_property("hj_flatten_addrmap")):
-                self.is_in_3rd_party_IP = False
-            else:
-                return
+        # pop properties of the parent addrmap instance to stack (restore)
+        # once exiting new addrmap instance
+        self.is_in_regmst,
+        self.is_in_regslv,
+        self.is_in_3rd_party_IP = self.runtime_stack.pop()
 
         self.rtl_path.pop()
 
@@ -106,8 +131,12 @@ class PreprocessListener(RDLListener):
     def enter_Regfile(self, node):
         print("\t"*self.indent, "Entering regfile: %s" % (node.get_path()))
 
+        self.reg_name.append(node.inst_name)
+
     def exit_Regfile(self, node):
         print("\t"*self.indent, "Exiting regfile: %s" % (node.get_path()))
+
+        self.reg_name.pop()
 
     def enter_Reg(self, node):
         print("\t"*self.indent, "Entering register: %s" % (node.get_path()))

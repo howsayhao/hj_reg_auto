@@ -12,7 +12,7 @@ from .rtl_type import *
 class Root_str(object):
     def __init__(self, node:Node, folder_name:str):
         self.node = node
-        self.module_name = 'reg_tree'
+        self.module_name = 'reg'
         # file place
         self.folder_name = folder_name
         # root rtl_obj
@@ -29,7 +29,7 @@ class Root_str(object):
         self.field_out = []
         # rtl nested
         # self.children = []
-        self.rtl = ''
+        self.mhdl = ''
         self.def_str = ''
         self.port_str = ''
 
@@ -68,9 +68,9 @@ class Root_str(object):
         Top_Map.write()
         self.children.append(Top_Map)
         # get all object instantiate
-        self.define()
-        self.port()
-        self.third_party_wire()
+        # self.define()
+        # self.port()
+        # self.third_party_wire()
         self.write()
 
     def define(self):
@@ -157,90 +157,37 @@ class Root_str(object):
 
     # write the top rtl file for including others
     def write(self):
-        self.rtl += '`define ADDR_WIDTH 7\'d64\n'
-        self.rtl += '`define DATA_WIDTH 6\'d32\n'
-        self.rtl += 'module ' + 'reg_tree \n'
-        # self.rtl += '#(parameter ADDR_WIDTH = 64,\nparameter DATA_WIDTH = 32)\n'
-        self.rtl += '(\n'
-        self.rtl += self.port_str
-        self.rtl += ');\n'
-
-        self.rtl += '//parameter instance here\n'
-        # self.rtl += 'parameter ADDR_WIDTH = 64;\n'
-        # self.rtl += 'parameter DATA_WIDTH = 32;\n'
-        self.rtl += '//wire definition here\n'
-        # get internal/external wire definition and connectinon
-        self.rtl += self.def_str
-        ins = self.reg_slv[:]
-        ins.insert(0,self.reg_mst)
-        # instantiate the regmst and regslv
-        self.rtl += '//reg module instance here\n'
-        for slv in ins:
-            if(slv.master):
-                self.rtl += 'regmst_%s #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))\n\tregmst_%s (\n'%(slv.module_name, slv.module_name)
+        self.mhdl = ''
+        instanted_module = self.reg_slv[:]
+        instanted_module.insert(0,self.reg_mst)
+        for slv in instanted_module:
+            if slv.master:
+                module_name = 'regmst_' + slv.module_name
+                self.mhdl += '%s %s(\n'%(module_name, module_name)
+                self.mhdl += '\t\"s/^global_sync_reset_out$/%s_global_sync_reset_out/g\" \\\n'%(slv.module_name)
+                self.mhdl += ');\n\n'
             else:
-                self.rtl += 'regslv_%s #(.ADDR_WIDTH(`ADDR_WIDTH), .DATA_WIDTH(`DATA_WIDTH))\n\tregslv_%s (\n'%(slv.module_name, slv.module_name)
-            # each instance has correspond reg_slv_if
-            slv_if = slv.reg_slv_if
-            if(slv.master):
-                self.rtl += '\t//APB interface instance\n' + \
-                            '\t.clk(%s)'%(slv_if.clk) + \
-                            ',.rstn(%s)'%(slv_if.rstn) + \
-                            ',.PADDR(PADDR), .PWRITE(PWRITE), .PSEL(PSEL), .PENABLE(PENABLE), .PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY), .PSLVERR(PSLVERR)\n\t'
-            else:
-                self.rtl += '\t//reg_module upstream interface instance\n' + \
-                            '\t.clk(%s)'%(slv_if.clk) + \
-                            ',.rstn(%s)'%(slv_if.rstn) + \
-                            ',.req_vld(%s)'%(slv_if.req_vld) + \
-                            ',.req_rdy(%s)\n\t'%(slv_if.req_rdy) + \
-                            ',.wr_en(%s)'%(slv_if.wr_en) + \
-                            ',.rd_en(%s)'%(slv_if.rd_en) + \
-                            ',.addr(%s)'%(slv_if.addr) + \
-                            ',.wr_data(%s)\n\t'%(slv_if.wr_data) + \
-                            ',.ack_vld(%s)'%(slv_if.ack_vld) + \
-                            ',.ack_rdy(%s)'%(slv_if.ack_rdy) + \
-                            ',.rd_data(%s)\n\t'%(slv_if.rd_data)
+                module_name = 'regslv_' + slv.module_name
+                self.mhdl += '%s %s(\n'%(module_name, module_name)
+                self.mhdl += '\t\t\t\"s/fsm_clk/PCLK/g\", \\\n'
+                self.mhdl += '\t\t\t\"s/fsm_rstn/PRESETn/g\", \\\n'
+                if(slv.cdc):
+                    self.mhdl += '\t\t\t\"s/regfile_clk/%s_regfile_clk/g\", \\\n'%(slv.module_name)
+                    self.mhdl += '\t\t\t\"s/regfile_rstn/%s_regfile_rstn/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^req_vld$/%s_req_vld/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^ack_vld$/%s_ack_vld/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^wr_en$/%s_wr_en/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^rd_en$/%s_rd_en/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^addr$/%s_addr/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^wr_data$/%s_wr_data/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^rd_data$/%s_rd_data/g\", \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^global_sync_reset_in$/%s_global_sync_reset_out/g\", \\\n'%(slv.parent_module_name)
+                self.mhdl += '\t\t\t\"s/^global_sync_reset_out$/%s_global_sync_reset_out/g\" \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t);\n\n'
 
-            for native_sync_signal in slv.signal_map + self.global_signal_map:
-                self.rtl += ',.%s(%s)\n\t'%(native_sync_signal.hierachy_name, native_sync_signal.hierachy_name)
-            # regmst will generate the interrupt signal and get clear signal from top
-            self.rtl += ',.clear(clear), .interrupt(interrupt)\n\t' if(slv.master is True) else ''
-            if(slv.M >= 0):
-                # when module has external downstream module, the corresponding ports will be generated
-                module_name = 'regslv_' + slv.module_name if(slv.master is not True) else 'regmst_' + slv.module_name
-                self.rtl += '//reg_slv downstream interface instance\n\t' + \
-                            ',.ext_req_vld(%s_ext_req_vld),'%(module_name) +  \
-                            '.ext_req_rdy(%s_ext_req_rdy),'%(module_name) +  \
-                            '.ext_ack_vld(%s_ext_ack_vld),'%(module_name) +  \
-                            '.ext_ack_rdy(%s_ext_ack_rdy),'%(module_name) +  \
-                            '.ext_rd_data(%s_ext_rd_data)\n\t'%(module_name) +\
-                            ',.ext_wr_en(%s_wr_en),'%(module_name) +  \
-                            '.ext_rd_en(%s_rd_en),'%(module_name) +  \
-                            '.ext_wr_data(%s_wr_data),'%(module_name) +  \
-                            '.ext_addr(%s_addr),'%(module_name) + \
-                            '.cdc_pulse_out(%s_cdc_pulse_out)\n\t'%(module_name)
-
-            # regslv will get the reset signal from upstream module as well as other signal
-            module_name = 'regslv_' + slv.module_name if(slv.master is not True) else 'regmst_' + slv.module_name
-            if(slv.master):
-                self.rtl += ',.global_sync_reset_out(%s_fsm_sync_reset)'%(module_name)
-            else:
-                self.rtl += ',.global_sync_reset_out(%s_fsm_sync_reset)'%(module_name)
-                self.rtl += ',.global_sync_reset_in(%s)'%(slv_if.global_sync)
-            # each modules' field ports will be connected to top transparently
-            i = 0
-            self.rtl += '//field ports instance\n\t'
-            for field_port in slv.field_in + slv.field_out:
-                self.rtl += ',.%s(%s)'%(field_port.obj,field_port.obj)
-                i += 1
-                self.rtl += '\n\t' if (i % 3 == 0) else ''
-            self.rtl += '\n\t);\n'
-
-        self.rtl += 'endmodule'
-
-        file_name = self.module_name + '_top.v'
+        file_name = self.module_name + '_top.mhdl'
         fw = open(file_name,'w')
-        fw.write(self.rtl)
+        fw.write(self.mhdl)
         fw.close()
         folder_name = self.folder_name
         shutil.move(file_name,folder_name)
