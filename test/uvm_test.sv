@@ -213,8 +213,8 @@ package uvm_test;
             this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
             this.shared_2 = new("shared_2");
             this.shared_2.configure(this);
-            shared_2.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__test_map_2_inst__shared_2__FIELD_2.field_value", 12, 2);
-            shared_2.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__test_map_2_inst__shared_2__FIELD_1.field_value", 14, 3);
+            shared_2.add_hdl_path_slice("x__test_map_2_inst_shared_2__FIELD_2.field_value", 12, 2);
+            shared_2.add_hdl_path_slice("x__test_map_2_inst_shared_2__FIELD_1.field_value", 14, 3);
             this.shared_2.build();
             this.default_map.add_reg(this.shared_2, 'h0);
         endfunction : build
@@ -249,8 +249,8 @@ package uvm_test;
             this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
             this.shared_3 = new("shared_3");
             this.shared_3.configure(this);
-            shared_3.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__test_map_3_inst__shared_3__FIELD_2.field_value", 12, 2);
-            shared_3.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__test_map_3_inst__shared_3__FIELD_1.field_value", 14, 3);
+            shared_3.add_hdl_path_slice("x__test_map_2_inst_test_map_3_inst_shared_3__FIELD_2.field_value", 12, 2);
+            shared_3.add_hdl_path_slice("x__test_map_2_inst_test_map_3_inst_shared_3__FIELD_1.field_value", 14, 3);
             this.shared_3.build();
             this.default_map.add_reg(this.shared_3, 'h0);
         endfunction : build
@@ -300,14 +300,14 @@ package uvm_test;
             this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
             this.reg1 = new("reg1");
             this.reg1.configure(this);
-            reg1.add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__reg1__f1.field_value", 0, 1);
-            reg1.add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__reg1__f2.field_value", 8, 8);
+            reg1.add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__test_map_2_inst_test_map_3_inst_reg1__f1.field_value", 0, 1);
+            reg1.add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__test_map_2_inst_test_map_3_inst_reg1__f2.field_value", 8, 8);
             this.reg1.build();
             this.default_map.add_reg(this.reg1, 'h0);
             foreach(this.reg_array[i0]) begin
                 this.reg_array[i0] = new($sformatf("reg_array[%0d]", i0));
                 this.reg_array[i0].configure(this);
-                reg_array[i0].add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__reg_array__x.field_value", 0, 1);
+                reg_array[i0].add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__test_map_2_inst_test_map_3_inst_reg_array__x.field_value", 0, 1);
                 this.reg_array[i0].build();
                 this.default_map.add_reg(this.reg_array[i0], 'h100 + i0*'h4);
             end

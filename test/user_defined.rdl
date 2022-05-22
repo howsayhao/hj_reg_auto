@@ -69,3 +69,8 @@ property hj_ext_hdl_path_down{
     component = addrmap;
     type = string;
 };
+
+property hj_reserved_space{
+    component = mem;
+    type = boolean;
+};
