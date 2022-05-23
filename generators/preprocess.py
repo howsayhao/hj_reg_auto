@@ -16,13 +16,13 @@ class PreprocessListener(RDLListener):
         - hj_genrtl
         - hj_flatten_addrmap
     - check whether there are illegal assignments
+    - filter some instances by setting ispresent=false
     """
-    def __init__(self):
+    def __init__(self, user_ops:dict):
         """
         set some properties used in the traverse process
         """
         self.indent = 0
-
         self.is_in_regmst = False
         self.is_in_regslv = False
         self.is_in_flatten_addrmap = False
@@ -33,6 +33,11 @@ class PreprocessListener(RDLListener):
         self.reg_name = []
         self.regslv_name = []
         self.runtime_stack = []
+        self.total_reg_num = 0
+
+        # user-defined operations
+        self.filter_pattern = user_ops.get("filter", None)
+
         print("Start preprocessing......")
 
     def enter_Addrmap(self, node):
@@ -77,7 +82,9 @@ class PreprocessListener(RDLListener):
             self.rtl_path.append(rtl_module_name)
             print("\t"*self.indent, "generate", rtl_module_name)
 
-        elif (node.get_property("hj_genrtl", default=True)) and (not self.is_in_flatten_addrmap):
+        elif (node.get_property("hj_genrtl", default=True)) and \
+            (not self.is_in_flatten_addrmap) and \
+            (not node.inst.def_src_ref.filename.endswith(".xml")):
             # hj_genrtl = True, hj_flatten_addrmap = <don't care>
             # the model traverses in a sub-addrmap, and shall generate a regslv module in RTL
 
@@ -92,7 +99,9 @@ class PreprocessListener(RDLListener):
             self.rtl_path.append(rtl_module_name)
             print("\t"*self.indent, "generate", rtl_module_name)
 
-        elif node.get_property("hj_flatten_addrmap", default=True) or self.is_in_flatten_addrmap:
+        elif (node.get_property("hj_flatten_addrmap", default=True) or \
+            self.is_in_flatten_addrmap) and \
+            (not node.inst.def_src_ref.filename.endswith(".xml")):
             # hj_genrtl = False, hj_flatten_addrmap = True
             # the model traverses in a sub-addrmap, and shall generate no module in RTL,
             # all components inside this addrmap will be flatten in the parent scope
@@ -128,7 +137,7 @@ class PreprocessListener(RDLListener):
             ext_hdl_path = node.get_property("hj_ext_hdl_path_down", default="")
             if ext_hdl_path == "":
                 message.error("external hdl path property (hj_ext_hdl_path_down) "
-                              "for 3rd party IP is not provided")
+                              "for 3rd party IP: %s is not provided" % (node.inst_name))
                 sys.exit(1)
             self.rtl_path.append(ext_hdl_path)
 
@@ -179,6 +188,7 @@ class PreprocessListener(RDLListener):
             reg_rtl_inst_name = node.inst_name
 
         self.reg_name.append(reg_rtl_inst_name)
+        self.total_reg_num += 1
 
     def exit_Reg(self, node):
         print("\t"*self.indent, "Exiting register: %s" % (node.get_path()))
@@ -222,7 +232,16 @@ class PreprocessListener(RDLListener):
     def exit_Component(self, node):
         self.indent -= 1
 
-def preprocess(root:RootNode):
+    def get_statistics(self):
+        """
+        get some statistic information
+        - total register number
+        """
+        message.info("total_register: %d" % (self.total_reg_num))
+
+def preprocess(root:RootNode, **user_ops):
     # Traverse the register model
     preprocess_walker = RDLWalker(unroll=True)
-    preprocess_walker.walk(root, PreprocessListener())
+    preprocess_listener = PreprocessListener(user_ops)
+    preprocess_walker.walk(root, preprocess_listener)
+    preprocess_listener.get_statistics()

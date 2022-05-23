@@ -16,18 +16,18 @@ For modules with few registers and simple address mapping, Excel worksheet is re
 The overall tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
 <span id="pics_tool_flow"></span>
-![tool_flow](docs/pics/tool_flow.svg)
 <center>
+    <img src="docs/pics/tool_flow.svg">
     <div style="display: inline-block;
     color: #999;
-    padding: 2px;">Figure 1.1 Register Design Automation (HRDA) tool flow </div>
+    padding: 5px;">Figure 1.1 Register Design Automation (HRDA) tool flow </div>
 </center>
 
 ### **1.1 Register Template Generator**
 
 The template generator provide convenience for designers who edit Excel worksheets. It generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. Designers can refer to these templates and revise them to meet their own specifications.
 
-See [Figure ](#) and [Excel Worksheet Guideline](#excel-worksheet-guideline) for detailed information.
+See [Figure ](#) and [Excel Worksheet Guideline](#4-excel-worksheet-guideline) for detailed information.
 
 ### **1.2 Excel Parser**
 

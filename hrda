@@ -16,17 +16,17 @@ __version__ = "0.1.0"
 
 class CommandRunner:
     """
-    提供命令行解析和执行功能
+    Provide command-line argument parse and execution functionality
 
-    Sub-commands
+    Subcommands
     ------------
-    `excel_template` : 生成寄存器Excel模板
+    `excel_template` : generate Excel worksheet templates
     `parse` : 对Excel(.xlsx)或SystemRDL(.rdl)形式的寄存器说明进行解析, 并支持混合输入
     `generate` : 后端Generator生成RTL Module, HTML Docs, UVM RAL Model, C Headers
     """
     def build_parser(self):
         """
-        构建命令行解析器
+        Build argument parser
         """
         parser = argparse.ArgumentParser(prog="hrda",
                                          description="Register Design Automation (RDA) Tool")
@@ -77,7 +77,7 @@ class CommandRunner:
         parser_parse.add_argument("-l", "--list",
                                   help="a list including paths and names of all files "
                                        "(useful for large number of files)")
-        parser_parse.add_argument("-g", "--generate",
+        parser_parse.add_argument("-grdl", "--gen_rdl",
                                   action="store_true",
                                   help="generate SystemRDL(.rdl) file based on all input Excel(.xlsx) specifications")
         parser_parse.add_argument("-m", "--module",
@@ -117,6 +117,9 @@ class CommandRunner:
         parser_generate.add_argument("-gral", "--gen_ral",
                                      action="store_true",
                                      help="generate UVM RAL model")
+        parser_generate.add_argument("--filter",
+                                     nargs="+",
+                                     help="filter some instances (support wildcard character)")
         parser_generate.add_argument("-gch", "--gen_cheader",
                                      action="store_true",
                                      help="generate C headers")
@@ -130,7 +133,8 @@ class CommandRunner:
     @staticmethod
     def _generate_excel(args):
         """
-        子命令`excel_template`的执行函数, 作为Wrapper检查参数合法性并向下传递
+        Execution of subcommand `excel_template` as a wrapper.
+        This method check the legality of parameters and pass them down
 
         Parameter
         ---------
@@ -143,7 +147,7 @@ class CommandRunner:
         if not os.path.exists(args.dir):
             message.error("directory does not exists!")
             sys.exit(1)
-        if not ".xlsx" in args.name:
+        if not args.name.endswith(".xlsx"):
             args.name += ".xlsx"
 
         reg_names = args.rname
@@ -160,17 +164,17 @@ class CommandRunner:
 
         Parameter
         ---------
-        `args.file` : `list`类型, 需要解析所有Excel/SystemRDL文件名
+        `args.file` : `list`, 需要解析所有Excel/SystemRDL文件名
         `args.list` : 存放所有需要解析的Excel文件名的list文本文件名
-        `args.generate` : `bool`类型, 是否将输入的Excel生成对应的SystemRDL文件
+        `args.gen_rdl` : `bool`, 是否将输入的Excel生成对应的SystemRDL文件
         `args.module` : 输入全部为Excel文件时生成的SystemRDL中顶层addrmap定义名
         `args.gen_dir` : 生成的SystemRDL的目录位置
         """
         parse(args.file,
               args.list,
               args.gen_dir,
-              excel_top_name=args.module,
-              to_generate_rdl=args.generate)
+              to_generate_rdl=args.gen_rdl,
+              excel_top_name=args.module)
 
     @staticmethod
     def _generate(args):
@@ -195,10 +199,10 @@ class CommandRunner:
                      excel_top_name=args.module)
 
         if not os.path.exists(args.gen_dir):
-            message.error("-gd/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
+            message.error("-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
             sys.exit(1)
 
-        preprocess.preprocess(root)
+        preprocess.preprocess(root, filter=args.filter)
 
         if args.gen_all or args.gen_rtl:
             export_rtl(root, args.gen_dir)

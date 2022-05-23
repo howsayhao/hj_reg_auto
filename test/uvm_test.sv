@@ -4,186 +4,6 @@ package uvm_test;
     `include "uvm_macros.svh"
     import uvm_pkg::*;
     
-    // Reg - root_map.test_map_1_inst.TEM21
-    class root_map__test_map_1_inst__TEM21 extends uvm_reg;
-        rand uvm_reg_field FIELD_3;
-        rand uvm_reg_field FIELD_2;
-        rand uvm_reg_field FIELD_1;
-
-        function new(string name = "root_map__test_map_1_inst__TEM21");
-            super.new(name, 32, UVM_NO_COVERAGE);
-        endfunction : new
-
-        virtual function void build();
-            this.FIELD_3 = new("FIELD_3");
-            this.FIELD_3.configure(this, 1, 13, "W1T", 1, 'h1, 1, 1, 0);
-            this.FIELD_2 = new("FIELD_2");
-            this.FIELD_2.configure(this, 3, 14, "W1S", 1, 'h0, 1, 1, 0);
-            this.FIELD_1 = new("FIELD_1");
-            this.FIELD_1.configure(this, 1, 17, "RC", 1, 'h0, 1, 1, 0);
-        endfunction : build
-    endclass : root_map__test_map_1_inst__TEM21
-
-    // Reg - root_map.test_map_1_inst.TEM22
-    class root_map__test_map_1_inst__TEM22 extends uvm_reg;
-        rand uvm_reg_field FIELD_3;
-        rand uvm_reg_field FIELD_2;
-        rand uvm_reg_field FIELD_1;
-
-        function new(string name = "root_map__test_map_1_inst__TEM22");
-            super.new(name, 32, UVM_NO_COVERAGE);
-        endfunction : new
-
-        virtual function void build();
-            this.FIELD_3 = new("FIELD_3");
-            this.FIELD_3.configure(this, 1, 13, "W1T", 1, 'h1, 1, 1, 0);
-            this.FIELD_2 = new("FIELD_2");
-            this.FIELD_2.configure(this, 3, 14, "W1S", 1, 'h0, 1, 1, 0);
-            this.FIELD_1 = new("FIELD_1");
-            this.FIELD_1.configure(this, 1, 17, "RC", 1, 'h0, 1, 1, 0);
-        endfunction : build
-    endclass : root_map__test_map_1_inst__TEM22
-
-    // Reg - root_map.test_map_1_inst.TEM23
-    class root_map__test_map_1_inst__TEM23 extends uvm_reg;
-        rand uvm_reg_field FIELD_3;
-        rand uvm_reg_field FIELD_2;
-        rand uvm_reg_field FIELD_1;
-
-        function new(string name = "root_map__test_map_1_inst__TEM23");
-            super.new(name, 32, UVM_NO_COVERAGE);
-        endfunction : new
-
-        virtual function void build();
-            this.FIELD_3 = new("FIELD_3");
-            this.FIELD_3.configure(this, 1, 13, "W1T", 1, 'h1, 1, 1, 0);
-            this.FIELD_2 = new("FIELD_2");
-            this.FIELD_2.configure(this, 3, 14, "W1S", 1, 'h0, 1, 1, 0);
-            this.FIELD_1 = new("FIELD_1");
-            this.FIELD_1.configure(this, 1, 17, "RC", 1, 'h0, 1, 1, 0);
-        endfunction : build
-    endclass : root_map__test_map_1_inst__TEM23
-
-    // Reg - root_map.test_map_1_inst.TEM21_alias
-    class root_map__test_map_1_inst__TEM21_alias extends uvm_reg;
-        rand uvm_reg_field FIELD_3;
-        rand uvm_reg_field FIELD_2;
-        rand uvm_reg_field FIELD_1;
-
-        function new(string name = "root_map__test_map_1_inst__TEM21_alias");
-            super.new(name, 32, UVM_NO_COVERAGE);
-        endfunction : new
-
-        virtual function void build();
-            this.FIELD_3 = new("FIELD_3");
-            this.FIELD_3.configure(this, 1, 13, "W1T", 1, 'h1, 1, 1, 0);
-            this.FIELD_2 = new("FIELD_2");
-            this.FIELD_2.configure(this, 3, 14, "W0CRS", 1, 'h0, 1, 1, 0);
-            this.FIELD_1 = new("FIELD_1");
-            this.FIELD_1.configure(this, 1, 17, "RC", 1, 'h0, 1, 1, 0);
-        endfunction : build
-    endclass : root_map__test_map_1_inst__TEM21_alias
-
-    // Reg - root_map.test_map_1_inst.TEM22_alias
-    class root_map__test_map_1_inst__TEM22_alias extends uvm_reg;
-        rand uvm_reg_field FIELD_3;
-        rand uvm_reg_field FIELD_2;
-        rand uvm_reg_field FIELD_1;
-
-        function new(string name = "root_map__test_map_1_inst__TEM22_alias");
-            super.new(name, 32, UVM_NO_COVERAGE);
-        endfunction : new
-
-        virtual function void build();
-            this.FIELD_3 = new("FIELD_3");
-            this.FIELD_3.configure(this, 1, 13, "W1T", 1, 'h1, 1, 1, 0);
-            this.FIELD_2 = new("FIELD_2");
-            this.FIELD_2.configure(this, 3, 14, "W1S", 1, 'h0, 1, 1, 0);
-            this.FIELD_1 = new("FIELD_1");
-            this.FIELD_1.configure(this, 1, 17, "RC", 1, 'h0, 1, 1, 0);
-        endfunction : build
-    endclass : root_map__test_map_1_inst__TEM22_alias
-
-    // Reg - root_map.test_map_1_inst.TEM23_alias
-    class root_map__test_map_1_inst__TEM23_alias extends uvm_reg;
-        rand uvm_reg_field FIELD_3;
-        rand uvm_reg_field FIELD_2;
-        rand uvm_reg_field FIELD_1;
-
-        function new(string name = "root_map__test_map_1_inst__TEM23_alias");
-            super.new(name, 32, UVM_NO_COVERAGE);
-        endfunction : new
-
-        virtual function void build();
-            this.FIELD_3 = new("FIELD_3");
-            this.FIELD_3.configure(this, 1, 13, "W1T", 1, 'h1, 1, 1, 0);
-            this.FIELD_2 = new("FIELD_2");
-            this.FIELD_2.configure(this, 3, 14, "W1SRC", 1, 'h0, 1, 1, 0);
-            this.FIELD_1 = new("FIELD_1");
-            this.FIELD_1.configure(this, 1, 17, "RC", 1, 'h0, 1, 1, 0);
-        endfunction : build
-    endclass : root_map__test_map_1_inst__TEM23_alias
-
-    // Addrmap - root_map.test_map_1_inst
-    class root_map__test_map_1_inst extends uvm_reg_block;
-        rand root_map__test_map_1_inst__TEM21 TEM21;
-        rand root_map__test_map_1_inst__TEM22 TEM22;
-        rand root_map__test_map_1_inst__TEM23 TEM23;
-        rand root_map__test_map_1_inst__TEM21_alias TEM21_alias;
-        rand root_map__test_map_1_inst__TEM22_alias TEM22_alias;
-        rand root_map__test_map_1_inst__TEM23_alias TEM23_alias;
-
-        function new(string name = "root_map__test_map_1_inst");
-            super.new(name);
-        endfunction : new
-
-        virtual function void build();
-            this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
-            this.TEM21 = new("TEM21");
-            this.TEM21.configure(this);
-            TEM21.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM21__FIELD_3.field_value", 13, 1);
-            TEM21.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM21__FIELD_2.field_value", 14, 3);
-            TEM21.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM21__FIELD_1.field_value", 17, 1);
-            this.TEM21.build();
-            this.default_map.add_reg(this.TEM21, 'hc);
-            this.TEM22 = new("TEM22");
-            this.TEM22.configure(this);
-            TEM22.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM22__FIELD_3.field_value", 13, 1);
-            TEM22.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM22__FIELD_2.field_value", 14, 3);
-            TEM22.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM22__FIELD_1.field_value", 17, 1);
-            this.TEM22.build();
-            this.default_map.add_reg(this.TEM22, 'h10);
-            this.TEM23 = new("TEM23");
-            this.TEM23.configure(this);
-            TEM23.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM23__FIELD_3.field_value", 13, 1);
-            TEM23.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM23__FIELD_2.field_value", 14, 3);
-            TEM23.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM23__FIELD_1.field_value", 17, 1);
-            this.TEM23.build();
-            this.default_map.add_reg(this.TEM23, 'h14);
-            this.TEM21_alias = new("TEM21_alias");
-            this.TEM21_alias.configure(this);
-            TEM21_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM21__FIELD_3.field_value", 13, 1);
-            TEM21_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM21__FIELD_2.field_value", 14, 3);
-            TEM21_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM21__FIELD_1.field_value", 17, 1);
-            this.TEM21_alias.build();
-            this.default_map.add_reg(this.TEM21_alias, 'h10c);
-            this.TEM22_alias = new("TEM22_alias");
-            this.TEM22_alias.configure(this);
-            TEM22_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM22__FIELD_3.field_value", 13, 1);
-            TEM22_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM22__FIELD_2.field_value", 14, 3);
-            TEM22_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM22__FIELD_1.field_value", 17, 1);
-            this.TEM22_alias.build();
-            this.default_map.add_reg(this.TEM22_alias, 'h110);
-            this.TEM23_alias = new("TEM23_alias");
-            this.TEM23_alias.configure(this);
-            TEM23_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM23__FIELD_3.field_value", 13, 1);
-            TEM23_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM23__FIELD_2.field_value", 14, 3);
-            TEM23_alias.add_hdl_path_slice("regslv_root_map__test_map_1_inst.x__TEM23__FIELD_1.field_value", 17, 1);
-            this.TEM23_alias.build();
-            this.default_map.add_reg(this.TEM23_alias, 'h114);
-        endfunction : build
-    endclass : root_map__test_map_1_inst
-
     // Reg - root_map.test_map_2_inst.shared_2
     class root_map__test_map_2_inst__shared_2 extends uvm_reg;
         rand uvm_reg_field FIELD_2;
@@ -300,14 +120,13 @@ package uvm_test;
             this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
             this.reg1 = new("reg1");
             this.reg1.configure(this);
-            reg1.add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__test_map_2_inst_test_map_3_inst_reg1__f1.field_value", 0, 1);
-            reg1.add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__test_map_2_inst_test_map_3_inst_reg1__f2.field_value", 8, 8);
+
             this.reg1.build();
             this.default_map.add_reg(this.reg1, 'h0);
             foreach(this.reg_array[i0]) begin
                 this.reg_array[i0] = new($sformatf("reg_array[%0d]", i0));
                 this.reg_array[i0].configure(this);
-                reg_array[i0].add_hdl_path_slice("regslv_root_map__ipxact_block_example_inst.x__test_map_2_inst_test_map_3_inst_reg_array__x.field_value", 0, 1);
+                
                 this.reg_array[i0].build();
                 this.default_map.add_reg(this.reg_array[i0], 'h100 + i0*'h4);
             end
@@ -316,7 +135,6 @@ package uvm_test;
 
     // Addrmap - root_map
     class root_map extends uvm_reg_block;
-        rand root_map__test_map_1_inst test_map_1_inst;
         rand root_map__test_map_2_inst test_map_2_inst;
         rand root_map__test_map_3_inst test_map_3_inst;
         rand root_map__ipxact_block_example_inst ipxact_block_example_inst;
@@ -327,10 +145,6 @@ package uvm_test;
 
         virtual function void build();
             this.default_map = create_map("reg_map", 0, 4, UVM_NO_ENDIAN);
-            this.test_map_1_inst = new("test_map_1_inst");
-            this.test_map_1_inst.configure(this);
-            this.test_map_1_inst.build();
-            this.default_map.add_submap(this.test_map_1_inst.default_map, 'h0);
             this.test_map_2_inst = new("test_map_2_inst");
             this.test_map_2_inst.configure(this);
             this.test_map_2_inst.build();

@@ -105,13 +105,13 @@ regmst_reg_top #(
     .DATA_WIDTH(BUS_DATA_WIDTH))
 regmst_reg_top_dut (
     // reg_native_if connected to external memory and downstream regslv
-    .reg_block_1_req_vld(reg_top__reg_block_1__req_vld),
-    .reg_block_1_ack_vld(reg_top__reg_block_1__ack_vld),
-    .reg_block_1_wr_en(reg_top__reg_block_1__wr_en),
-    .reg_block_1_rd_en(reg_top__reg_block_1__rd_en),
-    .reg_block_1_addr(reg_top__reg_block_1__addr),
-    .reg_block_1_wr_data(reg_top__reg_block_1__wr_data),
-    .reg_block_1_rd_data(reg_top__reg_block_1__rd_data),
+    .reg_top__reg_block_1_req_vld(reg_top__reg_block_1__req_vld),
+    .reg_top__reg_block_1_ack_vld(reg_top__reg_block_1__ack_vld),
+    .reg_top__reg_block_1_wr_en(reg_top__reg_block_1__wr_en),
+    .reg_top__reg_block_1_rd_en(reg_top__reg_block_1__rd_en),
+    .reg_top__reg_block_1_addr(reg_top__reg_block_1__addr),
+    .reg_top__reg_block_1_wr_data(reg_top__reg_block_1__wr_data),
+    .reg_top__reg_block_1_rd_data(reg_top__reg_block_1__rd_data),
     // APB interface
     .PCLK(clk_1),
     .PRESETn(rst_1_n),
@@ -167,15 +167,15 @@ regslv_reg_top__reg_block_1 #(
     .DATA_WIDTH(BUS_DATA_WIDTH))
 regslv_reg_top__reg_block_1_dut (
     // external memory reg_native_if
-    .ext_mem_1_clk(clk_3),
-    .ext_mem_1_rstn(rst_3_n),
-    .ext_mem_1_req_vld(regslv_reg_top__reg_block_1__ext_mem_1_req_vld),
-    .ext_mem_1_ack_vld(regslv_reg_top__reg_block_1__ext_mem_1_ack_vld),
-    .ext_mem_1_wr_en(regslv_reg_top__reg_block_1__ext_mem_1_wr_en),
-    .ext_mem_1_rd_en(regslv_reg_top__reg_block_1__ext_mem_1_rd_en),
-    .ext_mem_1_addr(regslv_reg_top__reg_block_1__ext__addr),
-    .ext_mem_1_wr_data(regslv_reg_top__reg_block_1__ext__wr_data),
-    .ext_mem_1_rd_data(regslv_reg_top__reg_block_1__ext__rd_data),
+    .reg_top__reg_block_1__ext_mem_1_clk(clk_3),
+    .reg_top__reg_block_1__ext_mem_1_rstn(rst_3_n),
+    .reg_top__reg_block_1__ext_mem_1_req_vld(regslv_reg_top__reg_block_1__ext_mem_1_req_vld),
+    .reg_top__reg_block_1__ext_mem_1_ack_vld(regslv_reg_top__reg_block_1__ext_mem_1_ack_vld),
+    .reg_top__reg_block_1__ext_mem_1_wr_en(regslv_reg_top__reg_block_1__ext_mem_1_wr_en),
+    .reg_top__reg_block_1__ext_mem_1_rd_en(regslv_reg_top__reg_block_1__ext_mem_1_rd_en),
+    .reg_top__reg_block_1__ext_mem_1_addr(regslv_reg_top__reg_block_1__ext__addr),
+    .reg_top__reg_block_1__ext_mem_1_wr_data(regslv_reg_top__reg_block_1__ext__wr_data),
+    .reg_top__reg_block_1__ext_mem_1_rd_data(regslv_reg_top__reg_block_1__ext__rd_data),
     // internal register hardware access ports
     .regfile_clk(clk_2),
     .regfile_rstn(rst_2_n),

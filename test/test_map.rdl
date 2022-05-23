@@ -150,7 +150,9 @@ addrmap test_map_3 {
 
 addrmap root_map {
 	test_map_1 test_map_1_inst;
+	test_map_1_inst -> ispresent = false;
 	test_map_2 test_map_2_inst;
 	test_map_3 test_map_3_inst;
 	ipxact_block_example ipxact_block_example_inst;
+	ipxact_block_example_inst -> hj_ext_hdl_path_down="xxx";
 };

@@ -81,13 +81,13 @@ regmst_reg_top #(
     .DATA_WIDTH(BUS_DATA_WIDTH))
 regmst_reg_top_dut (
     // reg_native_if connected to the downstream regslv
-    .reg_block_1_req_vld(reg_top__reg_block_1__req_vld),
-    .reg_block_1_ack_vld(reg_top__reg_block_1__ack_vld),
-    .reg_block_1_wr_en(reg_top__reg_block_1__wr_en),
-    .reg_block_1_rd_en(reg_top__reg_block_1__rd_en),
-    .reg_block_1_addr(reg_top__reg_block_1__addr),
-    .reg_block_1_wr_data(reg_top__reg_block_1__wr_data),
-    .reg_block_1_rd_data(reg_top__reg_block_1__rd_data),
+    .reg_top__reg_block_1_req_vld(reg_top__reg_block_1__req_vld),
+    .reg_top__reg_block_1_ack_vld(reg_top__reg_block_1__ack_vld),
+    .reg_top__reg_block_1_wr_en(reg_top__reg_block_1__wr_en),
+    .reg_top__reg_block_1_rd_en(reg_top__reg_block_1__rd_en),
+    .reg_top__reg_block_1_addr(reg_top__reg_block_1__addr),
+    .reg_top__reg_block_1_wr_data(reg_top__reg_block_1__wr_data),
+    .reg_top__reg_block_1_rd_data(reg_top__reg_block_1__rd_data),
     // APB interface
     .PCLK(clk),
     .PRESETn(rst_n),

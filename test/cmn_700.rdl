@@ -1,0 +1,4 @@
+addrmap cmn700 {
+    cmn700_registers cmn700_register_inst;
+    cmn700_register_inst -> hj_ext_hdl_path_down = "xxx";
+};

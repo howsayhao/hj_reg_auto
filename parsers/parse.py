@@ -551,11 +551,13 @@ def parse_rdl(files:list[str]):
 
     try:
         for file in files:
+            message.info("SystemRDL Compiler: import %s" % (file))
             if file.endswith(".xml"):
                 ipxact.import_file(file)
             else:
                 rdlc.compile_file(file)
 
+        message.info("SystemRDL Compiler: start elaborating...")
         root = rdlc.elaborate()
     except RDLCompileError:
         sys.exit(1)

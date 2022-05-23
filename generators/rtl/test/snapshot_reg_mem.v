@@ -3,6 +3,7 @@
 module snapshot_reg_mem     (// upstream control signal
                              clk,
                              rst_n,
+                             mst__fsm__sync_reset,
                              addr,
                              wr_en,
                              rd_en,
@@ -66,6 +67,8 @@ module snapshot_reg_mem     (// upstream control signal
    output                      mem_rd_en, mem_wr_en;
    input [MEM_WIDTH-1:0]         mem_rd_data;
    output [MEM_WIDTH-1:0]        mem_wr_data;
+
+   input mst__fsm__sync_reset;
 
    output mem_req_vld;
    input mem_ack_vld;
@@ -198,6 +201,8 @@ module snapshot_reg_mem     (// upstream control signal
 
    always @(*)
      case (1'b1)
+       mst__fsm__sync_reset:
+         sw_ctrl_ns = IDLE;
        sw_ctrl_cs[_IDLE_]:
          if(req_vld)
              if (mem_access)
