@@ -1,7 +1,8 @@
-"""
-在命令行终端下打印不同格式的信息: INFO, WARNING, ERROR
-"""
 class PrintFormat:
+    """
+    Distinguish different levels of printed message:
+    DEBUG, INFO, WARNING, ERROR
+    """
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
@@ -12,11 +13,14 @@ class PrintFormat:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def info(msg: str):
+def debug(msg:str):
+    print(msg)
+
+def info(msg:str):
     print(PrintFormat.OKBLUE + "Info: " + msg + PrintFormat.ENDC)
 
-def warning(msg: str):
+def warning(msg:str):
     print(PrintFormat.WARNING + PrintFormat.BOLD + "Warning: " + msg + PrintFormat.ENDC)
-    
-def error(msg: str):
+
+def error(msg:str):
     print(PrintFormat.FAIL + PrintFormat.BOLD + "Error: " + msg + PrintFormat.ENDC)
