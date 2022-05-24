@@ -1,11 +1,14 @@
 import argparse
 import os
 import sys
-from generators.rtl.export import export_rtl
+import threading
+
 
 import utils.message as message
 import generators.preprocess as preprocess
+from generators.rtl.export import export_rtl
 from generators.html.export import export_html
+from generators.pdf.export import export_org, export_pdf
 from generators.uvm.export import export_uvm
 from parsers.excel.gen_temp import generate_excel
 from parsers.parse import parse
@@ -19,8 +22,8 @@ class CommandRunner:
     Subcommands
     ------------
     `excel_template` : generate Excel worksheet templates
-    `parse` : parse of register description in Excel (.xlsx) or SystemRDL (.rdl) form, and it supports mixed input
-    `generate` : generate RTL modules, documentations, UVM RAL model and C head files
+    `parse` : parse of register description in Excel (.xlsx)/SystemRDL (.rdl)/IP-XACT (.xml) form, and it supports mixed input
+    `generate` : generate RTL modules, documentations, UVM RAL model and C header files
     """
     def build_parser(self):
         """
@@ -112,6 +115,12 @@ class CommandRunner:
         parser_generate.add_argument("-ghtml", "--gen_html",
                                      action="store_true",
                                      help="generate HTML-format register documentations")
+        parser_generate.add_argument("-gorg", "--gen_org",
+                                     action="store_true",
+                                     help="generate an org mode documentation")
+        parser_generate.add_argument("-gpdf", "--gen_pdf",
+                                     action="store_true",
+                                     help="generate a pdf documentation")
         parser_generate.add_argument("-gral", "--gen_ral",
                                      action="store_true",
                                      help="generate UVM RAL model")
@@ -136,16 +145,19 @@ class CommandRunner:
 
         Parameter
         ---------
-        `args.dir` : 生成寄存器Excel模板的输出目录
-        `args.name` : 生成寄存器Excel模板的文件名
-        `args.rnum` : 生成Excel模板中寄存器的数量
-        `args.rname` : 生成Excel模板中寄存器的名称`list`
-        `args.language` : 生成Excel模板的语言, 支持中文/English
+        `args.dir` : generation directory
+        `args.name` : the generated template Excel worksheet name
+        `args.rnum` : `int`, the regsiter number to be generated
+        `args.rname` : `list`, register names to be generated
+        `args.language` : Excel template language, Chinese/English
         """
         if not os.path.exists(args.dir):
             message.error("directory does not exists!")
             sys.exit(1)
-        if not args.name.endswith(".xlsx"):
+        if args.name.endswith(".xls"):
+            message.info("suffix .xls is replaced by .xlsx,")
+            args.name += "x"
+        elif not args.name.endswith(".xlsx"):
             args.name += ".xlsx"
 
         reg_names = args.rname
@@ -159,15 +171,15 @@ class CommandRunner:
     def _parse(args):
         """
         Execution of subcommand `parse` as a wrapper.
-        This method passes `args` parameters down
+        This method passes the `args` parameter down
 
         Parameter
         ---------
         `args.file` : `list`, all files waiting for parse
-        `args.list` : `str`, a file list text file
+        `args.list` : `str`, the file list text file
         `args.gen_rdl` : `bool`, specifies whether to convert Excel worksheets to SystemRDL files
-        `args.module` : 输入全部为Excel文件时生成的SystemRDL中顶层addrmap定义名
-        `args.gen_dir` : 生成的SystemRDL的目录位置
+        `args.module` : top-level addrmap name in generated SystemRDL when all input are Excel files
+        `args.gen_dir` : generation directory
         """
         parse(args.file,
               args.list,
@@ -178,18 +190,21 @@ class CommandRunner:
     @staticmethod
     def _generate(args):
         """
-        子命令`generate`的执行函数, 作为Wrapper向下传递参数
+        Execution of subcommand `generate` as a wrapper.
+        This method passes the `args` parameter down
 
         Parameter
         ---------
-        `args.file` : `list`类型, 需要解析所有Excel/SystemRDL文件名
-        `args.list` : 存放所有需要解析的Excel文件名的list文本文件名
-        `args.module` : 输入全部为Excel文件时生成的reg tree模块名, 也作为生成的SystemRDL中顶层addrmap定义名和根节点regmst名称
-        `args.gen_dir` : 生成的SystemRDL的目录位置
-        `args.gen_rtl` : `bool`类型, 是否生成RTL Modules
-        `args.gen_html` : `bool`类型, 是否生成HTML Docs
-        `args.gen_ral` : `bool`类型, 是否生成UVM RAL Model
-        `args.gen_cheader` : `bool`类型, 是否生成C Header files
+        `args.file` : `list`, all files to be parsed
+        `args.list` : `str`, the file list text file
+        `args.module` : top-level addrmap name and the `regmst` name in the `reg_tree` when all input are Excel files
+        `args.gen_dir` : generation directory
+        `args.gen_rtl` : `bool`, whether to generate RTL modules
+        `args.gen_html` : `bool`, whether to generate HTML documentations
+        `args.gen_org` : `bool`, whether to generate org mode documentations
+        `args.gen_pdf` : `bool`, whether to generate PDF documentations
+        `args.gen_ral` : `bool`, whether to generate the UVM RAL model (.sv)
+        `args.gen_cheader` : `bool`, whether to generate C header files
         """
         root = parse(args.file,
                      args.list,
@@ -204,11 +219,30 @@ class CommandRunner:
         preprocess.preprocess(root, filter=args.filter)
 
         if args.gen_all or args.gen_rtl:
-            export_rtl(root, args.gen_dir)
+            t_genrtl = threading.Thread(target=export_rtl,
+                                  name="gen_rtl",
+                                  args=(root, args.gen_dir))
+            t_genrtl.start()
         if args.gen_all or args.gen_html:
-            export_html(root, args.gen_dir)
+            t_genhtml = threading.Thread(target=export_html,
+                                  name="gen_html",
+                                  args=(root, args.gen_dir))
+            t_genhtml.start()
+        if args.gen_org:
+            t_genorg = threading.Thread(target=export_org,
+                                  name="gen_org",
+                                  args=(root, args.gen_dir))
+            t_genorg.start()
+        if args.gen_all or args.gen_pdf:
+            t_genpdf = threading.Thread(target=export_pdf,
+                                  name="gen_pdf",
+                                  args=(root, args.gen_dir))
+            t_genpdf.start()
         if args.gen_all or args.gen_ral:
-            export_uvm(root, args.gen_dir)
+            t_genral = threading.Thread(target=export_uvm,
+                                  name="gen_ral",
+                                  args=(root, args.gen_dir))
+            t_genral.start()
         if args.gen_all or args.gen_cheader:
             pass
 

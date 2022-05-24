@@ -10,14 +10,16 @@ def export_uvm(root:RootNode, out_dir:str):
 
     Parameter
     ---------
-    `root` : `systemrdl.node.RootNode` systemrdl-compiler解析完以后的寄存器模型根节点
-    `out_dir` : 输出UVM RAL模型的目录, 会在该目录下创建一个`uvm_ral`子目录, 存放输出的模型
+    `root` : `systemrdl.node.RootNode`, the root node of the compiled register model
+    `out_dir` : ouput directory to save the generated UVM RAL (.sv) file
     """
     exporter = UVMExporter()
-    export_file = os.path.join(out_dir, "uvm_test.sv")
+    export_file = os.path.join(out_dir, "%s.sv" % (root.top.inst_name))
 
     try:
-        exporter.export(root, export_file, reuse_class_definitions=False)
+        exporter.export(root, export_file,
+                        reuse_class_definitions=False,
+                        use_uvm_factory=True)
     except:
         message.error("UVM RAL exporter aborted due to previous errors")
     else:

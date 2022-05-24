@@ -1,11 +1,11 @@
 import sys
+from fnmatch import fnmatchcase
+from time import time
+
 import utils.message as message
+from systemrdl import RDLListener, RDLWalker
+from systemrdl.node import FieldNode, RootNode
 
-from systemrdl import RDLWalker
-from systemrdl.node import RootNode
-
-from systemrdl import RDLListener
-from systemrdl.node import FieldNode
 
 class PreprocessListener(RDLListener):
     """
@@ -16,7 +16,7 @@ class PreprocessListener(RDLListener):
         - hj_genrtl
         - hj_flatten_addrmap
     - check whether there are illegal assignments
-    - filter some instances by setting ispresent=false
+    - filter some instances by setting ispresent=false in the UVM RAL model
     """
     def __init__(self, user_ops:dict):
         """
@@ -28,12 +28,15 @@ class PreprocessListener(RDLListener):
         self.is_in_flatten_addrmap = False
         self.is_in_3rd_party_IP = False
         self.is_in_ext_mem = False
+        self.is_filtered = False
 
         self.rtl_path = []
         self.reg_name = []
         self.regslv_name = []
         self.runtime_stack = []
         self.total_reg_num = 0
+        self.filter_reg_num = 0
+        self.start_time = time()
 
         # user-defined operations
         self.filter_pattern = user_ops.get("filter", None)
@@ -61,12 +64,14 @@ class PreprocessListener(RDLListener):
                                    self.is_in_3rd_party_IP,
                                    self.rtl_path))
 
+        # reset properties
         (self.is_in_regmst,
         self.is_in_regslv,
         self.is_in_flatten_addrmap,
         self.is_in_3rd_party_IP) = False, False, False, False
         self.rtl_path = []
 
+        # distinguish different types of addrmap
         if isinstance(node.parent, RootNode):
             # the model traverses in the root addrmap, and shall generate a regmst module in RTL
 
@@ -180,15 +185,15 @@ class PreprocessListener(RDLListener):
         self.reg_name.pop()
 
     def enter_Reg(self, node):
-        print("\t"*self.indent, "Entering register: %s" % (node.get_path()))
+        print("\t"*self.indent, "Entering register: %s, filtered: %s"
+              % (node.get_path(), self.is_filtered))
 
-        if node.is_alias:
-            reg_rtl_inst_name = node.alias_primary.inst_name
-        else:
-            reg_rtl_inst_name = node.inst_name
+        reg_rtl_inst_name = node.alias_primary.inst_name if node.is_alias else node.inst_name
 
         self.reg_name.append(reg_rtl_inst_name)
         self.total_reg_num += 1
+        if self.is_filtered:
+            self.filter_reg_num += 1
 
     def exit_Reg(self, node):
         print("\t"*self.indent, "Exiting register: %s" % (node.get_path()))
@@ -229,18 +234,37 @@ class PreprocessListener(RDLListener):
         if not isinstance(node, FieldNode):
             print("\t"*self.indent, node.get_path_segment())
 
+        # remove a instance from UVM RAL model when matched with filter patterns
+        # by setting ispresent=False in that instance object
+        self.runtime_stack.append(self.is_filtered)
+        if (self.is_filtered):
+            node.inst.properties["ispresent"] = False
+        else:
+            if (self.filter_pattern is not None):
+                for pat in self.filter_pattern:
+                    if fnmatchcase(node.get_path(), pat):
+                        self.is_filtered = True
+                        node.inst.properties["ispresent"] = False
+                        break
+
     def exit_Component(self, node):
         self.indent -= 1
+        self.is_filtered = self.runtime_stack.pop()
 
     def get_statistics(self):
         """
         get some statistic information
         - total register number
+        - filtered register number
         """
-        message.info("total_register: %d" % (self.total_reg_num))
+        message.info("total register number: %d" % (self.total_reg_num))
+        message.info("UVM filtered register number: %d" % (self.filter_reg_num))
+        message.info("preprocessing time: %.4fs" % (time() - self.start_time))
 
 def preprocess(root:RootNode, **user_ops):
-    # Traverse the register model
+    """
+    traverse the register model
+    """
     preprocess_walker = RDLWalker(unroll=True)
     preprocess_listener = PreprocessListener(user_ops)
     preprocess_walker.walk(root, preprocess_listener)
