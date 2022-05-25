@@ -32,7 +32,7 @@ class CommandRunner:
         parser = argparse.ArgumentParser(prog="hrda",
                                          description="Register Design Automation (RDA) Tool")
         parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
-        subparsers = parser.add_subparsers(title="sub-commands",
+        subparsers = parser.add_subparsers(title="subcommand",
                                            description="support for generating excel templates, "
                                                        "parsing Excel/SystemRDL specifications, "
                                                        "and generating RTL, UVM RAL, HTML docs "
