@@ -6,7 +6,7 @@ from .rtl_type import *
 
 
 # create new rtl_type from node type while copying the useful information to draw rtl
-def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:
+def create_obj(node:Node, parent_obj:RTL_NODE, base_addr) -> RTL_NODE:
     if isinstance(node, SignalNode):
         new_obj = Signal(node.get_path_segment())
         # self.signal_map.append(new_obj)
@@ -60,7 +60,7 @@ def create_obj(node:Node, parent_obj:RTL_NODE) -> RTL_NODE:
         new_obj.regwidth = node.get_property('regwidth')
         new_obj.shared = node.get_property('shared')
         new_obj.offset = node.address_offset
-        new_obj.addr = node.absolute_address
+        new_obj.addr = node.absolute_address - base_addr
         new_obj.external = node.external
     elif isinstance(node, FieldNode):
         # get field information

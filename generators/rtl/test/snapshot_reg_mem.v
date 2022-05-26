@@ -32,7 +32,7 @@ module snapshot_reg_mem     (// upstream control signal
    parameter MEM_WIDTH        = 36;
    parameter PARTITION_CNT    = MEM_WIDTH / DATA_WIDTH + (MEM_WIDTH % DATA_WIDTH ? 1 : 0);
    parameter ADDR_WIDTH       = 7;
-   parameter VALID_WIDTH     = 7;
+   parameter VALID_WIDTH      = 7;
    parameter ENTRY_WIDTH      = 7;
    parameter SUB              = 0;
    parameter BASE             = 0;
@@ -202,7 +202,7 @@ module snapshot_reg_mem     (// upstream control signal
    always @(*)
      case (1'b1)
        mst__fsm__sync_reset:
-         sw_ctrl_ns = IDLE;
+          sw_ctrl_ns = IDLE;
        sw_ctrl_cs[_IDLE_]:
          if(req_vld)
              if (mem_access)

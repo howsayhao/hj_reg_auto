@@ -83,7 +83,7 @@ def gen_field_rtl(register):
             fstr += '\tx__%s\n'%(f_obj_name)
             fstr += '\t\t//' + 'PORT INSTANTIATE'.center(50,"*") + '//\n'
             fstr += '\t\t('
-            fstr += '\n\t\t.clk                   (regfile_clk),'
+            fstr += '\n\t\t.clk                   (regslv_clk),'
             fstr += '\n\t\t.rst_n                 (%s),'%(f_obj.resetsignal)
             fstr += '\n\t\t.sync_rst              ({%s}),'%(','.join(sync_reset)) if sync_reset else '\n\t\t.sync_rst                (1\'b0),'
             fstr += '\n\t\t.sw_wr_data            ({%s}),'%(sw_wr_data_str)
@@ -124,7 +124,7 @@ def gen_field_rtl(register):
             fstr += '\tx__%s\n'%(f_obj_name)
             fstr += '\t\t//' + 'PORT INSTANTIATE'.center(50,"*") + '//\n'
             fstr += '\t\t('
-            fstr += '\n\t\t.clk                   (regfile_clk),'
+            fstr += '\n\t\t.clk                   (regslv_clk),'
             fstr += '\n\t\t.rst_n                 (%s),'%(f_obj.resetsignal)
             fstr += '\n\t\t.sync_rst              ({%s}),'%(','.join(f_obj.syncresetsignal)) if f_obj.syncresetsignal else '\n\t\t.sync_rst              (1\'b0),'
             fstr += '\n\t\t.sw_wr_data            (%s_wr_data[%d:%d]),'%(r_obj_name,f_obj.msb,f_obj.lsb)

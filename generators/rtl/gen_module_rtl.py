@@ -1,37 +1,34 @@
 import sys
+import utils.message as message
 
 from .rtl_type import *
 from .gen_field_rtl import *
 
 
 # get port rtl
-def get_ext_port(ext_list):
+def get_ext_port():
     ext_port_rtl = ''
-    for ext_module in ext_list:
-        module_name = ext_module.module_name
-        ext_port_rtl += '\t// ports of %s\n'%(module_name)
-        if(ext_module.cdc and isinstance(ext_module, Memory)):
-            ext_port_rtl += '\t%s_clk               ,\n'%(module_name)
-            ext_port_rtl += '\t%s_rstn              ,\n'%(module_name)
-        ext_port_rtl += '\t%s_req_vld           ,\n'%(module_name)
-        ext_port_rtl += '\t%s_ack_vld           ,\n'%(module_name)
-        ext_port_rtl += '\t%s_wr_en             ,\n'%(module_name)
-        ext_port_rtl += '\t%s_rd_en             ,\n'%(module_name)
-        ext_port_rtl += '\t%s_addr              ,\n'%(module_name)
-        ext_port_rtl += '\t%s_wr_data           ,\n'%(module_name)
-        ext_port_rtl += '\t%s_rd_data           ,\n'%(module_name)
+    module_name = 'ext'
+    ext_port_rtl += '\t// ports of %s\n'%(module_name)
+    ext_port_rtl += '\t%s_req_vld           ,\n'%(module_name)
+    ext_port_rtl += '\t%s_ack_vld           ,\n'%(module_name)
+    ext_port_rtl += '\t%s_wr_en             ,\n'%(module_name)
+    ext_port_rtl += '\t%s_rd_en             ,\n'%(module_name)
+    ext_port_rtl += '\t%s_addr              ,\n'%(module_name)
+    ext_port_rtl += '\t%s_wr_data           ,\n'%(module_name)
+    ext_port_rtl += '\t%s_rd_data           ,\n'%(module_name)
     return ext_port_rtl
 
-def get_regfile_port(reg_list, cdc, sync_reset_list, N):
+def get_regfile_port(reg_list, sync_reset_list, N):
     regfile_port_rtl = ''
 
     if(N == 0):
         return regfile_port_rtl
 
     regfile_port_rtl += '\t// ports of internal regfile\n'
-    if(cdc):
-        regfile_port_rtl += '\tregfile_clk          ,\n'
-        regfile_port_rtl += '\tregfile_rstn         ,\n'
+    # if(cdc):
+    #     regfile_port_rtl += '\tregfile_clk          ,\n'
+    #     regfile_port_rtl += '\tregfile_rstn         ,\n'
     for reg in reg_list:
         if(reg.alias is True or (reg.shared is True and reg.first_shared is False)):
             pass
@@ -49,7 +46,7 @@ def get_regfile_port(reg_list, cdc, sync_reset_list, N):
         regfile_port_rtl += '\t%s        ,\n'%(signal_name)
     return regfile_port_rtl
 
-def get_regslv_port(master):
+def get_regslv_port(master,cdc):
     regslv_port_rtl = ''
     if(master):
         regslv_port_rtl += '\tPCLK                    ,\n'
@@ -66,8 +63,11 @@ def get_regslv_port(master):
         regslv_port_rtl += '\tinterrupt               ,\n'
         regslv_port_rtl += '\tglobal_sync_reset_out    \n'
     else:
-        regslv_port_rtl += '\tfsm_clk                 ,\n'
-        regslv_port_rtl += '\tfsm_rstn                ,\n'
+        if(cdc):
+            regslv_port_rtl += '\tregslv_clk                ,\n'
+            regslv_port_rtl += '\tregslv_rstn               ,\n'
+        regslv_port_rtl += '\tclk                 ,\n'
+        regslv_port_rtl += '\trstn                ,\n'
         regslv_port_rtl += '\treq_vld                 ,\n'
         regslv_port_rtl += '\tack_vld                 ,\n'
         regslv_port_rtl += '\twr_en                   ,\n'
@@ -81,9 +81,9 @@ def get_regslv_port(master):
 
 
 # get port define rtl
-def get_regslv_define(master):
+def get_regslv_define(master,cdc):
     regslv_define_rtl = ''
-    regslv_define_rtl += '\t// regslv domain fsm_clk\n'
+    regslv_define_rtl += '\t// dispatch domain @clk\n'
     if(master):
         regslv_define_rtl += '\tinput                         PCLK                    ;\n'
         regslv_define_rtl += '\tinput                         PRESETn                 ;\n'
@@ -101,8 +101,8 @@ def get_regslv_define(master):
         regslv_define_rtl += '\twire                          fsm_clk = PCLK          ;\n'
         regslv_define_rtl += '\twire                          fsm_rstn = PRESETn      ;\n'
     else:
-        regslv_define_rtl += '\tinput                         fsm_clk                 ;\n'
-        regslv_define_rtl += '\tinput                         fsm_rstn                ;\n'
+        regslv_define_rtl += '\tinput                         clk                 ;\n'
+        regslv_define_rtl += '\tinput                         rstn                ;\n'
         regslv_define_rtl += '\tinput                         req_vld                 ;\n'
         regslv_define_rtl += '\toutput                        ack_vld                 ;\n'
         regslv_define_rtl += '\tinput                         wr_en                   ;\n'
@@ -112,38 +112,41 @@ def get_regslv_define(master):
         regslv_define_rtl += '\toutput    [DATA_WIDTH-1:0]    rd_data                 ;\n'
         regslv_define_rtl += '\tinput                         global_sync_reset_in    ;\n'
         regslv_define_rtl += '\toutput                        global_sync_reset_out   ;\n'
+        if(cdc):
+            regslv_define_rtl += '\t// regslv domain @regslv_clk\n'
+            regslv_define_rtl += '\tinput                         regslv_clk          ;\n'
+            regslv_define_rtl += '\tinput                         regslv_rstn         ;\n'
+        else:
+            regslv_define_rtl += '\twire regslv_clk     = clk           ;\n'
+            regslv_define_rtl += '\twire regslv_rstn    = rstn          ;\n'
     return regslv_define_rtl
 
-def get_ext_define(ext_list):
+def get_ext_define():
     ext_define_rtl = ''
-    for ext_module in ext_list:
-        module_name = ext_module.module_name
-        ext_define_rtl += '\t// ports define of %s\n'%(module_name)
-        if(ext_module.cdc and isinstance(ext_module, Memory)):
-            ext_define_rtl += '\tinput              %s_clk               ;\n'%(module_name)
-            ext_define_rtl += '\tinput              %s_rstn              ;\n'%(module_name)
-        ext_define_rtl += '\toutput             %s_req_vld           ;\n'%(module_name)
-        ext_define_rtl += '\tinput              %s_ack_vld           ;\n'%(module_name)
-        ext_define_rtl += '\toutput             %s_wr_en             ;\n'%(module_name)
-        ext_define_rtl += '\toutput             %s_rd_en             ;\n'%(module_name)
-        ext_define_rtl += '\toutput [%d-1:0]    %s_addr              ;\n'%(ext_module.ADDR_WIDTH, module_name)
-        ext_define_rtl += '\toutput [%d-1:0]    %s_wr_data           ;\n'%(ext_module.DATA_WIDTH, module_name)
-        ext_define_rtl += '\tinput  [%d-1:0]    %s_rd_data           ;\n'%(ext_module.DATA_WIDTH, module_name)
+    module_name = 'ext'
+    ext_define_rtl += '\t// ports define of %s\n'%(module_name)
+    ext_define_rtl += '\toutput             %s_req_vld           ;\n'%(module_name)
+    ext_define_rtl += '\tinput              %s_ack_vld           ;\n'%(module_name)
+    ext_define_rtl += '\toutput             %s_wr_en             ;\n'%(module_name)
+    ext_define_rtl += '\toutput             %s_rd_en             ;\n'%(module_name)
+    ext_define_rtl += '\toutput [ADDR_WIDTH-1:0]    %s_addr              ;\n'%(module_name)
+    ext_define_rtl += '\toutput [DATA_WIDTH-1:0]    %s_wr_data           ;\n'%(module_name)
+    ext_define_rtl += '\tinput  [DATA_WIDTH-1:0]    %s_rd_data           ;\n'%(module_name)
     return ext_define_rtl
 
-def get_regfile_define(reg_list, cdc, sync_reset_list, N):
+def get_regfile_define(reg_list, sync_reset_list, N):
     regfile_define_rtl = ''
 
     if(N == 0):
         return regfile_define_rtl
 
     regfile_define_rtl += '\t//ports define of internal regfile\n'
-    if(cdc):
-        regfile_define_rtl += '\tinput regfile_clk          ;\n'
-        regfile_define_rtl += '\tinput regfile_rstn         ;\n'
-    else:
-        regfile_define_rtl += '\twire regfile_clk   = fsm_clk   ;\n'
-        regfile_define_rtl += '\twire regfile_rstn  = fsm_rstn  ;\n'
+    # if(cdc):
+    #     regfile_define_rtl += '\tinput regfile_clk          ;\n'
+    #     regfile_define_rtl += '\tinput regfile_rstn         ;\n'
+    # else:
+    #     regfile_define_rtl += '\twire regfile_clk   = fsm_clk   ;\n'
+    #     regfile_define_rtl += '\twire regfile_rstn  = fsm_rstn  ;\n'
     for reg in reg_list:
         if(reg.alias is True or (reg.shared is True and reg.first_shared is False)):
             pass
@@ -165,7 +168,40 @@ def get_regfile_define(reg_list, cdc, sync_reset_list, N):
 
 
 # get wire define rtl
-def get_fsm_wire(ext_list):
+def get_regslv_wire(master,cdc):
+    regslv_wire_rtl = ''
+    if(master):
+        regslv_wire_rtl += '\tassign ext_req_vld      = fsm__slv__req_vld           ;\n'
+        regslv_wire_rtl += '\tassign ext_wr_en        = fsm__slv__wr_en             ;\n'
+        regslv_wire_rtl += '\tassign ext_rd_en        = fsm__slv__rd_en             ;\n'
+        regslv_wire_rtl += '\tassign ext_addr         = fsm__slv__addr              ;\n'
+        regslv_wire_rtl += '\tassign ext_wr_data      = fsm__slv__wr_data           ;\n'
+
+    else:
+        regslv_wire_rtl += '\t// regslv domain @regslv_clk\n'
+        regslv_wire_rtl += '\twire                                   req_vld_fsm      ;\n'
+        regslv_wire_rtl += '\twire                                   ack_vld_fsm      ;\n'
+        regslv_wire_rtl += '\twire                                   wr_en_fsm        ;\n'
+        regslv_wire_rtl += '\twire                                   rd_en_fsm        ;\n'
+        regslv_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  addr_fsm         ;\n'
+        regslv_wire_rtl += '\twire [DATA_WIDTH-1:0]                  wr_data_fsm      ;\n'
+        regslv_wire_rtl += '\twire [DATA_WIDTH-1:0]                  rd_data_fsm      ;\n'
+        regslv_wire_rtl += '\twire                                   global_sync_reset_in_fsm      ;\n'
+        if(cdc):
+            regslv_wire_rtl += '\n\t// regslv interface signal to handle cdc\n'
+            regslv_wire_rtl += '\tlogic [100-1:0] regslv_value_in_fsm;\n'
+            regslv_wire_rtl += '\tlogic [100-1:0] regslv_value_in;\n'
+            regslv_wire_rtl += '\tlogic [33-1:0] regslv_value_out_fsm;\n'
+            regslv_wire_rtl += '\tlogic [33-1:0] regslv_value_out;\n'
+            regslv_wire_rtl += '\t// the pulse to deliver the value\n'
+            regslv_wire_rtl += '\tlogic req_vld_ff;\n'
+            regslv_wire_rtl += '\tlogic regslv_sel_pulse;\n'
+            regslv_wire_rtl += '\tlogic global_sync_reset_in_ff;\n'
+            regslv_wire_rtl += '\tlogic ack_vld_fsm_ff;\n'
+            regslv_wire_rtl += '\tlogic regslv_ack_pulse;\n'
+    return regslv_wire_rtl
+
+def get_fsm_wire():
     fsm_wire_rtl = ''
     fsm_wire_rtl += '\t// declare the handshake signal for fsm\n'
     fsm_wire_rtl += '\twire                   slv__fsm__ack_vld		;\n'
@@ -177,64 +213,31 @@ def get_fsm_wire(ext_list):
     fsm_wire_rtl += '\twire [DATA_WIDTH-1:0] 		fsm__slv__wr_data	;\n'
     fsm_wire_rtl += '\twire [DATA_WIDTH-1:0]  		slv__fsm__rd_data	;\n'
     fsm_wire_rtl += '\t// fsm state indicator \n'
-    # fsm_wire_rtl += '\twire				   		cs_is_idle			;\n'
-    fsm_wire_rtl += '\twire                     ext_ack_is_back        ;\n'
-    if(len(ext_list) == 0):
-        fsm_wire_rtl += '\tassign ext_ack_is_back = 1\'b0;\n'
 
     return fsm_wire_rtl
 
-def get_decoder_wire(M, N):
+def get_decoder_wire(N):
     decoder_wire_rtl = ''
-    decoder_wire_rtl += '\n\t// signal for decoder\n'
-    decoder_wire_rtl += '\t// signal for global decoder @regslv domain\n'
-    decoder_wire_rtl += '\tlogic [64-1:0] 			global_address	;\n'
-    decoder_wire_rtl += '\tlogic [EXT_NUM-1:0] 	ext_sel			;\n'
-    decoder_wire_rtl += '\tlogic 					ext_selected	;\n'
-    decoder_wire_rtl += '\tlogic 					none_selected	;\n'
 
     if(N > 0):
-        decoder_wire_rtl += '\tlogic 					int_selected	;\n'
         decoder_wire_rtl += '\t// signal for internal decoder @regfile domain\n'
         decoder_wire_rtl += '\tlogic [REG_NUM-1:0] 	reg_sel			;\n'
         decoder_wire_rtl += '\tlogic 					dummy_reg		;\n'
 
     return decoder_wire_rtl
 
-def get_splitmux_wire(M, N):
+def get_splitmux_wire(N):
     splitmux_wire_rtl = ''
     if(N > 0):
         splitmux_wire_rtl += '\n\t// signal for regfile split mux\n'
         splitmux_wire_rtl += '\tlogic [REG_NUM-1:0] [DATA_WIDTH-1:0] regfile_reg_rd_data_in;\n'
-
-    if(M > 0):
-        splitmux_wire_rtl += '\n\t// signal for external split mux\n'
-        splitmux_wire_rtl += '\twire [EXT_NUM-1:0]                     ext_req_vld_fsm      ;\n'
-        splitmux_wire_rtl += '\twire [EXT_NUM-1:0]                     ext_ack_vld_fsm      ;\n'
-        splitmux_wire_rtl += '\twire [EXT_NUM-1:0]                     ext_ack_fsm		    ;\n'
-        splitmux_wire_rtl += '\twire                                   ext_wr_en_fsm        ;\n'
-        splitmux_wire_rtl += '\twire                                   ext_rd_en_fsm        ;\n'
-        splitmux_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  ext_addr_fsm         ;\n'
-        splitmux_wire_rtl += '\twire [DATA_WIDTH-1:0]                  ext_wr_data_fsm      ;\n'
-        splitmux_wire_rtl += '\twire [EXT_NUM-1:0] [DATA_WIDTH-1:0]    ext_rd_data_fsm      ;\n'
-        splitmux_wire_rtl += '\twire [DATA_WIDTH-1:0] 				   ext_rd_data_vld_fsm	;\n'
-        splitmux_wire_rtl += '\twire                                   ext_reg_ack_vld_fsm  ;\n'
     return splitmux_wire_rtl
 
-def get_regfile_wire(cdc, N):
+def get_regfile_wire(N):
     regfile_wire_rtl = ''
 
     if(N == 0):
         return regfile_wire_rtl
-
-    regfile_wire_rtl += '\n\t// regfile signal in regslv domain\n'
-    regfile_wire_rtl += '\twire                                   regfile_req_vld_fsm      ;\n'
-    regfile_wire_rtl += '\twire                                   regfile_ack_vld_fsm      ;\n'
-    regfile_wire_rtl += '\twire                                   regfile_wr_en_fsm        ;\n'
-    regfile_wire_rtl += '\twire                                   regfile_rd_en_fsm        ;\n'
-    regfile_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  regfile_addr_fsm         ;\n'
-    regfile_wire_rtl += '\twire [DATA_WIDTH-1:0]                  regfile_wr_data_fsm      ;\n'
-    regfile_wire_rtl += '\twire [DATA_WIDTH-1:0]                  regfile_rd_data_fsm      ;\n'
 
     regfile_wire_rtl += '\n\t// regfile signal in regfile domain\n'
     regfile_wire_rtl += '\twire [REG_NUM-1:0] wr_sel;\n'
@@ -247,17 +250,22 @@ def get_regfile_wire(cdc, N):
     regfile_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  regfile_addr         ;\n'
     regfile_wire_rtl += '\twire [DATA_WIDTH-1:0]                  regfile_wr_data      ;\n'
     regfile_wire_rtl += '\twire [DATA_WIDTH-1:0]                  regfile_rd_data      ;\n'
-    if(cdc):
-        regfile_wire_rtl += '\n\t// regfile signal to handle cdc\n'
-        regfile_wire_rtl += '\tlogic [99-1:0] regfile_value_out_fsm;\n'
-        regfile_wire_rtl += '\tlogic [99-1:0] regfile_value_out;\n'
-        regfile_wire_rtl += '\tlogic [33-1:0] regfile_value_in_fsm;\n'
-        regfile_wire_rtl += '\tlogic [33-1:0] regfile_value_in;\n'
-        regfile_wire_rtl += '\t// the pulse to deliver the value\n'
-        regfile_wire_rtl += '\tlogic regfile_req_vld_fsm_ff;\n'
-        regfile_wire_rtl += '\tlogic regfile_sel_pulse;\n'
-        regfile_wire_rtl += '\tlogic regfile_ack_vld_ff;\n'
-        regfile_wire_rtl += '\tlogic regfile_ack_pulse;\n'
+
+    regfile_wire_rtl += '\n'
+    regfile_wire_rtl += '\tassign regfile_req_vld       = fsm__slv__req_vld     ;\n'
+    regfile_wire_rtl += '\tassign regfile_ack_vld       = slv__fsm__ack_vld     ;\n'
+    regfile_wire_rtl += '\tassign regfile_wr_en         = fsm__slv__wr_en       ;\n'
+    regfile_wire_rtl += '\tassign regfile_rd_en         = fsm__slv__rd_en       ;\n'
+    regfile_wire_rtl += '\tassign regfile_addr          = fsm__slv__addr        ;\n'
+    regfile_wire_rtl += '\tassign regfile_wr_data       = fsm__slv__wr_data     ;\n'
+    regfile_wire_rtl += '\tassign regfile_rd_data       = slv__fsm__rd_data     ;\n'
+
+
+    regfile_wire_rtl += '\n'
+    regfile_wire_rtl += '\tassign wr_sel = {REG_NUM{regfile_wr_en}} & reg_sel   ;\n'
+    regfile_wire_rtl += '\tassign rd_sel = {REG_NUM{regfile_rd_en}} & reg_sel   ;\n'
+    regfile_wire_rtl += '\tassign regfile_ack_vld = regfile_rd_ack_vld | regfile_wr_en;\n'
+    regfile_wire_rtl += '\n'
 
     return regfile_wire_rtl
 
@@ -268,6 +276,7 @@ def get_internal_reg_wire(int_reg_list):
         reg_wire_rtl += '\tlogic [%d:0] %s_wr_data'%(reg.regwidth-1,reg_name) + ';\n'
         reg_wire_rtl += '\tlogic %s_wr_en'%(reg_name) + ';\n'
         reg_wire_rtl += '\tlogic %s_rd_en'%(reg_name) + ';\n'
+        reg_wire_rtl += '\n'
     return reg_wire_rtl
 
 def get_snaped_reg_wire(snaped_reg_list):
@@ -366,46 +375,46 @@ def get_ext_connect(ext_list):
 
 
 # get decoder rtl
-def get_decoder(int_addr_list, ext_addr_list, master):
+def get_decoder(int_addr_list):
     decoder_rtl = ''
-    decoder_rtl = '\t// global fsm_decoder @regslv domain\n'
-    if(master):
-        decoder_rtl += '\tassign global_address   = PADDR;\n'
-    else:
-        decoder_rtl += '\tassign global_address   = addr;\n'
-    decoder_rtl += '\tassign ext_selected     = | ext_sel;\n'
-    decoder_rtl += '\talways_comb begin\n'
-    decoder_rtl += '\t\t\tint_selected = 1\'b0;\n' if(len(int_addr_list) > 0) else ''
-    decoder_rtl += '\t\t\text_sel = {EXT_NUM{1\'b0}};\n'
-    decoder_rtl += '\t\t\tnone_selected = 1\'b0;\n'
-    decoder_rtl += '\t\tunique casez (global_address)\n'
+    # decoder_rtl = '\t// global fsm_decoder @regslv domain\n'
+    # if(master):
+    #     decoder_rtl += '\tassign global_address   = PADDR;\n'
+    # else:
+    #     decoder_rtl += '\tassign global_address   = addr;\n'
+    # decoder_rtl += '\tassign ext_selected     = | ext_sel;\n'
+    # decoder_rtl += '\talways_comb begin\n'
+    # decoder_rtl += '\t\t\tint_selected = 1\'b0;\n' if(len(int_addr_list) > 0) else ''
+    # decoder_rtl += '\t\t\text_sel = {EXT_NUM{1\'b0}};\n'
+    # decoder_rtl += '\t\t\tnone_selected = 1\'b0;\n'
+    # decoder_rtl += '\t\tunique casez (global_address)\n'
 
-    int_reg_list = []
-    if(len(int_addr_list) > 0):
-        for addr in int_addr_list:
-            for reg in addr.registers:
-                reg.hierachy_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-                addr.register_names.append('`' + reg.hierachy_name)
-                reg_addr = '64\'h' + get_hex(reg.addr)
-                int_reg_list.append(reg_addr)
-        decoder_rtl += '\t\t\t' + ','.join(int_reg_list) + ':' + 'int_selected = 1\'b1;//\n'
+    # int_reg_list = []
+    # if(len(int_addr_list) > 0):
+    #     for addr in int_addr_list:
+    #         for reg in addr.registers:
+    #             reg.hierachy_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+    #             addr.register_names.append('`' + reg.hierachy_name)
+    #             reg_addr = '64\'h' + get_hex(reg.addr)
+    #             int_reg_list.append(reg_addr)
+    #     decoder_rtl += '\t\t\t' + ','.join(int_reg_list) + ':' + 'int_selected = 1\'b1;//\n'
 
-    if(len(ext_addr_list) > 0):
-        for addr in ext_addr_list:
-            for reg in addr.registers:
-                reg.hierachy_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-                addr.register_names.append('`' + reg.hierachy_name)
-                if(isinstance(reg.addr,str)):
-                    reg_addr = reg.addr
-                else:
-                    reg_addr = '64\'h' + get_hex(reg.addr)
-                addr.addr_str.append(reg_addr)
-            # set multi addr to one ext_module
-            decoder_rtl += '\t\t\t' + ','.join(addr.addr_str) + ':' + 'ext_sel[%s] = 1\'b1;//external module %s\n'%(ext_addr_list.index(addr),addr.registers[0].external_top.obj)
+    # if(len(ext_addr_list) > 0):
+    #     for addr in ext_addr_list:
+    #         for reg in addr.registers:
+    #             reg.hierachy_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+    #             addr.register_names.append('`' + reg.hierachy_name)
+    #             if(isinstance(reg.addr,str)):
+    #                 reg_addr = reg.addr
+    #             else:
+    #                 reg_addr = '64\'h' + get_hex(reg.addr)
+    #             addr.addr_str.append(reg_addr)
+    #         # set multi addr to one ext_module
+    #         decoder_rtl += '\t\t\t' + ','.join(addr.addr_str) + ':' + 'ext_sel[%s] = 1\'b1;//external module %s\n'%(ext_addr_list.index(addr),addr.registers[0].external_top.obj)
 
-    decoder_rtl += '\t\t\tdefault: none_selected = 1\'b1;\n'
-    decoder_rtl += '\t\tendcase\n'
-    decoder_rtl += '\tend\n'
+    # decoder_rtl += '\t\t\tdefault: none_selected = 1\'b1;\n'
+    # decoder_rtl += '\t\tendcase\n'
+    # decoder_rtl += '\tend\n'
 
     if(len(int_addr_list) > 0):
         decoder_rtl += '\t// internal regfile decoder @regfile domain\n'
@@ -431,15 +440,15 @@ def get_fsm_ins(module_name, master):
     if(master is False):
         fsm_rtl += '\tslv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n'
         fsm_rtl += '\t\tslv_fsm_%s (\n'%(module_name)
-        fsm_rtl += '\t\t.clk(fsm_clk),\n'
-        fsm_rtl += '\t\t.rstn(fsm_rstn),\n'
-        fsm_rtl += '\t\t.mst__fsm__req_vld(req_vld),\n'
-        fsm_rtl += '\t\t.fsm__mst__ack_vld(ack_vld),\n'
-        fsm_rtl += '\t\t.mst__fsm__addr(addr),\n'
-        fsm_rtl += '\t\t.mst__fsm__wr_en(wr_en),\n'
-        fsm_rtl += '\t\t.mst__fsm__rd_en(rd_en),\n'
-        fsm_rtl += '\t\t.mst__fsm__wr_data(wr_data),\n'
-        fsm_rtl += '\t\t.fsm__mst__rd_data(rd_data),\n'
+        fsm_rtl += '\t\t.clk(regslv_clk),\n'
+        fsm_rtl += '\t\t.rstn(regslv_rstn),\n'
+        fsm_rtl += '\t\t.mst__fsm__req_vld(req_vld_fsm),\n'
+        fsm_rtl += '\t\t.fsm__mst__ack_vld(ack_vld_fsm),\n'
+        fsm_rtl += '\t\t.mst__fsm__addr(addr_fsm),\n'
+        fsm_rtl += '\t\t.mst__fsm__wr_en(wr_en_fsm),\n'
+        fsm_rtl += '\t\t.mst__fsm__rd_en(rd_en_fsm),\n'
+        fsm_rtl += '\t\t.mst__fsm__wr_data(wr_data_fsm),\n'
+        fsm_rtl += '\t\t.fsm__mst__rd_data(rd_data_fsm),\n'
         fsm_rtl += '\t\t.fsm__slv__req_vld(fsm__slv__req_vld),\n'
         fsm_rtl += '\t\t.slv__fsm__ack_vld(slv__fsm__ack_vld),\n'
         fsm_rtl += '\t\t.fsm__slv__addr(fsm__slv__addr),\n'
@@ -447,25 +456,9 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
         fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
         fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
-        fsm_rtl += '\t\t.external_reg_selected(ext_selected),\n'
-        fsm_rtl += '\t\t.ext_ack_is_back(ext_ack_is_back),\n'
-        fsm_rtl += '\t\t.mst__fsm__sync_reset(global_sync_reset_in),\n'
+        fsm_rtl += '\t\t.mst__fsm__sync_reset(global_sync_reset_in_fsm),\n'
         fsm_rtl += '\t\t.fsm__slv__sync_reset(global_sync_reset_out)\n'
         fsm_rtl += '\t);\n'
-        # fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
-        # fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
-        # fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
-        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
-        # fsm_rtl += '\t\tend\n'
-        # fsm_rtl += '\t\telse begin\n'
-        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
-        # fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
-        # fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
-        # fsm_rtl += '\t\t\telse new_ack_launched <= new_ack_launched;\n'
-        # fsm_rtl += '\t\tend\n'
-        # fsm_rtl += '\tend\n'
-        # fsm_rtl += '\n'
-        # fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
     else:
         fsm_rtl += '\tmst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n'
         fsm_rtl += '\t\tmst_fsm_%s (\n'%(module_name)
@@ -486,78 +479,113 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
         fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
         fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
-        fsm_rtl += '\t\t.external_reg_selected(ext_selected),\n'
-        fsm_rtl += '\t\t.ext_ack_is_back(ext_ack_is_back),\n'
         fsm_rtl += '\t\t.fsm__slv__sync_reset(global_sync_reset_out),\n'
         fsm_rtl += '\t\t.clear(clear),\n'
         fsm_rtl += '\t\t.interrupt(interrupt)\n'
         fsm_rtl += '\t\t);\n'
-        # fsm_rtl += '\talways@(posedge fsm_clk or negedge fsm_rstn) begin\n'
-        # fsm_rtl += '\t\tif(~fsm_rstn)begin\n'
-        # fsm_rtl += '\t\t\tnew_ack_launched <= 1\'b0;\n'
-        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= 1\'b0;\n'
-        # fsm_rtl += '\t\tend\n'
-        # fsm_rtl += '\t\telse begin\n'
-        # fsm_rtl += '\t\t\tfsm__slv__req_vld_ff <= fsm__slv__req_vld;\n'
-        # fsm_rtl += '\t\t\tif(fsm__slv__req_vld & ! fsm__slv__req_vld_ff) new_ack_launched <= 1\'b0;\n'
-        # fsm_rtl += '\t\t\telse if(| ext_ack_fsm) new_ack_launched <= 1\'b1;\n'
-        # fsm_rtl += '\t\t\telse new_ack_launched <= new_ack_launched;\n'
-        # fsm_rtl += '\t\tend\n'
-        # fsm_rtl += '\tend\n'
-        # fsm_rtl += '\n'
-        # fsm_rtl += '\tassign fsm__slv__req_vld_int = fsm__slv__req_vld & !new_ack_launched;\n'
 
     return fsm_rtl
 
 
 # get split_mux_ins rtl
-def get_split_mux_ins(M,N,reg_mux_size,skip_reg_mux_dff_0,skip_reg_mux_dff_1,ext_mux_size,skip_ext_mux_dff_0,skip_ext_mux_dff_1):
+def get_split_mux_ins(M,N,reg_mux_size,skip_reg_mux_dff_0,skip_reg_mux_dff_1):
     split_mux_rtl = ''
     skip_reg_dff_0 = 1 if(skip_reg_mux_dff_0) else 0
     skip_reg_dff_1 = 1 if(skip_reg_mux_dff_1) else 0
-    skip_ext_dff_0 = 1 if(skip_ext_mux_dff_0) else 0
-    skip_ext_dff_1 = 1 if(skip_ext_mux_dff_1) else 0
+
     if(N > 0):
         split_mux_rtl += '\t// regfile mux @regfile domain\n'
         split_mux_rtl += '\tsplit_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(N+1), .GROUP_SIZE(%d), .SKIP_DFF_0(%d), .SKIP_DFF_1(%d)) rd_split_mux\n'%(reg_mux_size,skip_reg_dff_0,skip_reg_dff_1)
-        split_mux_rtl += '\t(.clk(regfile_clk), .rst_n(regfile_rstn),\n'
+        split_mux_rtl += '\t(.clk(regslv_clk), .rst_n(regslv_rstn),\n'
         split_mux_rtl += '\t.din({regfile_reg_rd_data_in,{DATA_WIDTH{1\'b0}}}), .sel({rd_sel, dummy_reg & regfile_req_vld}),\n'
         split_mux_rtl += '\t.dout(regfile_rd_data), .dout_vld(regfile_rd_ack_vld)\n'
         split_mux_rtl += '\t);\n'
 
-    if(M > 0):
-        split_mux_rtl += '\t// external mux @regslv domain\n'
-        split_mux_rtl += '\tsplit_mux_2d #(.WIDTH(DATA_WIDTH), .CNT(M), .GROUP_SIZE(%d), .SKIP_DFF_0(%d), .SKIP_DFF_1(%d)) ext_rd_split_mux\n'%(ext_mux_size,skip_ext_dff_0,skip_ext_dff_1)
-        split_mux_rtl += '\t(.clk(fsm_clk), .rst_n(fsm_rstn),\n'
-        split_mux_rtl += '\t.din(ext_rd_data_fsm), .sel(ext_ack_fsm),\n'
-        split_mux_rtl += '\t.dout(ext_rd_data_vld_fsm), .dout_vld(ext_reg_ack_vld_fsm)\n'
-        split_mux_rtl += '\t);\n'
-
     return split_mux_rtl
 
-def get_ultimate_mux(M,N):
+def get_ultimate_mux(master,M,N):
     ultimate_mux_rtl = ''
     # get output select
     ultimate_mux_rtl += '\t// select which to read out and transfer the corresponding vld signal @regslv domain\n'
-    if(M > 0 and N > 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | regfile_ack_vld_fsm | ext_reg_ack_vld_fsm;\n'
-    elif(M == 0 and N > 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1\'b0}} : regfile_ack_vld_fsm ? regfile_rd_data_fsm : 0;\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | regfile_ack_vld_fsm;\n'
-    elif(M > 0 and N == 0):
-        ultimate_mux_rtl += '\tassign slv__fsm__rd_data = none_selected & fsm__slv__req_vld ? {DATA_WIDTH{1\'b0}} : (ext_reg_ack_vld_fsm ? ext_rd_data_vld_fsm : 0);\n'
-        ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = none_selected & fsm__slv__req_vld | ext_reg_ack_vld_fsm;\n'
-    else:
-        try:
+    if(master):
+        if(M > 0 and N > 0):
+            ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld ? regfile_rd_data : (ext_ack_vld ? ext_rd_data : 0);\n'
+            ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = regfile_ack_vld | ext_ack_vld;\n'
+        elif(M == 0 and N > 0):
+            ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld ? regfile_rd_data : 0;\n'
+            ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = regfile_ack_vld;\n'
+        elif(M > 0 and N == 0):
+            ultimate_mux_rtl += '\tassign slv__fsm__rd_data = (ext_ack_vld ? ext_rd_data : 0);\n'
+            ultimate_mux_rtl += '\tassign slv__fsm__ack_vld = ext_ack_vld;\n'
+        else:
+            message.error('No internal or external regs found!')
             sys.exit(1)
-        except:
-            print('NO internal or external regs found!')
+    if(not master):
+        if(N > 0):
+            ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld ? regfile_rd_data : 0;\n'
+        else:
+            message.error('No internal regs found!')
+            sys.exit(1)
 
     return ultimate_mux_rtl
 
 
 # get cdc handling logic rtl
+def get_regslv_cdc(cdc):
+    regslv_cdc_rtl = ''
+    module_name = 'regslv'
+
+    if(cdc):
+        regslv_cdc_rtl += '\n\tassign %s_value_out_fsm = {ack_vld_fsm, rd_data_fsm};\n'%(module_name)
+        regslv_cdc_rtl += '\tassign {ack_vld, rd_data} =  %s_value_out;\n'%(module_name)
+
+        regslv_cdc_rtl += '\n\tassign {req_vld_fsm, global_sync_reset_in_fsm, wr_en_fsm, rd_en_fsm, wr_data_fsm, addr_fsm} =  %s_value_in_fsm;\n'%(module_name)
+        regslv_cdc_rtl += '\tassign %s_value_in = {req_vld, global_sync_reset_in, wr_en, rd_en, wr_data, addr};\n'%(module_name)
+
+        regslv_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
+        regslv_cdc_rtl += '\talways_ff@(posedge clk or negedge rstn)begin\n'
+        regslv_cdc_rtl += '\t\tif(~rstn)\n'
+        regslv_cdc_rtl += '\t\t\treq_vld_ff <= 1\'b0;\n'
+        regslv_cdc_rtl += '\t\telse\n'
+        regslv_cdc_rtl += '\t\t\treq_vld_ff <= req_vld;\n'
+        regslv_cdc_rtl += '\tend\n'
+
+        regslv_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
+        regslv_cdc_rtl += '\talways_ff@(posedge clk or negedge rstn)begin\n'
+        regslv_cdc_rtl += '\t\tif(~rstn)\n'
+        regslv_cdc_rtl += '\t\t\tglobal_sync_reset_in_ff <= 1\'b0;\n'
+        regslv_cdc_rtl += '\t\telse\n'
+        regslv_cdc_rtl += '\t\t\tglobal_sync_reset_in_ff <= global_sync_reset_in;\n'
+        regslv_cdc_rtl += '\tend\n'
+
+        regslv_cdc_rtl += '\n\tassign %s_sel_pulse = (~req_vld_ff & req_vld) | (~global_sync_reset_in_ff & global_sync_reset_in);\n'%(module_name)
+
+        regslv_cdc_rtl += '\n\talways_ff@(posedge regslv_clk or negedge regslv_rstn)begin\n'
+        regslv_cdc_rtl += '\t\tif(~regslv_rstn)\n'
+        regslv_cdc_rtl += '\t\t\tack_vld_fsm_ff <= 1\'b0;\n'
+        regslv_cdc_rtl += '\t\telse\n'
+        regslv_cdc_rtl += '\t\t\tack_vld_fsm_ff <= ack_vld_fsm;\n'
+        regslv_cdc_rtl += '\tend\n'
+
+        regslv_cdc_rtl += '\n\tassign %s_ack_pulse = ~ack_vld_fsm_ff & ack_vld_fsm;\n'%(module_name)
+
+        int_regslv = Addressmap('regslv')
+        int_regslv.module_name = 'regslv'
+        int_regslv.DATA_WIDTH = 32
+        int_regslv.ADDR_WIDTH = 64
+        regslv_cdc_rtl += '\n' + value_transmitter_ins(int_regslv)
+    else:
+        regslv_cdc_rtl += '\tassign req_vld_fsm      = req_vld        ;\n'
+        regslv_cdc_rtl += '\tassign ack_vld          = ack_vld_fsm    ;\n'
+        regslv_cdc_rtl += '\tassign wr_en_fsm        = wr_en          ;\n'
+        regslv_cdc_rtl += '\tassign rd_en_fsm        = rd_en          ;\n'
+        regslv_cdc_rtl += '\tassign addr_fsm         = addr           ;\n'
+        regslv_cdc_rtl += '\tassign wr_data_fsm      = wr_data        ;\n'
+        regslv_cdc_rtl += '\tassign rd_data          = rd_data_fsm    ;\n'
+        regslv_cdc_rtl += '\tassign global_sync_reset_in_fsm = global_sync_reset_in;\n'
+
+    return regslv_cdc_rtl
+
 def get_mem_cdc_rtl(ext_list):
     mem_cdc_rtl = ''
     for ext_module in ext_list:
@@ -600,87 +628,26 @@ def get_mem_cdc_rtl(ext_list):
 
     return mem_cdc_rtl
 
-def get_regfile_cdc(cdc, N):
-    regfile_cdc_rtl = ''
-    module_name = 'regfile'
-
-    if(N ==0):
-        return regfile_cdc_rtl
-
-    regfile_cdc_rtl += '\tassign %s_req_vld_fsm = fsm__slv__req_vld & int_selected;\n'%(module_name)
-    regfile_cdc_rtl += '\tassign %s_wr_en_fsm = fsm__slv__wr_en & int_selected;\n'%(module_name)
-    regfile_cdc_rtl += '\tassign %s_rd_en_fsm = fsm__slv__rd_en & int_selected;\n'%(module_name)
-    regfile_cdc_rtl += '\tassign %s_wr_data_fsm = int_selected ? fsm__slv__wr_data : {DATA_WIDTH{1\'b0}};\n'%(module_name)
-    regfile_cdc_rtl += '\tassign %s_addr_fsm = int_selected ? fsm__slv__addr : {ADDR_WIDTH{1\'b0}};\n'%(module_name)
-
-    regfile_cdc_rtl += '\tassign wr_sel = {REG_NUM{%s_wr_en}} & reg_sel;\n'%(module_name)
-    regfile_cdc_rtl += '\tassign rd_sel = {REG_NUM{%s_rd_en}} & reg_sel;\n'%(module_name)
-
-    regfile_cdc_rtl += '\tassign %s_ack_vld = %s_rd_ack_vld | %s_wr_en;\n'%(module_name, module_name, module_name)
-
-    if(cdc):
-        regfile_cdc_rtl += '\n\tassign %s_value_out_fsm = {%s_req_vld_fsm, %s_wr_en_fsm, %s_rd_en_fsm, %s_wr_data_fsm, %s_addr_fsm};\n'%(module_name, module_name, module_name, module_name, module_name, module_name)
-        regfile_cdc_rtl += '\tassign {%s_req_vld, %s_wr_en, %s_rd_en, %s_wr_data, %s_addr} =  %s_value_out;\n'%(module_name, module_name, module_name, module_name, module_name, module_name)
-
-        regfile_cdc_rtl += '\n\tassign {%s_ack_vld_fsm, %s_rd_data_fsm} =  %s_value_in_fsm;\n'%(module_name, module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_value_in = {%s_ack_vld, %s_rd_data};\n'%(module_name, module_name, module_name)
-
-        regfile_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
-        regfile_cdc_rtl += '\talways_ff@(posedge fsm_clk or negedge fsm_rstn)begin\n'
-        regfile_cdc_rtl += '\t\tif(~fsm_rstn)\n'
-        regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= 1\'b0;\n'%(module_name)
-        regfile_cdc_rtl += '\t\telse\n'
-        regfile_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= %s_req_vld_fsm;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tend\n'
-
-        regfile_cdc_rtl += '\n\tassign %s_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name, module_name)
-
-        regfile_cdc_rtl += '\n\talways_ff@(posedge %s_clk or negedge %s_rstn)begin\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\t\tif(~%s_rstn)\n'%(module_name)
-        regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff <= 1\'b0;\n'%(module_name)
-        regfile_cdc_rtl += '\t\telse\n'
-        regfile_cdc_rtl += '\t\t\t%s_ack_vld_ff <= %s_ack_vld;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tend\n'
-
-        regfile_cdc_rtl += '\n\tassign %s_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name, module_name)
-        # regfile_cdc_rtl += '\n\tassign %s_ack_pulse = %s_ack_vld;\n'%(module_name, module_name)
-
-        int_regfile = Regfile('internal_regfile')
-        int_regfile.module_name = 'regfile'
-        int_regfile.DATA_WIDTH = 32
-        int_regfile.ADDR_WIDTH = 64
-        regfile_cdc_rtl += '\n' + value_transmitter_ins(int_regfile)
-    else:
-        regfile_cdc_rtl += '\tassign %s_req_vld       = %s_req_vld_fsm    ;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_ack_vld_fsm   = %s_ack_vld        ;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_wr_en         = %s_wr_en_fsm      ;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_rd_en         = %s_rd_en_fsm      ;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_addr          = %s_addr_fsm       ;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_wr_data       = %s_wr_data_fsm    ;\n'%(module_name, module_name)
-        regfile_cdc_rtl += '\tassign %s_rd_data_fsm   = %s_rd_data        ;\n'%(module_name, module_name)
-
-    return regfile_cdc_rtl
-
 def value_transmitter_ins(module):
     module_name = module.module_name
-    trans_length = module.DATA_WIDTH + module.ADDR_WIDTH + 3
+    trans_length = module.DATA_WIDTH + module.ADDR_WIDTH + 4
     recei_length = module.DATA_WIDTH + 1
 
     trans_ins_rtl = ''
-    trans_ins_rtl += '\t// fsm to %s\n'%(module_name)
+    trans_ins_rtl += '\t// dispatch to %s\n'%(module_name)
     trans_ins_rtl += '\tvalue_transmitter\n'
     trans_ins_rtl += '\t\t#(.WIDTH(%d))\n'%(trans_length)
     trans_ins_rtl += '\t\t%s_value_transmitter\n'%(module_name)
     trans_ins_rtl += '\t\t(\n'
-    trans_ins_rtl += '\t\t.clk_a                                  (fsm_clk)                   ,\n'
-    trans_ins_rtl += '\t\t.rst_a_n                                (fsm_rstn)                  ,\n'
+    trans_ins_rtl += '\t\t.clk_a                                  (clk    )                   ,\n'
+    trans_ins_rtl += '\t\t.rst_a_n                                (rstn   )                  ,\n'
     trans_ins_rtl += '\t\t.pulse_in                               (%s_sel_pulse)             ,\n'%(module_name)
-    trans_ins_rtl += '\t\t.value_in                               (%s_value_out_fsm)   ,\n'%(module_name)
+    trans_ins_rtl += '\t\t.value_in                               (%s_value_in)   ,\n'%(module_name)
     trans_ins_rtl += '\t\t.clk_b                                  (%s_clk)             ,\n'%(module_name)
     trans_ins_rtl += '\t\t.rst_b_n                                (%s_rstn)            ,\n'%(module_name)
-    trans_ins_rtl += '\t\t.value_out_ack                          (%s_ack_vld)         ,\n'%(module_name)
+    trans_ins_rtl += '\t\t.value_out_ack                          (ack_vld_fsm | global_sync_reset_in_fsm)         ,\n'
     trans_ins_rtl += '\t\t.pulse_out                              ()                          ,\n'
-    trans_ins_rtl += '\t\t.value_out                              (%s_value_out)\n'%(module_name)
+    trans_ins_rtl += '\t\t.value_out                              (%s_value_in_fsm)\n'%(module_name)
     trans_ins_rtl += '\t);\n'
 
     trans_ins_rtl += '\n\tvalue_transmitter\n'
@@ -690,12 +657,12 @@ def value_transmitter_ins(module):
     trans_ins_rtl += '\t\t.clk_a                                  (%s_clk)                         ,\n'%(module_name)
     trans_ins_rtl += '\t\t.rst_a_n                                (%s_rstn)                        ,\n'%(module_name)
     trans_ins_rtl += '\t\t.pulse_in                               (%s_ack_pulse)                         ,\n'%(module_name)
-    trans_ins_rtl += '\t\t.value_in                               (%s_value_in)                    ,\n'%(module_name)
-    trans_ins_rtl += '\t\t.clk_b                                  (fsm_clk)                               ,\n'
-    trans_ins_rtl += '\t\t.rst_b_n                                (fsm_rstn)                              ,\n'
-    trans_ins_rtl += '\t\t.value_out_ack                          (%s_ack_vld_fsm)                 ,\n'%(module_name)
+    trans_ins_rtl += '\t\t.value_in                               (%s_value_out_fsm)                    ,\n'%(module_name)
+    trans_ins_rtl += '\t\t.clk_b                                  (clk    )                               ,\n'
+    trans_ins_rtl += '\t\t.rst_b_n                                (rstn   )                              ,\n'
+    trans_ins_rtl += '\t\t.value_out_ack                          (ack_vld)                 ,\n'
     trans_ins_rtl += '\t\t.pulse_out                              ()                                      ,\n'
-    trans_ins_rtl += '\t\t.value_out                              (%s_value_in_fsm)\n'%(module_name)
+    trans_ins_rtl += '\t\t.value_out                              (%s_value_out)\n'%(module_name)
     trans_ins_rtl += '\t);\n'
 
     return trans_ins_rtl
@@ -706,7 +673,7 @@ def get_reg_rtl(reg_list, rsvdset):
     reg_rtl = ''
     for reg in reg_list:
         addr = '64\'h' + get_hex(reg.addr)
-        offset = '64\'h' + '64\'h' + get_hex(reg.offset)
+        offset = '64\'h' + get_hex(reg.offset)
         reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
         reg_rtl += '\t//' + 'REG INSTANT'.center(100,"=") + '//\n'
         reg_rtl += '\t//' + ('REG NAME: %s'%(reg_name)) + '//\n'
@@ -785,8 +752,8 @@ def snapshot_reg_ins(reg):
                 '\t\t#(.DATA_WIDTH(%d), .REG_WIDTH(%d))\n'%(32, reg.regwidth) + \
                 '\t%s_snapshot_reg\n'%(reg_name) + \
                 '\t\t(\n' + \
-                '\t\t.clk                     (regfile_clk)                               ,\n' + \
-                '\t\t.rst_n                   (regfile_rstn)                              ,\n' + \
+                '\t\t.clk                     (regslv_clk )                               ,\n' + \
+                '\t\t.rst_n                   (regslv_rstn)                              ,\n' + \
                 '\t\t.mst__fsm__sync_reset    (global_sync_reset_out)                     ,\n' + \
                 '\t\t.snap_wr_en              ({%s})                              ,\n'%(','.join(snap_reg_wr_en)) + \
                 '\t\t.snap_rd_en              ({%s})                              ,\n'%(','.join(snap_reg_rd_en)) + \
@@ -829,12 +796,12 @@ def snapshot_mem_ins(ext_list):
             mem_name = module.module_name
             if(memory.memwidth > 32):
                 snapshot_str +=  '\tsnapshot_reg_mem\n' + \
-                            '\t\t#(.DATA_WIDTH(%d), .MEM_WIDTH(%d), .SUB(%d), .BASE(%d),\n'%(32, memory.memwidth, memory.addr_sub, memory.addr) + \
+                            '\t\t#(.DATA_WIDTH(%d), .MEM_WIDTH(%d), .SUB(%d), .BASE(%d), '%(32, memory.memwidth, memory.addr_sub, memory.addr) + \
                             '\t.ADDR_WIDTH(64), .VALID_WIDTH(%s), .ENTRY_WIDTH(%s))\n'%(memory.valid_width, memory.entry_width) + \
                             '\t%s_snapshot_reg_mem\n'%(mem_name) + \
                             '\t\t(\n' + \
-                            '\t\t.clk                     (fsm_clk)                               ,\n' + \
-                            '\t\t.rst_n                   (fsm_rstn)                              ,\n' + \
+                            '\t\t.clk                     (regslv_clk)                               ,\n' + \
+                            '\t\t.rst_n                   (regslv_rstn)                              ,\n' + \
                             '\t\t.mst__fsm__sync_reset    (global_sync_reset_out)                 ,\n' + \
                             '\t\t.addr                    (%s_snapshot_addr_fsm)                  ,\n'%(mem_name) + \
                             '\t\t.wr_en                   (%s_snapshot_wr_en_fsm)                 ,\n'%(mem_name) + \
@@ -860,13 +827,13 @@ def snapshot_mem_ins(ext_list):
                     snapshot_str += 'assign %s_valid_addr_fsm  = %s_snapshot_addr_fsm - %d   ;\n'%(mem_name, mem_name, memory.addr)
                 else:
                     snapshot_str += 'assign %s_valid_addr_fsm  = %s_snapshot_addr_fsm              ;\n'%(mem_name, mem_name)
-                snapshot_str += 'assign %s_addr_fsm     = %s_valid_addr_fsm[%d-1:%d-%d]  ;\n'%(mem_name,mem_name,memory.valid_width,memory.valid_width,memory.entry_width)
-                snapshot_str += 'assign %s_wr_en_fsm        = %s_snapshot_wr_en_fsm            \n;'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_rd_en_fsm        = %s_snapshot_rd_en_fsm            \n;'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_wr_data_fsm      = %s_snapshot_wr_data_fsm          \n;'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_snapshot_rd_data_fsm      = %s_rd_data_fsm          \n;'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_req_vld_fsm      = %s_snapshot_req_vld_fsm          \n;'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_snapshot_ack_vld_fsm      = %s_ack_vld_fsm          \n;'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_addr_fsm         = %s_valid_addr_fsm[%d-1:%d-%d]     ;\n'%(mem_name,mem_name,memory.valid_width,memory.valid_width,memory.entry_width)
+                snapshot_str += 'assign %s_wr_en_fsm        = %s_snapshot_wr_en_fsm            ;\n'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_rd_en_fsm        = %s_snapshot_rd_en_fsm            ;\n'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_wr_data_fsm      = %s_snapshot_wr_data_fsm          ;\n'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_snapshot_rd_data_fsm      = %s_rd_data_fsm          ;\n'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_req_vld_fsm      = %s_snapshot_req_vld_fsm          ;\n'%(mem_name,mem_name)
+                snapshot_str += 'assign %s_snapshot_ack_vld_fsm      = %s_ack_vld_fsm          ;\n'%(mem_name,mem_name)
             else:
                 print("Memwidth Mismatch!")
     return snapshot_str

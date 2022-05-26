@@ -16,7 +16,7 @@ class Root_str(object):
         # file place
         self.folder_name = folder_name
         # root rtl_obj
-        self.rtl_obj = create_obj(node = self.node, parent_obj= None)
+        self.rtl_obj = create_obj(node = self.node, parent_obj= None, base_addr=0)
         self.children = []
         # root component
         self.global_signal_map = []
@@ -35,9 +35,10 @@ class Root_str(object):
 
     def scan(self):
         # scan the root obj
-        for child in self.node.children(unroll=True, skip_not_present=True):
+        for child in self.node.children(unroll=True, skip_not_present=False):
             if(isinstance(child, AddrmapNode)):
                 Top_Addrmap = child
+                base_addr = child.absolute_address
             elif(isinstance(child, SignalNode)):
                 new_signal = create_obj(child, self.rtl_obj)
                 signal_name = child.get_path_segment()
@@ -51,7 +52,7 @@ class Root_str(object):
             shutil.rmtree(self.folder_name)
         # create new folder
         os.mkdir(self.folder_name)
-        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self, hierarchy = [])
+        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self, hierarchy = [], base_addr = base_addr)
 
         # create reg_mst's reg_slv_if
         Top_Map.reg_slv_if.global_sync = 'fsm_sync_reset'

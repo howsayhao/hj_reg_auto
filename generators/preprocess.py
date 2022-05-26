@@ -4,7 +4,7 @@ from time import time
 
 import utils.message as message
 from systemrdl import RDLListener, RDLWalker
-from systemrdl.node import FieldNode, RootNode
+from systemrdl.node import FieldNode, RootNode, AddrmapNode
 
 
 class PreprocessListener(RDLListener):
@@ -36,6 +36,7 @@ class PreprocessListener(RDLListener):
         self.runtime_stack = []
         self.total_reg_num = 0
         self.filter_reg_num = 0
+        self.total_size = 0
         self.start_time = time()
 
         # user-defined operations
@@ -54,7 +55,7 @@ class PreprocessListener(RDLListener):
         - flatten addrmap (no module)
         - 3rd party IP
         """
-        print("\t"*self.indent, "Entering addrmap: %s" % (node.get_path()))
+        message.debug("%sEntering addrmap: %s" % ("\t"*self.indent, node.get_path()))
 
         # push properties of the parent addrmap instance to stack (protect)
         # once entering new addrmap instance
@@ -82,10 +83,11 @@ class PreprocessListener(RDLListener):
             self.is_in_regmst = True
 
             self.regslv_name.append(node.inst_name)
-
             rtl_module_name = "regmst_{}".format(node.inst_name)
             self.rtl_path.append(rtl_module_name)
-            print("\t"*self.indent, "generate", rtl_module_name)
+            self.total_size = node.total_size
+
+            message.debug("%sgenerate %s" % ("\t"*self.indent, rtl_module_name))
 
         elif (node.get_property("hj_genrtl", default=True)) and \
             (not self.is_in_flatten_addrmap) and \
@@ -138,6 +140,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_flatten_addrmap"] = False
 
             self.is_in_3rd_party_IP = True
+            message.debug("%sRecognized as 3rd party IP: " % ("\t"*self.indent))
 
             ext_hdl_path = node.get_property("hj_ext_hdl_path_down", default="")
             if ext_hdl_path == "":
@@ -165,12 +168,12 @@ class PreprocessListener(RDLListener):
             self.regslv_name.pop()
 
     def enter_Mem(self, node):
-        print("\t"*self.indent, "Entering memory: %s" % (node.get_path()))
+        message.debug("%sEntering memory: %s" % ("\t"*self.indent, node.get_path()))
 
         self.is_in_ext_mem = True
 
     def exit_Mem(self, node):
-        print("\t"*self.indent, "Exiting memory: %s" % (node.get_path()))
+        message.debug("%sExiting memory: %s" % ("\t"*self.indent, node.get_path()))
 
         self.is_in_ext_mem = False
 
@@ -185,9 +188,6 @@ class PreprocessListener(RDLListener):
         self.reg_name.pop()
 
     def enter_Reg(self, node):
-        print("\t"*self.indent, "Entering register: %s, filtered: %s"
-              % (node.get_path(), self.is_filtered))
-
         reg_rtl_inst_name = node.alias_primary.inst_name if node.is_alias else node.inst_name
 
         self.reg_name.append(reg_rtl_inst_name)
@@ -196,13 +196,9 @@ class PreprocessListener(RDLListener):
             self.filter_reg_num += 1
 
     def exit_Reg(self, node):
-        print("\t"*self.indent, "Exiting register: %s" % (node.get_path()))
-
         self.reg_name.pop()
 
     def enter_Field(self, node):
-        print("\t"*self.indent, "Entering field: %s" % (node.get_path()))
-
         if not self.is_in_3rd_party_IP:
             field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name="_".join(self.reg_name),
                                                                        field_name=node.inst_name)
@@ -215,8 +211,6 @@ class PreprocessListener(RDLListener):
             pass
 
     def exit_Field(self, node):
-        print("\t"*self.indent, "Exiting field: %s" % (node.get_path()))
-
         if not self.is_in_3rd_party_IP:
             self.rtl_path.pop()
         else:
@@ -231,21 +225,25 @@ class PreprocessListener(RDLListener):
 
     def enter_Component(self, node):
         self.indent += 1
-        if not isinstance(node, FieldNode):
-            print("\t"*self.indent, node.get_path_segment())
 
         # remove a instance from UVM RAL model when matched with filter patterns
         # by setting ispresent=False in that instance object
         self.runtime_stack.append(self.is_filtered)
-        if (self.is_filtered):
+        if self.is_filtered:
             node.inst.properties["ispresent"] = False
         else:
-            if (self.filter_pattern is not None):
+            if self.filter_pattern is not None:
                 for pat in self.filter_pattern:
                     if fnmatchcase(node.get_path(), pat):
                         self.is_filtered = True
                         node.inst.properties["ispresent"] = False
                         break
+
+        if not isinstance(node, FieldNode):
+            message.debug("%s%s, filtered: %s" % ("\t"*self.indent,
+                                                  node.get_path_segment(),
+                                                  self.is_filtered))
+
 
     def exit_Component(self, node):
         self.indent -= 1
@@ -258,6 +256,7 @@ class PreprocessListener(RDLListener):
         - filtered register number
         """
         message.info("total register number: %d" % (self.total_reg_num))
+        message.info("total size: %s bytes" % (hex(self.total_size)))
         message.info("UVM filtered register number: %d" % (self.filter_reg_num))
         message.info("preprocessing time: %.4fs" % (time() - self.start_time))
 

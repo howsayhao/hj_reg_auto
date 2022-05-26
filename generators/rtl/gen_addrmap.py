@@ -12,7 +12,7 @@ from .gen_module_rtl import *
 
 
 class addrmap_str(object):
-    def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list):
+    def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list, base_addr) -> None:
         # rtl module name from the Top addressmap(self.node)'s instance name
         self.module_name = '__'.join(hierarchy[:]) + '__' + node.get_path_segment() if(master is False) else node.get_path_segment()
         self.parent_module_name = '__'.join(hierarchy[:])
@@ -26,6 +26,7 @@ class addrmap_str(object):
         # show program walking schedule
         self.indent = 0
         # Top addressmap's internal and external addr map (addr with register instance(register may overlap))
+        self.base_addr = base_addr
         self.internal_addr_map = []
         self.external_addr_map = []
         # Top addressmap's internal and external register map (register instance with addr(addr may overlap))
@@ -86,7 +87,7 @@ class addrmap_str(object):
         self.cdc_deliver = ''
 
     # collect port information for wrapper
-    def get_ports(self):
+    def get_ports(self) -> None:
         for internal_register in self.internal_register_map:
             # if the register is alias reg or shared reg(not the first), its field will not be instanced
             if(internal_register.alias is True or (internal_register.shared is True and internal_register.first_shared is False)):
@@ -112,19 +113,19 @@ class addrmap_str(object):
                         self.field_out.append(swacc_signal)
 
     # show enter component information
-    def enter(self, node:Node):
+    def enter(self, node:Node) -> None:
         node_name = node.get_path_segment()
         self.hierarchy.append(node_name)
         # print('\t'*self.indent + 'entering ' + node.get_path_segment())
         self.indent += 1
     # show exit component information
-    def exit(self, node:Node):
+    def exit(self, node:Node) -> None:
         self.indent -= 1
         # print('\t'*self.indent + 'exiting ' + node.get_path_segment())
         self.hierarchy.pop(-1)
 
     # generate module rtl file(.v file)
-    def write(self):
+    def write(self) -> None:
 
         self.get_internal_strcture()
 
@@ -149,14 +150,15 @@ class addrmap_str(object):
         shutil.move(file_name,self.folder_name)
 
     # get information from node tree and generate corresponding rtl str
-    def get_internal_strcture(self):
+    def get_internal_strcture(self) -> None:
         """
         get_internal_strcture:  traverses the whole node-structure parsed by complier
                                 creates the corresponding rtl_type tree structure
         """
 
         print('\n###start traverse %s###'%self.module_name)
-        self.rtl_obj = create_obj(node = self.node,parent_obj = None)
+        print(self.base_addr)
+        self.rtl_obj = create_obj(node = self.node,parent_obj = None, base_addr=self.base_addr)
         self.rtl_obj.external = False
         self.walking(self.node,self.rtl_obj)
         print('###end traverse %s###\n'%self.module_name)
@@ -179,7 +181,7 @@ class addrmap_str(object):
         self.get_module_rtl()
 
     # traverse the node tree to get the information as well as a new tree saving information and fill the different maps
-    def walking(self, node:Node, rtl_obj:RTL_NODE):
+    def walking(self, node:Node, rtl_obj:RTL_NODE) -> None:
         """
         Travese and create structure-tree in recursion
         Different nodes would be treated seperately:
@@ -195,9 +197,9 @@ class addrmap_str(object):
         self.enter(node)
         i = 0
         # traverse the node's childnode
-        for child in node.children(unroll=True, skip_not_present=True):
+        for child in node.children(unroll=True, skip_not_present=False):
             # create the child rtl_type object with corresponding properties
-            new_obj = create_obj(child,rtl_obj)
+            new_obj = create_obj(child,rtl_obj,self.base_addr)
 
             # to judge if the address is treated as internal or external
             genrtl = False
@@ -209,7 +211,8 @@ class addrmap_str(object):
                 # for regslv gen_rtl
                 if(genrtl is True and child not in self.Root.genrtl_node):
                     rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-                    ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy)
+                    base_addr = child.absolute_address
+                    ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy, base_addr=base_addr)
                     ext_addr.write()
                     self.Root.children.append(ext_addr)
                     self.Root.genrtl_node.append(child)
@@ -395,7 +398,7 @@ class addrmap_str(object):
                     self.shared_register_map.append(new_obj)
 
     # handle the regs' alias and shared situation
-    def reg_alias_shared_handle(self):
+    def reg_alias_shared_handle(self) -> None:
         """
         register with alias or shared information would be marked and recorded in alias/shared_register_map
         both registers' properties would be gathered together and instantiated on ONE register
@@ -534,22 +537,25 @@ class addrmap_str(object):
         # collect all parts of rtl together into whole .v file
         self.rtl += '`include "xregister.vh"\n'
         self.rtl += '`default_nettype none\n'
-        if(self.master is True):
+        if(self.master):
             self.rtl += 'module ' + 'regmst_' + self.module_name + '(\n'
         else:
             self.rtl += 'module ' + 'regslv_' + self.module_name + '(\n'
-        self.rtl += '//' + 'EXTERNAL MODULE PORT START'.center(100,"*") + '//\n'
-        self.rtl += get_ext_port(self.ext_module)
-        self.rtl += '//' + 'EXTERNAL MODULE PORT END'.center(100,"*") + '//\n'
-        self.rtl += '\n\n'
+
+        # regmst has 1 external port to connect dispatch
+        if(self.master):
+            self.rtl += '//' + 'EXTERNAL MODULE PORT START'.center(100,"*") + '//\n'
+            self.rtl += get_ext_port()
+            self.rtl += '//' + 'EXTERNAL MODULE PORT END'.center(100,"*") + '//\n'
+            self.rtl += '\n\n'
 
         self.rtl += '//' + 'INTERNAL FIELD PORT START'.center(100,"*") + '//\n'
-        self.rtl += get_regfile_port(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map, self.N)
+        self.rtl += get_regfile_port(self.internal_register_map + self.snap_register_map, self.signal_map, self.N)
         self.rtl += '//' + 'INTERNAL FIELD PORT END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'STANDARD PORT START'.center(100,"*") + '//\n'
-        self.rtl += get_regslv_port(self.master)
+        self.rtl += get_regslv_port(self.master, self.cdc)
         self.rtl += '//' + 'STANDARD PORT END'.center(100,"*") + '//\n'
         self.rtl += ');\n'
         self.rtl += '\n\n'
@@ -559,39 +565,38 @@ class addrmap_str(object):
         self.rtl += '\tparameter                  DATA_WIDTH = 32          ;\n'
         self.rtl += '\t//N:number of internal registers, M:number of external modules\n'
         self.rtl += '\tlocalparam                 N = %d                    ;\n'%(self.N)
-        self.rtl += '\tlocalparam                 M = %d                    ;\n'%(self.M)
+        self.rtl += '\tlocalparam                 M = %d                    ;\n'%(self.M) if(self.master) else ''
         self.rtl += '\tlocalparam                 REG_NUM = N ? N : 1      ;\n'
-        self.rtl += '\tlocalparam                 EXT_NUM = M ? M : 1      ;\n'
+        self.rtl += '\tlocalparam                 EXT_NUM = M ? M : 1      ;\n' if(self.master) else ''
         self.rtl += '//' + 'PARAMETER DEFINITION END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'PORT DECLARATION START'.center(100,"*") + '//\n'
-        self.rtl += get_regslv_define(self.master)
-        self.rtl += get_ext_define(self.ext_module)
-        self.rtl += get_regfile_define(self.internal_register_map + self.snap_register_map, self.cdc, self.signal_map, self.N)
+        self.rtl += get_regslv_define(self.master, self.cdc)
+
+        # regmst has 1 external port to connect dispatch
+        if(self.master):
+            self.rtl += get_ext_define()
+
+        self.rtl += get_regfile_define(self.internal_register_map + self.snap_register_map, self.signal_map, self.N)
         self.rtl += '//' + 'PORT DECLARATION END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'WIRE DECLARATION START'.center(100,"*") + '//\n'
-        self.rtl += get_fsm_wire(self.ext_module)
-        self.rtl += get_decoder_wire(self.M, self.N)
-        self.rtl += get_splitmux_wire(self.M, self.N)
-        self.rtl += get_regfile_wire(self.cdc, self.N)
+        self.rtl += get_fsm_wire()
+        self.rtl += get_decoder_wire(self.N)
+        self.rtl += get_splitmux_wire(self.N)
+        self.rtl += get_regslv_wire(self.master, self.cdc)
+        self.rtl += get_regfile_wire(self.N)
         self.rtl += get_internal_reg_wire(self.internal_register_map)
         self.rtl += get_snaped_reg_wire(self.snap_register_map)
-        if(self.ext_module != []):
-            self.rtl += get_external_wire(self.ext_module)
+
         self.rtl += '//' + 'WIRE DECLARATION END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
-        if(self.ext_module != []):
-            self.rtl += '//' + 'EXTERNAL WIRE CONNECTION START'.center(100,"*") + '//\n'
-            self.rtl += get_ext_connect(self.ext_module)
-            self.rtl += '//' + 'EXTERNAL WIRE CONNECTION END'.center(100,"*") + '//\n'
-            self.rtl += '\n\n'
 
         self.rtl += '//' + 'ADDRESS DECODER START'.center(100,"*") + '//\n'
-        self.rtl += get_decoder(self.internal_addr_map, self.external_addr_map, self.master)
+        self.rtl += get_decoder(self.internal_addr_map)
         self.rtl += '//' + 'ADDRESS DECODER END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
@@ -601,29 +606,20 @@ class addrmap_str(object):
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'SPLIT MUX INSTANCE START'.center(100,"*") + '//\n'
-        self.rtl += get_split_mux_ins(self.M, self.N, self.reg_mux_size, self.skip_reg_mux_dff_0, self.skip_reg_mux_dff_1,  self.ext_mux_size, self.skip_ext_mux_dff_0, self.skip_ext_mux_dff_1)
+        self.rtl += get_split_mux_ins(self.M, self.N, self.reg_mux_size, self.skip_reg_mux_dff_0, self.skip_reg_mux_dff_1)
         self.rtl += '//' + 'SPLIT MUX INSTANCE END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
         self.rtl += '//' + 'ULTIMATE MUX START'.center(100,"*") + '//\n'
-        self.rtl += get_ultimate_mux(self.M, self.N)
+        self.rtl += get_ultimate_mux(self.master, self.M, self.N)
         self.rtl += '//' + 'ULTIMATE MUX END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
-        self.rtl += '//' + 'EXTERNAL MEMORY SNAPSHOT REGISTER START'.center(100,"*") + '//\n'
-        self.rtl += snapshot_mem_ins(self.ext_module)
-        self.rtl += '//' + 'EXTERNAL MEMORY SNAPSHOT REGISTER END'.center(100,"*") + '//\n'
-        self.rtl += '\n\n'
-
-        self.rtl += '//' + 'EXTERNAL MEMORY CDC DELIVER INSTANT START'.center(100,"*") + '//\n'
-        self.rtl += get_mem_cdc_rtl(self.ext_module)
-        self.rtl += '//' + 'EXTERNAL MEMORY CDC DELIVER INSTANT END'.center(100,"*") + '//\n'
-        self.rtl += '\n\n'
-
-        self.rtl += '//' + 'REGFILE CDC DELIVER INSTANT START'.center(100,"*") + '//\n'
-        self.rtl += get_regfile_cdc(self.cdc, self.N)
-        self.rtl += '//' + 'REGFILE CDC DELIVER INSTANT END'.center(100,"*") + '//\n'
-        self.rtl += '\n\n'
+        if(not self.master):
+            self.rtl += '//' + 'REGSLV CDC DELIVER INSTANT START'.center(100,"*") + '//\n'
+            self.rtl += get_regslv_cdc(self.cdc)
+            self.rtl += '//' + 'REGSLV CDC DELIVER INSTANT END'.center(100,"*") + '//\n'
+            self.rtl += '\n\n'
 
         self.rtl += '//' + 'REG/FIELD INSTANCE START'.center(100,"*") + '//\n'
         self.rtl += get_reg_rtl(self.internal_register_map, self.rsvdset)
