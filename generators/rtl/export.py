@@ -8,7 +8,7 @@ from .gen_tree import Root_str
 
 def export_rtl(root:RootNode, out_dir:str):
     """
-    生成寄存器RTL模型, 包含regmst和regslv
+    Generate RTL code, including regmst, regslv, regdisp and other components
 
     Parameter
     ---------
@@ -22,6 +22,6 @@ def export_rtl(root:RootNode, out_dir:str):
         Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
         Reg_sub_tree.scan()
     except:
-        message.error("rtl export failed due to previous error")
+        message.error("RTL export failed due to previous error")
     else:
-        message.info("save rtl in directory: %s" % (rtl_dir))
+        message.info("save RTL in directory: %s" % (rtl_dir))

@@ -1,0 +1,18 @@
+regmst_root_map regmst_root_map(
+	"s/^global_sync_reset_out$/root_map_global_sync_reset_out/g" \
+);
+
+regslv_root_map__test_map_1_inst regslv_root_map__test_map_1_inst(
+			"s/fsm_clk/PCLK/g", \
+			"s/fsm_rstn/PRESETn/g", \
+			"s/^req_vld$/root_map__test_map_1_inst_req_vld/g", \
+			"s/^ack_vld$/root_map__test_map_1_inst_ack_vld/g", \
+			"s/^wr_en$/root_map__test_map_1_inst_wr_en/g", \
+			"s/^rd_en$/root_map__test_map_1_inst_rd_en/g", \
+			"s/^addr$/root_map__test_map_1_inst_addr/g", \
+			"s/^wr_data$/root_map__test_map_1_inst_wr_data/g", \
+			"s/^rd_data$/root_map__test_map_1_inst_rd_data/g", \
+			"s/^global_sync_reset_in$/root_map_global_sync_reset_out/g", \
+			"s/^global_sync_reset_out$/root_map__test_map_1_inst_global_sync_reset_out/g" \
+			);
+

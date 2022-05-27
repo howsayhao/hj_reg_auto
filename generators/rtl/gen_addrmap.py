@@ -156,12 +156,12 @@ class addrmap_str(object):
                                 creates the corresponding rtl_type tree structure
         """
 
-        print('\n###start traverse %s###'%self.module_name)
-        print(self.base_addr)
+        # print('\n###start traverse %s###'%self.module_name)
+        # print(self.base_addr)
         self.rtl_obj = create_obj(node = self.node,parent_obj = None, base_addr=self.base_addr)
         self.rtl_obj.external = False
         self.walking(self.node,self.rtl_obj)
-        print('###end traverse %s###\n'%self.module_name)
+        # print('###end traverse %s###\n'%self.module_name)
 
         # retraverse the register-map to allocate alias and shared register information
         self.reg_alias_shared_handle()
@@ -226,7 +226,8 @@ class addrmap_str(object):
                 # for 3rd party IP
                 elif(genrtl is False and flatten_addrmap is False):
                     rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
-                    ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy)
+                    base_addr = child.absolute_address
+                    ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy, base_addr=base_addr)
                     new_obj.DATA_WIDTH = 32
                     new_obj.ADDR_WIDTH = 64
                     self.ext_module.append(new_obj)

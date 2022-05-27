@@ -97,6 +97,9 @@ class ORGExporter:
         else:
             return node.get_property(prop_name, default=None)
 
+class MDExporter:
+    pass
+
 class PDFExporter(ORGExporter):
 
     def __init__(self):
@@ -125,13 +128,12 @@ def export_org(root:RootNode, out_dir:str):
     exporter = ORGExporter()
     export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
 
-    # try:
-    #     exporter.export(root, export_file)
-    # except:
-    #     message.error("org exporter aborted due to previous errors")
-    # else:
-    #     message.info("save the org mode documentation in: %s" % (export_file))
-    exporter.export(root, export_file)
+    try:
+        exporter.export(root, export_file)
+    except:
+        message.error("org exporter aborted due to previous errors")
+    else:
+        message.info("save the org mode documentation in: %s" % (export_file))
 
 def export_pdf(root:RootNode, out_dir:str):
     """
