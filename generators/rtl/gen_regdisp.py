@@ -49,7 +49,7 @@ class ORGExporter:
             'get_property': self._get_property
         }
 
-        template = self.jj_env.get_template("org.jinja")
+        template = self.jj_env.get_template("org.jinja2")
         stream = template.stream(context)
         stream.dump(path)
 
@@ -97,25 +97,6 @@ class ORGExporter:
         else:
             return node.get_property(prop_name, default=None)
 
-class MDExporter:
-    pass
-
-class PDFExporter(ORGExporter):
-
-    def __init__(self):
-        pass
-
-    def export(self, top_node: Node, path: str):
-        """
-        Parameter
-        ---------
-        `top_node` :
-        `path` :
-        """
-        super().export(top_node, path)
-        pass
-
-
 def export_org(root:RootNode, out_dir:str):
     """
     Export UVM RAL model package
@@ -135,23 +116,5 @@ def export_org(root:RootNode, out_dir:str):
     else:
         message.info("save the org mode documentation in: %s" % (export_file))
 
-def export_pdf(root:RootNode, out_dir:str):
-    """
-    Export UVM RAL model package
-
-    Parameter
-    ---------
-    `root` : `systemrdl.node.RootNode`, the root node of the compiled register model
-    `out_dir` : ouput directory to save the generated PDF file
-    """
-    exporter = PDFExporter()
-    export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
-
-    try:
-        exporter.export(root, export_file)
-    except:
-        message.error("pdf exporter aborted due to previous errors")
-    else:
-        message.info("save the pdf documentation in: %s" % (export_file))
 
 

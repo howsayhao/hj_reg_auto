@@ -1,14 +1,13 @@
 import argparse
 import os
 import sys
-import threading
+from multiprocessing import Process
 
-
-import utils.message as message
 import generators.preprocess as preprocess
-from generators.rtl.export import export_rtl
+import utils.message as message
 from generators.html.export import export_html
 from generators.pdf.export import export_org, export_pdf
+from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
 from parsers.excel.gen_temp import generate_excel
 from parsers.parse import parse
@@ -126,13 +125,17 @@ class CommandRunner:
                                      help="generate UVM RAL model")
         parser_generate.add_argument("--filter",
                                      nargs="+",
-                                     help="filter some instances (support wildcard character)")
+                                     help="filter some instances in UVM simulation "
+                                          "(support wildcard character)")
         parser_generate.add_argument("-gch", "--gen_cheader",
                                      action="store_true",
                                      help="generate C headers")
         parser_generate.add_argument("-gall", "--gen_all",
                                      action="store_true",
-                                     help="generate all")
+                                     help="generate all related files")
+        parser_generate.add_argument("-q", "--quiet",
+                                     action="store_true",
+                                     help="turn off debug-level message display on terminal")
         parser_generate.set_defaults(func=self._generate)
 
         return parser
@@ -219,30 +222,30 @@ class CommandRunner:
         preprocess.preprocess(root, filter=args.filter)
 
         if args.gen_all or args.gen_rtl:
-            t_genrtl = threading.Thread(target=export_rtl,
-                                  name="gen_rtl",
-                                  args=(root, args.gen_dir))
-            t_genrtl.start()
+            p_genrtl = Process(target=export_rtl,
+                               name="gen_rtl",
+                               args=(root, args.gen_dir))
+            p_genrtl.start()
         if args.gen_all or args.gen_html:
-            t_genhtml = threading.Thread(target=export_html,
-                                  name="gen_html",
-                                  args=(root, args.gen_dir))
-            t_genhtml.start()
+            p_genhtml = Process(target=export_html,
+                                name="gen_html",
+                                args=(root, args.gen_dir))
+            p_genhtml.start()
         if args.gen_org:
-            t_genorg = threading.Thread(target=export_org,
-                                  name="gen_org",
-                                  args=(root, args.gen_dir))
-            t_genorg.start()
+            p_genorg = Process(target=export_org,
+                                name="gen_org",
+                                args=(root, args.gen_dir))
+            p_genorg.start()
         if args.gen_all or args.gen_pdf:
-            t_genpdf = threading.Thread(target=export_pdf,
-                                  name="gen_pdf",
-                                  args=(root, args.gen_dir))
-            t_genpdf.start()
+            p_genpdf = Process(target=export_pdf,
+                                name="gen_pdf",
+                                args=(root, args.gen_dir))
+            p_genpdf.start()
         if args.gen_all or args.gen_ral:
-            t_genral = threading.Thread(target=export_uvm,
-                                  name="gen_ral",
-                                  args=(root, args.gen_dir))
-            t_genral.start()
+            p_genral = Process(target=export_uvm,
+                                name="gen_ral",
+                                args=(root, args.gen_dir))
+            p_genral.start()
         if args.gen_all or args.gen_cheader:
             pass
 

@@ -1,8 +1,4 @@
-// naming convention:
-//      module name:
-//          regdisp_{upstream_addrmap_inst_name}
-//
-module regdisp_template (
+module regdisp_{{regdisp_name}} (
     clk,
     rst_n,
     // upstream reg_native_if
@@ -23,11 +19,9 @@ module regdisp_template (
     downstream__rd_data
 );
 
-    `include "common_funcs.vh"
-
-    parameter   ADDR_WIDTH                              = 64;
-    parameter   DATA_WIDTH                              = 32;
-    parameter   FORWARD_NUM                             = 3;
+    parameter   ADDR_WIDTH                              = {{addr_width}};
+    parameter   DATA_WIDTH                              = {{data_width}};
+    parameter   FORWARD_NUM                             = {{forward_num}};
     parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_DFF  = {FORWARD_NUM{1'b0}};
     parameter   INSERT_BACKWARD_DFF                     = 0;
     parameter   [FORWARD_NUM-1:0]   GEN_OFFSET          = {FORWARD_NUM{1'b0}};
@@ -77,10 +71,10 @@ module regdisp_template (
     always_comb begin
         if_sel = {FORWARD_NUM{1'b0}};
         no_sel = 1'b0;
-        unique casez (upstream__addr[63:2])
-            62'h0???: if_sel[0] = 1'b1;
-            62'h1???: if_sel[1] = 1'b1;
-            62'h2???: if_sel[2] = 1'b1;
+        unique casez (upstream__addr[{{dec_addr_bit|join(":")}}])
+        {% for expr in dec_expr %}
+            {{expr|join(",")}}: if_sel[{{loop.index0}}] = 1'b1;
+        {% endfor %}
             default: no_sel = 1'b1;
         endcase
     end
@@ -116,9 +110,22 @@ module regdisp_template (
     //          simply set several higher bits to 0 by wire slicing
     //      2. otherwise:
     //          subtract base address from absolute address by generating a subtractor
-    assign  downstream__addr_pre[0] = {48'b0, downstream__addr_imux[0][15:0]};
-    assign  downstream__addr_pre[1] = downstream__addr_imux[1];
-    assign  downstream__addr_pre[2] = downstream__addr_imux[0] - 64'h20c;
+{% for child_inst in node.children if isinstance(child_inst, AddrmapNode) %}
+    {% if use_abs_addr(child_inst) %}
+    {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d];"|format(loop.index0,
+                                                                             loop.index0)|indent}}
+    {% elif is_aligned(child_inst) %}
+    {{"assign  downstream__addr_pre[%d] = {%d'b0, downstream__addr_imux[%d][%d:0]};"|format(loop.index0,
+                                                                                            cut_bit(child_inst),
+                                                                                            loop.index0,
+                                                                                            addr_width-cut_bit(child_inst))|indent}}
+    {% else %}
+    {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d] - %d'h%x;"|format(loop.index0,
+                                                                                      loop.index0,
+                                                                                      addr_width,
+                                                                                      child_inst.absolute_address)|indent}}
+    {% endif %}
+{% endfor %}
 
     // insert forwarding flip-flops
     genvar cnt;
