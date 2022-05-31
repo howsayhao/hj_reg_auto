@@ -1,4 +1,4 @@
-module regdisp_{{regdisp_name}} (
+module {{get_rtl_name(disp_node)}} (
     clk,
     rst_n,
     // upstream reg_native_if
@@ -21,7 +21,7 @@ module regdisp_{{regdisp_name}} (
 
     parameter   ADDR_WIDTH                              = {{addr_width}};
     parameter   DATA_WIDTH                              = {{data_width}};
-    parameter   FORWARD_NUM                             = {{forward_num}};
+    parameter   FORWARD_NUM                             = {{get_child_num(disp_node)}};
     parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_DFF  = {FORWARD_NUM{1'b0}};
     parameter   INSERT_BACKWARD_DFF                     = 0;
     parameter   [FORWARD_NUM-1:0]   GEN_OFFSET          = {FORWARD_NUM{1'b0}};
@@ -67,7 +67,6 @@ module regdisp_{{regdisp_name}} (
     **************************************************************************/
 
     // decode upstream absolute address
-    // NOTE: this part needs template generation
     always_comb begin
         if_sel = {FORWARD_NUM{1'b0}};
         no_sel = 1'b0;
@@ -110,7 +109,7 @@ module regdisp_{{regdisp_name}} (
     //          simply set several higher bits to 0 by wire slicing
     //      2. otherwise:
     //          subtract base address from absolute address by generating a subtractor
-{% for child_inst in node.children if isinstance(child_inst, AddrmapNode) %}
+{% for child_inst in disp_node.children %}
     {% if use_abs_addr(child_inst) %}
     {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d];"|format(loop.index0,
                                                                              loop.index0)|indent}}

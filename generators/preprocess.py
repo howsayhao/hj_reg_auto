@@ -2,13 +2,11 @@ import sys
 from fnmatch import fnmatchcase
 from time import time
 
-from numpy import isin
-from generators.rtl.rtl_type import Root
-
 import utils.message as message
 from systemrdl import RDLListener, RDLWalker
-from systemrdl.node import FieldNode, RootNode, AddrmapNode
+from systemrdl.node import AddrmapNode, FieldNode, RootNode, MemNode
 
+# FIXME: node.inst_name vs. node.get_path_segment()
 
 class PreprocessListener(RDLListener):
     """
@@ -20,7 +18,8 @@ class PreprocessListener(RDLListener):
         - hj_genslv
         - hj_gendisp
         - hj_flatten_addrmap
-    - check whether there are illegal assignments and try to fix some wrong assignments
+        - hj_use_abs_addr
+    - check whether there are illegal assignments and try to fix some wrong property assignments
     - filter some instances by setting ispresent=false, thus the UVM RAL model won't consists of them
     - complement RTL module names of all `addrmap` instances
     """
@@ -39,7 +38,7 @@ class PreprocessListener(RDLListener):
 
         self.field_hdl_path = []
         self.reg_name = []
-        self.reginst_name = []
+        self.reginst_name = []  # regslv/regdisp RTL module name (hierarchical)
         self.runtime_stack = []
         self.total_reg_num = 0
         self.filter_reg_num = 0
@@ -75,6 +74,7 @@ class PreprocessListener(RDLListener):
                                    self.is_in_regdisp,
                                    self.is_in_flatten_addrmap,
                                    self.is_in_3rd_party_IP,
+                                   self.is_filtered,
                                    self.field_hdl_path))
 
         # reset properties
@@ -82,21 +82,28 @@ class PreprocessListener(RDLListener):
         self.is_in_regslv,
         self.is_in_regdisp,
         self.is_in_flatten_addrmap,
-        self.is_in_3rd_party_IP) = False, False, False, False, False
+        self.is_in_3rd_party_IP,
+        self.is_filtered) = False, False, False, False, False, False
         self.field_hdl_path = []
 
         # distinguish different types of addrmap
         if isinstance(node.parent, RootNode):
             # the model traverses in the root addrmap, so it shall generate a regmst module in RTL
             if (not node.get_property("hj_genmst") is True) or (not node.get_property("hj_flatten_addrmap") is False):
-                message.warning("the root/top addrmap is automatically treated as a regmst, "
-                                "it's recommended to explicitly assign: hj_genmst=true, hj_flatten_addrmap=false")
+                message.warning("%s: the root/top addrmap is automatically treated as a regmst, "
+                                "it's recommended to explicitly assign: hj_genmst=true, "
+                                "hj_flatten_addrmap=false" % (node.get_path()))
+
+            if node.get_property("hj_use_abs_addr") is False:
+                message.warning("%s: the current addrmap is treated as a regmst, the property hj_use_abs_addr "
+                                "is forced to true" % (node.get_path()))
 
             # set properties
             node.inst.properties["hj_genmst"] = True
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_use_abs_addr"] = True
 
             self.is_in_regmst = True
             self.reginst_name.append(node.inst_name)
@@ -111,21 +118,40 @@ class PreprocessListener(RDLListener):
         elif (isinstance(node.parent.parent, RootNode)) or \
                 ((node.get_property("hj_gendisp", default=True)) and \
                 (not self.is_in_flatten_addrmap) and \
+                (not self.is_in_3rd_party_IP) and \
                 (not node.inst.def_src_ref.filename.endswith(".xml"))):
             # the model traverses in the immediate sub-addrmap of root addrmap,
             # or in a sub-addrmap, hj_gendisp = true, hj_genmst/hj_genslv/hj_flatten_addrmap = <don't care>,
             # so it shall generate a regdisp module in RTL
-            if isinstance(node.parent.parent, RootNode) and \
-                ((not node.get_property("hj_gendisp") is True) or \
-                (not node.get_property("hj_flatten_addrmap") is False)):
-                message.warning("the immediate sub-addrmap of the root/top addrmap is automatically treated as a regdisp, "
-                                "it's recommended to explicitly assign: hj_gendisp=true, hj_flatten_addrmap=false")
+            if (not node.get_property("hj_gendisp") is True) or \
+                (not node.get_property("hj_flatten_addrmap") is False):
+                message.warning("%s: the current addrmap is treated as a regdisp, it's recommended "
+                                "to explicitly assign: hj_gendisp=true, hj_flatten_addrmap=false" % (node.get_path()))
+
+            if node.get_property("hj_genmst") or node.get_property("hj_genslv"):
+                message.error("%s: the property hj_genmst/hj_genslv is not allowed to assigned to true in an addrmap "
+                              "treated as regdisp, possible reasons: immediate sub-addrmap of the root/top "
+                              "addrmap is automatically treated as regdisp module, or you don't explicitly "
+                              "assign hj_gendisp to false (default: true)" % (node.get_path()))
+                sys.exit(1)
+
+            for child in node.children(skip_not_present=False):
+                if not isinstance(child, (AddrmapNode, MemNode)):
+                    message.error("%s: addrmap recognized as a regdisp module is allowed to have immediate"
+                                  "children of addrmap or mem type only, the child instance %s is illegal"
+                                  % (node.get_path(), child.get_path()))
+                    sys.exit(1)
+
+            if node.get_property("hj_use_abs_addr") is False:
+                message.warning("%s: the current addrmap is treated as a regdisp, the property hj_use_abs_addr "
+                                "is forced to true" % (node.get_path()))
 
             # set properties
             node.inst.properties["hj_genmst"] = False
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = True
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_use_abs_addr"] = True
 
             self.is_in_regdisp = True
             self.reginst_name.append(node.inst_name)
@@ -137,16 +163,26 @@ class PreprocessListener(RDLListener):
 
         elif (node.get_property("hj_genslv", default=True)) and \
             (not self.is_in_flatten_addrmap) and \
+            (not self.is_in_3rd_party_IP) and \
             (not node.inst.def_src_ref.filename.endswith(".xml")):
-            # the model traverses in a sub-addrmap, and hj_gendisp = false,
-            # hj_genslv = true, hj_flatten_addrmap/hj_genmst = <don't care>
+            # the model traverses in a sub-addrmap, and hj_gendisp = false, hj_genslv = true/not declared,
+            # hj_flatten_addrmap/hj_genmst = <don't care>, and it is this addrmap is neither
+            # included in a flatten addramp, nor imported from IP-XACT,
             # so it shall generate a regslv module in RTL
-            # FIXME
+            if (not node.get_property("hj_genslv") is True) or (not node.get_property("hj_flatten_addrmap") is False):
+                message.warning("%s: the current addrmap is treated as a regslv, it's recommended "
+                                "to explicitly assign: hj_genslv=true, hj_flatten_addrmap=false" % (node.get_path()))
+
+            if node.get_property("hj_use_abs_addr"):
+                message.warning("%s: the current addrmap is treated as a regslv, the property hj_use_abs_addr "
+                                "is forced to false" % (node.get_path()))
+
             # set properties
             node.inst.properties["hj_genmst"] = False
             node.inst.properties["hj_genslv"] = True
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_use_abs_addr"] = False
 
             self.is_in_regslv = True
             self.reginst_name.append(node.inst_name)
@@ -158,54 +194,67 @@ class PreprocessListener(RDLListener):
             if not self.keep_quiet:
                 message.debug("%sgenerate%s" % ("\t"*self.indent, rtl_module_name))
 
-        elif (node.get_property("hj_flatten_addrmap", default=True) or \
-            self.is_in_flatten_addrmap) and \
-            (not node.inst.def_src_ref.filename.endswith(".xml")):
-            # hj_genrtl = False, hj_flatten_addrmap = True
-            # the model traverses in a sub-addrmap, and shall generate no module in RTL,
+        elif (node.get_property("hj_flatten_addrmap", default=True) or self.is_in_flatten_addrmap) and \
+            (not self.is_in_3rd_party_IP) and (not node.inst.def_src_ref.filename.endswith(".xml")):
+            # the model traverses in a sub-addrmap, and hj_gendisp = false, hj_genmst = <don't care>,
+            # hj_genslv = false, hj_flatten_addrmap = true/not declared, so it shall generate no module in RTL,
             # all components inside this addrmap will be flatten in the parent scope
-            # FIXME
-            # explicitly assignment hj_genrtl=True is illegal under an addrmap
-            # which is assigned hj_flatten_addrmap=True and will be ignored
-            if node.get_property("hj_genrtl"):
-                message.warning("property assignment hj_genrtl=true will be ignored because its parent "
-                                "addrmap has assigned property hj_flatten_addrmap=true")
+
+            if node.get_property("hj_genmst") or node.get_property("hj_genslv") or node.get_property("hj_gendisp"):
+                message.error("%s: the property hj_genmst/hj_genslv/hj_gendisp is not allowed to assigned to true in "
+                              "an addrmap to be flatten, possible reasons: an ancestor addrmap instance is assigned"
+                              "hj_flatten_addrmap=true, so all of its descendants will be flatten" % (node.get_path()))
+                sys.exit(1)
+            if not node.get_property("hj_flatten_addrmap"):
+                message.warning("%s: the current addrmap is to be flatten in its parent scope, it's recommended "
+                                "to explicitly assign: hj_flatten_addrmap=true" % (node.get_path()))
 
             # set properties
-            node.inst.properties["hj_genrtl"] = False
+            node.inst.properties["hj_genmst"] = False
+            node.inst.properties["hj_genslv"] = False
+            node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = True
+            node.inst.properties["hj_use_abs_addr"] = False
 
-            if isinstance(node.parent.parent, RootNode):
-                self.is_in_regmst = True
-            else:
-                self.is_in_regslv = True
+            # flatten addrmap can only be defined under the addrmap instantiated as regslv
+            if node.parent.get_property("hj_gendisp") or node.parent.get_property("hj_genmst"):
+                message.error("%s: the addrmap cannot be flatten in the parent addrmap which "
+                              "is instantiated as regdisp/regmst in RTL" % (node.get_path()))
+                sys.exit(1)
+            self.is_in_regslv = True
 
             self.is_in_flatten_addrmap = True
             self.reg_name.append(node.inst_name)
         else:
-            # hj_genrtl = False, hj_flatten_addrmap = False
-            # the model traverses in a sub-addrmap, and shall forward
-            # reg_native_if to 3rd party IP, so no RTL module is generated
-            # FIXME
+            # the model traverses in a sub-addrmap, which is imported from IP-XACT (.xml), or it satisfies:
+            # hj_gendisp = false, hj_genslv = false, hj_genmst = false and hj_flatten_addrmap = false, so it
+            # shall forward reg_native_if to 3rd party IP and no RTL module is generated
+
+            if not node.parent.get_property("hj_gendisp"):
+                message.error("%s: the parent addrmap %s is not recognized as regdisp, but 3rd party IP "
+                              "must be forwarded by a regdisp module" % (node.get_path(), node.parent.get_path()))
+                sys.exit(1)
+
+            if node.get_property("hj_use_abs_addr") is None:
+                message.warning("%s: the current addrmap is treated as a 3rd party IP, and you don't explicitly "
+                                "assign the property hj_use_abs_addr. it will be assigned to true" % (node.get_path()))
+
             # set properties
-            node.inst.properties["hj_genrtl"] = False
+            node.inst.properties["hj_genmst"] = False
+            node.inst.properties["hj_genslv"] = False
+            node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["ispresent"] = False
+            node.inst.properties["hj_use_abs_addr"] = True
 
             self.is_in_3rd_party_IP = True
+            self.is_filtered = True
             if not self.keep_quiet:
-                message.debug("%sRecognized as 3rd party IP: " % ("\t"*self.indent))
-
-            ext_hdl_path = node.get_property("hj_ext_hdl_path_down", default="")
-            if ext_hdl_path == "":
-                message.error("external hdl path property (hj_ext_hdl_path_down) "
-                              "for 3rd party IP: %s is not provided" % (node.inst_name))
-                sys.exit(1)
-            self.field_hdl_path.append(ext_hdl_path)
+                message.debug("%sRecognized as 3rd party IP" % ("\t"*self.indent))
 
     def exit_Addrmap(self, node):
-        """
-        """
-        print("\t"*self.indent, "Exiting addrmap: %s" % (node.get_path()))
+        if not self.keep_quiet:
+            message.debug("%sExiting addrmap: %s" % ("\t"*self.indent, node.get_path()))
 
         # pop properties of the parent addrmap instance to stack (restore)
         # once exiting new addrmap instance
@@ -214,17 +263,20 @@ class PreprocessListener(RDLListener):
         self.is_in_regdisp,
         self.is_in_flatten_addrmap,
         self.is_in_3rd_party_IP,
+        self.is_filtered,
         self.field_hdl_path) = self.runtime_stack.pop()
-        # FIXME
-        if (isinstance(node.parent, RootNode)) \
-            or ((node.get_property("hj_genrtl", default=True)) \
-            and (not self.is_in_flatten_addrmap)):
+
+        if node.get_property("hj_genmst") or node.get_property("hj_genslv") or node.get_property("hj_gendisp"):
             self.reginst_name.pop()
 
     def enter_Mem(self, node):
         if not self.keep_quiet:
             message.debug("%sEntering memory: %s" % ("\t"*self.indent, node.get_path()))
 
+        if node.get_property("hj_use_abs_addr"):
+            message.warning("%s: the property hj_use_abs_addr in a memory instance"
+                            "is forced to false" % (node.get_path()))
+        node.inst.properties["hj_use_abs_addr"] = False
         self.is_in_ext_mem = True
 
     def exit_Mem(self, node):
@@ -237,6 +289,12 @@ class PreprocessListener(RDLListener):
         if not self.keep_quiet:
             message.debug("%sEntering regfile: %s" % ("\t"*self.indent, node.get_path()))
 
+        # regfile can only be instantiated under regslv, flatten addrmap and 3rd party IP
+        if node.parent.get_property("hj_gendisp") or node.parent.get_property("hj_genmst"):
+            message.error("%s: illegal to define regfile under %s which is recognized as regdisp/regmst" %
+                          (node.get_path(), node.parent.get_path()))
+            sys.exit(1)
+
         self.reg_name.append(node.inst_name)
 
     def exit_Regfile(self, node):
@@ -246,6 +304,11 @@ class PreprocessListener(RDLListener):
         self.reg_name.pop()
 
     def enter_Reg(self, node):
+        if node.parent.get_property("hj_gendisp") or node.parent.get_property("hj_genmst"):
+            message.error("%s: illegal to define regfile under %s which is recognized as regdisp/regmst" %
+                          (node.get_path(), node.parent.get_path()))
+            sys.exit(1)
+
         reg_rtl_inst_name = node.alias_primary.inst_name if node.is_alias else node.inst_name
 
         self.reg_name.append(reg_rtl_inst_name)
@@ -263,29 +326,18 @@ class PreprocessListener(RDLListener):
             self.field_hdl_path.append("{}.field_value".format(field_rtl_inst_name))
             # assign hdl_path_slice for each field to recognize RTL hierarchy
             node.inst.properties["hdl_path_slice"] = [".".join(self.field_hdl_path)]
-            print("\t"*self.indent, "generate hdl_path_slice: %s" % (node.inst.properties["hdl_path_slice"][0]))
-        else:
-            # FIXME: 3rd party IP RTL path generation
-            pass
+            message.debug("%sgenerate hdl_path_slice: %s" %
+                          ("\t"*self.indent, node.inst.properties["hdl_path_slice"][0]))
 
     def exit_Field(self, node):
         if not self.is_in_3rd_party_IP:
             self.field_hdl_path.pop()
-        else:
-            # FIXME: 3rd party IP RTL path generation
-            pass
-
-    def enter_Signal(self, node):
-        pass
-
-    def exit_Signal(self, node):
-        pass
 
     def enter_Component(self, node):
         self.indent += 1
 
-        # remove a instance from UVM RAL model when matched with filter patterns
-        # by setting ispresent=False in that instance object
+        # remove an instance from UVM RAL model when it matches with filter patterns
+        # by setting ispresent=false in that instance object
         self.runtime_stack.append(self.is_filtered)
         if self.is_filtered:
             node.inst.properties["ispresent"] = False

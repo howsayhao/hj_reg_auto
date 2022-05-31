@@ -7,7 +7,7 @@ reg REG_def {
 
 addrmap reg_top {
 	addrmap {
-		hj_genrtl = true;
+		hj_genslv = true;
 
 		// implement internal registers
 		REG_def REG1_SW_RO, REG2_SW_RW, REG3_SW_RW1, REG4_SW_WO, REG5_SW_W1;

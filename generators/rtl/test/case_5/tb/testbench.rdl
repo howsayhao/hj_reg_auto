@@ -14,7 +14,7 @@ reg shared_reg {
 
 addrmap reg_top {
     addrmap {
-        hj_genrtl = true;
+        hj_genslv = true;
 
         reg REG1_def {
             field {
@@ -41,7 +41,7 @@ addrmap reg_top {
 
         // implement internal registers
         addrmap {
-            hj_genrtl = false;
+            hj_genslv = false;
 
             // test reset values
             shared_reg shared_21, shared_22, shared_23, shared_24, shared_25,
@@ -61,7 +61,7 @@ addrmap reg_top {
         } test_2;
 
         addrmap {
-            hj_genrtl = false;
+            hj_genslv = false;
             // test reset values
             shared_reg shared_31;
             shared_31.FIELD_0 -> hj_syncresetsignal = "srst_2";

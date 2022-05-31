@@ -7,7 +7,7 @@ reg REG_def {
 
 addrmap reg_top {
 	addrmap {
-		hj_genrtl = true;
+		hj_genslv = true;
 
 		signal {
 			activehigh;

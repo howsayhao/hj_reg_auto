@@ -6,7 +6,7 @@ reg REG_def {
 };
 
 addrmap test_1 {
-    hj_genrtl = true;
+    hj_genslv = true;
 
     REG_def REG1, REG2, REG3, REG4;
 };
@@ -19,7 +19,7 @@ mem ext_mem_def {
 
 addrmap reg_top {
     addrmap {
-        hj_genrtl = true;
+        hj_genslv = true;
         hj_cdc = true;
 
         // implement downstream regslv
@@ -27,23 +27,23 @@ addrmap reg_top {
         test_11 -> 	hj_cdc = true;
         // implement internal registers
         test_1 test_12;
-        test_12 -> hj_genrtl = false;
+        test_12 -> hj_genslv = false;
         test_1 test_13;
-        test_13 -> hj_genrtl = false;
+        test_13 -> hj_genslv = false;
         // implement external memory
         external ext_mem_def ext_mem_11;
     } reg_block_1;
 
     addrmap {
-        hj_genrtl = true;
+        hj_genslv = true;
         hj_cdc = true;
         // implement internal registers
         test_1 test_21;
-        test_21 -> hj_genrtl = false;
+        test_21 -> hj_genslv = false;
         test_1 test_22;
-        test_22 -> hj_genrtl = false;
+        test_22 -> hj_genslv = false;
         test_1 test_23;
-        test_23 -> hj_genrtl = false;
+        test_23 -> hj_genslv = false;
         // implement external memories
         external ext_mem_def ext_mem_21, ext_mem_22, ext_mem_23;
     } reg_block_2;

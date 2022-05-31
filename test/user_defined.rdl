@@ -17,8 +17,17 @@ property hj_cdc {
     type = boolean;
 };
 
-// Define whether to generate independent regslv blocks
-property hj_genrtl {
+property hj_genmst {
+    component = addrmap;
+    type = boolean;
+};
+
+property hj_genslv {
+    component = addrmap;
+    type = boolean;
+};
+
+property hj_gendisp {
     component = addrmap;
     type = boolean;
 };
@@ -64,13 +73,22 @@ property hj_ext_mux_size{
     type = longint;
 };
 
-//
-property hj_ext_hdl_path_down{
-    component = addrmap;
-    type = string;
-};
-
 property hj_reserved_space{
     component = mem;
+    type = boolean;
+};
+
+property hj_use_upstream_ff{
+    component = addrmap;
+    type = boolean;
+};
+
+property hj_use_backward_ff{
+    component = addrmap;
+    type = boolean;
+};
+
+property hj_use_abs_addr{
+    component = addrmap;
     type = boolean;
 };

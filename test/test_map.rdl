@@ -1,6 +1,6 @@
 // generated from Excel Worksheet specification: test_map_1.xlsx
 addrmap test_map_1 {
-	hj_genrtl = true;
+	hj_genslv = true;
 
 	signal {
 		name = "sync_rst_signal_1";
@@ -133,7 +133,7 @@ reg shared_tem{
 };
 
 addrmap test_map_2 {
-	hj_genrtl = false;
+	hj_genslv = false;
 	shared_tem shared_2;
 	shared_2 -> name = "SHARED_IN_TEST_MAP_2";
 	shared_2.FIELD_1 -> onread = rset;
@@ -141,7 +141,7 @@ addrmap test_map_2 {
 };
 
 addrmap test_map_3 {
-	hj_genrtl = false;
+	hj_genslv = false;
 	shared_tem shared_3;
 	shared_3 -> name = "SHARED_IN_TEST_MAP_3";
 	shared_3.FIELD_1 -> sw = r;

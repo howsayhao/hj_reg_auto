@@ -1,3 +1,4 @@
+from math import log
 import os
 
 import jinja2 as jj
@@ -6,115 +7,71 @@ from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, RootNode)
 
 
-class ORGExporter:
+class RTLExporter:
 
     def __init__(self):
-
-        # Top-level node
-        self.top_node = None
-
+        """
+        load jinja environment and basic context
+        """
         loader = jj.FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates"))
         self.jj_env = jj.Environment(
             loader=loader,
             undefined=jj.StrictUndefined
         )
 
-    def export(self, top_node: Node, path: str):
-        """
-        Parameter
-        ---------
-        `top_node` :
-        `path` :
-        """
-        # If it is the root node, skip to the top addrmap
-        if isinstance(top_node, RootNode):
-            top_node = top_node.top
-        self.top_node = top_node
-
-        context = {
-            'top_node': top_node,
+        self.context = {
+            'addr_width': 64,
+            'data_width': 32,
             'RegNode': RegNode,
             'RegfileNode': RegfileNode,
             'AddrmapNode': AddrmapNode,
             'MemNode': MemNode,
             'isinstance': isinstance,
-            'get_hier_depth': self._get_hier_depth,
-            'get_hier_name': self._get_hier_name,
-            'get_abs_addr': self._get_abs_addr,
-            'get_offset': self._get_offset,
-            'get_end_addr': self._get_end_addr,
-            'get_size': self._get_size,
-            'get_total_size': self._get_total_size,
-            'get_inst_name': self._get_inst_name,
+            'use_abs_addr': self._use_abs_addr,
+            'is_aligned': self._is_aligned,
+            'get_child_num': self._get_child_num,
+            'get_rtl_name': self._get_rtl_name,
             'get_property': self._get_property
         }
 
-        template = self.jj_env.get_template("org.jinja2")
-        stream = template.stream(context)
-        stream.dump(path)
-
-    def _get_hier_depth(self, node:Node):
+    def export_regdisp(self, top_node: Node, dir: str):
         """
-        get the hierarchy of a component instance
-        which is corresponding to a `Node` object
+        traverse all addrmap and generate all regdisp modules in pre-order
+
+        Parameter
+        ---------
+        `top_node` :
+        `path` :
         """
-        if not isinstance(node.parent, RootNode):
-            return self._get_hier_depth(node.parent) + 1
-        else:
-            return 1
+        # if it's the root node, skip to the top addrmap
+        if isinstance(top_node, RootNode):
+            top_node = top_node.top
 
-    def _get_hier_name(self, node:Node):
-        return node.get_path()
+        for child in top_node.children(unroll=True, skip_not_present=False):
+            if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
+                update_context = {
+                    'disp_node': child
+                }
+                self.context.update(update_context)
 
-    def _get_abs_addr(self, node:AddressableNode):
-        return hex(node.absolute_address)
+                template = self.jj_env.get_template("regdisp_template.jinja")
 
-    def _get_offset(self, node:AddressableNode):
-        return hex(node.address_offset)
+                stream = template.stream(self.context)
+                stream.dump(os.path.join(dir, self._get_rtl_name(child)))
 
-    def _get_end_addr(self, node:AddressableNode):
-        return hex(node.absolute_address+node.size-1)
+                self.export_regdisp(child, dir)
 
-    def _get_size(self, node:AddressableNode):
-        return hex(node.size)
+    def _get_rtl_name(self, node:Node):
+        return node.get_property("rtl_module_name")
 
-    def _get_total_size(self, node:AddressableNode):
-        return hex(node.total_size)
+    def _get_child_num(self, node:AddrmapNode):
+        return len(node.children(unroll=False, skip_not_present=False))
 
-    def _get_inst_name(self, node:Node):
-        # avoid to call `node.inst_name` property because of array suffix
-        return node.get_path_segment()
+    def _use_abs_addr(self, node:Node):
+        return node.get_property("hj_use_abs_addr")
 
     def _get_property(self, node:Node, prop_name):
-        if prop_name in ("sw", "hw"):
-            return node.get_property(prop_name).name
-        elif prop_name in ("onread", "onwrite"):
-            acc_type = node.get_property(prop_name)
-            return "-" if acc_type is None else acc_type.name
-        elif prop_name == "reset":
-            rst_val = node.get_property("reset")
-            return "0x0" if rst_val is None else hex(rst_val)
-        else:
-            return node.get_property(prop_name, default=None)
+        return node.get_property(prop_name)
 
-def export_org(root:RootNode, out_dir:str):
-    """
-    Export UVM RAL model package
-
-    Parameter
-    ---------
-    `root` : `systemrdl.node.RootNode`, the root node of the compiled register model
-    `out_dir` : ouput directory to save the generated org mode file
-    """
-    exporter = ORGExporter()
-    export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
-
-    try:
-        exporter.export(root, export_file)
-    except:
-        message.error("org exporter aborted due to previous errors")
-    else:
-        message.info("save the org mode documentation in: %s" % (export_file))
-
-
-
+    def _is_aligned(self, node:AddressableNode):
+        return node.absolute_address // (2 ** int(log(node.total_size, base=2)+1)) == 0
