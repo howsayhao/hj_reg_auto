@@ -7,6 +7,7 @@ from systemrdl import RDLListener, RDLWalker
 from systemrdl.node import AddrmapNode, FieldNode, RootNode, MemNode
 
 # FIXME: node.inst_name vs. node.get_path_segment()
+# thus hierarchical path for array would be ambiguous
 
 class PreprocessListener(RDLListener):
     """
@@ -152,6 +153,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_gendisp"] = True
             node.inst.properties["hj_flatten_addrmap"] = False
             node.inst.properties["hj_use_abs_addr"] = True
+            node.inst.properties["forward_num"] = len(node.children(unroll=True, skip_not_present=False))
 
             self.is_in_regdisp = True
             self.reginst_name.append(node.inst_name)

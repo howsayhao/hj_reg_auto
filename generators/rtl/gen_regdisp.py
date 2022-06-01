@@ -1,5 +1,6 @@
-from math import log
 import os
+import sys
+from math import log
 
 import jinja2 as jj
 import utils.message as message
@@ -27,9 +28,11 @@ class RTLExporter:
             'AddrmapNode': AddrmapNode,
             'MemNode': MemNode,
             'isinstance': isinstance,
+            'get_comp_addr': self._get_comp_addr,
             'use_abs_addr': self._use_abs_addr,
+            'dec_addr_bit': self._dec_addr_bit,
             'is_aligned': self._is_aligned,
-            'get_child_num': self._get_child_num,
+            'get_forward_num': self._get_forward_num,
             'get_rtl_name': self._get_rtl_name,
             'get_property': self._get_property
         }
@@ -64,8 +67,13 @@ class RTLExporter:
     def _get_rtl_name(self, node:Node):
         return node.get_property("rtl_module_name")
 
-    def _get_child_num(self, node:AddrmapNode):
-        return len(node.children(unroll=False, skip_not_present=False))
+    def _get_forward_num(self, node:AddrmapNode):
+        # only for regdisp
+        if not node.get_property("hj_gendisp") is True:
+            message.error("addrmap %s is not recognized as a regdisp module" % (node.get_path()))
+            sys.exit(1)
+
+        return node.get_property("forward_num")
 
     def _use_abs_addr(self, node:Node):
         return node.get_property("hj_use_abs_addr")
@@ -74,4 +82,15 @@ class RTLExporter:
         return node.get_property(prop_name)
 
     def _is_aligned(self, node:AddressableNode):
-        return node.absolute_address // (2 ** int(log(node.total_size, base=2)+1)) == 0
+        # whether the forwarding module of regdisp is aligned to its absolute address
+        return node.absolute_address % (2 ** int(log(node.total_size, base=2)+1)) == 0
+
+    def _get_comp_addr(self, node:AddressableNode):
+        # get compressed address expressions to simplify implementation of decoder in RTL code
+        return
+
+    def _dec_addr_bit(self):
+        return [
+            self.context["addr_width"] - 1,
+            int(log(self.context["data_width"] // 8, base=2))
+        ]
