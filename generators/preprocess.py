@@ -352,9 +352,10 @@ class PreprocessListener(RDLListener):
                         break
 
         if (not self.keep_quiet) and (not isinstance(node, FieldNode)):
-            message.debug("%s%s, filtered: %s" % ("\t"*self.indent,
-                                                  node.get_path_segment(),
-                                                  self.is_filtered))
+            message.debug("%s%s %s, filtered: %s" % ("\t"*self.indent,
+                                                     node.get_path_segment(),
+                                                     hex(node.absolute_address),
+                                                     self.is_filtered))
 
     def exit_Component(self, node):
         self.indent -= 1

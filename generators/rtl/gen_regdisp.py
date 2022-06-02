@@ -1,6 +1,6 @@
 import os
 import sys
-from math import log
+from math import log, ceil
 
 import jinja2 as jj
 import utils.message as message
@@ -34,6 +34,9 @@ class RTLExporter:
             'is_aligned': self._is_aligned,
             'get_forward_num': self._get_forward_num,
             'get_rtl_name': self._get_rtl_name,
+            'use_forward_ff': self._use_forward_ff,
+            'use_backward_ff': self._use_backward_ff,
+            'remain_bit': self._remain_bit,
             'get_property': self._get_property
         }
 
@@ -83,14 +86,55 @@ class RTLExporter:
 
     def _is_aligned(self, node:AddressableNode):
         # whether the forwarding module of regdisp is aligned to its absolute address
-        return node.absolute_address % (2 ** int(log(node.total_size, base=2)+1)) == 0
+        return node.absolute_address % (2 ** ceil(log(node.total_size, base=2))) == 0
 
     def _get_comp_addr(self, node:AddressableNode):
-        # get compressed address expressions to simplify implementation of decoder in RTL code
-        return
+        """
+        get compressed address expressions to simplify implementation of decoder
+        case statement in RTL code.
+        example: 62'h130, 62'h131, ..., 62'h13f -> 62'h13?
+        """
+        start_addr = node.absolute_address // (self.context["data_width"] // 8)
+        end_addr = (node.absolute_address + node.size) // (self.context["data_width"] // 8)
+        ptr_addr = start_addr
+        comp_addr_expr = []
+        prefix = "62'h"
+        while ptr_addr < end_addr:
+            # get the least significant digit position,
+            # example: 0x013 -> 0, 0x130 -> 1, 0x1300 -> 2
+            sig_dig_pos = 0
+            while ptr_addr % (16 ** (sig_dig_pos + 1)) == 0:
+                sig_dig_pos += 1
+            while ptr_addr + (16 ** sig_dig_pos) > end_addr:
+                sig_dig_pos -= 1
+
+            temp = ptr_addr + 16 ** (sig_dig_pos + 1) - ptr_addr % (16 ** (sig_dig_pos + 1)) - 1
+
+            while ptr_addr <= temp:
+                comp_addr_expr.append("%s%x%s" % (prefix, ptr_addr >> (4 * sig_dig_pos), "?" * sig_dig_pos))
+                ptr_addr += 16 ** sig_dig_pos
+                if ptr_addr + (16 ** sig_dig_pos) > end_addr:
+                    break
+
+        return comp_addr_expr
 
     def _dec_addr_bit(self):
+        # return list with 2 elements: msb, lsb
         return [
             self.context["addr_width"] - 1,
             int(log(self.context["data_width"] // 8, base=2))
         ]
+
+    def _use_backward_ff(self, node:AddrmapNode):
+        return 1 if node.get_property("hj_use_backward_ff") else 0
+
+    def _use_forward_ff(self, node:AddrmapNode):
+        forward_ff_param = []
+        for child in node.children(unroll=True, skip_not_present=False):
+            if child.get_property("hj_use_upstream_ff"):
+                forward_ff_param.append("1'b1")
+            else:
+                forward_ff_param.append("1'b0")
+
+    def _remain_bit(self, node:AddressableNode):
+        return ceil(log(node.total_size, base=2))
