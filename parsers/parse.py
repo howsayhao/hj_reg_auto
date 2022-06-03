@@ -298,12 +298,11 @@ class ExcelParser:
         3. 域比特位无重叠(3.1), 无遗漏(3.2)
         4. 复位值合法, 不能超过该域能表示的最大值
         5. 除Reserved以外域名称无重复
-        6. TO BE DONE: Reserved域同步复位信号只能为None
-        7. TO BE DONE: 同一个Field中同步复位信号不能重复
+        6. Reserved域同步复位信号只能为None
 
         Return
         ------
-        `bool`类型, 域定义是否合法
+        `bool`, whether field definitions are legal
         """
         for addrmap_name, addrmap_entry in self.reg_model.items():
             for reg in addrmap_entry:
@@ -359,34 +358,41 @@ class ExcelParser:
         return True
 
 
-def parse(original_files:list, list_file:str, gen_dir:str,
-          to_generate_rdl=False, excel_top_name="excel_top"):
+def parse(orig_files:list, list_file:str, gen_dir:str,
+          to_generate_rdl=False, excel_top="top_map"):
     """
-    解析Excel和SystemRDL文件, 调用`parse_excel`和`parse_rdl`
+    parse Excel worksheets, SystemRDL and IP-XACT files
 
     Parameter
     ---------
-    `original_files` : 输入的所有文件名
+    `orig_files` : 输入的所有文件名
     `list_file` : 输入的`list`文件名
     `gen_dir` : 解析Excel生成RDL文件的目录
     `to_generate_rdl` : 是否将解析完的Excel生成RDL, 默认为`False`
-    `excel_top_name` :
-        `to_generate_rdl == True`且`original_files`只包含Excel Worksheet时,
-        需要生成一个顶层addrmap, 该参数指定顶层addrmap名称, 默认为`excel_top`
-    """
-    ori_rdl_ipxact_files, ori_excel_files= [], []
-    # 预先定义的RDL files, 如user-defined properties
-    pre_defined_files = [
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "test", "user_defined.rdl")
-    ]
-    all_files = [] + pre_defined_files
+    `excel_top` :
+        `to_generate_rdl == True`且`orig_files`只包含Excel Worksheet时,
+        需要生成一个顶层addrmap, 该参数指定顶层addrmap名称, default to `top_map`
 
-    # 单个或多个Excel或者SystemRDL文件作为输入
-    if original_files is not None:
+    Calls
+    -----
+    `parse_excel`
+    `parse_rdl_ipxact`
+    """
+    orig_rdl_ipxact_files, ori_excel_files= [], []
+
+    # pre-defined SystemRDL files, such as user-defined properties
+    predef_files = [
+        os.path.join(os.path.dirname(__file__),  "pre_defined.rdl")
+    ]
+    all_files = [] + predef_files
+
+    # use -f/--file option
+    if orig_files is not None:
         if list_file is not None:
             message.warning("cannot use -f/--file and -l/--list options at the same time,"
                             "-l/--list option will be ignored")
-        for file in original_files:
+
+        for file in orig_files:
                 if not os.path.exists(file):
                     message.error("input file: %s does not exists" % (file))
                     sys.exit(1)
@@ -394,26 +400,27 @@ def parse(original_files:list, list_file:str, gen_dir:str,
                 ff = os.path.splitext(file)[-1]
                 if ff in (".rdl", ".xml", ".xlsx"):
                     all_files.append(file)
-                    if ff == ".rdl":
-                        ori_rdl_ipxact_files.append(file)
+                    if ff in (".rdl", ".xml"):
+                        orig_rdl_ipxact_files.append(file)
                     elif ff == ".xlsx":
                         ori_excel_files.append(file)
                 else:
-                    message.error("wrong file format (should be .rdl/.xlsx)")
+                    message.error("wrong file format (should be .rdl/.xml/.xlsx)")
                     sys.exit(1)
 
-    # 多个Excel或RDL文件作为输入, 文件路径放在一个list文本文件中
+    # use -l/--list option
     elif list_file is not None:
         if not os.path.exists(list_file):
             message.error("list file does not exists")
             sys.exit(1)
+
         else:
             with open(list_file, "r") as f:
                 lines = f.readlines()
-                for cnt, line in enumerate(lines):
-                    line = line.strip().replace("\n", "").replace("\r", "")
 
-                    # list文件中有注释(#)或空行
+                for cnt, line in enumerate(lines):
+                    # comments(#) or blank lines
+                    line = line.strip().replace("\n", "").replace("\r", "")
                     if line == "" or line.startswith("#"):
                         continue
 
@@ -423,14 +430,14 @@ def parse(original_files:list, list_file:str, gen_dir:str,
                         sys.exit(1)
 
                     ff = os.path.splitext(line)[-1]
-                    if ff in (".rdl", ".xlsx"):
+                    if ff in (".rdl", ".xml", ".xlsx"):
                         all_files.append(line)
-                        if ff == ".rdl":
-                            ori_rdl_ipxact_files.append(line)
+                        if ff in (".rdl", ".xml"):
+                            orig_rdl_ipxact_files.append(line)
                         elif ff == ".xlsx":
                             ori_excel_files.append(line)
                     else:
-                        message.error("wrong file format (should be .rdl/.xlsx)")
+                        message.error("wrong file format (should be .rdl/.xml/.xlsx)")
                         sys.exit(1)
     else:
         message.error("one of the -f/--file and -l/--list options must be provided")
@@ -439,15 +446,15 @@ def parse(original_files:list, list_file:str, gen_dir:str,
     # 先解析Excel Worksheets生成中间RDL files,
     # 再合并其他输入的RDL代码一起引入systemrdl-compiler编译生成寄存器模型
     excel_rdl_files = parse_excel(files=ori_excel_files,
-                                  top_name=excel_top_name,
+                                  top_name=excel_top,
                                   gen_rdl_dir=gen_dir,
                                   generate_rdl=to_generate_rdl,
-                                  gen_extra_top=(ori_rdl_ipxact_files==[]))
+                                  gen_extra_top=(orig_rdl_ipxact_files==[]))
 
     if excel_rdl_files is None:
         if to_generate_rdl:
             message.info("input files do not consist of Excel worksheet(.xlsx) files")
-        if ori_rdl_ipxact_files == []:
+        if orig_rdl_ipxact_files == []:
             return None
     else:
         # 把原来的Excel files替换为生成后的RDL files
@@ -459,10 +466,10 @@ def parse(original_files:list, list_file:str, gen_dir:str,
         # 如果输入全是Excel Worksheet,
         # 则生成的excel_rdl_files的最后会有一个包含top_addrmap的RDL file,
         # 需要加入到RDL parse的列表中去
-        if ori_rdl_ipxact_files == []:
+        if orig_rdl_ipxact_files == []:
             all_files.append(next(f_iter))
 
-    return parse_rdl(all_files)
+    return parse_rdl_ipxact(all_files)
 
 def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
                 generate_rdl=False, gen_extra_top=False):
@@ -500,13 +507,13 @@ def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
         if not checker():
             message.info("parser aborted due to previous errors")
             sys.exit(1)
-    message.info("all Excel(.xlsx) files have been parsed successfully")
+    message.info("all Excel worksheets (.xlsx) are properly parsed")
 
     if generate_rdl:
         from .excel.gen_rdl import RDLGenerator
 
         if not os.path.exists(gen_rdl_dir):
-            message.error("specified an invalid path for the generated rdl file")
+            message.error("invalid directory for the generated rdl file")
             sys.exit(1)
 
         generator = RDLGenerator(parser.parsed_model)
@@ -520,7 +527,7 @@ def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
 
 def show_excel_rules():
     """
-    显示Excel解析需要遵循的规则
+    show rules which the Excel parser checks
 
     !!TO BE FIXED!!
     """
@@ -530,18 +537,18 @@ def show_excel_rules():
           ExcelParser.check_addr.__doc__, "\n",
           ExcelParser.check_field.__doc__)
 
-def parse_rdl(files:list[str]):
+def parse_rdl_ipxact(files:list[str]):
     """
     使用`systemrdl-compiler`编译并解析SystemRDL文件
 
     Parameter
     ---------
-    `files` : 需要解析的SystemRDL和IP-XACT XML文件名, 以`list`形式组织
+    `files` : `list`, all SystemRDL and IP-XACT files
 
     Return
     ------
     `root` : `systemrdl.node.RootNode`
-    `None` : `files`为空列表时
+    `None` : when `files` is an empty list
     """
     if files == []:
         return None
@@ -557,11 +564,11 @@ def parse_rdl(files:list[str]):
             else:
                 rdlc.compile_file(file)
 
-        message.info("SystemRDL Compiler: start elaborating...")
+        message.info("SystemRDL Compiler: start elaborating")
         root = rdlc.elaborate()
     except RDLCompileError:
         sys.exit(1)
     else:
-        message.info("SystemRDL files parsed successfully")
+        message.info("SystemRDL Compiler: all files are properly parsed")
 
     return root

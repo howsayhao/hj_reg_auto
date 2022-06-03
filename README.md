@@ -1264,6 +1264,19 @@ If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrd
 
 ## **6. Miscellaneous**
 
+list file format:
+
+```text
+# This is a comment.
+# Excel files
+.\test_1.xlsx
+.\test_2.xlsx
+
+# This is a comment.
+# RDL files
+# .\test_map.rdl
+```
+
 ## **7. Bibliography**
 
 [1] Accellera: SystemRDL 2.0 Register Description Language

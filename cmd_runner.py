@@ -81,7 +81,7 @@ class CommandRunner:
                                   action="store_true",
                                   help="generate SystemRDL(.rdl) file based on all input Excel(.xlsx) specifications")
         parser_parse.add_argument("-m", "--module",
-                                  default="excel_top",
+                                  default="top_map",
                                   help="used under the situation where all input files are Excel worksheets, "
                                        "which specifies a top addrmap instance name"
                                        "for all input Excel(.xlsx) files (default:%(default)s)")
@@ -101,7 +101,7 @@ class CommandRunner:
                                      help="a list including paths and names of all files "
                                           "(useful for large number of files)")
         parser_generate.add_argument("-m", "--module",
-                                     default="excel_top",
+                                     default="top_map",
                                      help="if all input files are Excel worksheets, "
                                           "this option specifies extra top RDL file name "
                                           "for all input Excel(.xlsx) files (default:%(default)s)")
@@ -188,7 +188,7 @@ class CommandRunner:
               args.list,
               args.gen_dir,
               to_generate_rdl=args.gen_rdl,
-              excel_top_name=args.module)
+              excel_top=args.module)
 
     @staticmethod
     def _generate(args):
@@ -213,7 +213,7 @@ class CommandRunner:
                      args.list,
                      args.gen_dir,
                      to_generate_rdl=True,
-                     excel_top_name=args.module)
+                     excel_top=args.module)
 
         if not os.path.exists(args.gen_dir):
             message.error("-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))

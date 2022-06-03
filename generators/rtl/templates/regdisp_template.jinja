@@ -98,10 +98,9 @@ module {{get_rtl_name(disp_node)}} (
 
     // generate address offset
     //      for regdisp, generate absolute address
-    //      for regslv, generate address offset, downstream__addr_pre[0]
-    //      for 3rd party IP, generate absolute address, downstream__addr_pre[1]
-    //      for external memory, generate address offset, downstream__addr_pre[2]
-    // NOTE: this part needs template generation
+    //      for regslv, generate address offset
+    //      for 3rd party IP, generate absolute address
+    //      for external memory, generate address offset
     // there are two methods to convert absolute address to offset,
     // which depends on the base address alignment:
     //      1. base_addr = N * pow(2, ceil(log2(total_size))):

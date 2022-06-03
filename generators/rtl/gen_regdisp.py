@@ -96,24 +96,23 @@ class RTLExporter:
         """
         start_addr = node.absolute_address // (self.context["data_width"] // 8)
         end_addr = (node.absolute_address + node.size) // (self.context["data_width"] // 8)
+
         ptr_addr = start_addr
         comp_addr_expr = []
-        prefix = "62'h"
-        while ptr_addr < end_addr:
-            # get the least significant digit position,
-            # example: 0x013 -> 0, 0x130 -> 1, 0x1300 -> 2
-            sig_dig_pos = 0
-            while ptr_addr % (16 ** (sig_dig_pos + 1)) == 0:
-                sig_dig_pos += 1
-            while ptr_addr + (16 ** sig_dig_pos) > end_addr:
-                sig_dig_pos -= 1
+        prefix = "{}'h".format(self.context["addr_width"] - int(log(self.context["data_width"] // 8, base=2)))
 
-            temp = ptr_addr + 16 ** (sig_dig_pos + 1) - ptr_addr % (16 ** (sig_dig_pos + 1)) - 1
+        while ptr_addr < end_addr:
+            step = 1
+
+            while ptr_addr % (16 ** step) == 0 and ptr_addr + (16 ** step) <= end_addr:
+                step += 1
+
+            temp = ptr_addr + 16 ** step - ptr_addr % (16 ** step) - 1
 
             while ptr_addr <= temp:
-                comp_addr_expr.append("%s%x%s" % (prefix, ptr_addr >> (4 * sig_dig_pos), "?" * sig_dig_pos))
-                ptr_addr += 16 ** sig_dig_pos
-                if ptr_addr + (16 ** sig_dig_pos) > end_addr:
+                comp_addr_expr.append("%s%x%s" % (prefix, ptr_addr >> (4 * (step - 1)), "?" * (step - 1)))
+                ptr_addr += 16 ** (step - 1)
+                if ptr_addr + (16 ** (step - 1)) > end_addr:
                     break
 
         return comp_addr_expr
