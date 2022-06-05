@@ -1,26 +1,26 @@
 <mxfile host="65bd71144e">
     <diagram id="jqtPZpFRwkF8Adb8aV8S" name="第 1 页">
-        <mxGraphModel dx="350" dy="855" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+        <mxGraphModel dx="1215" dy="958" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
+                <mxCell id="70" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="420" y="60" width="250" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fontSize=16;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;strokeWidth=1;" parent="70" vertex="1">
+                    <mxGeometry width="250" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="&lt;font style=&quot;font-size: 18px&quot;&gt;Template Generator&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;dashed=1;fontSize=18;fontStyle=1;strokeWidth=1;" parent="70" vertex="1">
+                    <mxGeometry x="11.17346938775512" y="10" width="227.6530612244898" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="generate Excel templates" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=0;strokeWidth=1;" parent="70" vertex="1">
+                    <mxGeometry x="53.23979591836735" y="60" width="143.5204081632653" height="80" as="geometry"/>
+                </mxCell>
                 <mxCell id="31" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=0;strokeWidth=1;" parent="1" vertex="1">
-                    <mxGeometry x="155" y="160" width="855" height="580" as="geometry"/>
-                </mxCell>
-                <mxCell id="59" value="" style="group" parent="1" vertex="1" connectable="0">
-                    <mxGeometry x="187.5" y="190" width="242.5" height="170" as="geometry"/>
-                </mxCell>
-                <mxCell id="15" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fontSize=16;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;strokeWidth=1;" parent="59" vertex="1">
-                    <mxGeometry width="242.5" height="170" as="geometry"/>
-                </mxCell>
-                <mxCell id="16" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;template generator (optional)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;dashed=1;fontSize=16;fontStyle=0;strokeWidth=1;" parent="59" vertex="1">
-                    <mxGeometry x="7.423469387755102" y="10" width="227.6530612244898" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="10" value="generate Excel templates" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=0;strokeWidth=1;" parent="59" vertex="1">
-                    <mxGeometry x="49.48979591836735" y="70" width="143.5204081632653" height="80" as="geometry"/>
+                    <mxGeometry x="180" y="240" width="810" height="500" as="geometry"/>
                 </mxCell>
                 <mxCell id="53" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=0;strokeWidth=1;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="760" width="1015" height="350" as="geometry"/>
+                    <mxGeometry x="60" y="760" width="1050" height="350" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=16;fontStyle=0;strokeWidth=1;" parent="1" source="2" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -42,11 +42,8 @@
                 <mxCell id="6" value="parse Excel worksheets" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=0;strokeWidth=1;" parent="1" vertex="1">
                     <mxGeometry x="470" y="400" width="150" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" value="&amp;nbsp;1. check basic format&lt;br style=&quot;font-size: 16px;&quot;&gt;&amp;nbsp;2. check register name/abbr.&lt;br style=&quot;font-size: 16px;&quot;&gt;&amp;nbsp;3. check register address&lt;br style=&quot;font-size: 16px;&quot;&gt;&amp;nbsp;4. check field declaration" style="rounded=0;whiteSpace=wrap;html=1;align=left;fontSize=16;spacingLeft=3;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;spacingTop=0;strokeWidth=1;" parent="1" vertex="1">
-                    <mxGeometry x="187.5" y="380" width="242.5" height="120" as="geometry"/>
-                </mxCell>
-                <mxCell id="14" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;dashed=1;fontStyle=0;strokeWidth=1;" parent="1" source="10" target="2" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="9" value="&amp;nbsp;check following rules:&lt;br&gt;&lt;br&gt;&amp;nbsp;1. basic format&lt;br style=&quot;font-size: 16px&quot;&gt;&amp;nbsp;2. register name/abbr.&lt;br style=&quot;font-size: 16px&quot;&gt;&amp;nbsp;3. address allocation&lt;br style=&quot;font-size: 16px&quot;&gt;&amp;nbsp;4. field definitions" style="rounded=0;whiteSpace=wrap;html=1;align=left;fontSize=16;spacingLeft=3;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;spacingTop=0;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="360" width="200" height="160" as="geometry"/>
                 </mxCell>
                 <mxCell id="58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=18;strokeWidth=1;" parent="1" source="17" target="29" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -121,11 +118,11 @@
                 <mxCell id="39" value="preprocess and &lt;br&gt;traverse register model" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fontStyle=0;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=1;spacingLeft=0;spacing=2;spacingRight=0;" parent="1" vertex="1">
                     <mxGeometry x="620" y="780" width="190" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="54" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;HRDA Generator&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;strokeWidth=1;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="1060" width="170" height="50" as="geometry"/>
+                <mxCell id="54" value="&lt;span style=&quot;font-size: 18px&quot;&gt;Generator&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1060" width="140" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="55" value="generate register tree, interface and other components:&lt;br style=&quot;font-size: 14px;&quot;&gt;&amp;nbsp;&lt;br style=&quot;font-size: 14px;&quot;&gt;1. root node: regmst and APB interface&lt;br style=&quot;font-size: 14px;&quot;&gt;2. leaf node: regslv, 3rd party IP interface, memory interface&lt;br style=&quot;font-size: 14px;&quot;&gt;3. snapshot module&lt;br style=&quot;font-size: 14px;&quot;&gt;4. clock domain crossing (CDC) module" style="rounded=0;whiteSpace=wrap;html=1;align=left;fontSize=14;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;strokeWidth=1;" parent="1" vertex="1">
-                    <mxGeometry x="90" y="880" width="275" height="160" as="geometry"/>
+                <mxCell id="55" value="generate register tree, interface and other components:&lt;br style=&quot;font-size: 14px&quot;&gt;&amp;nbsp;&lt;br style=&quot;font-size: 14px&quot;&gt;1. root node: regmst&lt;br style=&quot;font-size: 14px&quot;&gt;2. leaf node: regdisp, regslv, 3rd party IP interface, memory interface&lt;br style=&quot;font-size: 14px&quot;&gt;3. snapshot module&lt;br style=&quot;font-size: 14px&quot;&gt;4. interface converter (reg_native_if to APB)" style="rounded=0;whiteSpace=wrap;html=1;align=left;fontSize=14;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="880" width="285" height="160" as="geometry"/>
                 </mxCell>
                 <mxCell id="56" value="" style="endArrow=none;dashed=1;html=1;rounded=0;fontSize=16;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontStyle=0;strokeWidth=1;" parent="1" source="55" target="36" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -133,8 +130,8 @@
                         <mxPoint x="400" y="930" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="57" value="&lt;span style=&quot;font-size: 18px&quot;&gt;HRDA Parser&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;strokeWidth=1;" parent="1" vertex="1">
-                    <mxGeometry x="155" y="690" width="170" height="50" as="geometry"/>
+                <mxCell id="57" value="&lt;span style=&quot;font-size: 18px&quot;&gt;Parser&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="180" y="690" width="120" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="64" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=18;strokeWidth=1;" parent="1" source="60" target="63" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -147,6 +144,9 @@
                 </mxCell>
                 <mxCell id="63" value="&amp;nbsp;import IP-XACT" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=0;strokeWidth=1;" parent="1" vertex="1">
                     <mxGeometry x="810" y="400" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="69" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=18;" edge="1" parent="1" source="10" target="2">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

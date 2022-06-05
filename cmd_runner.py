@@ -12,7 +12,7 @@ from generators.uvm.export import export_uvm
 from parsers.excel.gen_temp import generate_excel
 from parsers.parse import parse
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 class CommandRunner:
     """

@@ -6,7 +6,7 @@
         },
         {
             "name": "req_vld",
-            "wave": "01.|.0"
+            "wave": "010|.."
         },
         {
             "name": "wr_en",
@@ -14,11 +14,11 @@
         },
         {
             "name": "rd_en",
-            "wave": "01.|.0"
+            "wave": "010|.."
         },
         {
             "name": "addr [63:0]",
-            "wave": "x2.|.x",
+            "wave": "x2x|..",
             "data": "A1"
         },
         {
