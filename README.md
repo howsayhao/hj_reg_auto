@@ -6,11 +6,11 @@
 | ---------- | -------- | ----------------------------------------- |
 | 2022-03-22 | 0.1.0    | Add regmst for deadlock detection.        |
 | 2022-05-12 | 0.2.0    | Support IP-XACT integration in SystemRDL. |
-| 2022-06-03 | 0.3.0    | Decouple `regdisp` from `regslv`.         |
+| 2022-06-03 | 0.3.0    | Decouple regdisp from regslv.             |
 
 ## **1. Introduction**
 
-HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which can be divided into two major parts: front-end and back-end. The front-end supports for generating register description templates in the Excel worksheet (.xlsx) format, parsing the **input Excel worksheets, SystemRDL (.rdl) or IP-XACT files**. The back-end, or generator, supports for generating Register Transfer Level (RTL) Verilog/SystemVerilog modules, pdf documents, UVM Register Abstraction Layer (RAL) models and C header files.
+HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which can be divided into two major parts: front-end and back-end. The front-end supports for generating register description templates in the Excel worksheet (.xlsx) format, parsing the **input Excel worksheets (.xlsx), SystemRDL (.rdl) and IP-XACT (.xml) files**. The back-end, or generator, supports for generating Register Transfer Level (RTL) Verilog/SystemVerilog modules, pdf documents, UVM Register Abstraction Layer (RAL) models and C header files.
 
 For generating RTL modules with a few number of registers and simple address mapping, Excel worksheet is recommended. Nonetheless, for some complicated modules with numerous registers and sophisticated address mappings, SystemRDL is more expressive and flexible.
 
@@ -20,15 +20,16 @@ The overall HRDA tool flow is shown in [Figure 1.1](#pics_tool_flow).
 <center>
     <img src="docs/pics/tool_flow.svg">
     <div style="display: inline-block;
-    color: #999;
-    padding: 5px;">Figure 1.1 Register Design Automation (HRDA) tool flow </div>
+        color: #999;
+        padding: 5px;">Figure 1.1 Register Design Automation (HRDA) tool flow
+    </div>
 </center>
 
 ### **1.1 Register Template Generator**
 
-The template generator provide convenience for designers using Excel worksheets in describing registers. It generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. Designers can refer to these templates and revise them to meet their own specifications.
+The template generator provide convenience for designers who edit Excel worksheets. It generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. Designers can refer to these templates and modify them to meet their own requirements.
 
-See [4. Excel Worksheet Guideline](#4-excel-worksheet-guideline) for detailed information.
+See template format in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en).
 
 ### **1.2 Parser**
 
@@ -274,8 +275,8 @@ If input files are Excel worksheets only, all of them will be converted to Syste
 <center>
     <img src="docs/pics/regmst_rtl_infra.svg">
     <div style="display: inline-block;
-    color: #999;
-    padding: 5px;">Figure 2.7 regmst architecture
+        color: #999;
+        padding: 5px;">Figure 2.7 regmst architecture
     </div>
 </center>
 
@@ -302,7 +303,8 @@ If input files are Excel worksheets only, all of them will be converted to Syste
     <img src="docs/pics/regslv_rtl_infra.svg">
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Figure 2.x regslv block diagram</div>
+        padding: 5px;">Figure 2.x regslv block diagram
+    </div>
 </center>
 
 The general architecture of `regslv` is shown above. Every `addrmap` instance **under the root `addrmap`** in SystemRDL or a worksheet in Excel corresponds to a generated `regslv` module, and the RTL module name (and Verilog/SystemVerilog filename) is `regslv_xxx`, where `xxx` is the `addrmap` instance name in SystemRDL or Excel worksheet file name.
@@ -1077,22 +1079,23 @@ property hj_flatten_addrmap {
 
 ### **4.1 Table Format**
 
-An example Excel worksheet that describes only one register is shown below, in two language (cn/en) versions.
+An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en).
 
 <span id="pics_excel_temp_cn"></span>
-![ ](docs/pics/temp_cn.png)
 <center>
-<div style="display: inline-block;
-color: #999;
-padding: 5px;">Table 4.x Excel worksheet template (Chinese version)</div>
+  <img src="docs/pics/temp_cn.png" width="80%">
+  <div style="display: inline-block;
+    color: #999;
+    padding: 5px;">Figure 4.1 Excel worksheet template (Chinese version)
+  </div>
 </center>
 
 <span id="pics_excel_temp_en"></span>
-![ ](docs/pics/temp_en.png)
 <center>
-<div style="display: inline-block;
-color: #999;
-padding: 5px;">Table 4.x Excel worksheet template (English version)</div>
+  <img src="docs/pics/temp_en.png" width="80%">
+  <div style="display: inline-block;
+    color: #999;
+    padding: 5px;">Table 4.2 Excel worksheet template (English version)</div>
 </center>
 
 Designers shall refer to this template generated by Template Generator, and edit to extend it, like arrange several tables corresponding to more than one registers in the worksheet in a way that a few blank lines separate each table.
