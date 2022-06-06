@@ -219,7 +219,7 @@ class CommandRunner:
             message.error("-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
             sys.exit(1)
 
-        preprocess.preprocess(root, filter=args.filter)
+        preprocess.preprocess(root, filter=args.filter, quiet=args.quiet)
 
         if args.gen_all or args.gen_rtl:
             p_genrtl = Process(target=export_rtl,

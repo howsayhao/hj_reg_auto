@@ -186,7 +186,7 @@ class addrmap_str(object):
         Travese and create structure-tree in recursion
         Different nodes would be treated seperately:
             Addrmap
-                with hj_genrtl              : treated as external block, generate new .v file with inner structure
+                with hj_genslv              : treated as external block, generate new .v file with inner structure
                 without hj-genrtl           : treated as internal block
             Memory                          : treated as external block(snapshot memory), addition logic would be created
             Regfile                         : treated as internal block
@@ -205,7 +205,7 @@ class addrmap_str(object):
             genrtl = False
             flatten_addrmap = False
             if(isinstance(child, AddrmapNode)):
-                genrtl = child.get_property('hj_genrtl') if('hj_genrtl' in child.inst.properties) else False
+                genrtl = child.get_property('hj_genslv') if('hj_genslv' in child.inst.properties) else False
                 flatten_addrmap = child.get_property('hj_flatten_addrmap') if('hj_flatten_addrmap' in child.inst.properties) else True
 
                 # for regslv gen_rtl

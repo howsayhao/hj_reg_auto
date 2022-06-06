@@ -63,7 +63,7 @@ class RTLExporter:
                 template = self.jj_env.get_template("regdisp_template.jinja")
 
                 stream = template.stream(self.context)
-                stream.dump(os.path.join(dir, self._get_rtl_name(child)))
+                stream.dump(os.path.join(dir,  "%s.v" % (self._get_rtl_name(child))))
 
                 self.export_regdisp(child, dir)
 
@@ -86,7 +86,7 @@ class RTLExporter:
 
     def _is_aligned(self, node:AddressableNode):
         # whether the forwarding module of regdisp is aligned to its absolute address
-        return node.absolute_address % (2 ** ceil(log(node.total_size, base=2))) == 0
+        return node.absolute_address % (2 ** ceil(log(node.total_size, 2))) == 0
 
     def _get_comp_addr(self, node:AddressableNode):
         """
@@ -99,7 +99,7 @@ class RTLExporter:
 
         ptr_addr = start_addr
         comp_addr_expr = []
-        prefix = "{}'h".format(self.context["addr_width"] - int(log(self.context["data_width"] // 8, base=2)))
+        prefix = "{}'h".format(self.context["addr_width"] - int(log(self.context["data_width"] // 8, 2)))
 
         while ptr_addr < end_addr:
             step = 1
@@ -121,7 +121,7 @@ class RTLExporter:
         # return list with 2 elements: msb, lsb
         return [
             self.context["addr_width"] - 1,
-            int(log(self.context["data_width"] // 8, base=2))
+            int(log(self.context["data_width"] // 8, 2))
         ]
 
     def _use_backward_ff(self, node:AddrmapNode):
@@ -129,11 +129,14 @@ class RTLExporter:
 
     def _use_forward_ff(self, node:AddrmapNode):
         forward_ff_param = []
+
         for child in node.children(unroll=True, skip_not_present=False):
             if child.get_property("hj_use_upstream_ff"):
                 forward_ff_param.append("1'b1")
             else:
                 forward_ff_param.append("1'b0")
 
+        return forward_ff_param
+
     def _remain_bit(self, node:AddressableNode):
-        return ceil(log(node.total_size, base=2))
+        return ceil(log(node.total_size, 2))

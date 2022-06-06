@@ -24,8 +24,8 @@ def create_obj(node:Node, parent_obj:RTL_NODE, base_addr) -> RTL_NODE:
         new_obj.errextbus = node.get_property('errextbus')
         new_obj.rsvdset = node.get_property('rsvdset')
         new_obj.addr = node.absolute_address
-        # different from rdl, when a addrmap's hj_genrtl property is True, it will be treated as an internal regfile
-        new_obj.external = node.get_property('hj_genrtl') if('hj_genrtl' in node.inst.properties) else False
+        # different from rdl, when a addrmap's hj_genslv property is True, it will be treated as an internal regfile
+        new_obj.external = node.get_property('hj_genslv') if('hj_genslv' in node.inst.properties) else False
     elif isinstance(node, RegfileNode):
         # get regfile information
         new_obj = Regfile(node.get_path_segment())

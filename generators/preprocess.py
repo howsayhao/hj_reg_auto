@@ -4,7 +4,7 @@ from time import time
 
 import utils.message as message
 from systemrdl import RDLListener, RDLWalker
-from systemrdl.node import AddrmapNode, FieldNode, RootNode, MemNode
+from systemrdl.node import AddrmapNode, FieldNode, RootNode, MemNode, AddressableNode
 
 # FIXME: node.inst_name vs. node.get_path_segment()
 # thus hierarchical path for array would be ambiguous
@@ -50,7 +50,7 @@ class PreprocessListener(RDLListener):
         self.filter_pattern = user_ops.pop("filter", None)
         self.keep_quiet = user_ops.pop("quiet", False)
 
-        print("Start preprocessing......")
+        message.info("Start preprocessing...")
 
     def enter_Addrmap(self, node):
         """
@@ -63,7 +63,7 @@ class PreprocessListener(RDLListener):
         - regslv module
         - regdisp module
         - flatten addrmap (no module)
-        - 3rd party IP (forwarding interface)
+        - 3rd party IP (forward interface)
         """
         if not self.keep_quiet:
             message.debug("%sEntering addrmap: %s" % ("\t"*self.indent, node.get_path()))
@@ -138,8 +138,9 @@ class PreprocessListener(RDLListener):
 
             for child in node.children(skip_not_present=False):
                 if not isinstance(child, (AddrmapNode, MemNode)):
-                    message.error("%s: addrmap recognized as a regdisp module is allowed to have immediate"
-                                  "children of addrmap or mem type only, the child instance %s is illegal"
+                    message.error("%s: addrmap recognized as a regdisp module is allowed to have immediate "
+                                  "children of addrmap or mem type only, the child instance %s is illegal. "
+                                  "If you do want a regslv, please explicitly assign hj_gendisp to false"
                                   % (node.get_path(), child.get_path()))
                     sys.exit(1)
 
@@ -153,7 +154,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_gendisp"] = True
             node.inst.properties["hj_flatten_addrmap"] = False
             node.inst.properties["hj_use_abs_addr"] = True
-            node.inst.properties["forward_num"] = len(node.children(unroll=True, skip_not_present=False))
+            node.inst.properties["forward_num"] = len(list(node.children(unroll=True, skip_not_present=False)))
 
             self.is_in_regdisp = True
             self.reginst_name.append(node.inst_name)
@@ -194,7 +195,7 @@ class PreprocessListener(RDLListener):
             self.field_hdl_path.append(rtl_module_name)
 
             if not self.keep_quiet:
-                message.debug("%sgenerate%s" % ("\t"*self.indent, rtl_module_name))
+                message.debug("%sgenerate %s" % ("\t"*self.indent, rtl_module_name))
 
         elif (node.get_property("hj_flatten_addrmap", default=True) or self.is_in_flatten_addrmap) and \
             (not self.is_in_3rd_party_IP) and (not node.inst.def_src_ref.filename.endswith(".xml")):
@@ -238,8 +239,8 @@ class PreprocessListener(RDLListener):
                 sys.exit(1)
 
             if node.get_property("hj_use_abs_addr") is None:
-                message.warning("%s: the current addrmap is treated as a 3rd party IP, and you don't explicitly "
-                                "assign the property hj_use_abs_addr. it will be assigned to true" % (node.get_path()))
+                message.warning("%s: the current addrmap is treated as a 3rd party IP, but you don't explicitly "
+                                "assign the property hj_use_abs_addr, and it will be assigned to true" % (node.get_path()))
 
             # set properties
             node.inst.properties["hj_genmst"] = False
@@ -306,10 +307,6 @@ class PreprocessListener(RDLListener):
         self.reg_name.pop()
 
     def enter_Reg(self, node):
-        if node.parent.get_property("hj_gendisp") or node.parent.get_property("hj_genmst"):
-            message.error("%s: illegal to define regfile under %s which is recognized as regdisp/regmst" %
-                          (node.get_path(), node.parent.get_path()))
-            sys.exit(1)
 
         reg_rtl_inst_name = node.alias_primary.inst_name if node.is_alias else node.inst_name
 
@@ -328,8 +325,9 @@ class PreprocessListener(RDLListener):
             self.field_hdl_path.append("{}.field_value".format(field_rtl_inst_name))
             # assign hdl_path_slice for each field to recognize RTL hierarchy
             node.inst.properties["hdl_path_slice"] = [".".join(self.field_hdl_path)]
-            message.debug("%sgenerate hdl_path_slice: %s" %
-                          ("\t"*self.indent, node.inst.properties["hdl_path_slice"][0]))
+            if not self.keep_quiet:
+                message.debug("%sgenerate hdl_path_slice: %s" %
+                              ("\t"*self.indent, node.inst.properties["hdl_path_slice"][0]))
 
     def exit_Field(self, node):
         if not self.is_in_3rd_party_IP:
@@ -352,10 +350,12 @@ class PreprocessListener(RDLListener):
                         break
 
         if (not self.keep_quiet) and (not isinstance(node, FieldNode)):
-            message.debug("%s%s %s, filtered: %s" % ("\t"*self.indent,
-                                                     node.get_path_segment(),
-                                                     hex(node.absolute_address),
-                                                     self.is_filtered))
+            message.debug("%s%s %s, filtered: %s" % (
+                "\t"*self.indent,
+                node.get_path_segment(),
+                hex(node.absolute_address) if isinstance(node, AddressableNode) else "",
+                self.is_filtered)
+            )
 
     def exit_Component(self, node):
         self.indent -= 1
@@ -367,10 +367,10 @@ class PreprocessListener(RDLListener):
         - total register number
         - filtered register number
         """
-        message.info("total register number: %d" % (self.total_reg_num))
-        message.info("total size: %s bytes" % (hex(self.total_size)))
+        message.info("Total register number: %d" % (self.total_reg_num))
+        message.info("Total size: %s(%s) bytes" % (self.total_size, hex(self.total_size)))
         message.info("UVM filtered register number: %d" % (self.filter_reg_num))
-        message.info("preprocessing time: %.4fs" % (time() - self.start_time))
+        message.info("Preprocessing time: %.4fs" % (time() - self.start_time))
 
 def preprocess(root:RootNode, **user_ops):
     """
