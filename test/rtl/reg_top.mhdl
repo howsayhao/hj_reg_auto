@@ -1,0 +1,34 @@
+regmst_root_map regmst_root_map(
+	"s/^global_sync_reset_out$/root_map_global_sync_reset_out/g" \
+);
+
+regslv_root_map__root_map__map_1 regslv_root_map__root_map__map_1(
+			"s/fsm_clk/PCLK/g", \
+			"s/fsm_rstn/PRESETn/g", \
+			"s/^req_vld$/root_map__root_map__map_1_req_vld/g", \
+			"s/^ack_vld$/root_map__root_map__map_1_ack_vld/g", \
+			"s/^wr_en$/root_map__root_map__map_1_wr_en/g", \
+			"s/^rd_en$/root_map__root_map__map_1_rd_en/g", \
+			"s/^addr$/root_map__root_map__map_1_addr/g", \
+			"s/^wr_data$/root_map__root_map__map_1_wr_data/g", \
+			"s/^rd_data$/root_map__root_map__map_1_rd_data/g", \
+			"s/^global_sync_reset_in$/root_map__root_map_global_sync_reset_out/g", \
+			"s/^global_sync_reset_out$/root_map__root_map__map_1_global_sync_reset_out/g" \
+			);
+
+regslv_root_map__root_map__shared_map regslv_root_map__root_map__shared_map(
+			"s/fsm_clk/PCLK/g", \
+			"s/fsm_rstn/PRESETn/g", \
+			"s/regfile_clk/root_map__root_map__shared_map_regfile_clk/g", \
+			"s/regfile_rstn/root_map__root_map__shared_map_regfile_rstn/g", \
+			"s/^req_vld$/root_map__root_map__shared_map_req_vld/g", \
+			"s/^ack_vld$/root_map__root_map__shared_map_ack_vld/g", \
+			"s/^wr_en$/root_map__root_map__shared_map_wr_en/g", \
+			"s/^rd_en$/root_map__root_map__shared_map_rd_en/g", \
+			"s/^addr$/root_map__root_map__shared_map_addr/g", \
+			"s/^wr_data$/root_map__root_map__shared_map_wr_data/g", \
+			"s/^rd_data$/root_map__root_map__shared_map_rd_data/g", \
+			"s/^global_sync_reset_in$/root_map__root_map_global_sync_reset_out/g", \
+			"s/^global_sync_reset_out$/root_map__root_map__shared_map_global_sync_reset_out/g" \
+			);
+

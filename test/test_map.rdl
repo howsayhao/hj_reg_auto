@@ -1,5 +1,7 @@
 addrmap test_map_1 {
+	hj_gendisp = false;
 	hj_genslv = true;
+	hj_flatten_addrmap=false;
 
 	signal {
 		name = "sync_rst_signal_1";
@@ -132,7 +134,9 @@ reg shared_tem{
 };
 
 addrmap test_map_2 {
+	hj_gendisp = false;
 	hj_genslv = false;
+	hj_flatten_addrmap=true;
 	shared_tem shared_2;
 	shared_2 -> name = "SHARED_IN_TEST_MAP_2";
 	shared_2.FIELD_1 -> onread = rset;
@@ -140,7 +144,9 @@ addrmap test_map_2 {
 };
 
 addrmap test_map_3 {
+	hj_gendisp = false;
 	hj_genslv = false;
+	hj_flatten_addrmap=true;
 	shared_tem shared_3;
 	shared_3 -> name = "SHARED_IN_TEST_MAP_3";
 	shared_3.FIELD_1 -> sw = r;
@@ -148,10 +154,28 @@ addrmap test_map_3 {
 };
 
 addrmap root_map {
-	test_map_1 test_map_1_inst;
-	test_map_2 test_map_2_inst;
-	test_map_3 test_map_3_inst;
-	ipxact_block_example ipxact_block_example_inst;
+	hj_genmst = true;
+	hj_flatten_addrmap=false;
 
-	reg {field {} f[31:0];} reg_t;
+	reg {regwidth = 64; field {} addr[63:0];} err_log_0;
+	reg {field {} soft_reset[1:1]; field {} intr[0:0];} err_log_1;
+
+	addrmap {
+		hj_gendisp = true;
+		hj_flatten_addrmap=false;
+		test_map_1 map_1;
+		addrmap {
+			hj_gendisp = false;
+			hj_genslv = true;
+			hj_cdc = true;
+			hj_flatten_addrmap=false;
+			test_map_2 map_2;
+			test_map_3 map_3;
+		} shared_map;
+
+		ipxact_block_example ipxact_map;
+		ipxact_map -> hj_use_abs_addr = true;
+	} root_map;
+
+
 };
