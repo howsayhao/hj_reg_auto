@@ -298,22 +298,35 @@ Then `regmst` starts a timer. If a timeout event occurs in waiting for response 
 
 With regard to clock domain, `regmst` runs on the register native domain (typically 50MHz).
 
+[Table 2.8](#table_regmst_ports) shows port definitions of `regmst`.
+
+// TODO
+<span id="table_regmst_ports"></span>
+|    Port     | Direction | Width | Description |
+| ----------- | --------- | ----- | ----------- |
+<center>
+    <div style="display: inline-block;
+        color: #999;
+        padding: 5px;">Table 2.8 regmst port definition
+    </div>
+</center>
+
 ### **2.4 Register Dispatcher (regdisp)**
 
 The immediate sub-addrmap instance of root `addrmap` or any `addrmap` instance which is assigned *hj_gendisp = true* corresponds to a `regdisp` module, and the RTL module name (also file name) is `regdisp_<suffix>`, where `<suffix>` is current `addrmap` instance name in SystemRDL.
 
-`regdisp` is responsible for one-to-many access request dispatch like an inverse multiplexor, and it is the only module in `reg_tree` that can connect multiple downstream modules which may be `regslv` modules implementing internal registers, 3rd party IPs, and external memories via `reg_native_if`. [Figure 2.8](#pics_regdisp_rtl_infra) shows the architecture of `regdisp`.
+`regdisp` is responsible for one-to-many access request dispatch like an inverse multiplexor, and it is **the only module in `reg_tree` that can connect multiple downstream modules which may be `regslv` modules implementing internal registers, 3rd party IPs, external memories or another `regdisp` module via `reg_native_if`**. [Figure 2.9](#pics_regdisp_rtl_infra) shows the architecture of `regdisp`.
 
 <span id="pics_regdisp_rtl_infra"></span>
 <center>
     <img src="docs/pics/regdisp_rtl_infra.svg"><br>
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Figure 2.8 regdisp architecture
+        padding: 5px;">Figure 2.9 regdisp architecture
     </div>
 </center>
 
-As [Figure 2.8](#pics_regdisp_rtl_infra) shows, `regdisp` has additional optional functionalities based on design requirements described in SystemRDL by explicitly assigning user-defined properties such as *hj_use_abs_addr*, *hj_use_upstream_ff*, *hj_use_backward_ff* (See [3.1.11 User-defined Property](#3111-user-defined-property)):
+As [Figure 2.9](#pics_regdisp_rtl_infra) shows, `regdisp` has additional optional functionalities based on design requirements described in SystemRDL by explicitly assigning user-defined properties such as *hj_use_abs_addr*, *hj_use_upstream_ff*, *hj_use_backward_ff* (See [3.1.11 User-defined Property](#3111-user-defined-property)):
 
 - Convert absolute address to base offset in `reg_native_if::addr` (assign *hj_use_abs_addr = false* in current `addrmap` representing for `regdisp`)
 
@@ -337,28 +350,52 @@ As [Figure 2.8](#pics_regdisp_rtl_infra) shows, `regdisp` has additional optiona
 
 With regard to clock domain, `regdisp` runs on the register native domain (typically 50MHz).
 
+[Table 2.10](#table_regdisp_ports) shows port definitions of `regmst`.
+
+// TODO
+<span id="table_regdisp_ports"></span>
+|    Port     | Direction | Width | Description |
+| ----------- | --------- | ----- | ----------- |
+<center>
+    <div style="display: inline-block;
+        color: #999;
+        padding: 5px;">Table 2.10 regdisp port definition
+    </div>
+</center>
+
 ### **2.5 Register Access Slave (regslv)**
 
 `regslv` modules are used to implement internal registers. Any `addrmap` instance which is assigned *hj_genslv = true* or an Excel worksheet corresponds to a `regslv` module, and the RTL module name (also file name) is `regslv_<suffix>`, where `<suffix>` is the `addrmap` instance name in SystemRDL or Excel worksheet name.
 
-[Figure 2.9](#pics_regslv_rtl_infra) shows the architecture of `regslv`.
+[Figure 2.11](#pics_regslv_rtl_infra) shows the architecture of `regslv`.
 
 <span id="pics_regslv_rtl_infra"></span>
 <center>
     <img src="docs/pics/regslv_rtl_infra.svg"><br>
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Figure 2.9 regslv architecture
+        padding: 5px;">Figure 2.11 regslv architecture
     </div>
 </center>
 
-`regslv` is the terminal node of `reg_tree` so it does not forward any interface. Designers should use `regdisp` if they want to forward interface to 3rd party IPs or external memories.
+`regslv` is the terminal node in `reg_tree` and its immediate parent node is `regdisp`, so it does not forward any interface. Designers should use `regdisp` if they want to forward interface to 3rd party IPs or external memories.
+
+[Table 2.12](#table_regdisp_ports) shows port definition of `regslv`.
+
+// TODO
+<span id="table_regslv_ports"></span>
+|    Port     | Direction | Width | Description |
+| ----------- | --------- | ----- | ----------- |
+<center>
+    <div style="display: inline-block;
+        color: #999;
+        padding: 5px;">Table 2.12 regslv port definition
+    </div>
+</center>
 
 #### **2.5.1 slv_fsm**
 
-// FIXME
-
-`slv_fsm` handles transactions at the input `reg_native_if` from upstream `regslv` or `regmst` modules and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown in [Figure 2.10](#).
+`slv_fsm` is a finite state machine (FSM) that copes with transactions dispatched from the upstream `regdisp` module and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown in [Figure 2.10](#).
 
 #### **2.5.2 external_decoder**
 
@@ -393,7 +430,7 @@ always_comb begin
 end
 ```
 
-#### **2.5.4 split_mux (internal_mux, external_mux, ultimate_mux)**
+#### **2.5.4 split_mux**
 
 // FIXME
 
@@ -403,7 +440,7 @@ end
 
 // FIXME
 
-#### **2.5.6 clock domain crossing (CDC) solution**
+#### **2.5.6 value_deliver**
 
 // FIXME
 
@@ -411,7 +448,7 @@ end
 
 // FIXME
 
-`field` is the structure component at the lowest level. The `field` architecture is shown in [Figure 2.11](#pics_field_rtl_infra).
+`field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.11](#pics_field_rtl_infra).
 
 <span id="pics_field_rtl_infra"></span>
 <center>
@@ -1097,19 +1134,40 @@ REG_def REG1_SRST;
 REG1_SRST.FIELD_0 -> hj_syncresetsignal = "srst_1,srst_2,srst_3";
 ```
 
-#### **hj_genrtl**
+#### **3.1.11.2 hj_genmst**
 
 Property definition prototype:
 
 ```systemrdl
-property hj_genrtl {
+property hj_genmst {
   component = addrmap;
   type = boolean;
-  default = true;
 }
 ```
 
-#### **hj_flatten_addrmap**
+#### **3.1.11.3 hj_gendisp**
+
+Property definition prototype:
+
+```systemrdl
+property hj_gendisp {
+  component = addrmap;
+  type = boolean;
+}
+```
+
+#### **3.1.11.4 hj_genslv**
+
+Property definition prototype:
+
+```systemrdl
+property hj_genslv {
+  component = addrmap;
+  type = boolean;
+}
+```
+
+#### **3.1.11.5 hj_flatten_addrmap**
 
 Property definition prototype:
 
@@ -1117,11 +1175,16 @@ Property definition prototype:
 property hj_flatten_addrmap {
   component = addrmap;
   type = boolean;
-  default = false;
 }
 ```
 
-#### **hj_cdc**
+#### **3.1.11.6 hj_cdc**
+
+#### **3.1.11.7 hj_use_abs_addr**
+
+#### **3.1.11.8 hj_use_upstream_ff**
+
+#### **3.1.11.9 hj_use_backward_ff**
 
 #### **hj_skip_reg_mux_dff_0**
 
@@ -1135,15 +1198,15 @@ property hj_flatten_addrmap {
 
 #### **hj_ext_mux_size**
 
-### **Correspondence between SystemRDL and RTL**
+### **3.1.12 Correspondence between SystemRDL and RTL**
 
-(TBD)
+// TODO
 
 ## **4. Excel Worksheet Guideline**
 
 ### **4.1 Table Format**
 
-An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en).
+An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), and designers can use the sub-command `excel_template` to generate these templates and modify them (see [5.2 Command Options and Arguments](#52-command-options-and-arguments)).
 
 <span id="pics_excel_temp_cn"></span>
 <center>

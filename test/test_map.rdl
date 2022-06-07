@@ -157,8 +157,8 @@ addrmap root_map {
 	hj_genmst = true;
 	hj_flatten_addrmap=false;
 
-	reg {regwidth = 64; field {} addr[63:0];} err_log_0;
-	reg {field {} soft_reset[1:1]; field {} intr[0:0];} err_log_1;
+	// reg {regwidth = 64; field {} addr[63:0];} err_log_0 @0x40000000;
+	// reg {field {} soft_reset[1:1]; field {} intr[0:0];} err_log_1 @0x40001000;
 
 	addrmap {
 		hj_gendisp = true;

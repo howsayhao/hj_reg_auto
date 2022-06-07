@@ -70,9 +70,9 @@ module regdisp_root_map__root_map (
         if_sel = {FORWARD_NUM{1'b0}};
         no_sel = 1'b0;
         unique casez (upstream__addr[63:2])
-            62'h10?,62'h11?,62'h12?,62'h13?,62'h140,62'h141,62'h142,62'h143,62'h144,62'h145: if_sel[0] = 1'b1;
-            62'h146,62'h147: if_sel[1] = 1'b1;
-            62'h18?,62'h19?,62'h1a?,62'h1b?,62'h1c0,62'h1c1,62'h1c2,62'h1c3: if_sel[2] = 1'b1;
+            62'h0?,62'h1?,62'h2?,62'h3?,62'h40,62'h41,62'h42,62'h43,62'h44,62'h45: if_sel[0] = 1'b1;
+            62'h46,62'h47: if_sel[1] = 1'b1;
+            62'h8?,62'h9?,62'ha?,62'hb?,62'hc0,62'hc1,62'hc2,62'hc3: if_sel[2] = 1'b1;
             default: no_sel = 1'b1;
         endcase
     end

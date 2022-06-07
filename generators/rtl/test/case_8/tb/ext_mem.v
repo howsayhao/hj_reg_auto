@@ -35,11 +35,11 @@ module ext_mem (
 
     // All inputs are registered
     always @(posedge clk) begin
-        req_vld_ff = req_vld;
-        wr_en_ff = wr_en;
-        rd_en_ff = rd_en;
+        req_vld_ff <= req_vld;
+        wr_en_ff <= wr_en;
+        rd_en_ff <= rd_en;
         addr_ff = addr;
-        wr_data_ff = wr_data;
+        wr_data_ff <= wr_data;
     end
 
     // Write Operation : wr_en = 1, req_vld = 1
