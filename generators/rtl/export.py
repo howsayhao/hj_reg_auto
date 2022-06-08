@@ -13,8 +13,8 @@ def export_rtl(root:RootNode, out_dir:str):
 
     Parameter
     ---------
-    `root` : `systemrdl.node.RootNode` systemrdl-compiler解析完成的寄存器模型根节点
-    `out_dir` : 输出RTL的目录, 会在该目录下创建一个`rtl`子目录, 存放输出的RTL模块
+    `root` : `systemrdl.node.RootNode`, compiled by SystemRDL Compiler
+    `out_dir` : output directory
     """
     rtl_dir = os.path.join(out_dir, "rtl")
     if not os.path.exists(rtl_dir):

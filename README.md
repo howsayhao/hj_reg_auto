@@ -132,11 +132,11 @@ The HTML generator relies on an open-source project [PeakRDL-html](https://githu
 
 (TO BE DONE)
 
-### **1.3.5 UVM RAL Generator**
+#### **1.3.5 UVM RAL Generator**
 
 The export of the UVM register model relies on an open-source project [PeakRDL-uvm](https://github.com/SystemRDL/peakrdl-uvm).
 
-### **1.3.6 C Header Generator**
+#### **1.3.6 C Header Generator**
 
 (TO BE DONE)
 
@@ -395,26 +395,11 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 
 #### **2.5.1 slv_fsm**
 
-`slv_fsm` is a finite state machine (FSM) that copes with transactions dispatched from the upstream `regdisp` module and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown in [Figure 2.10](#).
-
-#### **2.5.2 external_decoder**
-
 // FIXME
 
-```verilog
-always_comb begin
-    int_selected = 1'b0;
-    ext_sel = {EXT_NUM{1'b0}};
-    none_selected = 1'b0;
-    unique casez (global_address)
-        64'h0,64'h4: int_selected = 1'b1;   //
-        64'h2?,64'h3?: ext_sel[0] = 1'b1;   // external module ext_mem_1
-        default: none_selected = 1'b1;
-    endcase
-end
-```
+`slv_fsm` is a finite state machine (FSM) that copes with transactions dispatched from the upstream `regdisp` module and forwards transactions to external `reg_native_if` in case that the access is located at downstream modules. The state transition diagram is shown in [Figure 2.13](#).
 
-#### **2.5.3 internal_decoder**
+#### **2.5.2 addr_decoder**
 
 // FIXME
 
@@ -448,60 +433,85 @@ end
 
 // FIXME
 
-`field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.11](#pics_field_rtl_infra).
+`field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.14](#pics_field_rtl_infra).
 
 <span id="pics_field_rtl_infra"></span>
 <center>
     <img src="docs/pics/field_rtl_infra.svg">
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Figure 2.11 field architecture
+        padding: 5px;">Figure 2.14 field architecture
     </div>
 </center>
 
-The `field` module implements various hardware and
-software access types defined in Excel worksheets and SystemRDL descriptions. When alias or shared property is defined in SystemRDL, a corresponding number of software control (`sw_ctrl`) logic will be generated.
+The `field` module implements hardware and software access types defined in Excel worksheets and SystemRDL.
+
+`sw_ctrl` unit corresponds to software access (read and write) types in Excel worksheets and SystemRDL. It uses software access signals from `slv_fsm` in `regslv`, which are initially forwarded by `reg_native_if` from upstream modules.
+
+All supported software access types are listed in [Table 2.15](#table_sw_acc_prop). `field` can be readable and writeable, write only once, and has some read or write side-effects on software behavior. Additionally, *alias* and *shared* property in SystemRDL can be used to describe `reg` if designers wants to generate registers with more than one software address locations and access types but only one physical implementation. If *alias* or *shared* property is assigned in SystemRDL, a corresponding number of software control (`sw_ctrl`) units will be generated. So for simple register description without *alias* or *shared* property, there is only one `sw_ctrl` unit.
+
+<span id="table_sw_acc_prop"></span>
+| Software Access Type | Description                     |
+| -------------------- | ------------------------------- |
+| RO                   | read only                       |
+| RW                   | read and write                  |
+| RW1                  | read and write once after reset |
+| WO                   | write only                      |
+| W1                   | write once after reset          |
+| RCLR                 | clear on read                   |
+| RSET                 | set on read                     |
+| WOCLR                | write 1 to clear                |
+| WOSET                | write 1 to set                  |
+| WOT                  | write 1 to toggle               |
+| WZS                  | write 0 to set                  |
+| WZC                  | write 0 to clear                |
+| WZT                  | write 0 to toggle               |
+<center>
+    <div style="display: inline-block;
+        color: #999;
+        padding: 5px;">Table 2.15 supported software access (read and write) types
+    </div>
+</center>
+
+`hw_ctrl` unit corresponds to hardware access types in Excel worksheets and SystemRDL. It simply uses `hw_pulse` and `hw_value` for hardware access, and these two signals also appear in `regslv` module port declaration if the `field` instance they belong to are writeable on hardware behavior.
+
+All supported hardware access types are listed in [Table 2.16](#table_hw_acc_prop).
+
+<span id="table_hw_acc_prop"></span>
+| Hardware Access Type | Description                                 |
+| -------------------- | ------------------------------------------- |
+| RO | read only, thus `hw_pulse` and `hw_value` are not generated as `regslv` module ports |
+| RW | read, and write when `hw_pulse` is asserted |
+| CLR | bitwise clear, and `hw_pulse` input is ignored |
+| SET | bitwise set, and `hw_pulse` input is ignored |
+<center>
+    <div style="display: inline-block;
+        color: #999;
+        padding: 5px;">Table 2.16 supported software access (read and write) types
+    </div>
+</center>
+
+All supported sodtware and hardware access types also can be found in a generated verilog header file `xregister.vh`.
+
+------------------------------
+
+**Note:** `hw_pulse` and `hw_value` correspond to `<field_inst_name>__pulse` and `<field_inst_name>__next_value` as port names of `regslv`, and `field_value` corresponds to `<field_inst_name>__curr_value` as the port name of `regslv`.
+
+------------------------------
+
+Additionally, there are some other advanced features in SystemRDL that can be implemented and generated as RTL code. See more in [SystemRDL Coding Guideline](#systemrdl-coding-guideline).
+
+`field` is concatenated to form `register` and mapped into address space for software access, as shown in [Figure 2.17](#pics_field_concat_reg).
 
 // FIXME
-
-All supported access types are listed in `xregister.vh`:
-
-```verilog
-// SW_TYPE
-`define SW_RO    4'd0 // Read only
-`define SW_RW    4'd1 // Read Write
-`define SW_RW1   4'd2 // Read, Write once after reset
-`define SW_WO    4'd3 // Write only
-`define SW_W1    4'd4 // Write once after reset
-
-// SW_ONREAD_TYPE
-`define NA       4'd0 // No Read side-effect
-`define RCLR     4'd1 // Clear on Read
-`define RSET     4'd2 // Set on Read
-
-// SW_ONWRITE_TYPE
-`define NA       4'd0 // No Write side-effect
-`define WOCLR    4'd1 // Write 1 to Clear
-`define WOSET    4'd2 // Write 1 to Set
-`define WOT      4'd3 // Write 1 to Toggle
-`define WZS      4'd4 // Write 0 to Set
-`define WZC      4'd5 // Write 0 to Clear
-`define WZT      4'd6 // Write 0 to Toggle
-
-// HW_TYPE
-`define HW_RO    4'd0 // Read only
-`define HW_RW    4'd1 // Read, Write on hw_pulse
-`define HW_CLR   4'd2 // Bitwise Clear, hw_pulse input is ignored.
-`define HW_SET   4'd3 // Bitwise Set, hw_pulse input is ignored.
-```
-
-Additionally, there are some other features that can be implemented and generated in RTL. See more in [SystemRDL Coding Guideline](#systemrdl-coding-guideline).
-
-`field` is concatenated to form `register` and mapped into address space for software access, as shown in [Figure ](#).
-
-// FIXME
-
-<>
+<span id="pics_field_concat_reg"></span>
+<center>
+    <img src="">
+    <div style="display: inline-block;
+        color: #999;
+        padding: 5px;">Figure 2.17 fields are concatenated to form registers
+    </div>
+</center>
 
 ### **2.7 Detailed Register Tree Architecture and Performance Evaluation**
 
@@ -509,7 +519,7 @@ Additionally, there are some other features that can be implemented and generate
 
 ## **3. SystemRDL Coding Guideline**
 
-// FIXME
+// FIXME: need a general example
 
 SystemRDL is a language for the design and delivery of intellectual property (IP) products used in designs. SystemRDL semantics supports the entire life-cycle of registers from specification, model generation, and design verification to maintenance and documentation. Registers are not just limited to traditional configuration registers, but can also refer to register arrays and memories.
 
@@ -1249,7 +1259,7 @@ Register elements are as follows.
 
   - Read Attribute (Read Type): consistent with the `onread` attribute in SystemRDL. `R`, `RCLR` and `RSET` are supported.
 
-  - Write Attribute (Write Type): consistent with the `onwrite` attribute in SystemRDL. `W`, `WOC`, `WOS`, `WOT`, `WZC`, `WZS`, `WZT` are supported.
+  - Write Attribute (Write Type): consistent with the `onwrite` attribute in SystemRDL. `W`, `W1`,`WOC`, `WOS`, `WOT`, `WZC`, `WZS`, `WZT` are supported.
 
   - Reset value: field reset value for synchronous and generic asynchronous reset signals.
 
