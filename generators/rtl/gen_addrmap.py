@@ -187,7 +187,7 @@ class addrmap_str(object):
         Different nodes would be treated seperately:
             Addrmap
                 with hj_genslv              : treated as external block, generate new .v file with inner structure
-                without hj-genrtl           : treated as internal block
+                without hj_genslv           : treated as internal block
             Memory                          : treated as external block(snapshot memory), addition logic would be created
             Regfile                         : treated as internal block
             Reg
@@ -202,20 +202,20 @@ class addrmap_str(object):
             new_obj = create_obj(child,rtl_obj,self.base_addr)
 
             # to judge if the address is treated as internal or external
-            genrtl = False
+            genslv = False
             flatten_addrmap = False
             if(isinstance(child, AddrmapNode)):
-                genrtl = child.get_property('hj_genslv') if('hj_genslv' in child.inst.properties) else False
+                genslv = child.get_property('hj_genslv') if('hj_genslv' in child.inst.properties) else False
                 flatten_addrmap = child.get_property('hj_flatten_addrmap') if('hj_flatten_addrmap' in child.inst.properties) else True
 
                 # for regslv gen_rtl
-                if(genrtl is True and child not in self.Root.genrtl_node):
+                if(genslv is True and child not in self.Root.genslv_node):
                     rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                     base_addr = child.absolute_address
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy, base_addr=base_addr)
                     ext_addr.write()
                     self.Root.children.append(ext_addr)
-                    self.Root.genrtl_node.append(child)
+                    self.Root.genslv_node.append(child)
                     new_obj.DATA_WIDTH = 32
                     new_obj.ADDR_WIDTH = 64
                     self.ext_module.append(new_obj)
@@ -224,7 +224,7 @@ class addrmap_str(object):
                     self.inst += 1
 
                 # for 3rd party IP
-                elif(genrtl is False and flatten_addrmap is False):
+                elif(genslv is False and flatten_addrmap is False):
                     rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
                     base_addr = child.absolute_address
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy, base_addr=base_addr)
@@ -235,7 +235,7 @@ class addrmap_str(object):
                     self.ext_instance(ext_addr)
 
                 # external property mark so related blocked won't gen
-                if(genrtl is True or flatten_addrmap is False):
+                if(genslv is True or flatten_addrmap is False):
                     new_obj.external = True
                     if(new_obj.parent is not None):
                         new_obj.external_top = new_obj.parent.external_top
@@ -334,7 +334,7 @@ class addrmap_str(object):
             if(isinstance(new_obj, Addressmap) or isinstance(new_obj, Memory)):
                 cdc = child.get_property('hj_cdc') if('hj_cdc' in child.inst.properties) else None
                 if(isinstance(new_obj, Addressmap)):
-                    if(cdc is not None and genrtl is False and flatten_addrmap is True):
+                    if(cdc is not None and genslv is False and flatten_addrmap is True):
                         try:
                             sys.exit(1)
                         except:
