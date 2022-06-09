@@ -510,7 +510,7 @@ def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
     message.info("all Excel worksheets (.xlsx) are properly parsed")
 
     if generate_rdl:
-        from .excel.gen_rdl import RDLGenerator
+        from .excel.excel2rdl import RDLGenerator
 
         if not os.path.exists(gen_rdl_dir):
             message.error("invalid directory for the generated rdl file")

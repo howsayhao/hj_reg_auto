@@ -168,7 +168,7 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
 - `-v, --version`
 
   显示 `RDA Tool`版本信息。
-- `excel_template`
+- `template`
 
   子命令，适用于简单功能的寄存器模块，用于生成寄存器 `Excel Worksheet (.xlsx)`模板，有以下命令选项。
 
@@ -286,7 +286,7 @@ UVM寄存器模型的导出依赖于github上开源的项目 `PeakRDL-uvm`，项
 
   ```bash
   mkdir test
-  hrda excel_template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3
+  hrda template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3
   ```
 
 - 解析Excel格式的寄存器说明并生成对应的RDL文件：

@@ -1216,7 +1216,7 @@ property hj_flatten_addrmap {
 
 ### **4.1 Table Format**
 
-An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), and designers can use the sub-command `excel_template` to generate these templates and modify them (see [5.2 Command Options and Arguments](#52-command-options-and-arguments)).
+An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), and designers can use the sub-command `template` to generate these templates and modify them (see [5.2 Command Options and Arguments](#52-command-options-and-arguments)).
 
 <span id="pics_excel_temp_cn"></span>
 <center>
@@ -1333,7 +1333,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
   Show tool version.
 
-- `excel_template`
+- `template`
 
   Subcommand to generate register specification templates in Excel worksheet (.xlsx) format with the following command options.
 
@@ -1462,13 +1462,13 @@ Before trying all below examples, please ensure that you can execute `hrda` comm
     module load inhouse/hrda
     ```
 
-If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrda excel_template -h`, `hrda parse -h`, `hrda generate -h` to get command/sub-command information. Then you can try following examples:
+If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrda template -h`, `hrda parse -h`, `hrda generate -h` to get command/sub-command information. Then you can try following examples:
 
 - Generate the register template in Excel format.
 
   ```bash
   mkdir test
-  hrda excel_template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3
+  hrda template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3
   ```
 
 - Parse the register description in Excel format and generate the corresponding RDL file.
