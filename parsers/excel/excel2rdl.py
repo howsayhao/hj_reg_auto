@@ -1,4 +1,5 @@
 import os.path
+import sys
 
 import utils.message as message
 from .args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
@@ -15,7 +16,7 @@ class RDLGenerator:
 
     default_desc = "[Reserved for editing]"
 
-    # 每个Excel文件生成的addrmap都单独generate一个regslv moodule
+    # each Excel worksheet corresponds to a independent regslv module
     gen_sep_str = "\thj_gendisp = false;\n" \
         "\thj_genslv = true;\n" \
 		"\thj_flatten_addrmap = false;\n" \
@@ -26,16 +27,17 @@ class RDLGenerator:
         "\t\t{active_mode};\n" \
         "\t}} {sig_name};\n\n"
 
-    acctype_str = "\t\t\tsw = {sw};\n" \
-        "{onread}" \
-        "{onwrite}"
+    sw_type_str = "\t\t\tsw = {sw}; {onread} {onwrite}\n"
+
+    hw_type_str = "\t\t\thw = {hw}; {onwrite}\n"
 
     srst_ref_str = "\t\t\thj_syncresetsignal = \"{sig_name}\";\n"
 
     field_str = "\t\tfield {{\n" \
         "\t\t\tname = \"{FieldName}\";\n" \
         "\t\t\tdesc = \"{FieldDesc}\";\n" \
-        "{acctype_str}" \
+        "{sw_type_str}" \
+        "{hw_type_str}" \
         "{srst_ref_str}" \
         "\t\t}} {FieldName}[{FieldBit[0]}:{FieldBit[1]}] = {FieldRstVal};\n\n"
 
@@ -72,11 +74,11 @@ class RDLGenerator:
 
     def _resize_model(self):
         """
-        重构寄存器模型Dict, 将Field相关项进行转置,
-        并删去在解析和检查Excel时引入的与寄存器无关的多余元素
+        Refactor the register model parsed by `ExcelParser`
 
-        i.e.
-        - 重构前:
+        Example
+        -------
+        - before refactor:
         {
             'template': [
                 {
@@ -95,14 +97,15 @@ class RDLGenerator:
                         '[功能描述]...',
                         '保留位'
                     ],
-                    'FieldRdType': ['R', 'RCLR', 'RSET', 'R', 'R'],
-                    'FieldWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
+                    'FieldSwRdType': ['R', 'RCLR', 'RSET', 'R', 'R'],
+                    'FieldSwWrType': ['W', 'NA', 'WOSET', 'WOT', 'W'],
+                    'FieldHwAccType': ['NA', 'RW', 'CLR', 'SET', 'NA']
                     'FieldRstVal': [0, 0, 0, 1, 0],
                     'FieldSyncRstSig': ['None', 'srst_10', 'srst_20, srst_21', 'None', 'None']
                 }
             ]
         }
-        - 重构后:
+        - after refactor:
         {
             'template': [
                 {
@@ -116,8 +119,9 @@ class RDLGenerator:
                             'FieldBit': (17, 17),
                             'FieldName': 'FIELD_1',
                             'FieldDesc': '[功能描述]...',
-                            'FieldRdType': 'RCLR',
-                            'FieldWrType': 'NA',
+                            'FieldSwRdType': 'RCLR',
+                            'FieldSwWrType': 'NA',
+                            'FieldHwAccType': 'RW',
                             'FieldRstVal': 0,
                             'FieldSyncRstSig': 'srst_10'
                         },
@@ -125,8 +129,9 @@ class RDLGenerator:
                             'FieldBit': (16, 14),
                             'FieldName': 'FIELD_2',
                             'FieldDesc': '[功能描述]...',
-                            'FieldRdType': 'RSET',
-                            'FieldWrType': 'WOSET',
+                            'FieldSwRdType': 'RSET',
+                            'FieldSwWrType': 'WOSET',
+                            'FieldHwAccType': 'CLR',
                             'FieldRstVal': 0,
                             'FieldSyncRstSig': 'srst_20,srst_21'
                         },
@@ -134,8 +139,9 @@ class RDLGenerator:
                             'FieldBit': (13, 13),
                             'FieldName': 'FIELD_3',
                             'FieldDesc': '[功能描述]...',
-                            'FieldRdType': 'R',
-                            'FieldWrType': 'WOT',
+                            'FieldSwRdType': 'R',
+                            'FieldSwWrType': 'WOT',
+                            'FieldHwAccType': 'SET',
                             'FieldRstVal': 1,
                             'FieldSyncRstSig': None
                         }
@@ -220,7 +226,7 @@ class RDLGenerator:
 
                 # 生成一个register所有fields例化代码
                 for fld in reg["Fields"]:
-                    # field中定义的sync. reset signal是以','分隔的字符串
+                    # synchronous reset signals are in string format split by ','
                     f_srst_sig = fld["FieldSyncRstSig"]
                     if f_srst_sig is not None:
                         srst_ref_str = self.srst_ref_str.format(sig_name=f_srst_sig)
@@ -228,7 +234,7 @@ class RDLGenerator:
                         for sig in f_srst_sig.split(","):
                             if sig not in srst_sigs:
                                 srst_sigs.append(sig)
-                                # 当同步复位信号以'_n'结尾时认为其低电平使能(activelow)
+                                # signal which ends with '_n' is considered active low
                                 active_mode = "activelow" if sig.endswith("_n") else "activehigh"
                                 srst_sigs_def_str += self.srst_def_str.format(sig_name=sig,
                                                                               sig_desc=self.default_desc,
@@ -236,54 +242,73 @@ class RDLGenerator:
                     else:
                         srst_ref_str = ""
 
-                    # 生成的SystemRDL代码中以16进制表示复位值
+                    # reset values in SystemRDL should be in hexdecimal format
                     fld["FieldRstVal"] = hex(fld["FieldRstVal"])
 
+                    # handle software access properties
                     sw = ""
-                    rdtype = fld["FieldRdType"].lower()
-                    wrtype = fld["FieldWrType"].lower()
-
-                    # rdtype: na | r | rclr | rset | ruser
+                    rdtype = fld["FieldSwRdType"].lower()
+                    wrtype = fld["FieldSwWrType"].lower()
+                    # sw read type: na | r | rclr | rset | ruser
                     if rdtype != "na":
                         sw += "r"
                         if rdtype == "r":
                             onread_str = ""
                         else:
-                            onread_str = "\t\t\tonread = {};\n".format(rdtype)
+                            onread_str = "onread = {};".format(rdtype)
 
-                        # Fixed: 如果reg当中存在field属性onread=ruser,
-                        # 则该reg需要被定义为external
+                        # fixed: when onread=ruser,
+                        # the register that current field belongs to should be declared external
                         # Ref: SystemRDL2.0 Spec. 9.6.1(j)
                         if rdtype == "ruser":
                             ext_str = "external "
                     else:
                         onread_str = ""
-
-                    # wrtype: na | w | w1 | woset | woclr | wot | wzs | wzc | wzt | wuser
+                    # sw write type: na | w | w1 | woset | woclr | wot | wzs | wzc | wzt | wuser
                     if wrtype != "na":
                         if wrtype in ("w", "w1"):
                             sw += wrtype
                             onwrite_str = ""
                         else:
                             sw += "w"
-                            onwrite_str = "\t\t\tonwrite = {};\n".format(wrtype)
+                            onwrite_str = "onwrite = {};".format(wrtype)
 
-                        # Fixed: 如果reg当中存在field属性onwrite=wuser,
-                        # 则该reg需要被定义为external
+                        # fixed: when onwrite=wuser,
+                        # the register that current field belongs to should be declared external
                         # Ref: SystemRDL2.0 Spec. 9.6.1(m)
                         if wrtype == "wuser":
                             ext_str = "external "
                     else:
                         onwrite_str = ""
 
-                    acctype_str = self.acctype_str.format(sw=sw,
+                    sw_type_str = self.sw_type_str.format(sw=sw,
                                                           onread=onread_str,
                                                           onwrite=onwrite_str)
-                    fields_str += self.field_str.format(acctype_str=acctype_str,
+
+                    # handle hardware access properties: r, rw, clr, set
+                    hwtype = fld["FieldHwAccType"].lower()
+                    if hwtype in ("r", "rw"):
+                        hw = hwtype
+                        onwrite_str = ""
+                    elif hwtype == "clr":
+                        hw = "rw"
+                        onwrite_str = "hwclr;"
+                    elif hwtype == "set":
+                        hw = "rw"
+                        onwrite_str = "hwset;"
+                    else:
+                        message.error("unsupported hardware access type %s" % (hwtype))
+                        sys.exit(1)
+
+                    hw_type_str = self.hw_type_str.format(hw=hw,
+                                                          onwrite=onwrite_str)
+
+                    fields_str += self.field_str.format(sw_type_str=sw_type_str,
+                                                        hw_type_str=hw_type_str,
                                                         srst_ref_str=srst_ref_str,
                                                         **fld)
 
-                # 生成的SystemRDL中以Hex表示地址
+                # address allocation in SystemRDL should be in hexdecimal format
                 reg["AddrOffset"] = hex(reg["AddrOffset"])
                 reg_str = self.reg_str.format(ext_str=ext_str,
                                               fields_str=fields_str,

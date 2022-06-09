@@ -90,10 +90,10 @@ EXCEL_REG_FIELD = {
             "Pattern": None
         }
     },
-    "FieldRdType": {
+    "FieldSwRdType": {
         "Entry": {
             "Loc": (8,4),
-            "Name": ("读属性", "Read Type")
+            "Name": ("软件读属性", "SW Read Type")
         },
         "Content": {
             "StartLoc": (9,4),
@@ -101,10 +101,10 @@ EXCEL_REG_FIELD = {
             "Pattern": "^((R)|(NA)|(RCLR)|(RSET)|(RUSER))$"
         } # Access Type
     },
-    "FieldWrType": {
+    "FieldSwWrType": {
         "Entry": {
             "Loc": (8,5),
-            "Name": ("写属性", "Write Type")
+            "Name": ("软件写属性", "SW Write Type")
         },
         "Content": {
             "StartLoc": (9,5),
@@ -112,24 +112,35 @@ EXCEL_REG_FIELD = {
             "Pattern": "^((W)|(NA)|(W1)|(WOSET)|(WOCLR)|(WOT)|(WZS)|(WZC)|(WZT)|(WUSER))$"
         }
     },
-    "FieldRstVal": {
+    "FieldHwAccType": {
         "Entry": {
             "Loc": (8,6),
-            "Name": ("复位值", "Reset Value")
+            "Name": ("硬件访问属性", "HW Access Type")
         },
         "Content": {
             "StartLoc": (9,6),
+            "Format": "str",
+            "Pattern": "^((NA)|(R)|(RW)|(CLR)|(SET))$"
+        }
+    },
+    "FieldRstVal": {
+        "Entry": {
+            "Loc": (8,7),
+            "Name": ("复位值", "Reset Value")
+        },
+        "Content": {
+            "StartLoc": (9,7),
             "Format": "hex",
             "Pattern": "^(0[Xx][0-9A-Fa-f]+)$"
         }
     },
     "FieldSyncRstSig": {
         "Entry": {
-            "Loc": (8,7),
+            "Loc": (8,8),
             "Name": ("同步复位信号", "Sync. Reset Signal")
         },
         "Content": {
-            "StartLoc": (9,7),
+            "StartLoc": (9,8),
             "Format": "str",
             "Pattern": "^(([Nn][Oo][Nn][Ee])|([^0-9_]\w*(,\s*[^0-9_]\w*)*))$"
         }
