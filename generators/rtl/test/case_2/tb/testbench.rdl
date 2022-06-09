@@ -6,14 +6,22 @@ reg REG_def {
 };
 
 addrmap reg_top {
+	hj_genmst = true;
+	hj_flatten_addrmap = false;
 	addrmap {
-		hj_genslv = true;
+		hj_gendisp = true;
+		hj_flatten_addrmap = false;
+		addrmap {
+			hj_gendisp = false;
+			hj_genslv = true;
+			hj_flatten_addrmap = false;
 
-		// implement internal registers
-		REG_def REG1_SW_RO, REG2_SW_RW, REG3_SW_RW1, REG4_SW_WO, REG5_SW_W1;
-		REG1_SW_RO.FIELD_0 -> sw = r;
-		REG3_SW_RW1.FIELD_0 -> sw = rw1;
-		REG4_SW_WO.FIELD_0 -> sw = w;
-		REG5_SW_W1.FIELD_0 -> sw = w1;
-	} reg_block_1;
+			// implement internal registers
+			REG_def REG1_SW_RO, REG2_SW_RW, REG3_SW_RW1, REG4_SW_WO, REG5_SW_W1;
+			REG1_SW_RO.FIELD_0 -> sw = r;
+			REG3_SW_RW1.FIELD_0 -> sw = rw1;
+			REG4_SW_WO.FIELD_0 -> sw = w;
+			REG5_SW_W1.FIELD_0 -> sw = w1;
+		} reg_block_1;
+	} disp_top;
 };

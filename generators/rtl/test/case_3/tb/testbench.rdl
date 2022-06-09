@@ -6,12 +6,20 @@ reg REG_def {
 };
 
 addrmap reg_top {
+	hj_genmst = true;
+	hj_flatten_addrmap = false;
 	addrmap {
-		hj_genslv = true;
+		hj_gendisp = true;
+		hj_flatten_addrmap = false;
+		addrmap {
+			hj_gendisp = false;
+			hj_genslv = true;
+			hj_flatten_addrmap = false;
 
-		// implement internal registers
-		REG_def REG1_ONREAD_NA, REG2_ONREAD_RCLR, REG3_ONREAD_RSET;
-		REG2_ONREAD_RCLR.FIELD_0 -> onread = rclr;
-		REG3_ONREAD_RSET.FIELD_0 -> onread = rset;
-	} reg_block_1;
+			// implement internal registers
+			REG_def REG1_ONREAD_NA, REG2_ONREAD_RCLR, REG3_ONREAD_RSET;
+			REG2_ONREAD_RCLR.FIELD_0 -> onread = rclr;
+			REG3_ONREAD_RSET.FIELD_0 -> onread = rset;
+		} reg_block_1;
+	} disp_top;
 };

@@ -79,7 +79,7 @@ property hj_reserved_space{
 };
 
 property hj_use_upstream_ff{
-    component = addrmap;
+    component = addrmap | mem;
     type = boolean;
 };
 
@@ -89,6 +89,6 @@ property hj_use_backward_ff{
 };
 
 property hj_use_abs_addr{
-    component = addrmap;
+    component = addrmap | mem;
     type = boolean;
 };

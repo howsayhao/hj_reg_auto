@@ -11,15 +11,23 @@ mem ext_mem_def {
 };
 
 addrmap reg_top {
+	hj_genmst = true;
+	hj_flatten_addrmap = false;
 	addrmap {
-		hj_genslv = true;
-		hj_cdc = true;
+		hj_gendisp = true;
+		hj_flatten_addrmap = false;
+		addrmap {
+			hj_gendisp = false;
+			hj_genslv = true;
+			hj_flatten_addrmap = false;
+			hj_cdc = true;
 
-		// implement internal registers
-        REG_def REG1;
-        // forward reg_native_if to external memory
-        // memwidth=128, datawidth=32, implement snapshot module
-        external ext_mem_def ext_mem_1;
-		ext_mem_1 -> hj_cdc = true;
-	} reg_block_1;
+			// implement internal registers
+			REG_def REG1;
+			// forward reg_native_if to external memory
+			// memwidth=128, datawidth=32, implement snapshot module
+			external ext_mem_def ext_mem_1;
+			ext_mem_1 -> hj_cdc = true;
+		} reg_block_1;
+	} disp_top;
 };

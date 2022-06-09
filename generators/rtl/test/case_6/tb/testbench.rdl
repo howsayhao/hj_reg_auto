@@ -1,37 +1,45 @@
 addrmap reg_top {
-	addrmap {
-		hj_genslv = true;
+    hj_genmst = true;
+    hj_flatten_addrmap = false;
+    addrmap {
+        hj_gendisp = true;
+        hj_flatten_addrmap = false;
+        addrmap {
+            hj_gendisp = false;
+            hj_genslv = true;
+            hj_flatten_addrmap = false;
 
-		// implement internal registers
-        reg {
-            regwidth = 32;
-            field {
-                hw = r;
-            } FIELD_0[31:0] = 0x0;
-        } REG1_HW_RO;
+            // implement internal registers
+            reg {
+                regwidth = 32;
+                field {
+                    hw = r;
+                } FIELD_0[31:0] = 0x0;
+            } REG1_HW_RO;
 
-        reg {
-            regwidth = 32;
-            field {
-                hw = rw;
-            } FIELD_0[31:0] = 0x0;
-        } REG2_HW_RW;
+            reg {
+                regwidth = 32;
+                field {
+                    hw = rw;
+                } FIELD_0[31:0] = 0x0;
+            } REG2_HW_RW;
 
-        reg {
-            regwidth = 32;
-            field {
-                hw = rw;
-                hwclr;
-            } FIELD_0[31:0] = 0xaaaaaaaa;
-        } REG3_HW_CLR;
+            reg {
+                regwidth = 32;
+                field {
+                    hw = rw;
+                    hwclr;
+                } FIELD_0[31:0] = 0xaaaaaaaa;
+            } REG3_HW_CLR;
 
-        reg {
-            regwidth = 32;
-            field {
-                hw = rw;
-                hwset;
-            } FIELD_0[31:0] = 0x0;
-        } REG4_HW_SET;
+            reg {
+                regwidth = 32;
+                field {
+                    hw = rw;
+                    hwset;
+                } FIELD_0[31:0] = 0x0;
+            } REG4_HW_SET;
 
-	} reg_block_1;
+        } reg_block_1;
+    } disp_top;
 };
