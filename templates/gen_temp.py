@@ -13,7 +13,7 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
 
     Parameter
     ---------
-    `dir` : 生成模板存放的路径
+    `dir` : directory to generated template file
     `name` : 生成模板的名字, 后续将作为regfile的名称使用
     `rnum` : 生成模板中寄存器的数量
     `rname` : 生成模板中各个寄存器的名字
@@ -25,12 +25,12 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
     # handle duplicate file names
     suffix_num = 1
     while os.path.exists(os.path.join(dir, name)):
+        has_duplicate = True
         name = "{}_{}{}".format(os.path.splitext(name)[0], suffix_num, os.path.splitext(name)[1])
         suffix_num += 1
 
     gen_file = os.path.join(dir, name)
     copy(temp_file, gen_file)
-    message.info("generate template: %s" % (gen_file))
 
     if rnum > 1:
         wb = load_workbook(gen_file)
@@ -75,6 +75,11 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
                 ws.merge_cells(cr.coord)
 
         wb.save(gen_file)
+
+    if has_duplicate:
+        message.warning("same template file name already exists, generate %s" % (gen_file))
+    else:
+        message.info("generate template: %s" % (gen_file))
 
 def gen_rdl_template(dir:str, name:str):
     """

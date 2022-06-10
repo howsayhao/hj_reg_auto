@@ -17,9 +17,9 @@ def judge_addr(new_obj):
 
     size_log = math.log2(size)
     if(size_log -int(size_log)):
-        print("%s: size isn't pow of 2"%(new_obj.obj))
+        print("%s: size isn't power of 2"%(new_obj.obj))
     else:
-        print("%s: addr-wire higher than %d-th bit will be cut"%(new_obj.obj, int(size_log))) if(new_obj.parent.external is False) else None
+        print("%s: address higher than %d-th bit will be cut"%(new_obj.obj, int(size_log))) if(new_obj.parent.external is False) else None
 
 
 

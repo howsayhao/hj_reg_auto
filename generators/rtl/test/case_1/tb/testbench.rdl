@@ -26,35 +26,24 @@ addrmap reg_top {
         hj_gendisp = true;
         hj_flatten_addrmap = false;
         addrmap {
-            hj_gendisp = false;
-            hj_genslv = true;
+            hj_gendisp = true;
             hj_flatten_addrmap = false;
-            hj_cdc = true;
 
             // implement downstream regslv
             test_1 test_11;
             test_11 -> 	hj_cdc = true;
-            // implement internal registers
             test_1 test_12;
-            test_12 -> hj_genslv = false;
             test_1 test_13;
-            test_13 -> hj_genslv = false;
             // implement external memory
             external ext_mem_def ext_mem_11;
         } reg_block_1;
 
         addrmap {
-            hj_gendisp = false;
-            hj_genslv = true;
+            hj_gendisp = true;
             hj_flatten_addrmap = false;
-            hj_cdc = true;
-            // implement internal registers
+
+            // implement downstream regslv
             test_1 test_21;
-            test_21 -> hj_genslv = false;
-            test_1 test_22;
-            test_22 -> hj_genslv = false;
-            test_1 test_23;
-            test_23 -> hj_genslv = false;
             // implement external memories
             external ext_mem_def ext_mem_21, ext_mem_22, ext_mem_23;
         } reg_block_2;

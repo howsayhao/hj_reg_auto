@@ -253,12 +253,12 @@ def get_regfile_wire(N):
 
     regfile_wire_rtl += '\n'
     regfile_wire_rtl += '\tassign regfile_req_vld       = fsm__slv__req_vld     ;\n'
-    regfile_wire_rtl += '\tassign regfile_ack_vld       = slv__fsm__ack_vld     ;\n'
+    regfile_wire_rtl += '\tassign slv__fsm__ack_vld     = regfile_ack_vld       ;\n'
     regfile_wire_rtl += '\tassign regfile_wr_en         = fsm__slv__wr_en       ;\n'
     regfile_wire_rtl += '\tassign regfile_rd_en         = fsm__slv__rd_en       ;\n'
     regfile_wire_rtl += '\tassign regfile_addr          = fsm__slv__addr        ;\n'
     regfile_wire_rtl += '\tassign regfile_wr_data       = fsm__slv__wr_data     ;\n'
-    regfile_wire_rtl += '\tassign regfile_rd_data       = slv__fsm__rd_data     ;\n'
+    regfile_wire_rtl += '\tassign slv__fsm__rd_data     = regfile_rd_data       ;\n'
 
 
     regfile_wire_rtl += '\n'

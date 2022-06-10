@@ -538,9 +538,9 @@ A component in SystemRDL is the basic building block or a container which contai
 - `regfile`: pack registers together with support of address allocation
 
 - `addrmap`: similar to `regfile` on packing register and allocating addresses.
-   Additionally, it defines the **RTL code generation boundary**. Each definition of `addrmap` with `hj_genrtl` property set to `True` will be generated to an `regslv` module, see [Table ](#)
+   Additionally, it defines the **RTL code generation boundary**. Each definition of `addrmap` with `hj_genrtl` property set to `True` will be generated to an `regslv` module, see [Table](#)
 
-Additionally, HRDA supports one non-structural component, `signal`. Signals are used to describe field synchronous resets. But SystemRDL seems to be not allowed to reference `signal` components in property assignment, but HRDA implement it by defining a user-defined property named `hj_syncresetsignal`, see [Table ](#)
+Additionally, HRDA supports one non-structural component, `signal`. Signals are used to describe field synchronous resets. But SystemRDL seems to be not allowed to reference `signal` components in property assignment, but HRDA implement it by defining a user-defined property named `hj_syncresetsignal`, see [Table](#)
 
 SystemRDL components can be defined in two ways: definitively or anonymously.
 
@@ -642,7 +642,7 @@ In a similar fashion to defining components, SystemRDL components can be instant
 
 In SystemRDL, components have various properties to determine their behavior. For built-in properties, there are general component properties and specific properties for each component type (`field`, `reg`, `addrmap`, etc.) in SystemRDL. Each property is associated with at least one data type (such as integer, boolean, string, etc). In addition to build-in properties, SystemRDL also supports for user-defined properties, and HRDA tool pre-defines some user-defined properties to assist RTL module generation process, which are concretely specified in [User-defined Property](#user-defined-property).
 
-All general component properties supported by HRDA are described in [Table ](#), and other supported component-specific properties are discussed in following chapters.
+All general component properties supported by HRDA are described in [Table](#), and other supported component-specific properties are discussed in following chapters.
 
 <>
 
@@ -937,7 +937,7 @@ addrmap foo {
 
 Another similar property, *shared*, allows same physical register to be mapped in several different address space.
 
-All supported properties are listed in [Table ](#table_reg_property).
+All supported properties are listed in [Table](#table_reg_property).
 
 <span id="table_reg_property"></span>
 | Property      | Notes                                                              | Type               | Default | Dynamic |
@@ -977,7 +977,7 @@ When `regfile` is instantiated within another `regfile`, HRDA considers inner `r
 
 Standard SystemRDL allows *external* to be applied on `regfile` instances, but HRDA tool ignores *external* modifications on `regfile` instance. `regfile` instance is always considered as packer of registers. *external* only applies on `addrmap` instances.
 
-All supported properties are listed in [Table ](#table_regfile_property).
+All supported properties are listed in [Table](#table_regfile_property).
 
 <span id="table_regfile_property"></span>
 | Property    | Notes                                                                               | Type               | Default | Dynamic |
@@ -1004,7 +1004,7 @@ regfile myregfile #(.A (32)) {
 
 Memory instances in `addrmap` are always *external*. When mapping memory into register space, the generated `reg_slv` module forwards access that falls in memory address region to memory access interface. Each mapped memory has a dedicated access data path.
 
-Memory definition accepts properties listed in [Table ](#table_mem_property).
+Memory definition accepts properties listed in [Table](#table_mem_property).
 
 <span id="table_mem_property"></span>
 | Property     | Notes                                             | Type                | Default | Dynamic |
@@ -1038,7 +1038,7 @@ HRDA tool processes each `addrmap` definitions as below:
 
 1. `memory` instances are always considered *external*. There will be dedicated `reg_native_if` populated for each memory instance.
 2. `reg`, `regfile` are generated according to the definition. Their contents address are allocated by the enclosing `addrmap`.
-3. `addrmap` instances are handled in different ways depending on the property assignment of `hj_genrtl` and `hj_flatten_addrmap` in `addrmap` definition. Detailed configuration is listed in [Table ](#table_addrmap_property)
+3. `addrmap` instances are handled in different ways depending on the property assignment of `hj_genrtl` and `hj_flatten_addrmap` in `addrmap` definition. Detailed configuration is listed in [Table](#table_addrmap_property)
 
 <span id="table_addrmap_property"></span>
 | hj_genrtl | hj_flatten_addrmap | handling behavior | Usage |
@@ -1052,7 +1052,7 @@ color: #999;
 padding: 5px;">Table 3.x `addrmap` handling properties</div>
 </center>
 
-All suppored properties for `addrmap` is listed in [Table ](#).
+All suppored properties for `addrmap` is listed in [Table](#).
 
 <span id="table_addrmap_handle"></span>
 | Property       | Notes                                                                                                            | Type               | Default | Dynamic |
@@ -1208,9 +1208,77 @@ property hj_flatten_addrmap {
 
 #### **hj_ext_mux_size**
 
-### **3.1.12 Correspondence between SystemRDL and RTL**
+### **3.1.12 Overall Example**
 
-// TODO
+```SystemRDL
+// this is an addrmap definition
+// it will be instantiated in the top-level (root) addrmap below and treated as regslv
+// in order to generate a regslv module to implement internal registers, designers need assign:
+//      hj_gendisp = false;
+//      hj_genslv = true;
+//      hj_flatten_addrmap = false;
+addrmap template_slv{
+    hj_gendisp = false;
+    hj_genslv = true;
+    hj_flatten_addrmap = false;
+
+    name = "template_slv";
+    desc = "[Reserved for editing]";
+
+    signal {
+        name = "srst_10";
+        desc = "[Reserved for editing]";
+        activehigh;
+    } srst_10;
+
+    // user-defined register definitions start here
+    reg {
+        name = "TEM";
+        desc = "Template Register";
+        regwidth = 32;
+
+        // field definitions start here
+        field {
+            name = "FIELD_1";
+            desc = "[Reserved for editing]";
+            sw = r; onread = rclr;
+            hw = rw;
+            hj_syncresetsignal = "srst_10";
+        } FIELD_1[17:17] = 0x0;
+
+        field {
+            name = "FIELD_2";
+            desc = "[Reserved for editing]";
+            sw = rw; onread = rset; onwrite = woset;
+            hw = rw; hwclr;
+        } FIELD_2[16:14] = 0x0;
+
+        field {
+            name = "FIELD_3";
+            desc = "[Reserved for editing]";
+            sw = rw; onwrite = wot;
+            hw = rw; hwset;
+        } FIELD_3[13:13] = 0x1;
+    } TEM @0x0;
+};
+
+// at least three levels of addrmap instance are needed
+// this is the top-level addrmap, and it will be automatically treated as regmst
+addrmap template_mst {
+    // it is recommended to assign hj_genmst = true and hj_flatten_addrmap = false
+    hj_genmst = true;
+    hj_flatten_addrmap = false;
+    // this is the second-level addrmap, and it will be automatically treated as regdisp
+    addrmap {
+        // it is recommended to assign hj_gendisp = true and hj_flatten_addrmap = false
+        hj_gendisp = true;
+        hj_flatten_addrmap = false;
+        // instantiate an addrmap defined above to generate a regslv module,
+        // or designers can define an addrmap here
+        template_slv template_slv;
+    } template_disp;
+};
+```
 
 ## **4. Excel Worksheet Guideline**
 
@@ -1335,35 +1403,43 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
 - `template`
 
-  Subcommand to generate register specification templates in Excel worksheet (.xlsx) format with the following command options.
+  Subcommand to generate register templates in Excel worksheet (.xlsx) or SystemRDL (.rdl) format with following command options.
 
   - `-h, --help`
 
     Show help information for this subcommand.
 
+  - `-rdl`
+
+    Generate a SystemRDL (.rdl) template.
+
+  - `-excel`
+
+    Generate an Excel worksheet (.xlsx) template.
+
   - `-d,--dir [DIR]`
 
-    Specify the location of the directory where the template will be generated, the default is the current directory.
+    Directory where the template will be generated, the default is the current directory.
 
   - `-n,--name [NAME]`
 
-    Specify the file name of the generated template, if there is a duplicate name, it will be automatically distinguished by a number, the default is `template.xlsx`.
+    File name of the generated template, if there is a duplicate name, it will be automatically suffixed with a number. Default is `template.xlsx`.
 
   - `-rnum [RNUM]`
 
-    Specify the number of registers to be included in the generated template, default is `1`.
+    Number of registers to be included in the generated template. Default is `1`. This option is only for Excel worksheets with `-excel` option.
 
   - `-rname [TEM1 TEM2 ...]`
 
-    Specify the name of the register in the generated template, the default is `TEM`, the default name and abbreviation are the same.
+    Names of registers in the template to be generated. Default is `TEM` (also for abbreviation). This option is only for Excel worksheets with `-excel` option.
 
   - `-l, --language [cn | en]`
 
-    Specify the language format of the generated template: `cn/en`, default is `cn`.
+    Specify the language format of the generated template: `cn/en`, default is `cn`. This option is only for Excel worksheets with `-excel` option.
 
 - `parse`
 
-  Sub-command to check the syntax and rules of the input Excel(.xlsx) and SystemRDL(.rdl) files, and compile them into the hierarchical model defined in `systemrdl-compiler`, with the following command options.
+  Sub-command to parse input Excel(.xlsx) worksheets and SystemRDL(.rdl) files, and compile them into a hierarchical model defined in `systemrdl-compiler`, with following command options.
 
   - `-h, --help`
 
@@ -1373,9 +1449,9 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
     Specify the input Excel(.xlsx)/SystemRDL(.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
 
-  - `-l, --list [LIST_FILE]`
+  - `-l, --list [LIST]`
 
-    Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
+    Specify a file list text including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
 
     Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
 
@@ -1405,7 +1481,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
     Specify the input Excel (.xlsx) / SystemRDL (.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
 
-  - `-l, --list [LIST_FILE]`
+  - `-l, --list [LIST]`
 
     Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
 
@@ -1449,7 +1525,7 @@ Before trying all below examples, please ensure that you can execute `hrda` comm
 
 - use `module` tool and `module load` command for configuration, and it follows the RTL Standard Operating Procedure (rtl_sop).
 
-  - clone the `rtl_sop` repository to your local directory:
+  - clone the `rtl_sop` repository to your local directory or use `git pull` to get the latest version:
 
     ```bash
     git clone http://10.2.2.2:2000/hj-micro/rtl_sop.git
@@ -1462,16 +1538,17 @@ Before trying all below examples, please ensure that you can execute `hrda` comm
     module load inhouse/hrda
     ```
 
-If you can execute `hrda` successfully, it is recommanded to use `hrda -h`, `hrda template -h`, `hrda parse -h`, `hrda generate -h` to get command/sub-command information. Then you can try following examples:
+If you can execute `hrda` successfully, it is recommanded to use subcommands and options `-h`, `template -h`, `parse -h`, `generate -h` to get more help information. Examples are as follows:
 
-- Generate the register template in Excel format.
+- Generate a register template.
 
   ```bash
   mkdir test
-  hrda template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3
+  hrda template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3 -d ./test
+  hrda template -n test.rdl -d ./test
   ```
 
-- Parse the register description in Excel format and generate the corresponding RDL file.
+- Parse the Excel worksheet and generate corresponding SystemRDL files.
 
   ```bash
   hrda parse -f test/test.xlsx -g -gdir . /test -m test_top

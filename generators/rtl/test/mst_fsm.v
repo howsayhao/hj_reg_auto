@@ -25,8 +25,6 @@ module mst_fsm
         fsm__slv__wr_data,
         slv__fsm__rd_data,
 
-        external_reg_selected,
-        ext_ack_is_back,
         fsm__slv__sync_reset,
 
         clear,
@@ -62,9 +60,7 @@ output reg fsm__slv__rd_en;
 output fsm__slv__sync_reset;
 output reg interrupt;
 
-input ext_ack_is_back;
 // SLV_NUM external modules
-input external_reg_selected;
 
 reg slv__fsm__ack_vld_ff;
 reg fsm__slv__req_vld_ff;
@@ -129,27 +125,19 @@ always_ff@(posedge PCLK or negedge PRESETn)begin
         fsm__slv__addr <= (state == S_SETUP && next_state != S_SETUP) ? PADDR : fsm__slv__addr;
         fsm__slv__wr_data <= (state == S_SETUP && next_state != S_SETUP) ? PWDATA : fsm__slv__wr_data;
 
-        fsm__slv__wr_en <= (state == S_SETUP && next_state != S_SETUP) ? PWRITE :
-                                                                         (next_state == S_WAIT_SLV_ACK) ? PWRITE & external_reg_selected : 1'b0;
-        fsm__slv__rd_en <= (state == S_SETUP && next_state != S_SETUP) ? !PWRITE :
-                                                                         (next_state == S_WAIT_SLV_ACK) ? !PWRITE & external_reg_selected : 1'b0;
+        fsm__slv__wr_en <= (state == S_SETUP && next_state != S_SETUP) ? PWRITE  : 1'b0;
+        fsm__slv__rd_en <= (state == S_SETUP && next_state != S_SETUP) ? !PWRITE : 1'b0;
     end
 end
 
-//handshake for slv
+// handshake for slv
 always_ff@(posedge PCLK or negedge PRESETn)begin
     if(!PRESETn)begin
         fsm__slv__req_vld_ff <= 0;
     end
     else begin
-        // case1: external_reg_selected && state == S_SETUP && next_state == S_WAIT_SLV_ACK
-        //        when APB launches a requistion for external_reg while external_reg is rdy, latch the control signal for 1 cycle
-        // case2: next_state == S_WAIT_SLV_RDY
-        //        when APB launches a requistion for external_reg while external_reg is not rdy, latch the control signal until slv_rdy back
-        if(ext_ack_is_back) fsm__slv__req_vld_ff <= 1'b0;
-        else if(state == S_SETUP && next_state == S_WAIT_SLV_ACK) fsm__slv__req_vld_ff <= 1'b1;
-        else if(next_state == S_SETUP) fsm__slv__req_vld_ff <= 1'b0;
-        else fsm__slv__req_vld_ff <= fsm__slv__req_vld_ff;
+        if(state == S_SETUP && next_state == S_WAIT_SLV_ACK) fsm__slv__req_vld_ff <= 1'b1;
+        else fsm__slv__req_vld_ff <= 1'b0;
     end
 end
 

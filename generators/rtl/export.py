@@ -19,11 +19,14 @@ def export_rtl(root:RootNode, out_dir:str):
     rtl_dir = os.path.join(out_dir, "rtl")
     if not os.path.exists(rtl_dir):
         os.makedirs(rtl_dir)
-    try:
-        Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
-        Reg_sub_tree.scan()
-        RTLExporter().export_regdisp(root, rtl_dir)
-    except:
-        message.error("RTL export failed due to previous error")
-    else:
-        message.info("save RTL in directory: %s" % (rtl_dir))
+    # try:
+    #     Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
+    #     Reg_sub_tree.scan()
+    #     RTLExporter().export_regdisp(root, rtl_dir)
+    # except:
+    #     message.error("RTL export failed due to previous error")
+    # else:
+    #     message.info("save RTL in directory: %s" % (rtl_dir))
+    Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
+    Reg_sub_tree.scan()
+    RTLExporter().export_regdisp(root, rtl_dir)

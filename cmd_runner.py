@@ -13,6 +13,7 @@ from templates.gen_temp import gen_excel_template, gen_rdl_template
 from parsers.parse import parse
 
 __version__ = "0.3.0"
+__man_file__ = "hrda_reference_manual.pdf"
 
 class CommandRunner:
     """
@@ -29,14 +30,15 @@ class CommandRunner:
         Build argument parser
         """
         parser = argparse.ArgumentParser(prog="hrda",
-                                         description="Register Design Automation (RDA) Tool")
+                                         description="HJ-micro Register Design Automation (HRDA) Tool. "
+                                                     "See reference manual in {}".format(os.path.join(os.path.dirname(__file__),__man_file__)))
         parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
         subparsers = parser.add_subparsers(title="subcommand",
                                            description="support for generating templates, "
                                                        "parsing Excel/SystemRDL specifications, "
                                                        "and generating RTL, UVM RAL, HTML docs "
                                                        "and C header files",
-                                           help="see more details in the README and documentaion")
+                                           help="see more details in the reference manual: {}".format(os.path.join(os.path.dirname(__file__),__man_file__)))
 
         # Subcommand: template
         parser_template = subparsers.add_parser("template",
@@ -52,7 +54,7 @@ class CommandRunner:
                                      help="directory for the generated template "
                                           "(default: %(default)s)")
         parser_template.add_argument("-n", "--name",
-                                     default="template.xlsx",
+                                     default="template",
                                      help="generated template name "
                                           "(default: %(default)s)")
         parser_template.add_argument("-rnum",
@@ -68,14 +70,14 @@ class CommandRunner:
         parser_template.add_argument("-l", "--language",
                                            default="cn",
                                            choices=["cn", "en"],
-                                           help="language of the generated template "
+                                           help="language of the generated Excel template "
                                                 "(default: %(default)s)")
-        parser_template.set_defaults(func=self._generate_template)
+        parser_template.set_defaults(func=self._template)
 
         # Subcommand: parse
         parser_parse = subparsers.add_parser("parse",
-                                             help="parse and check register "
-                                                  "specifications in Excel/SystemRDL format")
+                                             help="parse and compile register "
+                                                  "specifications in Excel/SystemRDL/IP-XACT format")
         parser_parse.add_argument("-f", "--file",
                                   nargs="+",
                                   help="Excel/SystemRDL files to parse (must provide the entire path)")
@@ -146,7 +148,7 @@ class CommandRunner:
         return parser
 
     @staticmethod
-    def _generate_template(args):
+    def _template(args):
         """
         Execution of subcommand `template`.
         This method checks the legality of parameters and pass them down
@@ -161,7 +163,7 @@ class CommandRunner:
         `args.rname` : `list`, register names to be generated
         `args.language` : Excel template language, Chinese/English
         """
-        if (not args.excel) or (not args.rdl):
+        if (not args.excel) and (not args.rdl):
             message.error("no template type (Excel worksheet or SystemRDL) is specified, "
                           "please use -excel or -rdl option")
             sys.exit(1)
@@ -170,6 +172,7 @@ class CommandRunner:
             sys.exit(1)
 
         if args.excel:
+            print(args.excel)
             if args.name.endswith(".xls"):
                 message.info("file suffix .xls is replaced by .xlsx")
                 args.name += "x"
@@ -187,8 +190,8 @@ class CommandRunner:
             if not args.name.endswith(".rdl"):
                 args.name += ".rdl"
             if args.rname or args.rnum or args.language:
-                message.warning("-rname/-rnum/-l/--language options are not supported to "
-                                "generate an SystemRDL template (only for Excel worksheets)")
+                message.info("-rname/-rnum/-l/--language options are not supported to "
+                             "generate an SystemRDL template now (only for Excel worksheets)")
             gen_rdl_template(args.dir, args.name)
 
     @staticmethod
@@ -247,6 +250,7 @@ class CommandRunner:
                                name="gen_rtl",
                                args=(root, args.gen_dir))
             p_genrtl.start()
+            p_genrtl.join()
         if args.gen_all or args.gen_html:
             p_genhtml = Process(target=export_html,
                                 name="gen_html",

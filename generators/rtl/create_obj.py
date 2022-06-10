@@ -6,7 +6,7 @@ from .rtl_type import *
 
 
 # create new rtl_type from node type while copying the useful information to draw rtl
-def create_obj(node:Node, parent_obj:RTL_NODE, base_addr) -> RTL_NODE:
+def create_obj(node:Node, parent_obj:RTL_NODE, base_addr=0) -> RTL_NODE:
     if isinstance(node, SignalNode):
         new_obj = Signal(node.get_path_segment())
         # self.signal_map.append(new_obj)

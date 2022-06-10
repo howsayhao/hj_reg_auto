@@ -273,6 +273,11 @@ class PreprocessListener(RDLListener):
             self.reginst_name.pop()
 
     def enter_Mem(self, node):
+        if not node.parent.get_property("hj_gendisp"):
+            message.error("%s: the parent addrmap %s is not recognized as regdisp, but external memories"
+                            "must be forwarded by a regdisp module" % (node.get_path(), node.parent.get_path()))
+            sys.exit(1)
+
         if not self.keep_quiet:
             message.debug("%sEntering memory: %s" % ("\t"*self.indent, node.get_path()))
 
