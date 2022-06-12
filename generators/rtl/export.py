@@ -23,7 +23,7 @@ def export_rtl(root:RootNode, out_dir:str):
     #     Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
     #     Reg_sub_tree.scan()
     #     RTLExporter().export_regdisp(root, rtl_dir)
-    # except:
+    # except Exception as e:
     #     message.error("RTL export failed due to previous error")
     # else:
     #     message.info("save RTL in directory: %s" % (rtl_dir))

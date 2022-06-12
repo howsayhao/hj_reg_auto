@@ -24,6 +24,7 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
 
     # handle duplicate file names
     suffix_num = 1
+    has_duplicate = False
     while os.path.exists(os.path.join(dir, name)):
         has_duplicate = True
         name = "{}_{}{}".format(os.path.splitext(name)[0], suffix_num, os.path.splitext(name)[1])
