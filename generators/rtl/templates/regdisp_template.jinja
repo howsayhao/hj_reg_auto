@@ -27,39 +27,38 @@ module {{get_rtl_name(disp_node)}} (
 
     input   logic   clk, rst_n;
 
-    input   logic   upstream__req_vld;
-    output  logic   upstream__ack_vld;
-    input   logic   [ADDR_WIDTH-1:0]    upstream__addr;
-    input   logic   upstream__wr_en;
-    input   logic   upstream__rd_en;
-    input   logic   [DATA_WIDTH-1:0]    upstream__wr_data;
-    output  logic   [DATA_WIDTH-1:0]    upstream__rd_data;
+    input   logic                                       upstream__req_vld;
+    output  logic                                       upstream__ack_vld;
+    input   logic   [ADDR_WIDTH-1:0]                    upstream__addr;
+    input   logic                                       upstream__wr_en;
+    input   logic                                       upstream__rd_en;
+    input   logic   [DATA_WIDTH-1:0]                    upstream__wr_data;
+    output  logic   [DATA_WIDTH-1:0]                    upstream__rd_data;
 
-    output  logic   [FORWARD_NUM-1:0]   downstream__req_vld;
-    input   logic   [FORWARD_NUM-1:0]   downstream__ack_vld;
+    output  logic   [FORWARD_NUM-1:0]                   downstream__req_vld;
+    input   logic   [FORWARD_NUM-1:0]                   downstream__ack_vld;
     output  logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]  downstream__addr;
-    output  logic   [FORWARD_NUM-1:0]   downstream__wr_en;
-    output  logic   [FORWARD_NUM-1:0]   downstream__rd_en;
+    output  logic   [FORWARD_NUM-1:0]                   downstream__wr_en;
+    output  logic   [FORWARD_NUM-1:0]                   downstream__rd_en;
     output  logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__wr_data;
     input   logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__rd_data;
 
-    logic   [FORWARD_NUM-1:0]   downstream__req_vld_pre;
-    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]  downstream__addr_pre;
-    logic   [FORWARD_NUM-1:0]   downstream__wr_en_pre;
-    logic   [FORWARD_NUM-1:0]   downstream__rd_en_pre;
-    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__wr_data_pre;
+    logic   [FORWARD_NUM-1:0]                           downstream__req_vld_pre;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_pre;
+    logic   [FORWARD_NUM-1:0]                           downstream__wr_en_pre;
+    logic   [FORWARD_NUM-1:0]                           downstream__rd_en_pre;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_pre;
 
-    logic   [FORWARD_NUM-1:0]   downstream__req_vld_imux;
-    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]  downstream__addr_imux;
-    logic   [FORWARD_NUM-1:0]   downstream__wr_en_imux;
-    logic   [FORWARD_NUM-1:0]   downstream__rd_en_imux;
-    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__wr_data_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream__req_vld_imux;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream__wr_en_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream__rd_en_imux;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_imux;
 
-    logic   upstream__ack_vld_pre;
-    logic   [DATA_WIDTH-1:0]    upstream__rd_data_pre;
-
-    logic   [FORWARD_NUM-1:0]   if_sel;
-    logic   no_sel;
+    logic                                               upstream__ack_vld_pre;
+    logic   [DATA_WIDTH-1:0]                            upstream__rd_data_pre;
+    logic   [FORWARD_NUM-1:0]                           if_sel;
+    logic                                               no_sel;
 
     /**************************************************************************
     ** forward datapath
@@ -80,11 +79,11 @@ module {{get_rtl_name(disp_node)}} (
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data
     always_comb begin
         for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-            downstream__req_vld_imux[i]  = 1'b0;
-            downstream__addr_imux[i]     = {ADDR_WIDTH{1'b0}};
-            downstream__wr_en_imux[i]    = 1'b0;
-            downstream__rd_en_imux[i]    = 1'b0;
-            downstream__wr_data_imux[i]  = {DATA_WIDTH{1'b0}};
+            downstream__req_vld_imux[i]     = 1'b0;
+            downstream__addr_imux[i]        = {ADDR_WIDTH{1'b0}};
+            downstream__wr_en_imux[i]       = 1'b0;
+            downstream__rd_en_imux[i]       = 1'b0;
+            downstream__wr_data_imux[i]     = {DATA_WIDTH{1'b0}};
 
             if (if_sel[i]) begin
                 downstream__req_vld_imux[i]  = upstream__req_vld;
@@ -109,10 +108,10 @@ module {{get_rtl_name(disp_node)}} (
     //          subtract base address from absolute address by generating a subtractor
     always_comb begin
         for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-            downstream__req_vld_pre[i]  = downstream__req_vld_imux[i];
-            downstream__wr_en_pre[i]    = downstream__wr_en_imux[i];
-            downstream__rd_en_pre[i]    = downstream__rd_en_imux[i];
-            downstream__wr_data_pre[i]  = downstream__wr_data_imux[i];
+            downstream__req_vld_pre[i]      = downstream__req_vld_imux[i];
+            downstream__wr_en_pre[i]        = downstream__wr_en_imux[i];
+            downstream__rd_en_pre[i]        = downstream__rd_en_imux[i];
+            downstream__wr_data_pre[i]      = downstream__wr_data_imux[i];
         end
     end
 
@@ -133,7 +132,7 @@ module {{get_rtl_name(disp_node)}} (
     {%- endif %}
     {%- endfor %}
 
-    // insert forwarding flip-flops
+    // optionally insert forwarding flip-flops
     genvar cnt;
     generate
         for (cnt = 0; cnt < FORWARD_NUM; cnt = cnt + 1) begin: g_forward_dff
@@ -182,7 +181,7 @@ module {{get_rtl_name(disp_node)}} (
         end
     end
 
-    // insert backward flip-flops after data passes through mux
+    // optionally insert backward flip-flops after data passes through mux
     generate
         if (INSERT_BACKWARD_DFF) begin: g_with_in_dff
             always @(posedge clk or negedge rst_n) begin

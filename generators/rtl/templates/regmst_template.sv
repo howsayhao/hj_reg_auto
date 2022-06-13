@@ -36,14 +36,71 @@ module regmst_template (
     input   logic   [DATA_WIDTH-1:0]    ext_rd_data;
     output  logic                       ext_soft_rst;
 
+    logic   [REG_NUM-1:0]               dec_db_reg_sel;
+    logic                               dec_ext_sel;
+    logic 	                            dec_dummy_reg_sel;
+
+    logic                               fsm_req_vld;
+    logic                               fsm_ack_vld;
+    logic                               fsm_wr_en;
+    logic 	                            fsm_rd_en;
+    logic   [ADDR_WIDTH-1:0]            fsm_addr;
+    logic   [DATA_WIDTH-1:0]            fsm_wr_data;
+    logic   [DATA_WIDTH-1:0]            fsm_rd_data;
+
+    logic   [DATA_WIDTH-1:0]            tmr_cnt;
+    logic                               tmr_tmout;
+    logic                               tmr_rst;
+
+    logic   [31:0]                      db_err_addr__snap_0_wr_data;
+    logic                               db_err_addr__snap_0_wr_en;
+    logic                               db_err_addr__snap_0_rd_en;
+    logic   [31:0]                      db_err_addr__snap_1_wr_data;
+    logic                               db_err_addr__snap_1_wr_en;
+    logic                               db_err_addr__snap_1_rd_en;
+    logic   [31:0]                      db_err_addr__snap_0_o;
+    logic   [31:0]                      db_err_addr__snap_1_o;
+    logic   [63:0]                      db_err_addr_o;
+    logic   [63:0]                      db_err_addr_snapshot_reg_wr_data;
+    logic   [63:0]                      db_err_addr_snapshot_reg_rd_data;
+    logic                               db_err_addr_snapshot_reg_wr_en;
+    logic                               db_err_addr_snapshot_reg_rd_en;
+    logic   [63:0]                      db_err_addr__ADDR__next_value;
+    logic                               db_err_addr__ADDR__pulse;
+    logic   [63:0]                      db_err_addr__ADDR__curr_value;
+
+    logic   [31:0]                      db_tmr_thr_wr_data;
+    logic                               db_tmr_thr_wr_en;
+    logic                               db_tmr_thr_rd_en;
+    logic   [31:0]                      db_tmr_thr_o;
+    logic   [31:0]                      db_tmr_thr__CNT__curr_value;
+
+    logic   [31:0]                      db_err_stat_wr_data;
+    logic                               db_err_stat_wr_en;
+    logic                               db_err_stat_rd_en;
+    logic   [31:0]                      db_err_stat_o;
+    logic                               db_err_stat__SOFT_RST__curr_value;
+    logic                               db_err_stat__ERR_OCCUR__curr_value;
+    logic                               db_err_stat__ERR_OCCUR__next_value;
+    logic                               db_err_stat__ERR_OCCUR__pulse;
+    logic                               db_err_stat__ERR_ACC_TYPE__curr_value;
+    logic                               db_err_stat__ERR_ACC_TYPE__next_value;
+    logic                               db_err_stat__ERR_ACC_TYPE__pulse;
+
+    logic   [REG_NUM:0] [DATA_WIDTH-1:0]    reg_rd_split_mux_din;
+    logic                                   reg_rd_split_mux_sel;
+    logic                                   reg_rd_split_mux_dout_vld;
+    logic                                   dummy_reg_rd_sel;
+    logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]  db_reg_rd_data;
+    logic   [REG_NUM-1:0]                   db_reg_wr_sel;
+    logic   [REG_NUM-1:0]                   db_reg_rd_sel;
+    logic                                   db_reg_ack_vld;
+
 //****************************************ADDRESS DECODER START*****************************************//
     // distinguish access requests for:
     //      internel debug registers
     //      external regdisp module
     //      miss (empty address slot)
-    logic   [REG_NUM-1:0]               dec_db_reg_sel;
-    logic 	                            dec_dummy_reg_sel;
-
     always_comb begin
             dec_db_reg_sel      = {REG_NUM {1'b0}};
             dec_ext_sel         = 1'b0;
@@ -60,14 +117,6 @@ module regmst_template (
 //****************************************ADDRESS DECODER END*****************************************//
 
 //****************************************FSM INSTANCE START*****************************************//
-    logic                               fsm_req_vld;
-    logic                               fsm_ack_vld;
-    logic                               fsm_wr_en;
-    logic 	                            fsm_rd_en;
-    logic   [ADDR_WIDTH-1:0]            fsm_addr;
-    logic   [DATA_WIDTH-1:0]            fsm_wr_data;
-    logic   [DATA_WIDTH-1:0]            fsm_rd_data;
-
     mst_fsm #(
         .ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
     mst_fsm (
@@ -94,9 +143,6 @@ module regmst_template (
 //*****************************************FSM INSTANCE END*******************************************//
 
 //*******************************************TIMER START**********************************************//
-    logic   [DATA_WIDTH-1:0]    tmr_cnt;
-    logic                       tmr_tmout;
-
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n || tmr_rst)
             tmr_cnt <= {DATA_WIDTH{1'b0}};
@@ -121,19 +167,6 @@ module regmst_template (
     //      snapshot register 1: db_err_addr__snap_1
     //          absolute address:
     //          base offset:
-    logic   [31:0]              db_err_addr__snap_0_wr_data;
-    logic                       db_err_addr__snap_0_wr_en;
-    logic                       db_err_addr__snap_0_rd_en;
-    logic   [31:0]              db_err_addr__snap_1_wr_data;
-    logic                       db_err_addr__snap_1_wr_en;
-    logic                       db_err_addr__snap_1_rd_en;
-    logic   [31:0]              db_err_addr__snap_0_o;
-    logic   [31:0]              db_err_addr__snap_1_o;
-    logic   [63:0]              db_err_addr_o;
-    logic   [63:0]              db_err_addr_snapshot_reg_wr_data;
-    logic   [63:0]              db_err_addr_snapshot_reg_rd_data;
-    logic                       db_err_addr_snapshot_reg_wr_en;
-    logic                       db_err_addr_snapshot_reg_rd_en;
 
     field #(
         .F_WIDTH                (64),
@@ -173,7 +206,7 @@ module regmst_template (
     db_err_addr_snapshot (
         .clk                     (clk),
         .rst_n                   (rst_n),
-        .mst__fsm__sync_reset    (soft_reset),
+        .mst__fsm__sync_reset    (ext_soft_rst),
         .snap_wr_en              (db_err_addr_snapshot_snap_wr_en),
         .snap_rd_en              (db_err_addr_snapshot_snap_rd_en),
         .snap_wr_data            (db_err_addr_snapshot_snap_wr_data),
@@ -191,10 +224,6 @@ module regmst_template (
     // absolute address:
     // base offset:
     // reset value: 0x63 (0d99)
-    logic   [31:0]              db_tmr_thr_wr_data;
-    logic                       db_tmr_thr_wr_en;
-    logic                       db_tmr_thr_rd_en;
-    logic   [31:0]              db_tmr_thr_o;
     field #(
         .F_WIDTH                (32),
         .ARST_VALUE             (32'h63),
@@ -232,18 +261,6 @@ module regmst_template (
     // absolute address:
     // base offset:
     // reset value: 0x0
-    logic   [31:0]              db_err_stat_wr_data;
-    logic                       db_err_stat_wr_en;
-    logic                       db_err_stat_rd_en;
-    logic   [31:0]              db_err_stat_o;
-    logic                       db_err_stat__SOFT_RST__curr_value;
-    logic                       db_err_stat__ERR_OCCUR__curr_value;
-    logic                       db_err_stat__ERR_OCCUR__next_value;
-    logic                       db_err_stat__ERR_OCCUR__pulse;
-    logic                       db_err_stat__ERR_ACC_TYPE__curr_value;
-    logic                       db_err_stat__ERR_ACC_TYPE__next_value;
-    logic                       db_err_stat__ERR_ACC_TYPE__pulse;
-
     field #(
         .F_WIDTH                (1),
         .ARST_VALUE             (1'h0),
@@ -334,15 +351,6 @@ module regmst_template (
 //**********************************DEBUG REGISTERS INSTANCE END**************************************//
 
 //*************************INTERNAL/EXTERNAL MUX/IMUX INSTANCE START**********************************//
-    logic   [REG_NUM:0] [DATA_WIDTH-1:0]    reg_rd_split_mux_din;
-    logic                                   reg_rd_split_mux_sel;
-    logic                                   reg_rd_split_mux_dout_vld;
-    logic                                   dummy_reg_rd_sel;
-    logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]  db_reg_rd_data;
-    logic   [REG_NUM-1:0]                   db_reg_wr_sel;
-    logic   [REG_NUM-1:0]                   db_reg_rd_sel;
-    logic                                   db_reg_ack_vld;
-
     // internal register multiplexor: rd_data and ack_vld from debug registers
     assign  db_reg_rd_data[0]           = db_err_addr__snap_0_o;
     assign  db_reg_rd_data[1]           = db_err_addr__snap_1_o;
@@ -397,4 +405,4 @@ module regmst_template (
     assign  ext_wr_data                 = dec_ext_sel ? fsm_wr_data : {DATA_WIDTH{1'b0}};
 //**************************INTERNAL/EXTERNAL MUX/IMUX INSTANCE END***********************************//
 endmodule
-`default_nettype logic
+`default_nettype wire
