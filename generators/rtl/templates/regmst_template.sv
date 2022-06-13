@@ -61,6 +61,10 @@ module regmst_template (
     logic   [31:0]                      db_err_addr__snap_0_o;
     logic   [31:0]                      db_err_addr__snap_1_o;
     logic   [63:0]                      db_err_addr_o;
+    logic   [1:0]                       db_err_addr_snapshot_snap_wr_en;
+    logic   [1:0]                       db_err_addr_snapshot_snap_rd_en;
+    logic   [63:0]                      db_err_addr_snapshot_snap_wr_data;
+    logic   [63:0]                      db_err_addr_snapshot_snap_rd_data;
     logic   [63:0]                      db_err_addr_snapshot_reg_wr_data;
     logic   [63:0]                      db_err_addr_snapshot_reg_rd_data;
     logic                               db_err_addr_snapshot_reg_wr_en;
