@@ -5,12 +5,13 @@ from multiprocessing import Process
 
 import generators.preprocess as preprocess
 import utils.message as message
+from generators.c_header.export import export_cheader
 from generators.html.export import export_html
 from generators.pdf.export import export_org, export_pdf
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
-from templates.gen_temp import gen_excel_template, gen_rdl_template
 from parsers.parse import parse
+from templates.gen_temp import gen_excel_template, gen_rdl_template
 
 __version__ = "0.3.0"
 __man_file__ = "hrda_reference_manual.pdf"
@@ -250,7 +251,6 @@ class CommandRunner:
                                name="gen_rtl",
                                args=(root, args.gen_dir))
             p_genrtl.start()
-            p_genrtl.join()
         if args.gen_all or args.gen_html:
             p_genhtml = Process(target=export_html,
                                 name="gen_html",
@@ -272,7 +272,10 @@ class CommandRunner:
                                 args=(root, args.gen_dir))
             p_genral.start()
         if args.gen_all or args.gen_cheader:
-            pass
+            p_gencheader = Process(target=export_cheader,
+                                   name="gen_cheader",
+                                   args=(root, args.gen_dir))
+            p_gencheader.start()
 
     def run(self):
         parser = self.build_parser()

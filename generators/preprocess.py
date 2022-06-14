@@ -104,6 +104,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = True
 
             self.is_in_regmst = True
@@ -153,6 +154,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = True
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = True
             node.inst.properties["forward_num"] = len(list(node.children(unroll=True, skip_not_present=False)))
 
@@ -185,6 +187,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_genslv"] = True
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = False
 
             self.is_in_regslv = True
@@ -217,6 +220,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = True
+            node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = False
 
             # flatten addrmap can only be defined under the addrmap instantiated as regslv
@@ -247,6 +251,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
+            node.inst.properties["hj_3rd_party_IP"] = True
             node.inst.properties["ispresent"] = False
             node.inst.properties["hj_use_abs_addr"] = True
 
