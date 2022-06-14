@@ -69,6 +69,7 @@ addrmap template_mst {
 		// instantiate an addrmap defined above to generate a regslv module,
         // or designers can define an addrmap here
 		template_slv template_slv;
+		ipxact_block_example ipxact_map @0x200000000;
 	} template_disp;
 	// reg { regwidth = 64; field {sw=r;} ADDR[63:0] = 0x0;} db_err_addr;
 	// reg { field {} CNT[31:0] = 0x63;} db_rst_tmr;

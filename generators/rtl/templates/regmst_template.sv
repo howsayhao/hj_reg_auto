@@ -92,13 +92,14 @@ module regmst_template (
     logic                               db_err_stat__ERR_ACC_TYPE__pulse;
 
     logic   [REG_NUM:0] [DATA_WIDTH-1:0]    reg_rd_split_mux_din;
-    logic                                   reg_rd_split_mux_sel;
+    logic   [REG_NUM:0]                     reg_rd_split_mux_sel;
     logic                                   reg_rd_split_mux_dout_vld;
     logic                                   dummy_reg_rd_sel;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]  db_reg_rd_data;
     logic   [REG_NUM-1:0]                   db_reg_wr_sel;
     logic   [REG_NUM-1:0]                   db_reg_rd_sel;
     logic                                   db_reg_ack_vld;
+    logic   [DATA_WIDTH-1:0]                int_rd_data;
 
 //****************************************ADDRESS DECODER START*****************************************//
     // distinguish access requests for:
@@ -371,7 +372,7 @@ module regmst_template (
         .rst_n                  (rst_n),
         .din                    (reg_rd_split_mux_din),
         .sel                    (reg_rd_split_mux_sel),
-        .dout                   (db_reg_rd_data),
+        .dout                   (int_rd_data),
         .dout_vld               (reg_rd_split_mux_dout_vld));
 
     assign  db_reg_ack_vld  = reg_rd_split_mux_dout_vld | fsm_wr_en;
@@ -398,7 +399,7 @@ module regmst_template (
     assign  db_err_stat_rd_en           = db_reg_rd_sel[3];
 
     // ultimate multiplexor: to mst_fsm
-    assign  fsm_rd_data     = db_reg_ack_vld ? db_reg_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
+    assign  fsm_rd_data     = db_reg_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
     assign  fsm_ack_vld     = db_reg_ack_vld | ext_ack_vld;
 
     // ultimate inverse multiplexor: to the external downstream regdisp module

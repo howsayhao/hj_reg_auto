@@ -259,55 +259,6 @@ class addrmap_str(object):
             rtl_obj.children.append(new_obj)
             new_obj.module_name = self.module_name + '__'  +'_'.join(new_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
 
-            # handle snap_shot memory situation
-            if(isinstance(new_obj, Memory)):
-                if(rtl_obj.external is False):
-                    self.ext_module.append(new_obj)
-                    new_obj.id = len(self.ext_module) - 1
-                    # when the memory's space is aligned to addr, just cut the high bit other addr would sub the base addr
-                    judge_addr(new_obj)
-
-                mem_bit = new_obj.mementries * new_obj.memwidth
-                snap_entries = int(mem_bit / self.DATA_WIDTH)
-                addr_start = new_obj.addr
-                addr_end = new_obj.addr + int(mem_bit / 8)
-
-                # get the masked width
-                start_mask_width = 0
-                end_mask_width = 0
-                addr_start_str = hex(addr_start)
-                addr_end_str = hex(addr_end)
-                for str16 in addr_start_str[: : -1]:
-                    if(str16 != '0'):
-                        break
-                    start_mask_width += 1
-                for str16 in addr_end_str[: : -1]:
-                    if(str16 != '0'):
-                        break
-                    end_mask_width += 1
-
-                mask_width = min(start_mask_width,end_mask_width)
-
-                start = int(addr_start_str[:-mask_width], 16)
-                end = int(addr_end_str[:-mask_width], 16)
-
-
-                for set in range(start,end):
-                    entry = set - start
-                    visual_reg_name = child.get_path_segment() + '_reg_' + str(entry)
-                    visual_reg = Reg(visual_reg_name)
-                    visual_reg.external = True
-                    if(mask_width > 0):
-                        visual_reg.addr = '64\'h' + str(hex(set)[2:]) + "?" * mask_width
-                    else:
-                        visual_reg.addr = int(new_obj.addr + entry * self.DATA_WIDTH/8)
-                    new_obj.children.append(visual_reg)
-                    self.external_register_map.append(visual_reg)
-                    visual_reg.id = len(self.external_register_map) - 1
-                    visual_reg.external_top = new_obj.external_top
-                    visual_reg.hierachy = new_obj.hierachy[:]
-                    visual_reg.hierachy.append('reg_' + str(entry))
-
             # handle snap_shot register situation
             if(isinstance(new_obj, Reg)):
                 if(child.get_property('regwidth') > self.DATA_WIDTH):

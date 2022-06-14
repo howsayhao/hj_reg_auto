@@ -1,4 +1,14 @@
-addrmap cmn700 {
-    cmn700_registers cmn700_register_inst;
-    cmn700_register_inst -> hj_ext_hdl_path_down = "xxx";
+addrmap template_mst {
+	hj_genmst = true;
+	hj_flatten_addrmap = false;
+
+	addrmap {
+		hj_gendisp = true;
+		hj_flatten_addrmap = false;
+
+		cmn700_registers cmn700 @0x200000000;
+	} template_disp;
+	// reg { regwidth = 64; field {sw=r;} ADDR[63:0] = 0x0;} db_err_addr;
+	// reg { field {} CNT[31:0] = 0x63;} db_rst_tmr;
+	// reg { field {} ASSERT[0:0] = 0x0;} db_soft_rst;
 };
