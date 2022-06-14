@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 
 import jinja2 as jj
 import utils.message as message
@@ -131,7 +133,10 @@ def export_org(root:RootNode, out_dir:str):
     try:
         exporter.export(root, export_file)
     except:
+        message.error("HRDA encounters some unknown errors")
+        message.error(traceback.format_exc())
         message.error("org exporter aborted due to previous errors")
+        sys.exit(1)
     else:
         message.info("save the org mode documentation in: %s" % (export_file))
 
@@ -150,7 +155,10 @@ def export_pdf(root:RootNode, out_dir:str):
     try:
         exporter.export(root, export_file)
     except:
+        message.error("HRDA encounters some unknown errors")
+        message.error(traceback.format_exc())
         message.error("pdf exporter aborted due to previous errors")
+        sys.exit(1)
     else:
         message.info("save the pdf documentation in: %s" % (export_file))
 

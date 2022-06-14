@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import utils.message as message
 from peakrdl.html import HTMLExporter
@@ -22,6 +23,8 @@ def export_html(root:RootNode, out_dir:str):
     try:
         exporter.export(root, html_dir)
     except:
-        message.error("html export failed")
+        message.error("HRDA encounters some unknown errors")
+        message.error(traceback.format_exc())
+        message.error("HTML export failed")
     else:
-        message.info("save html in directory: %s" % (html_dir))
+        message.info("save HTML in directory: %s" % (html_dir))

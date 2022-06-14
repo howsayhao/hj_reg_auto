@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 
 import utils.message as message
 from systemrdl.node import RootNode
@@ -19,14 +21,14 @@ def export_rtl(root:RootNode, out_dir:str):
     rtl_dir = os.path.join(out_dir, "rtl")
     if not os.path.exists(rtl_dir):
         os.makedirs(rtl_dir)
-    # try:
-    #     Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
-    #     Reg_sub_tree.scan()
-    #     RTLExporter().export_regdisp(root, rtl_dir)
-    # except Exception as e:
-    #     message.error("RTL export failed due to previous error")
-    # else:
-    #     message.info("save RTL in directory: %s" % (rtl_dir))
-    Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
-    Reg_sub_tree.scan()
-    RTLExporter().export_regdisp(root, rtl_dir)
+    try:
+        Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
+        Reg_sub_tree.scan()
+        RTLExporter().export_regdisp(root, rtl_dir)
+    except Exception:
+        message.error("HRDA encounters some unknown errors")
+        message.error(traceback.format_exc())
+        message.error("RTL export failed due to previous error")
+        sys.exit(1)
+    else:
+        message.info("save RTL in directory: %s" % (rtl_dir))
