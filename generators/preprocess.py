@@ -303,10 +303,12 @@ class PreprocessListener(RDLListener):
             message.debug("%sEntering regfile: %s" % ("\t"*self.indent, node.get_path()))
 
         # regfile can only be instantiated under regslv, flatten addrmap and 3rd party IP
+        # except for pre-defined debug registers in regmst
         if node.parent.get_property("hj_gendisp") or node.parent.get_property("hj_genmst"):
-            message.error("%s: illegal to define regfile under %s which is recognized as regdisp/regmst" %
+            if not node.type_name == "db_regs":
+                message.error("%s: illegal to instantiate other regfile under %s which is recognized as regdisp/regmst" %
                           (node.get_path(), node.parent.get_path()))
-            sys.exit(1)
+                sys.exit(1)
 
         self.reg_name.append(node.inst_name)
 

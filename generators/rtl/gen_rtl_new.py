@@ -37,12 +37,13 @@ class RTLExporter:
             'use_forward_ff': self._use_forward_ff,
             'use_backward_ff': self._use_backward_ff,
             'remain_bit': self._remain_bit,
-            'get_property': self._get_property
+            'get_property': self._get_property,
+            'get_abs_addr': self._get_abs_addr
         }
 
-    def export_regdisp(self, top_node: Node, dir: str):
+    def export_rtl_new(self, top_node: Node, dir: str):
         """
-        traverse all addrmap and generate all regdisp modules in pre-order
+        traverse all addrmap and generate all regmst and regdisp modules in pre-order
 
         Parameter
         ---------
@@ -52,6 +53,18 @@ class RTLExporter:
         # if it's the root node, skip to the top addrmap
         if isinstance(top_node, RootNode):
             top_node = top_node.top
+
+        # if it's the top addrmap, generate a regmst module
+        if isinstance(top_node, AddrmapNode) and top_node.get_property("hj_genmst"):
+            update_context = {
+                'mst_node': top_node
+            }
+            self.context.update(update_context)
+
+            template = self.jj_env.get_template("regmst_template.jinja")
+
+            stream = template.stream(self.context)
+            stream.dump(os.path.join(dir,  "%s.v" % (self._get_rtl_name(top_node))))
 
         for child in top_node.children(unroll=True, skip_not_present=False):
             if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
@@ -65,7 +78,7 @@ class RTLExporter:
                 stream = template.stream(self.context)
                 stream.dump(os.path.join(dir,  "%s.v" % (self._get_rtl_name(child))))
 
-                self.export_regdisp(child, dir)
+                self.export_rtl_new(child, dir)
 
     def _get_rtl_name(self, node:Node):
         return node.get_property("rtl_module_name")
@@ -77,6 +90,9 @@ class RTLExporter:
             sys.exit(1)
 
         return node.get_property("forward_num")
+
+    def _get_abs_addr(self, base_node:AddressableNode, offset=0, byte_step=1, suffix="62'h"):
+        return  "%s%x" % (suffix, base_node.absolute_address // byte_step + offset)
 
     def _use_abs_addr(self, node:Node):
         return node.get_property("hj_use_abs_addr")

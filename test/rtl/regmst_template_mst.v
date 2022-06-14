@@ -1,6 +1,6 @@
 `include "xregister.vh"
 `default_nettype none
-module regmst_template (
+module regmst_template_mst (
     // regmst is at register native clock domain
     clk, rst_n,
     // APB interface to upstream SoC interconnect
@@ -101,20 +101,20 @@ module regmst_template (
     logic   [DATA_WIDTH-1:0]                int_rd_data;
 
 //****************************************ADDRESS DECODER START*****************************************//
-    // distinguish access requests for:
+    // distinguish access requests to:
     //      internel debug registers
     //      external regdisp module
-    //      miss (empty address slot)
+    //      empty address slot (dummy register)
     always_comb begin
-            dec_db_reg_sel      = {REG_NUM {1'b0}};
-            dec_ext_sel         = 1'b0;
-            dec_dummy_reg_sel   = 1'b0;
+        dec_db_reg_sel      = {REG_NUM {1'b0}};
+        dec_ext_sel         = 1'b0;
+        dec_dummy_reg_sel   = 1'b0;
         unique casez (paddr[63:2])
-            62'h0:  dec_ext_sel         = 1'b1;
-            62'h1:  dec_db_reg_sel[0]   = 1'b1;
-            64'h4:  dec_db_reg_sel[1]   = 1'b1;
-            64'h5:  dec_db_reg_sel[2]   = 1'b1;
-            64'h6:  dec_db_reg_sel[3]   = 1'b1;
+            62'h0???????, 62'h1???????, 62'h2???????, 62'h3???????, 62'h4???????, 62'h5???????, 62'h6???????, 62'h7???????, 62'h8000000?, 62'h8000001?, 62'h8000002?, 62'h8000003?, 62'h80000040, 62'h80000041, 62'h80000042, 62'h80000043: dec_ext_sel = 1'b1;
+            62'h80000400: dec_db_reg_sel[0] = 1'b1;
+            62'h80000401: dec_db_reg_sel[1] = 1'b1;
+            62'h80000402: dec_db_reg_sel[2] = 1'b1;
+            62'h80000403: dec_db_reg_sel[3] = 1'b1;
             default: dec_dummy_reg_sel  = 1'b1;
         endcase
     end
@@ -289,7 +289,7 @@ module regmst_template (
         .field_value            (db_err_stat__SOFT_RST__curr_value)
     );
     // soft reset signal is from register db_err_stat bit 0 (SOFT_RST)
-    assign  soft_rst_o        = db_err_stat__SOFT_RST__curr_value;
+    assign  soft_rst_o          = db_err_stat__SOFT_RST__curr_value;
 
     field #(
         .F_WIDTH                (1),

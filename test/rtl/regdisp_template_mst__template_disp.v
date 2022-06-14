@@ -1,4 +1,4 @@
-module {{get_rtl_name(disp_node)}} (
+module regdisp_template_mst__template_disp (
     clk,
     rst_n,
     // upstream reg_native_if
@@ -22,11 +22,11 @@ module {{get_rtl_name(disp_node)}} (
     soft_rst_o
 );
 
-    parameter   ADDR_WIDTH                              = {{addr_width}};
-    parameter   DATA_WIDTH                              = {{data_width}};
-    parameter   FORWARD_NUM                             = {{get_forward_num(disp_node)}};
-    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_DFF  = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
-    parameter   INSERT_BACKWARD_DFF                     = {{use_backward_ff(disp_node)}};
+    parameter   ADDR_WIDTH                              = 64;
+    parameter   DATA_WIDTH                              = 32;
+    parameter   FORWARD_NUM                             = 2;
+    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_DFF  = {1'b0, 1'b0};
+    parameter   INSERT_BACKWARD_DFF                     = 0;
 
     input   logic   clk, rst_n;
 
@@ -76,10 +76,9 @@ module {{get_rtl_name(disp_node)}} (
     always_comb begin
         dec_if_sel          = {FORWARD_NUM{1'b0}};
         dec_dummy_reg_sel   = 1'b0;
-        unique casez (upstream__addr[{{dec_addr_bit()|join(":")}}])
-        {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
-            {{get_comp_addr(child)|join(",")|indent}}: dec_if_sel[{{loop.index0}}] = 1'b1;
-        {%- endfor %}
+        unique casez (upstream__addr[63:2])
+            62'h0,62'h1: dec_if_sel[0] = 1'b1;
+            62'h8000000?,62'h8000001?,62'h8000002?,62'h8000003?,62'h80000040,62'h80000041,62'h80000042,62'h80000043: dec_if_sel[1] = 1'b1;
             default: dec_dummy_reg_sel  = 1'b1;
         endcase
     end
@@ -122,23 +121,8 @@ module {{get_rtl_name(disp_node)}} (
             downstream__wr_data_pre[i]      = downstream__wr_data_imux[i];
         end
     end
-
-    {%- for child in disp_node.children(unroll=True, skip_not_present=False) -%}
-    {%- if use_abs_addr(child) %}
-    {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d];"|format(loop.index0,
-                                                                             loop.index0)}}
-    {%- elif is_aligned(child) %}
-    {{"assign  downstream__addr_pre[%d] = {%d'b0, downstream__addr_imux[%d][%d:0]};"|format(loop.index0,
-                                                                                            addr_width-remain_bit(child),
-                                                                                            loop.index0,
-                                                                                            remain_bit(child)-1)}}
-    {%- else %}
-    {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d] - %d'h%x;"|format(loop.index0,
-                                                                                      loop.index0,
-                                                                                      addr_width,
-                                                                                      child.absolute_address)}}
-    {%- endif %}
-    {%- endfor %}
+    assign  downstream__addr_pre[0] = {61'b0, downstream__addr_imux[0][2:0]};
+    assign  downstream__addr_pre[1] = downstream__addr_imux[1];
 
     // optionally insert forwarding flip-flops
     genvar cnt;

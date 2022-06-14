@@ -66,4 +66,6 @@ addrmap template_mst {
         // or designers can define an addrmap here
 		template_slv template_slv;
 	} template_disp;
+	// debug registers implemented in regmst, please don't touch it and keep this level clean
+	db_regs db_regs %= 0x1000;
 };

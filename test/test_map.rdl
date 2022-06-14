@@ -177,5 +177,6 @@ addrmap root_map {
 		ipxact_map -> hj_use_abs_addr = true;
 	} root_map;
 
-
+	// debug registers implemented in regmst, please don't touch it and keep this level clean
+	db_regs db_regs %= 0x1000;
 };

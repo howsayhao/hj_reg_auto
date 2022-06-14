@@ -1,6 +1,6 @@
 `include "xregister.vh"
 `default_nettype none
-module regmst_template (
+module {{get_rtl_name(mst_node)}} (
     // regmst is at register native clock domain
     clk, rst_n,
     // APB interface to upstream SoC interconnect
@@ -10,10 +10,9 @@ module regmst_template (
     // soft reset signal to downstream modules
     soft_rst_o
 );
-    parameter       ADDR_WIDTH  = 64;
-    parameter       DATA_WIDTH  = 32;
+    parameter       ADDR_WIDTH  = {{addr_width}};
+    parameter       DATA_WIDTH  = {{data_width}};
     localparam      REG_NUM     = 4;
-    localparam      EXT_NUM     = 1;
 
     input   logic                       clk;
     input   logic                       rst_n;
@@ -102,20 +101,25 @@ module regmst_template (
     logic   [DATA_WIDTH-1:0]                int_rd_data;
 
 //****************************************ADDRESS DECODER START*****************************************//
-    // distinguish access requests for:
+    // distinguish access requests to:
     //      internel debug registers
     //      external regdisp module
-    //      miss (empty address slot)
+    //      empty address slot (dummy register)
     always_comb begin
-            dec_db_reg_sel      = {REG_NUM {1'b0}};
-            dec_ext_sel         = 1'b0;
-            dec_dummy_reg_sel   = 1'b0;
-        unique casez (paddr[63:2])
-            62'h0:  dec_ext_sel         = 1'b1;
-            62'h1:  dec_db_reg_sel[0]   = 1'b1;
-            64'h4:  dec_db_reg_sel[1]   = 1'b1;
-            64'h5:  dec_db_reg_sel[2]   = 1'b1;
-            64'h6:  dec_db_reg_sel[3]   = 1'b1;
+        dec_db_reg_sel      = {REG_NUM {1'b0}};
+        dec_ext_sel         = 1'b0;
+        dec_dummy_reg_sel   = 1'b0;
+        unique casez (paddr[{{dec_addr_bit()|join(":")}}])
+        {%- for child in mst_node.children(unroll=True, skip_not_present=False) %}
+            {% if isinstance(child, AddrmapNode) -%}
+            {{get_comp_addr(child)|join(", ")|indent}}: dec_ext_sel = 1'b1;
+            {%- elif isinstance(child, RegfileNode) -%}
+            {{get_abs_addr(child, 0, 4)}}: dec_db_reg_sel[0] = 1'b1;
+            {{get_abs_addr(child, 1, 4)}}: dec_db_reg_sel[1] = 1'b1;
+            {{get_abs_addr(child, 2, 4)}}: dec_db_reg_sel[2] = 1'b1;
+            {{get_abs_addr(child, 3, 4)}}: dec_db_reg_sel[3] = 1'b1;
+            {% endif -%}
+        {%- endfor -%}
             default: dec_dummy_reg_sel  = 1'b1;
         endcase
     end
@@ -159,7 +163,7 @@ module regmst_template (
 //********************************************TIMER END***********************************************//
 
 //*********************************DEBUG REGISTERS INSTANCE START*************************************//
-    // debug register: db_err_addr (64-bit)
+    // debug register: db_err_addr ({{addr_width}}-bit)
     // description:
     //      address of the access where timeout event occurs
     // absolute address:

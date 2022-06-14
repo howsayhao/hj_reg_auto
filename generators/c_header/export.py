@@ -64,8 +64,8 @@ class CHeaderExporter:
     def _get_property(self, node:Node, prop_name):
         return node.get_property(prop_name)
 
-    def _get_base_addr(self, node:AddressableNode):
-        return hex(node.absolute_address)
+    def _get_base_addr(self, node:AddressableNode, step:int = 1):
+        return hex(node.absolute_address // step)
 
     def _get_addr_offset(self, node:AddressableNode):
         return hex(node.address_offset)

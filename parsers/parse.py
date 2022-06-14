@@ -365,13 +365,13 @@ def parse(orig_files:list, list_file:str, gen_dir:str,
 
     Parameter
     ---------
-    `orig_files` : 输入的所有文件名
-    `list_file` : 输入的`list`文件名
-    `gen_dir` : 解析Excel生成RDL文件的目录
-    `to_generate_rdl` : 是否将解析完的Excel生成RDL, 默认为`False`
+    `orig_files` : all input file names
+    `list_file` : input file list name
+    `gen_dir` : directory to save SystemRDL converted from Excel worksheets
+    `to_generate_rdl` : whether to generate SystemRDL from Excel worksheets, dafaults to `False`
     `excel_top` :
-        `to_generate_rdl == True`且`orig_files`只包含Excel Worksheet时,
-        需要生成一个顶层addrmap, 该参数指定顶层addrmap名称, default to `top_map`
+        when `to_generate_rdl == True` and `orig_files` only consists of Excel Worksheet,
+        this parameter specifies definition and instance name of top addrmap, defaults to `top_map`
 
     Calls
     -----
@@ -382,7 +382,8 @@ def parse(orig_files:list, list_file:str, gen_dir:str,
 
     # pre-defined SystemRDL files, such as user-defined properties
     predef_files = [
-        os.path.join(os.path.dirname(__file__),  "pre_defined.rdl")
+        os.path.join(os.path.dirname(__file__),  "user_def_property.rdl"),
+        os.path.join(os.path.dirname(__file__),  "db_reg_def.rdl")
     ]
     all_files = [] + predef_files
 

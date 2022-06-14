@@ -37,7 +37,7 @@ class CommandRunner:
         subparsers = parser.add_subparsers(title="subcommand",
                                            description="support for generating templates, "
                                                        "parsing Excel/SystemRDL specifications, "
-                                                       "and generating RTL, UVM RAL, HTML docs "
+                                                       "and generating RTL, UVM RAL model, documentations "
                                                        "and C header files",
                                            help="see more details in the reference manual: {}".format(os.path.join(os.path.dirname(__file__),__man_file__)))
 
@@ -101,7 +101,7 @@ class CommandRunner:
 
         # Subcommand: generate
         parser_generate = subparsers.add_parser("generate",
-                                                help="generate RTL, HTML Docs, UVM RAL and C Headers")
+                                                help="generate RTL, documentations, UVM RAL model and C header files")
         parser_generate.add_argument("-f", "--file",
                                      nargs="+",
                                      help="RDL or Excel (or mixed) files to parse (must provide the entire path)")
@@ -118,7 +118,7 @@ class CommandRunner:
                                      help="directory to save generated files (default:%(default)s)")
         parser_generate.add_argument("-grtl", "--gen_rtl",
                                      action="store_true",
-                                     help="generate synthesiszable SystemVerilog RTL code")
+                                     help="generate synthesizable RTL code")
         parser_generate.add_argument("-ghtml", "--gen_html",
                                      action="store_true",
                                      help="generate HTML-format register documentations")
@@ -251,6 +251,7 @@ class CommandRunner:
                                name="gen_rtl",
                                args=(root, args.gen_dir))
             p_genrtl.start()
+            p_genrtl.join()
         if args.gen_all or args.gen_html:
             p_genhtml = Process(target=export_html,
                                 name="gen_html",
