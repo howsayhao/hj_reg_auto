@@ -5,7 +5,7 @@ import traceback
 import utils.message as message
 from systemrdl.node import RootNode
 
-from .gen_tree import Root_str
+from .gen_tree import root_str
 from .gen_regdisp import RTLExporter
 
 
@@ -22,7 +22,7 @@ def export_rtl(root:RootNode, out_dir:str):
     if not os.path.exists(rtl_dir):
         os.makedirs(rtl_dir)
     try:
-        Reg_sub_tree = Root_str(node=root, folder_name=rtl_dir)
+        Reg_sub_tree = root_str(node=root, folder_name=rtl_dir)
         Reg_sub_tree.scan()
         RTLExporter().export_regdisp(root, rtl_dir)
     except Exception:

@@ -1,5 +1,4 @@
 import os
-import shutil
 
 from systemrdl.node import *
 
@@ -9,7 +8,7 @@ from .gen_field_rtl import *
 from .rtl_type import *
 
 
-class Root_str(object):
+class root_str(object):
     def __init__(self, node:Node, folder_name:str):
         self.node = node
         self.module_name = 'reg'
@@ -46,12 +45,10 @@ class Root_str(object):
                 new_signal.hierachy_name = signal_name
                 self.rtl_obj.children.append(new_signal)
                 self.global_signal_map.append(new_signal)
-        # create reg_mst and reg_slv
-        module_name = Top_Addrmap.get_path_segment()
-        if(os.path.exists(self.folder_name)):
-            shutil.rmtree(self.folder_name)
-        # create new folder
-        os.mkdir(self.folder_name)
+
+        if not (os.path.exists(self.folder_name)):
+            os.mkdir(self.folder_name)
+
         Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self, hierarchy = [], base_addr = base_addr)
 
         # create reg_mst's reg_slv_if
@@ -68,7 +65,9 @@ class Root_str(object):
         # start write addrmap regmst and regslv rtl file
         Top_Map.write()
         self.children.append(Top_Map)
-        self.write()
+
+        # # generate top level wrapper mhdl
+        # self.write()
 
     # top wrapper mhdl
     def write(self):
@@ -79,7 +78,7 @@ class Root_str(object):
             if slv.master:
                 module_name = 'regmst_' + slv.module_name
                 self.mhdl += '%s %s(\n'%(module_name, module_name)
-                self.mhdl += '\t\"s/^global_sync_reset_out$/%s_global_sync_reset_out/g\" \\\n'%(slv.module_name)
+                self.mhdl += '\t\"s/^soft_rst_o$/%s_soft_rst_o/g\" \\\n'%(slv.module_name)
                 self.mhdl += ');\n\n'
             else:
                 module_name = 'regslv_' + slv.module_name
@@ -96,13 +95,10 @@ class Root_str(object):
                 self.mhdl += '\t\t\t\"s/^addr$/%s_addr/g\", \\\n'%(slv.module_name)
                 self.mhdl += '\t\t\t\"s/^wr_data$/%s_wr_data/g\", \\\n'%(slv.module_name)
                 self.mhdl += '\t\t\t\"s/^rd_data$/%s_rd_data/g\", \\\n'%(slv.module_name)
-                self.mhdl += '\t\t\t\"s/^global_sync_reset_in$/%s_global_sync_reset_out/g\", \\\n'%(slv.parent_module_name)
-                self.mhdl += '\t\t\t\"s/^global_sync_reset_out$/%s_global_sync_reset_out/g\" \\\n'%(slv.module_name)
+                self.mhdl += '\t\t\t\"s/^soft_rst_i$/%s_soft_rst_o/g\", \\\n'%(slv.parent_module_name)
+                self.mhdl += '\t\t\t\"s/^soft_rst_o$/%s_soft_rst_o/g\" \\\n'%(slv.module_name)
                 self.mhdl += '\t\t\t);\n\n'
 
         file_name = self.module_name + '_top.mhdl'
-        fw = open(file_name,'w')
-        fw.write(self.mhdl)
-        fw.close()
-        folder_name = self.folder_name
-        shutil.move(file_name,folder_name)
+        with open(os.path.join(self.folder_name, file_name), 'w') as f:
+            f.write(self.mhdl)

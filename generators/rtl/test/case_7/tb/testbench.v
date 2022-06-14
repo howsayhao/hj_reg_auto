@@ -103,7 +103,7 @@ regmst_reg_top_dut (
     // interrupt, clear and synchronous reset signals
     .clear(bus__reg_top__clear),
     .interrupt(reg_top__bus__interrupt),
-    .global_sync_reset_out(reg_top__downstream__glb_srst)
+    .soft_rst_o(reg_top__downstream__glb_srst)
 );
 
 
@@ -180,8 +180,8 @@ regslv_reg_top__reg_block_1_dut (
     .wr_data(reg_top__reg_block_1__wr_data),
     .rd_data(reg_top__reg_block_1__rd_data),
     // synchronous reset signals
-    .global_sync_reset_in(reg_top__downstream__glb_srst),
-    .global_sync_reset_out(),
+    .soft_rst_i(reg_top__downstream__glb_srst),
+    .soft_rst_o(),
     .srst_1(srst_1),
 	.srst_2(srst_2),
 	.srst_3(srst_3),

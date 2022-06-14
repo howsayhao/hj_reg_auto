@@ -61,7 +61,7 @@ def get_regslv_port(master,cdc):
         regslv_port_rtl += '\tPRDATA                  ,\n'
         regslv_port_rtl += '\tclear                   ,\n'
         regslv_port_rtl += '\tinterrupt               ,\n'
-        regslv_port_rtl += '\tglobal_sync_reset_out    \n'
+        regslv_port_rtl += '\tsoft_rst_o               \n'
     else:
         if(cdc):
             regslv_port_rtl += '\tregslv_clk                ,\n'
@@ -75,8 +75,7 @@ def get_regslv_port(master,cdc):
         regslv_port_rtl += '\taddr                    ,\n'
         regslv_port_rtl += '\twr_data                 ,\n'
         regslv_port_rtl += '\trd_data                 ,\n'
-        regslv_port_rtl += '\tglobal_sync_reset_in    ,\n'
-        regslv_port_rtl += '\tglobal_sync_reset_out    \n'
+        regslv_port_rtl += '\tsoft_rst_i               \n'
     return regslv_port_rtl
 
 
@@ -97,12 +96,12 @@ def get_regslv_define(master,cdc):
         regslv_define_rtl += '\toutput    [DATA_WIDTH-1:0]    PRDATA                  ;\n'
         regslv_define_rtl += '\tinput                         clear                   ;\n'
         regslv_define_rtl += '\toutput                        interrupt               ;\n'
-        regslv_define_rtl += '\toutput                        global_sync_reset_out   ;\n'
+        regslv_define_rtl += '\toutput                        soft_rst_o   ;\n'
         regslv_define_rtl += '\twire                          fsm_clk = PCLK          ;\n'
         regslv_define_rtl += '\twire                          fsm_rstn = PRESETn      ;\n'
     else:
         regslv_define_rtl += '\tinput                         clk                 ;\n'
-        regslv_define_rtl += '\tinput                         rstn                ;\n'
+        regslv_define_rtl += '\tinput                         rst_n                ;\n'
         regslv_define_rtl += '\tinput                         req_vld                 ;\n'
         regslv_define_rtl += '\toutput                        ack_vld                 ;\n'
         regslv_define_rtl += '\tinput                         wr_en                   ;\n'
@@ -110,15 +109,15 @@ def get_regslv_define(master,cdc):
         regslv_define_rtl += '\tinput     [ADDR_WIDTH-1:0]    addr                    ;\n'
         regslv_define_rtl += '\tinput     [DATA_WIDTH-1:0]    wr_data                 ;\n'
         regslv_define_rtl += '\toutput    [DATA_WIDTH-1:0]    rd_data                 ;\n'
-        regslv_define_rtl += '\tinput                         global_sync_reset_in    ;\n'
-        regslv_define_rtl += '\toutput                        global_sync_reset_out   ;\n'
+        regslv_define_rtl += '\tinput                         soft_rst_i              ;\n'
+
         if(cdc):
             regslv_define_rtl += '\t// regslv domain @regslv_clk\n'
             regslv_define_rtl += '\tinput                         regslv_clk          ;\n'
             regslv_define_rtl += '\tinput                         regslv_rstn         ;\n'
         else:
             regslv_define_rtl += '\twire regslv_clk     = clk           ;\n'
-            regslv_define_rtl += '\twire regslv_rstn    = rstn          ;\n'
+            regslv_define_rtl += '\twire regslv_rstn    = rst_n          ;\n'
     return regslv_define_rtl
 
 def get_ext_define():
@@ -141,12 +140,7 @@ def get_regfile_define(reg_list, sync_reset_list, N):
         return regfile_define_rtl
 
     regfile_define_rtl += '\t//ports define of internal regfile\n'
-    # if(cdc):
-    #     regfile_define_rtl += '\tinput regfile_clk          ;\n'
-    #     regfile_define_rtl += '\tinput regfile_rstn         ;\n'
-    # else:
-    #     regfile_define_rtl += '\twire regfile_clk   = fsm_clk   ;\n'
-    #     regfile_define_rtl += '\twire regfile_rstn  = fsm_rstn  ;\n'
+
     for reg in reg_list:
         if(reg.alias is True or (reg.shared is True and reg.first_shared is False)):
             pass
@@ -186,7 +180,7 @@ def get_regslv_wire(master,cdc):
         regslv_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  addr_fsm         ;\n'
         regslv_wire_rtl += '\twire [DATA_WIDTH-1:0]                  wr_data_fsm      ;\n'
         regslv_wire_rtl += '\twire [DATA_WIDTH-1:0]                  rd_data_fsm      ;\n'
-        regslv_wire_rtl += '\twire                                   global_sync_reset_in_fsm      ;\n'
+        regslv_wire_rtl += '\twire                                   soft_rst_i_fsm      ;\n'
         if(cdc):
             regslv_wire_rtl += '\n\t// regslv interface signal to handle cdc\n'
             regslv_wire_rtl += '\tlogic [100-1:0] regslv_value_in_fsm;\n'
@@ -196,7 +190,7 @@ def get_regslv_wire(master,cdc):
             regslv_wire_rtl += '\t// the pulse to deliver the value\n'
             regslv_wire_rtl += '\tlogic req_vld_ff;\n'
             regslv_wire_rtl += '\tlogic regslv_sel_pulse;\n'
-            regslv_wire_rtl += '\tlogic global_sync_reset_in_ff;\n'
+            regslv_wire_rtl += '\tlogic soft_rst_i_ff;\n'
             regslv_wire_rtl += '\tlogic ack_vld_fsm_ff;\n'
             regslv_wire_rtl += '\tlogic regslv_ack_pulse;\n'
     return regslv_wire_rtl
@@ -441,7 +435,7 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\tslv_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n'
         fsm_rtl += '\t\tslv_fsm_%s (\n'%(module_name)
         fsm_rtl += '\t\t.clk(regslv_clk),\n'
-        fsm_rtl += '\t\t.rstn(regslv_rstn),\n'
+        fsm_rtl += '\t\t.rst_n(regslv_rstn),\n'
         fsm_rtl += '\t\t.mst__fsm__req_vld(req_vld_fsm),\n'
         fsm_rtl += '\t\t.fsm__mst__ack_vld(ack_vld_fsm),\n'
         fsm_rtl += '\t\t.mst__fsm__addr(addr_fsm),\n'
@@ -456,8 +450,8 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
         fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
         fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
-        fsm_rtl += '\t\t.mst__fsm__sync_reset(global_sync_reset_in_fsm),\n'
-        fsm_rtl += '\t\t.fsm__slv__sync_reset(global_sync_reset_out)\n'
+        fsm_rtl += '\t\t.mst__fsm__sync_reset(soft_rst_i_fsm),\n'
+        fsm_rtl += '\t\t.fsm__slv__sync_reset()\n'
         fsm_rtl += '\t);\n'
     else:
         fsm_rtl += '\tmst_fsm #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))\n'
@@ -479,7 +473,7 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
         fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
         fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
-        fsm_rtl += '\t\t.fsm__slv__sync_reset(global_sync_reset_out),\n'
+        fsm_rtl += '\t\t.fsm__slv__sync_reset(soft_rst_o),\n'
         fsm_rtl += '\t\t.clear(clear),\n'
         fsm_rtl += '\t\t.interrupt(interrupt)\n'
         fsm_rtl += '\t\t);\n'
@@ -539,26 +533,26 @@ def get_regslv_cdc(cdc):
         regslv_cdc_rtl += '\n\tassign %s_value_out_fsm = {ack_vld_fsm, rd_data_fsm};\n'%(module_name)
         regslv_cdc_rtl += '\tassign {ack_vld, rd_data} =  %s_value_out;\n'%(module_name)
 
-        regslv_cdc_rtl += '\n\tassign {req_vld_fsm, global_sync_reset_in_fsm, wr_en_fsm, rd_en_fsm, wr_data_fsm, addr_fsm} =  %s_value_in_fsm;\n'%(module_name)
-        regslv_cdc_rtl += '\tassign %s_value_in = {req_vld, global_sync_reset_in, wr_en, rd_en, wr_data, addr};\n'%(module_name)
+        regslv_cdc_rtl += '\n\tassign {req_vld_fsm, soft_rst_i_fsm, wr_en_fsm, rd_en_fsm, wr_data_fsm, addr_fsm} =  %s_value_in_fsm;\n'%(module_name)
+        regslv_cdc_rtl += '\tassign %s_value_in = {req_vld, soft_rst_i, wr_en, rd_en, wr_data, addr};\n'%(module_name)
 
         regslv_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
-        regslv_cdc_rtl += '\talways_ff@(posedge clk or negedge rstn)begin\n'
-        regslv_cdc_rtl += '\t\tif(~rstn)\n'
+        regslv_cdc_rtl += '\talways_ff@(posedge clk or negedge rst_n)begin\n'
+        regslv_cdc_rtl += '\t\tif(~rst_n)\n'
         regslv_cdc_rtl += '\t\t\treq_vld_ff <= 1\'b0;\n'
         regslv_cdc_rtl += '\t\telse\n'
         regslv_cdc_rtl += '\t\t\treq_vld_ff <= req_vld;\n'
         regslv_cdc_rtl += '\tend\n'
 
         regslv_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
-        regslv_cdc_rtl += '\talways_ff@(posedge clk or negedge rstn)begin\n'
-        regslv_cdc_rtl += '\t\tif(~rstn)\n'
-        regslv_cdc_rtl += '\t\t\tglobal_sync_reset_in_ff <= 1\'b0;\n'
+        regslv_cdc_rtl += '\talways_ff@(posedge clk or negedge rst_n)begin\n'
+        regslv_cdc_rtl += '\t\tif(~rst_n)\n'
+        regslv_cdc_rtl += '\t\t\tsoft_rst_i_ff <= 1\'b0;\n'
         regslv_cdc_rtl += '\t\telse\n'
-        regslv_cdc_rtl += '\t\t\tglobal_sync_reset_in_ff <= global_sync_reset_in;\n'
+        regslv_cdc_rtl += '\t\t\tsoft_rst_i_ff <= soft_rst_i;\n'
         regslv_cdc_rtl += '\tend\n'
 
-        regslv_cdc_rtl += '\n\tassign %s_sel_pulse = (~req_vld_ff & req_vld) | (~global_sync_reset_in_ff & global_sync_reset_in);\n'%(module_name)
+        regslv_cdc_rtl += '\n\tassign %s_sel_pulse = (~req_vld_ff & req_vld) | (~soft_rst_i_ff & soft_rst_i);\n'%(module_name)
 
         regslv_cdc_rtl += '\n\talways_ff@(posedge regslv_clk or negedge regslv_rstn)begin\n'
         regslv_cdc_rtl += '\t\tif(~regslv_rstn)\n'
@@ -582,7 +576,7 @@ def get_regslv_cdc(cdc):
         regslv_cdc_rtl += '\tassign addr_fsm         = addr           ;\n'
         regslv_cdc_rtl += '\tassign wr_data_fsm      = wr_data        ;\n'
         regslv_cdc_rtl += '\tassign rd_data          = rd_data_fsm    ;\n'
-        regslv_cdc_rtl += '\tassign global_sync_reset_in_fsm = global_sync_reset_in;\n'
+        regslv_cdc_rtl += '\tassign soft_rst_i_fsm = soft_rst_i;\n'
 
     return regslv_cdc_rtl
 
@@ -640,12 +634,12 @@ def value_transmitter_ins(module):
     trans_ins_rtl += '\t\t%s_value_transmitter\n'%(module_name)
     trans_ins_rtl += '\t\t(\n'
     trans_ins_rtl += '\t\t.clk_a                                  (clk    )                   ,\n'
-    trans_ins_rtl += '\t\t.rst_a_n                                (rstn   )                  ,\n'
+    trans_ins_rtl += '\t\t.rst_a_n                                (rst_n   )                  ,\n'
     trans_ins_rtl += '\t\t.pulse_in                               (%s_sel_pulse)             ,\n'%(module_name)
     trans_ins_rtl += '\t\t.value_in                               (%s_value_in)   ,\n'%(module_name)
     trans_ins_rtl += '\t\t.clk_b                                  (%s_clk)             ,\n'%(module_name)
     trans_ins_rtl += '\t\t.rst_b_n                                (%s_rstn)            ,\n'%(module_name)
-    trans_ins_rtl += '\t\t.value_out_ack                          (ack_vld_fsm | global_sync_reset_in_fsm)         ,\n'
+    trans_ins_rtl += '\t\t.value_out_ack                          (ack_vld_fsm | soft_rst_i_fsm)         ,\n'
     trans_ins_rtl += '\t\t.pulse_out                              ()                          ,\n'
     trans_ins_rtl += '\t\t.value_out                              (%s_value_in_fsm)\n'%(module_name)
     trans_ins_rtl += '\t);\n'
@@ -659,7 +653,7 @@ def value_transmitter_ins(module):
     trans_ins_rtl += '\t\t.pulse_in                               (%s_ack_pulse)                         ,\n'%(module_name)
     trans_ins_rtl += '\t\t.value_in                               (%s_value_out_fsm)                    ,\n'%(module_name)
     trans_ins_rtl += '\t\t.clk_b                                  (clk    )                               ,\n'
-    trans_ins_rtl += '\t\t.rst_b_n                                (rstn   )                              ,\n'
+    trans_ins_rtl += '\t\t.rst_b_n                                (rst_n   )                              ,\n'
     trans_ins_rtl += '\t\t.value_out_ack                          (ack_vld)                 ,\n'
     trans_ins_rtl += '\t\t.pulse_out                              ()                                      ,\n'
     trans_ins_rtl += '\t\t.value_out                              (%s_value_out)\n'%(module_name)
@@ -754,7 +748,7 @@ def snapshot_reg_ins(reg):
                 '\t\t(\n' + \
                 '\t\t.clk                     (regslv_clk )                               ,\n' + \
                 '\t\t.rst_n                   (regslv_rstn)                              ,\n' + \
-                '\t\t.mst__fsm__sync_reset    (global_sync_reset_out)                     ,\n' + \
+                '\t\t.mst__fsm__sync_reset    (soft_rst_o)                     ,\n' + \
                 '\t\t.snap_wr_en              ({%s})                              ,\n'%(','.join(snap_reg_wr_en)) + \
                 '\t\t.snap_rd_en              ({%s})                              ,\n'%(','.join(snap_reg_rd_en)) + \
                 '\t\t.snap_wr_data            ({%s})                              ,\n'%(','.join(snap_reg_wr_data)) + \
@@ -802,7 +796,7 @@ def snapshot_mem_ins(ext_list):
                             '\t\t(\n' + \
                             '\t\t.clk                     (regslv_clk)                               ,\n' + \
                             '\t\t.rst_n                   (regslv_rstn)                              ,\n' + \
-                            '\t\t.mst__fsm__sync_reset    (global_sync_reset_out)                 ,\n' + \
+                            '\t\t.mst__fsm__sync_reset    (soft_rst_o)                 ,\n' + \
                             '\t\t.addr                    (%s_snapshot_addr_fsm)                  ,\n'%(mem_name) + \
                             '\t\t.wr_en                   (%s_snapshot_wr_en_fsm)                 ,\n'%(mem_name) + \
                             '\t\t.rd_en                   (%s_snapshot_rd_en_fsm)                 ,\n'%(mem_name) + \

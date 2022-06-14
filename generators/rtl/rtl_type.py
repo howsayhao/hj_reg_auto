@@ -2,7 +2,7 @@ class reg_slv_if(object):
     def __init__(self, obj) -> None:
         self.obj = obj
         self.clk = 'clk'
-        self.rstn = 'rstn'
+        self.rst_n = 'rst_n'
         self.req_vld = ''
         self.req_rdy = ''
         self.wr_en = ''

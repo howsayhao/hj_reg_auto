@@ -5,7 +5,7 @@ module slv_fsm
     )
     (
         clk,
-        rstn,
+        rst_n,
         //  upstream control signal
         mst__fsm__req_vld,
         fsm__mst__ack_vld,
@@ -33,7 +33,7 @@ localparam   S_IDLE         =   1'd0; // no operation
 localparam   S_WAIT_SLV_ACK =   1'd1; // wait for slave fsm__mst__ack_vld
 
 input                           clk                     ;
-input                           rstn                    ;
+input                           rst_n                    ;
 // upstream reg_native_if
 input                           mst__fsm__req_vld       ;
 output                          fsm__mst__ack_vld       ;
@@ -66,8 +66,8 @@ reg                             fsm__slv__req_vld_ff    ;
 // to see if the module selected is accessable
 
 // state transfer
-always_ff@(posedge clk or negedge rstn)begin
-    if(!rstn)begin
+always_ff@(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin
         state <= 1'b0       ;
     end
     else begin
@@ -92,8 +92,8 @@ always_comb begin
     endcase
 end
 // for output control signal latch
-always_ff@(posedge clk or negedge rstn)begin
-    if(!rstn)begin
+always_ff@(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin
         mst__fsm__addr_ff           <= 0;
         mst__fsm__wr_data_ff        <= 0;
         mst__fsm__wr_en_ff          <= 0;
@@ -109,8 +109,8 @@ always_ff@(posedge clk or negedge rstn)begin
 end
 
 // for output handshake signal
-always_ff@(posedge clk or negedge rstn)begin
-    if(!rstn)begin
+always_ff@(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin
         fsm__slv__req_vld_ff <= 0;
     end
     else begin
@@ -119,8 +119,8 @@ always_ff@(posedge clk or negedge rstn)begin
     end
 end
 
-always_ff@(posedge clk or negedge rstn)begin
-    if(!rstn)begin
+always_ff@(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin
         fsm__slv__sync_reset <= 1'b0;
     end
     else begin

@@ -16,13 +16,16 @@ module {{get_rtl_name(disp_node)}} (
     downstream__wr_en,
     downstream__rd_en,
     downstream__wr_data,
-    downstream__rd_data
+    downstream__rd_data,
+    // soft reset signals in and out
+    soft_rst_i,
+    soft_rst_o
 );
 
     parameter   ADDR_WIDTH                              = {{addr_width}};
     parameter   DATA_WIDTH                              = {{data_width}};
     parameter   FORWARD_NUM                             = {{get_forward_num(disp_node)}};
-    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_DFF  = {{"{" ~ use_forward_ff(disp_node)|join(",") ~ "}"}};
+    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_DFF  = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
     parameter   INSERT_BACKWARD_DFF                     = {{use_backward_ff(disp_node)}};
 
     input   logic   clk, rst_n;
@@ -43,6 +46,9 @@ module {{get_rtl_name(disp_node)}} (
     output  logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__wr_data;
     input   logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__rd_data;
 
+    input   logic                                       soft_rst_i;
+    output  logic                                       soft_rst_o;
+
     logic   [FORWARD_NUM-1:0]                           downstream__req_vld_pre;
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_pre;
     logic   [FORWARD_NUM-1:0]                           downstream__wr_en_pre;
@@ -57,8 +63,8 @@ module {{get_rtl_name(disp_node)}} (
 
     logic                                               upstream__ack_vld_pre;
     logic   [DATA_WIDTH-1:0]                            upstream__rd_data_pre;
-    logic   [FORWARD_NUM-1:0]                           if_sel;
-    logic                                               no_sel;
+    logic   [FORWARD_NUM-1:0]                           dec_if_sel;
+    logic                                               dec_no_sel;
 
     /**************************************************************************
     ** forward datapath
@@ -66,13 +72,13 @@ module {{get_rtl_name(disp_node)}} (
 
     // decode upstream absolute address
     always_comb begin
-        if_sel = {FORWARD_NUM{1'b0}};
-        no_sel = 1'b0;
+        dec_if_sel  = {FORWARD_NUM{1'b0}};
+        dec_no_sel  = 1'b0;
         unique casez (upstream__addr[{{dec_addr_bit()|join(":")}}])
         {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
-            {{get_comp_addr(child)|join(",")|indent}}: if_sel[{{loop.index0}}] = 1'b1;
+            {{get_comp_addr(child)|join(",")|indent}}: dec_if_sel[{{loop.index0}}] = 1'b1;
         {%- endfor %}
-            default: no_sel = 1'b1;
+            default: dec_no_sel = 1'b1;
         endcase
     end
 
@@ -85,7 +91,7 @@ module {{get_rtl_name(disp_node)}} (
             downstream__rd_en_imux[i]       = 1'b0;
             downstream__wr_data_imux[i]     = {DATA_WIDTH{1'b0}};
 
-            if (if_sel[i]) begin
+            if (dec_if_sel[i]) begin
                 downstream__req_vld_imux[i]  = upstream__req_vld;
                 downstream__addr_imux[i]     = upstream__addr;
                 downstream__wr_en_imux[i]    = upstream__wr_en;
@@ -155,11 +161,11 @@ module {{get_rtl_name(disp_node)}} (
                 end
             end
             else begin: g_wo_out_dff
-                assign downstream__req_vld[cnt]  = downstream__req_vld_pre[cnt];
-                assign downstream__addr[cnt]     = downstream__addr_pre[cnt];
-                assign downstream__wr_en[cnt]    = downstream__wr_en_pre[cnt];
-                assign downstream__rd_en[cnt]    = downstream__rd_en_pre[cnt];
-                assign downstream__wr_data[cnt]  = downstream__wr_data_pre[cnt];
+                assign downstream__req_vld[cnt]     = downstream__req_vld_pre[cnt];
+                assign downstream__addr[cnt]        = downstream__addr_pre[cnt];
+                assign downstream__wr_en[cnt]       = downstream__wr_en_pre[cnt];
+                assign downstream__rd_en[cnt]       = downstream__rd_en_pre[cnt];
+                assign downstream__wr_data[cnt]     = downstream__wr_data_pre[cnt];
             end
         end
 

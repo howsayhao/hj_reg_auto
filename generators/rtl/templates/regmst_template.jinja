@@ -290,7 +290,7 @@ module regmst_template (
         .field_value            (db_err_stat__SOFT_RST__curr_value)
     );
     // soft reset signal is from register db_err_stat bit 0 (SOFT_RST)
-    assign  soft_rst_o        = db_err_stat__SOFT_RST__curr_value;
+    assign  soft_rst_o          = db_err_stat__SOFT_RST__curr_value;
 
     field #(
         .F_WIDTH                (1),

@@ -1,4 +1,4 @@
-import shutil
+import os
 import sys
 
 import utils.message as message
@@ -144,36 +144,24 @@ class addrmap_str(object):
             file_name = 'regslv_' + self.module_name + '.v'
 
         # generate the .v file and move the file into designated folder
-        fw = open(file_name,'w')
-        fw.write(self.rtl)
-        fw.close()
-        shutil.move(file_name,self.folder_name)
+        with open(os.path.join(self.folder_name, file_name), 'w') as f:
+            f.write(self.rtl)
 
     # get information from node tree and generate corresponding rtl str
     def get_internal_strcture(self) -> None:
         """
-        get_internal_strcture:  traverses the whole node-structure parsed by complier
-                                creates the corresponding rtl_type tree structure
+        traverses the whole node-structure parsed by complier
+        creates the corresponding rtl_type tree structure
         """
-
-        # print('\n###start traverse %s###'%self.module_name)
-        # print(self.base_addr)
         self.rtl_obj = create_obj(node = self.node,parent_obj = None, base_addr=self.base_addr)
         self.rtl_obj.external = False
         self.walking(self.node,self.rtl_obj)
-        # print('###end traverse %s###\n'%self.module_name)
 
         # retraverse the register-map to allocate alias and shared register information
         self.reg_alias_shared_handle()
 
         # get top level addr map and decoder rtl str, generate .vh file with register-addr information
-        [define_str,decode_str] = self.get_decoder()
-        file_name = self.module_name + '.vh'
-        fw = open(file_name,'w')
-        fw.write(define_str)
-        fw.close()
-        shutil.move(file_name,self.folder_name)
-        # self.decode_logic = decode_str
+        self.get_decoder()
 
         # generate different parts of the whole rtl
         self.N = len(self.internal_addr_map)

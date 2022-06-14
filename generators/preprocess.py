@@ -371,16 +371,20 @@ class PreprocessListener(RDLListener):
         self.indent -= 1
         self.is_filtered = self.runtime_stack.pop()
 
-    def get_statistics(self):
+    def get_report(self):
         """
         get some statistic information
         - total register number
         - filtered register number
         """
-        message.info("Total register number: %d" % (self.total_reg_num))
-        message.info("Total size: %s(%s) bytes" % (self.total_size, hex(self.total_size)))
-        message.info("UVM filtered register number: %d" % (self.filter_reg_num))
-        message.info("Preprocessing time: %.4fs" % (time() - self.start_time))
+        message.info("HRDA preprocess report\n"
+                     "------------------------------------------------\n"
+                     "total register number: %d\n"
+                     "total size: %s (%s) bytes\n"
+                     "filtered register number in UVM simulation: %d\n"
+                     "------------------------------------------------"
+                     % (self.total_reg_num, self.total_size, hex(self.total_size), self.filter_reg_num))
+        message.info("preprocessing time: %.4fs" % (time() - self.start_time))
 
 def preprocess(root:RootNode, **user_ops):
     """
@@ -389,4 +393,4 @@ def preprocess(root:RootNode, **user_ops):
     preprocess_walker = RDLWalker(unroll=True)
     preprocess_listener = PreprocessListener(user_ops)
     preprocess_walker.walk(root, preprocess_listener)
-    preprocess_listener.get_statistics()
+    preprocess_listener.get_report()
