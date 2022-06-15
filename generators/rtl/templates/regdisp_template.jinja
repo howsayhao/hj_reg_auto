@@ -154,11 +154,11 @@ module {{get_rtl_name(disp_node)}} (
                         downstream__wr_data[cnt]    <= {DATA_WIDTH{1'b0}};
                     end
                     else begin
-                        downstream__req_vld[cnt]    <= downstream__req_vld_pre[0];
-                        downstream__addr[cnt]       <= downstream__addr_pre[0];
-                        downstream__wr_en[cnt]      <= downstream__wr_en_pre[0];
-                        downstream__rd_en[cnt]      <= downstream__rd_en_pre[0];
-                        downstream__wr_data[cnt]    <= downstream__wr_data_pre[0];
+                        downstream__req_vld[cnt]    <= downstream__req_vld_pre[cnt];
+                        downstream__addr[cnt]       <= downstream__addr_pre[cnt];
+                        downstream__wr_en[cnt]      <= downstream__wr_en_pre[cnt];
+                        downstream__rd_en[cnt]      <= downstream__rd_en_pre[cnt];
+                        downstream__wr_data[cnt]    <= downstream__wr_data_pre[cnt];
                     end
                 end
             end
