@@ -66,8 +66,8 @@ def get_regslv_port(master,cdc):
         if(cdc):
             regslv_port_rtl += '\tregslv_clk                ,\n'
             regslv_port_rtl += '\tregslv_rstn               ,\n'
-        regslv_port_rtl += '\tclk                 ,\n'
-        regslv_port_rtl += '\trstn                ,\n'
+        regslv_port_rtl += '\tclk                     ,\n'
+        regslv_port_rtl += '\trst_n                   ,\n'
         regslv_port_rtl += '\treq_vld                 ,\n'
         regslv_port_rtl += '\tack_vld                 ,\n'
         regslv_port_rtl += '\twr_en                   ,\n'
