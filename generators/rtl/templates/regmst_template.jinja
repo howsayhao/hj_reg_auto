@@ -90,14 +90,16 @@ module {{get_rtl_name(mst_node)}} (
     logic                               db_err_stat__ERR_ACC_TYPE__next_value;
     logic                               db_err_stat__ERR_ACC_TYPE__pulse;
 
-    logic   [REG_NUM:0] [DATA_WIDTH-1:0]    reg_rd_split_mux_din;
-    logic   [REG_NUM:0]                     reg_rd_split_mux_sel;
-    logic                                   reg_rd_split_mux_dout_vld;
+    logic   [REG_NUM:0] [DATA_WIDTH-1:0]    int_rd_split_mux_din;
+    logic   [REG_NUM:0]                     int_rd_split_mux_sel;
+    logic                                   int_rd_split_mux_dout_vld;
+    logic                                   int_wr_sel;
     logic                                   dummy_reg_rd_sel;
+    logic                                   dummy_reg_wr_sel;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]  db_reg_rd_data;
     logic   [REG_NUM-1:0]                   db_reg_wr_sel;
     logic   [REG_NUM-1:0]                   db_reg_rd_sel;
-    logic                                   db_reg_ack_vld;
+    logic                                   int_ack_vld;
     logic   [DATA_WIDTH-1:0]                int_rd_data;
 
 //****************************************ADDRESS DECODER START*****************************************//
@@ -366,25 +368,27 @@ module {{get_rtl_name(mst_node)}} (
     assign  db_reg_rd_data[2]           = db_tmr_thr_o;
     assign  db_reg_rd_data[3]           = db_err_stat_o;
 
-    assign  reg_rd_split_mux_din        = {db_reg_rd_data, {DATA_WIDTH{1'b0}}};
-    assign  reg_rd_split_mux_sel        = {db_reg_rd_sel, dummy_reg_rd_sel};
+    assign  int_rd_split_mux_din        = {db_reg_rd_data, {DATA_WIDTH{1'b0}}};
+    assign  int_rd_split_mux_sel        = {db_reg_rd_sel, dummy_reg_rd_sel};
+    assign  int_wr_sel                  = (| db_reg_wr_sel) | dummy_reg_wr_sel;
     split_mux_2d #(
         .WIDTH(DATA_WIDTH), .CNT(REG_NUM+1),
         .GROUP_SIZE(128), .SKIP_DFF_0(1), .SKIP_DFF_1(1))
-    reg_rd_split_mux (
+    int_rd_split_mux (
         .clk                    (clk),
         .rst_n                  (rst_n),
-        .din                    (reg_rd_split_mux_din),
-        .sel                    (reg_rd_split_mux_sel),
+        .din                    (int_rd_split_mux_din),
+        .sel                    (int_rd_split_mux_sel),
         .dout                   (int_rd_data),
-        .dout_vld               (reg_rd_split_mux_dout_vld));
+        .dout_vld               (int_rd_split_mux_dout_vld));
 
-    assign  db_reg_ack_vld  = reg_rd_split_mux_dout_vld | fsm_wr_en;
+    assign  int_ack_vld  = int_rd_split_mux_dout_vld | int_wr_sel;
 
     // internal register inverse multiplexor: to debug registers
     assign  db_reg_wr_sel               = {REG_NUM{fsm_wr_en}} & dec_db_reg_sel;
     assign  db_reg_rd_sel               = {REG_NUM{fsm_rd_en}} & dec_db_reg_sel;
-    assign  dummy_reg_rd_sel            = dec_dummy_reg_sel & fsm_req_vld;
+    assign  dummy_reg_rd_sel            = dec_dummy_reg_sel & fsm_req_vld & fsm_rd_en;
+    assign  dummy_reg_wr_sel            = dec_dummy_reg_sel & fsm_req_vld & fsm_wr_en;
 
     assign  db_err_addr__snap_0_wr_data = db_reg_wr_sel[0] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
     assign  db_err_addr__snap_0_wr_en   = db_reg_wr_sel[0];
@@ -403,8 +407,8 @@ module {{get_rtl_name(mst_node)}} (
     assign  db_err_stat_rd_en           = db_reg_rd_sel[3];
 
     // ultimate multiplexor: to mst_fsm
-    assign  fsm_rd_data     = db_reg_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
-    assign  fsm_ack_vld     = db_reg_ack_vld | ext_ack_vld;
+    assign  fsm_rd_data     = int_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
+    assign  fsm_ack_vld     = int_ack_vld | ext_ack_vld;
 
     // ultimate inverse multiplexor: to the external downstream regdisp module
     assign  ext_req_vld                 = fsm_req_vld & dec_ext_sel;

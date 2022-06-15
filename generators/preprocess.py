@@ -4,7 +4,7 @@ from time import time
 
 import utils.message as message
 from systemrdl import RDLListener, RDLWalker
-from systemrdl.node import AddrmapNode, FieldNode, RootNode, MemNode, AddressableNode
+from systemrdl.node import AddrmapNode, RegfileNode , FieldNode, RootNode, MemNode, AddressableNode
 
 # FIXME: node.inst_name vs. node.get_path_segment()
 # thus hierarchical path for array would be ambiguous
@@ -113,6 +113,22 @@ class PreprocessListener(RDLListener):
             node.inst.properties["rtl_module_name"] = rtl_module_name
             self.field_hdl_path.append(rtl_module_name)
             self.total_size = node.total_size
+
+            mst_child_nodes = list(node.children(skip_not_present=False))
+            if len(mst_child_nodes) == 2:
+                if not isinstance(mst_child_nodes[0], AddrmapNode):
+                    message.error("first instance under root addrmap (regmst) %s "
+                                  "is not an addrmap (regdisp)" % (node.get_path()))
+                    sys.exit(1)
+                elif not isinstance(mst_child_nodes[1], RegfileNode):
+                    message.error("second instance under root addrmap (regmst) %s "
+                                  "is not debug regfile, please follow the template format "
+                                  "and don't touch it" % (node.get_path()))
+                    sys.exit(1)
+            else:
+                message.error("there should be two instances under root addrmap (regmst) %s: "
+                              "addrmap (regdisp) and regfile (debug registers)" % (node.get_path()))
+                sys.exit(1)
 
             if not self.keep_quiet:
                 message.debug("%sgenerate %s" % ("\t"*self.indent, rtl_module_name))

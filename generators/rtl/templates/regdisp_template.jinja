@@ -179,14 +179,15 @@ module {{get_rtl_name(disp_node)}} (
     **************************************************************************/
 
     // backward multiplexor for rd_data and ack_vld
-    assign upstream__ack_vld_pre = | downstream__ack_vld;
+    assign  upstream__ack_vld_pre   = (| downstream__ack_vld) | dec_dummy_reg_sel;
     always_comb begin
         upstream__rd_data_pre = {DATA_WIDTH{1'b0}};
-        for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-            if (downstream__ack_vld[i]) begin
-                upstream__rd_data_pre = downstream__rd_data[i];
+        if (!dec_dummy_reg_sel)
+            for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
+                if (downstream__ack_vld[i]) begin
+                    upstream__rd_data_pre   = downstream__rd_data[i];
+                end
             end
-        end
     end
 
     // optionally insert backward flip-flops after data passes through mux
