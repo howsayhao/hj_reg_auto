@@ -1,90 +1,85 @@
+{% set parent_name = get_inst_name(disp_node.parent) %}
 module {{get_rtl_name(disp_node)}} (
-    clk,
-    rst_n,
-    // upstream reg_native_if
-    {#
-    {% set parent_name = get_inst_name(disp_node.parent) %}
-    {{parent_name}}__req_vld,
-    {{parent_name}}__ack_vld,
-    {{parent_name}}__addr,
-    {{parent_name}}__wr_en,
-    {{parent_name}}__rd_en,
-    {{parent_name}}__wr_data,
-    {{parent_name}}__rd_data,
-    #}
-    upstream__req_vld,
-    upstream__ack_vld,
-    upstream__addr,
-    upstream__wr_en,
-    upstream__rd_en,
-    upstream__wr_data,
-    upstream__rd_data,
-    // downstream reg_native_if
-    {#
     {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
+    // reg_native_if forwarding to {{child_name}}
     {% set child_name = get_inst_name(child) %}
-    {{child_name}}__req_vld,
-    {{child_name}}__ack_vld,
-    {{child_name}}__addr,
-    {{child_name}}__wr_en,
-    {{child_name}}__rd_en,
-    {{child_name}}__wr_data,
-    {{child_name}}__rd_data,
+    {{child_name}}_req_vld,
+    {{child_name}}_ack_vld,
+    {{child_name}}_addr,
+    {{child_name}}_wr_en,
+    {{child_name}}_rd_en,
+    {{child_name}}_wr_data,
+    {{child_name}}_rd_data,
+    {% if not isinstance(child, MemNode) %}
+    {{child_name}}_soft_rst,
+    {% endif %}
     {% endfor %}
-    #}
-    downstream__req_vld,
-    downstream__ack_vld,
-    downstream__addr,
-    downstream__wr_en,
-    downstream__rd_en,
-    downstream__wr_data,
-    downstream__rd_data,
-    // soft reset signals in and out
-    soft_rst_i,
-    soft_rst_o
+    // reg_native_if forwarded by {{parent_name}}
+    {{parent_name}}_clk,
+    {{parent_name}}_rst_n,
+    {{parent_name}}_req_vld,
+    {{parent_name}}_ack_vld,
+    {{parent_name}}_addr,
+    {{parent_name}}_wr_en,
+    {{parent_name}}_rd_en,
+    {{parent_name}}_wr_data,
+    {{parent_name}}_rd_data,
+    {{parent_name}}_soft_rst
 );
 
-    parameter   ADDR_WIDTH                              = {{addr_width}};
-    parameter   DATA_WIDTH                              = {{data_width}};
-    parameter   FORWARD_NUM                             = {{get_forward_num(disp_node)}};
+    parameter                       ADDR_WIDTH          = {{get_addr_width(disp_node)}};
+    parameter                       DATA_WIDTH          = {{get_data_width(disp_node)}};
+    parameter                       FORWARD_NUM         = {{get_forward_num(disp_node)}};
     parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_DFF  = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
-    parameter   INSERT_BACKWARD_DFF                     = {{use_backward_ff(disp_node)}};
+    parameter                       INSERT_BACKWARD_FF  = {{use_backward_ff(disp_node)}};
 
-    input   logic   clk, rst_n;
+    input   logic                                       {{parent_name}}_clk;
+    input   logic                                       {{parent_name}}_rst_n;
 
-    input   logic                                       upstream__req_vld;
-    output  logic                                       upstream__ack_vld;
-    input   logic   [ADDR_WIDTH-1:0]                    upstream__addr;
-    input   logic                                       upstream__wr_en;
-    input   logic                                       upstream__rd_en;
-    input   logic   [DATA_WIDTH-1:0]                    upstream__wr_data;
-    output  logic   [DATA_WIDTH-1:0]                    upstream__rd_data;
+    input   logic                                       {{parent_name}}_req_vld;
+    output  logic                                       {{parent_name}}_ack_vld;
+    input   logic   [ADDR_WIDTH-1:0]                    {{parent_name}}_addr;
+    input   logic                                       {{parent_name}}_wr_en;
+    input   logic                                       {{parent_name}}_rd_en;
+    input   logic   [DATA_WIDTH-1:0]                    {{parent_name}}_wr_data;
+    output  logic   [DATA_WIDTH-1:0]                    {{parent_name}}_rd_data;
+    input   logic                                       {{parent_name}}_soft_rst;
 
-    output  logic   [FORWARD_NUM-1:0]                   downstream__req_vld;
-    input   logic   [FORWARD_NUM-1:0]                   downstream__ack_vld;
-    output  logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]  downstream__addr;
-    output  logic   [FORWARD_NUM-1:0]                   downstream__wr_en;
-    output  logic   [FORWARD_NUM-1:0]                   downstream__rd_en;
-    output  logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__wr_data;
-    input   logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]  downstream__rd_data;
+    {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
+    {% set child_name = get_inst_name(child) %}
+    {% set child_addr_width = get_addr_width(child)%}
+    {% set child_data_width = get_data_width(child)%}
+    output  logic                                       {{child_name}}_req_vld;
+    input   logic                                       {{child_name}}_ack_vld;
+    output  logic   [{{"%-2d"|format(child_addr_width-1)}}:0]                              {{child_name}}_addr;
+    output  logic                                       {{child_name}}_wr_en;
+    output  logic                                       {{child_name}}_rd_en;
+    output  logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{child_name}}_wr_data;
+    input   logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{child_name}}_rd_data;
+    {% if not isinstance(child, MemNode) %}
+    output  logic                                       {{child_name}}_soft_rst;
+    {% endif %}
+    {% endfor %}
 
-    input   logic                                       soft_rst_i;
-    output  logic                                       soft_rst_o;
+    logic   [FORWARD_NUM-1:0]                           downstream_req_vld;
+    logic   [FORWARD_NUM-1:0]                           downstream_ack_vld;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr;
+    logic   [FORWARD_NUM-1:0]                           downstream_wr_en;
+    logic   [FORWARD_NUM-1:0]                           downstream_rd_en;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_rd_data;
+    logic   [FORWARD_NUM-1:0]                           downstream_soft_rst;
 
-    logic   [FORWARD_NUM-1:0]                           downstream__req_vld_conv;
-    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_conv;
-    logic   [FORWARD_NUM-1:0]                           downstream__wr_en_conv;
-    logic   [FORWARD_NUM-1:0]                           downstream__rd_en_conv;
-    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_conv;
+    logic   [FORWARD_NUM-1:0]                           downstream_req_vld_imux;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream_wr_en_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream_rd_en_imux;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data_imux;
 
-    logic   [FORWARD_NUM-1:0]                           downstream__req_vld_imux;
-    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_imux;
-    logic   [FORWARD_NUM-1:0]                           downstream__wr_en_imux;
-    logic   [FORWARD_NUM-1:0]                           downstream__rd_en_imux;
-    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_imux;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_conv;
 
-    logic                                               upstream__ack_vld_mux;
-    logic   [DATA_WIDTH-1:0]                            upstream__rd_data_mux;
+    logic                                               {{parent_name}}_ack_vld_mux;
+    logic   [DATA_WIDTH-1:0]                            {{parent_name}}_rd_data_mux;
     logic   [FORWARD_NUM-1:0]                           dec_if_sel;
     logic                                               dec_dummy_reg_sel;
 
@@ -92,13 +87,11 @@ module {{get_rtl_name(disp_node)}} (
     ** forward datapath
     **************************************************************************/
 
-    assign  soft_rst_o  = soft_rst_i;
-
     // decode upstream absolute address
     always_comb begin
         dec_if_sel          = {FORWARD_NUM{1'b0}};
         dec_dummy_reg_sel   = 1'b0;
-        unique casez (upstream__addr[{{dec_addr_bit()|join(":")}}])
+        unique casez ({{parent_name}}_addr[{{dec_addr_bit()|join(":")}}])
         {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
             {{get_comp_addr(child)|join(",")|indent}}: dec_if_sel[{{loop.index0}}] = 1'b1;
         {%- endfor %}
@@ -109,127 +102,121 @@ module {{get_rtl_name(disp_node)}} (
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data
     always_comb begin
         for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-            downstream__req_vld_imux[i]     = 1'b0;
-            downstream__addr_imux[i]        = {ADDR_WIDTH{1'b0}};
-            downstream__wr_en_imux[i]       = 1'b0;
-            downstream__rd_en_imux[i]       = 1'b0;
-            downstream__wr_data_imux[i]     = {DATA_WIDTH{1'b0}};
+            downstream_req_vld_imux[i]      = 1'b0;
+            downstream_addr_imux[i]         = {ADDR_WIDTH{1'b0}};
+            downstream_wr_en_imux[i]        = 1'b0;
+            downstream_rd_en_imux[i]        = 1'b0;
+            downstream_wr_data_imux[i]      = {DATA_WIDTH{1'b0}};
 
             if (dec_if_sel[i]) begin
-                downstream__req_vld_imux[i]  = upstream__req_vld;
-                downstream__addr_imux[i]     = upstream__addr;
-                downstream__wr_en_imux[i]    = upstream__wr_en;
-                downstream__rd_en_imux[i]    = upstream__rd_en;
-                downstream__wr_data_imux[i]  = upstream__wr_data;
+                downstream_req_vld_imux[i]  = {{parent_name}}_req_vld;
+                downstream_addr_imux[i]     = {{parent_name}}_addr;
+                downstream_wr_en_imux[i]    = {{parent_name}}_wr_en;
+                downstream_rd_en_imux[i]    = {{parent_name}}_rd_en;
+                downstream_wr_data_imux[i]  = {{parent_name}}_wr_data;
             end
         end
     end
 
     // generate address offset and forward other signals
-    //      for regdisp, generate absolute address
-    //      for regslv, generate address offset
-    //      for 3rd party IP, generate absolute address
-    //      for external memory, generate address offset
+    //      regdisp: absolute address (forced)
+    //      regslv: address offset (forced)
+    //      3rd party IP: generate absolute address (default)
+    //      memory interface: address offset (default)
     // there are two methods to convert absolute address to offset,
     // which depends on the base address alignment:
     //      1. base_addr = N * pow(2, ceil(log2(total_size))):
     //          simply set several higher bits to 0 by slicing
     //      2. otherwise:
     //          subtract base address from absolute address by generating a subtractor
-    always_comb begin
-        for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-            downstream__req_vld_conv[i]     = downstream__req_vld_imux[i];
-            downstream__wr_en_conv[i]       = downstream__wr_en_imux[i];
-            downstream__rd_en_conv[i]       = downstream__rd_en_imux[i];
-            downstream__wr_data_conv[i]     = downstream__wr_data_imux[i];
-        end
-    end
-
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) -%}
     {%- if use_abs_addr(child) %}
-    {{"assign  downstream__addr_conv[%d] = downstream__addr_imux[%d];"|format(loop.index0,
+    {{"assign  downstream_addr_conv[%d] = downstream_addr_imux[%d];"|format(loop.index0,
                                                                              loop.index0)}}
     {%- elif is_aligned(child) %}
-    {{"assign  downstream__addr_conv[%d] = {%d'b0, downstream__addr_imux[%d][%d:0]};"|format(loop.index0,
+    {{"assign  downstream_addr_conv[%d] = {%d'b0, downstream_addr_imux[%d][%d:0]};"|format(loop.index0,
                                                                                             addr_width-valid_bit(child),
                                                                                             loop.index0,
                                                                                             valid_bit(child)-1)}}
     {%- else %}
-    {{"assign  downstream__addr_conv[%d] = downstream__addr_imux[%d] - %d'h%x;"|format(loop.index0,
+    {{"assign  downstream_addr_conv[%d] = downstream_addr_imux[%d] - %d'h%x;"|format(loop.index0,
                                                                                       loop.index0,
                                                                                       addr_width,
                                                                                       child.absolute_address)}}
     {%- endif %}
     {%- endfor %}
 
-    // optionally insert forwarding flip-flops
+    // optionally insert forwarding flip-flops,
+    // which depends on hj_use_forward_ff in child addrmaps
     genvar cnt;
     generate
-        for (cnt = 0; cnt < FORWARD_NUM; cnt = cnt + 1) begin: g_forward_dff
-            if (INSERT_FORWARD_DFF[cnt]) begin: g_with_out_dff
-                always @(posedge clk or negedge rst_n) begin
-                    if (!rst_n) begin
-                        downstream__req_vld_ff[cnt]     <= 1'b0;
-                        downstream__addr_ff[cnt]        <= {ADDR_WIDTH{1'b0}};
-                        downstream__wr_en_ff[cnt]       <= 1'b0;
-                        downstream__rd_en_ff[cnt]       <= 1'b0;
-                        downstream__wr_data_ff[cnt]     <= {DATA_WIDTH{1'b0}};
+        for (cnt = 0; cnt < FORWARD_NUM; cnt = cnt + 1) begin: g_forward_ff_out
+            if (INSERT_FORWARD_DFF[cnt]) begin: g_forward_ff_in
+                always @(posedge {{parent_name}}_clk or negedge {{parent_name}}_rst_n) begin
+                    if (!{{parent_name}}_rst_n) begin
+                        downstream_req_vld_ff[cnt]      <= 1'b0;
+                        downstream_addr_ff[cnt]         <= {ADDR_WIDTH{1'b0}};
+                        downstream_wr_en_ff[cnt]        <= 1'b0;
+                        downstream_rd_en_ff[cnt]        <= 1'b0;
+                        downstream_wr_data_ff[cnt]      <= {DATA_WIDTH{1'b0}};
                     end
                     else begin
-                        downstream__req_vld_ff[cnt]     <= downstream__req_vld_conv[cnt];
-                        downstream__addr_ff[cnt]        <= downstream__addr_conv[cnt];
-                        downstream__wr_en_ff[cnt]       <= downstream__wr_en_conv[cnt];
-                        downstream__rd_en_ff[cnt]       <= downstream__rd_en_conv[cnt];
-                        downstream__wr_data_ff[cnt]     <= downstream__wr_data_conv[cnt];
+                        downstream_req_vld_ff[cnt]      <= downstream_req_vld_imux[cnt];
+                        downstream_addr_ff[cnt]         <= downstream_addr_conv[cnt];
+                        downstream_wr_en_ff[cnt]        <= downstream_wr_en_imux[cnt];
+                        downstream_rd_en_ff[cnt]        <= downstream_rd_en_imux[cnt];
+                        downstream_wr_data_ff[cnt]      <= downstream_wr_data_imux[cnt];
+                        downstream_soft_rst[cnt]        <= {{parent_name}}_soft_rst;
                     end
                 end
             end
-            else begin: g_wo_out_dff
-                assign downstream__req_vld_ff[cnt]      = downstream__req_vld_conv[cnt];
-                assign downstream__addr_ff[cnt]         = downstream__addr_conv[cnt];
-                assign downstream__wr_en_ff[cnt]        = downstream__wr_en_conv[cnt];
-                assign downstream__rd_en_ff[cnt]        = downstream__rd_en_conv[cnt];
-                assign downstream__wr_data_ff[cnt]      = downstream__wr_data_conv[cnt];
+            else begin: g_no_forward_ff_in
+                assign downstream_req_vld_ff[cnt]       = downstream_req_vld_imux[cnt];
+                assign downstream_addr_ff[cnt]          = downstream_addr_conv[cnt];
+                assign downstream_wr_en_ff[cnt]         = downstream_wr_en_imux[cnt];
+                assign downstream_rd_en_ff[cnt]         = downstream_rd_en_imux[cnt];
+                assign downstream_wr_data_ff[cnt]       = downstream_wr_data_imux[cnt];
+                assign downstream_soft_rst[cnt]         = {{parent_name}}_soft_rst;
             end
         end
     endgenerate
 
     {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
-        {% set child_name = get_inst_name(child) %}
-        {% if isinstance(child, MemNode) %}
-            reg_native_if2mem #(
-                .CDC_ENABLE({{has_cdc(child)}}),
-                .BUS_DATA_WIDTH(DATA_WIDTH),
-                .BUS_ADDR_WIDTH(ADDR_WIDTH),
-                .ADDR_VALID_WIDTH({{valid_bit(child)}}),
-                .MEM_DATA_WIDTH({{get_entry_width(child)}}),
-                .MEM_ADDR_WIDTH({{get_addr_width(child)}})
-            )
-            reg_native_if2mem (
-                .native_clk(clk),
-                .native_rst_n(rst_n),
-                .soft_rst(soft_rst_o),
-                .mem_clk({{child_name}}_clk),
-                .mem_rst_n({{child_name}}_rst_n)
-                .req_vld(),
-                .ack_vld(),
-                .addr(),
-                .wr_en(),
-                .rd_en(),
-                .wr_data(),
-                .rd_data(),
-                .mem_req_vld(),
-                .mem_ack_vld()
-                .mem_addr(),
-                .mem_wr_en(),
-                .mem_rd_en(),
-                .mem_wr_data(),
-                .mem_rd_data()
-            );
-        {% endif %}
+    {% set child_name = get_inst_name(child) %}
+    {% if isinstance(child, MemNode) %}
+    reg_native_if2mem #(
+        .CDC_ENABLE({{has_cdc(child)}}),
+        .BUS_DATA_WIDTH(DATA_WIDTH),
+        .BUS_ADDR_WIDTH(ADDR_WIDTH),
+        .ADDR_VALID_WIDTH({{valid_bit(child)}}),
+        .MEM_DATA_WIDTH({{get_data_width(child)}}),
+        .MEM_ADDR_WIDTH({{get_addr_width(child)}})
+    )
+    reg_native_if2mem (
+        .native_clk({{parent_name}}_clk),
+        .native_rst_n({{parent_name}}_rst_n),
+        .soft_rst(downstream_soft_rst[{{loop.index0}}]),
+        .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
+        .ack_vld(downstream_ack_vld[{{loop.index0}}]),
+        .addr(downstream_addr_ff[{{loop.index0}}]),
+        .wr_en(downstream_wr_en_ff[{{loop.index0}}]),
+        .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
+        .wr_data(downstream_wr_data_ff[{{loop.index0}}]),
+        .rd_data(downstream_rd_data[{{loop.index0}}]),
+        .mem_clk({{child_name}}_clk),
+        .mem_rst_n({{child_name}}_rst_n),
+        .mem_req_vld({{child_name}}_req_vld),
+        .mem_ack_vld({{child_name}}_ack_vld),
+        .mem_addr({{child_name}}_addr),
+        .mem_wr_en({{child_name}}_wr_en),
+        .mem_rd_en({{child_name}}_rd_en),
+        .mem_wr_data({{child_name}}_wr_data),
+        .mem_rd_data({{child_name}}_rd_data)
+    );
+    {% elif isinstance(child, AddrmapNode) %}
+    assign  downstream_ack_vld[{{loop.index0}}] =
+    {% endif %}
     {% endfor %}
-
-    // generate forward output interface
 
 
     /**************************************************************************
@@ -237,34 +224,34 @@ module {{get_rtl_name(disp_node)}} (
     **************************************************************************/
 
     // backward multiplexor for rd_data and ack_vld
-    assign  upstream__ack_vld_mux   = (| downstream__ack_vld) | dec_dummy_reg_sel;
+    assign  {{parent_name}}_ack_vld_mux   = (| downstream_ack_vld) | dec_dummy_reg_sel;
     always_comb begin
-        upstream__rd_data_mux = {DATA_WIDTH{1'b0}};
+        {{parent_name}}_rd_data_mux = {DATA_WIDTH{1'b0}};
         if (!dec_dummy_reg_sel)
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-                if (downstream__ack_vld[i]) begin
-                    upstream__rd_data_mux   = downstream__rd_data[i];
+                if (downstream_ack_vld[i]) begin
+                    {{parent_name}}_rd_data_mux   = downstream_rd_data[i];
                 end
             end
     end
 
     // optionally insert backward flip-flops after data passes through mux
     generate
-        if (INSERT_BACKWARD_DFF) begin: g_with_in_dff
-            always @(posedge clk or negedge rst_n) begin
-                if (!rst_n) begin
-                    upstream__ack_vld_ff    <= 1'b0;
-                    upstream__rd_data_ff    <= {DATA_WIDTH{1'b0}};
+        if (INSERT_BACKWARD_FF) begin: g_backward_ff
+            always @(posedge {{parent_name}}_clk or negedge {{parent_name}}_rst_n) begin
+                if (!{{parent_name}}_rst_n) begin
+                    {{parent_name}}_ack_vld_ff    <= 1'b0;
+                    {{parent_name}}_rd_data_ff    <= {DATA_WIDTH{1'b0}};
                 end
                 else begin
-                    upstream__ack_vld_ff    <= upstream__ack_vld_mux;
-                    upstream__rd_data_ff    <= upstream__rd_data_mux;
+                    {{parent_name}}_ack_vld_ff    <= {{parent_name}}_ack_vld_mux;
+                    {{parent_name}}_rd_data_ff    <= {{parent_name}}_rd_data_mux;
                 end
             end
         end
-        else begin: g_wo_in_dff
-            assign upstream__ack_vld_ff     = upstream__ack_vld_mux;
-            assign upstream__rd_data_ff     = upstream__rd_data_mux;
+        else begin: g_wo_backward_ff
+            assign {{parent_name}}_ack_vld_ff     = {{parent_name}}_ack_vld_mux;
+            assign {{parent_name}}_rd_data_ff     = {{parent_name}}_rd_data_mux;
         end
     endgenerate
 

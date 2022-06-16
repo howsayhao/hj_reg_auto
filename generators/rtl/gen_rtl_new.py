@@ -21,8 +21,8 @@ class RTLExporter:
         )
 
         self.context = {
-            'addr_width': 64,
-            'data_width': 32,
+            'bus_addr_width': 64,
+            'bus_data_width': 32,
             'RegNode': RegNode,
             'RegfileNode': RegfileNode,
             'AddrmapNode': AddrmapNode,
@@ -41,7 +41,7 @@ class RTLExporter:
             'valid_bit': self._valid_bit,
             'get_property': self._get_property,
             'get_abs_addr': self._get_abs_addr,
-            'get_entry_width': self._get_entry_width,
+            'get_data_width': self._get_data_width,
             'get_addr_width': self._get_addr_width,
             'has_cdc': self._has_cdc
         }
@@ -165,11 +165,17 @@ class RTLExporter:
     def _get_inst_name(self, node:AddressableNode):
         return node.get_path_segment(array_suffix="_{index:d}")
 
-    def _get_entry_width(self, node:MemNode):
-        return node.get_property("memwidth", default=32)
+    def _get_data_width(self, node:AddressableNode):
+        if isinstance(node, MemNode):
+            return node.get_property("memwidth", default=32)
+        elif isinstance(node, AddrmapNode):
+            return self.context.get("bus_data_width")
 
-    def _get_addr_width(self, node:MemNode):
-        return ceil(log2(node.get_property("mementries", default=2)))
+    def _get_addr_width(self, node:AddressableNode):
+        if isinstance(node, MemNode):
+            return ceil(log2(node.get_property("mementries", default=2)))
+        elif isinstance(node, AddrmapNode):
+            return self.context.get("bus_addr_width")
 
     def _has_cdc(self, node:AddressableNode):
         return 1 if node.get_property("hj_cdc", default=False) else 0

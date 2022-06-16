@@ -10,8 +10,8 @@ module {{get_rtl_name(mst_node)}} (
     // soft reset signal to downstream modules
     soft_rst_o
 );
-    parameter       ADDR_WIDTH  = {{addr_width}};
-    parameter       DATA_WIDTH  = {{data_width}};
+    parameter       ADDR_WIDTH  = {{get_addr_width(mst_node)}};
+    parameter       DATA_WIDTH  = {{get_data_width(mst_node)}};
     localparam      REG_NUM     = 4;
 
     input   logic                       clk;
@@ -165,7 +165,7 @@ module {{get_rtl_name(mst_node)}} (
 //********************************************TIMER END***********************************************//
 
 //*********************************DEBUG REGISTERS INSTANCE START*************************************//
-    // debug register: db_err_addr ({{addr_width}}-bit)
+    // debug register: db_err_addr ({{bus_addr_width}}-bit)
     // description:
     //      address of the access where timeout event occurs
     // absolute address:
