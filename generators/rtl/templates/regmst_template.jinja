@@ -217,7 +217,7 @@ module {{get_rtl_name(mst_node)}} (
     db_err_addr_snapshot (
         .clk                     (clk),
         .rst_n                   (rst_n),
-        .mst__fsm__sync_reset    (soft_rst_o),
+        .soft_rst    (soft_rst_o),
         .snap_wr_en              (db_err_addr_snapshot_snap_wr_en),
         .snap_rd_en              (db_err_addr_snapshot_snap_rd_en),
         .snap_wr_data            (db_err_addr_snapshot_snap_wr_data),

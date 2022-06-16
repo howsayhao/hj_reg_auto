@@ -1,3 +1,4 @@
+import math
 import sys
 from fnmatch import fnmatchcase
 from time import time
@@ -297,6 +298,10 @@ class PreprocessListener(RDLListener):
         if not node.parent.get_property("hj_gendisp"):
             message.error("%s: the parent addrmap %s is not recognized as regdisp, but external memories"
                             "must be forwarded by a regdisp module" % (node.get_path(), node.parent.get_path()))
+            sys.exit(1)
+
+        if not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
+            message.error("%s: memory width does not satisfy 32 * (2^i), where i is an integer, like 32, 64, 128...")
             sys.exit(1)
 
         if not self.keep_quiet:

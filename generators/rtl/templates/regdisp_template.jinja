@@ -2,6 +2,16 @@ module {{get_rtl_name(disp_node)}} (
     clk,
     rst_n,
     // upstream reg_native_if
+    {#
+    {% set parent_name = get_inst_name(disp_node.parent) %}
+    {{parent_name}}__req_vld,
+    {{parent_name}}__ack_vld,
+    {{parent_name}}__addr,
+    {{parent_name}}__wr_en,
+    {{parent_name}}__rd_en,
+    {{parent_name}}__wr_data,
+    {{parent_name}}__rd_data,
+    #}
     upstream__req_vld,
     upstream__ack_vld,
     upstream__addr,
@@ -10,6 +20,18 @@ module {{get_rtl_name(disp_node)}} (
     upstream__wr_data,
     upstream__rd_data,
     // downstream reg_native_if
+    {#
+    {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
+    {% set child_name = get_inst_name(child) %}
+    {{child_name}}__req_vld,
+    {{child_name}}__ack_vld,
+    {{child_name}}__addr,
+    {{child_name}}__wr_en,
+    {{child_name}}__rd_en,
+    {{child_name}}__wr_data,
+    {{child_name}}__rd_data,
+    {% endfor %}
+    #}
     downstream__req_vld,
     downstream__ack_vld,
     downstream__addr,
@@ -49,11 +71,11 @@ module {{get_rtl_name(disp_node)}} (
     input   logic                                       soft_rst_i;
     output  logic                                       soft_rst_o;
 
-    logic   [FORWARD_NUM-1:0]                           downstream__req_vld_pre;
-    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_pre;
-    logic   [FORWARD_NUM-1:0]                           downstream__wr_en_pre;
-    logic   [FORWARD_NUM-1:0]                           downstream__rd_en_pre;
-    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_pre;
+    logic   [FORWARD_NUM-1:0]                           downstream__req_vld_conv;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_conv;
+    logic   [FORWARD_NUM-1:0]                           downstream__wr_en_conv;
+    logic   [FORWARD_NUM-1:0]                           downstream__rd_en_conv;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_conv;
 
     logic   [FORWARD_NUM-1:0]                           downstream__req_vld_imux;
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream__addr_imux;
@@ -61,8 +83,8 @@ module {{get_rtl_name(disp_node)}} (
     logic   [FORWARD_NUM-1:0]                           downstream__rd_en_imux;
     logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream__wr_data_imux;
 
-    logic                                               upstream__ack_vld_pre;
-    logic   [DATA_WIDTH-1:0]                            upstream__rd_data_pre;
+    logic                                               upstream__ack_vld_mux;
+    logic   [DATA_WIDTH-1:0]                            upstream__rd_data_mux;
     logic   [FORWARD_NUM-1:0]                           dec_if_sel;
     logic                                               dec_dummy_reg_sel;
 
@@ -111,29 +133,29 @@ module {{get_rtl_name(disp_node)}} (
     // there are two methods to convert absolute address to offset,
     // which depends on the base address alignment:
     //      1. base_addr = N * pow(2, ceil(log2(total_size))):
-    //          simply set several higher bits to 0 by wire slicing
+    //          simply set several higher bits to 0 by slicing
     //      2. otherwise:
     //          subtract base address from absolute address by generating a subtractor
     always_comb begin
         for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
-            downstream__req_vld_pre[i]      = downstream__req_vld_imux[i];
-            downstream__wr_en_pre[i]        = downstream__wr_en_imux[i];
-            downstream__rd_en_pre[i]        = downstream__rd_en_imux[i];
-            downstream__wr_data_pre[i]      = downstream__wr_data_imux[i];
+            downstream__req_vld_conv[i]     = downstream__req_vld_imux[i];
+            downstream__wr_en_conv[i]       = downstream__wr_en_imux[i];
+            downstream__rd_en_conv[i]       = downstream__rd_en_imux[i];
+            downstream__wr_data_conv[i]     = downstream__wr_data_imux[i];
         end
     end
 
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) -%}
     {%- if use_abs_addr(child) %}
-    {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d];"|format(loop.index0,
+    {{"assign  downstream__addr_conv[%d] = downstream__addr_imux[%d];"|format(loop.index0,
                                                                              loop.index0)}}
     {%- elif is_aligned(child) %}
-    {{"assign  downstream__addr_pre[%d] = {%d'b0, downstream__addr_imux[%d][%d:0]};"|format(loop.index0,
-                                                                                            addr_width-remain_bit(child),
+    {{"assign  downstream__addr_conv[%d] = {%d'b0, downstream__addr_imux[%d][%d:0]};"|format(loop.index0,
+                                                                                            addr_width-valid_bit(child),
                                                                                             loop.index0,
-                                                                                            remain_bit(child)-1)}}
+                                                                                            valid_bit(child)-1)}}
     {%- else %}
-    {{"assign  downstream__addr_pre[%d] = downstream__addr_imux[%d] - %d'h%x;"|format(loop.index0,
+    {{"assign  downstream__addr_conv[%d] = downstream__addr_imux[%d] - %d'h%x;"|format(loop.index0,
                                                                                       loop.index0,
                                                                                       addr_width,
                                                                                       child.absolute_address)}}
@@ -147,31 +169,67 @@ module {{get_rtl_name(disp_node)}} (
             if (INSERT_FORWARD_DFF[cnt]) begin: g_with_out_dff
                 always @(posedge clk or negedge rst_n) begin
                     if (!rst_n) begin
-                        downstream__req_vld[cnt]    <= 1'b0;
-                        downstream__addr[cnt]       <= {ADDR_WIDTH{1'b0}};
-                        downstream__wr_en[cnt]      <= 1'b0;
-                        downstream__rd_en[cnt]      <= 1'b0;
-                        downstream__wr_data[cnt]    <= {DATA_WIDTH{1'b0}};
+                        downstream__req_vld_ff[cnt]     <= 1'b0;
+                        downstream__addr_ff[cnt]        <= {ADDR_WIDTH{1'b0}};
+                        downstream__wr_en_ff[cnt]       <= 1'b0;
+                        downstream__rd_en_ff[cnt]       <= 1'b0;
+                        downstream__wr_data_ff[cnt]     <= {DATA_WIDTH{1'b0}};
                     end
                     else begin
-                        downstream__req_vld[cnt]    <= downstream__req_vld_pre[cnt];
-                        downstream__addr[cnt]       <= downstream__addr_pre[cnt];
-                        downstream__wr_en[cnt]      <= downstream__wr_en_pre[cnt];
-                        downstream__rd_en[cnt]      <= downstream__rd_en_pre[cnt];
-                        downstream__wr_data[cnt]    <= downstream__wr_data_pre[cnt];
+                        downstream__req_vld_ff[cnt]     <= downstream__req_vld_conv[cnt];
+                        downstream__addr_ff[cnt]        <= downstream__addr_conv[cnt];
+                        downstream__wr_en_ff[cnt]       <= downstream__wr_en_conv[cnt];
+                        downstream__rd_en_ff[cnt]       <= downstream__rd_en_conv[cnt];
+                        downstream__wr_data_ff[cnt]     <= downstream__wr_data_conv[cnt];
                     end
                 end
             end
             else begin: g_wo_out_dff
-                assign downstream__req_vld[cnt]     = downstream__req_vld_pre[cnt];
-                assign downstream__addr[cnt]        = downstream__addr_pre[cnt];
-                assign downstream__wr_en[cnt]       = downstream__wr_en_pre[cnt];
-                assign downstream__rd_en[cnt]       = downstream__rd_en_pre[cnt];
-                assign downstream__wr_data[cnt]     = downstream__wr_data_pre[cnt];
+                assign downstream__req_vld_ff[cnt]      = downstream__req_vld_conv[cnt];
+                assign downstream__addr_ff[cnt]         = downstream__addr_conv[cnt];
+                assign downstream__wr_en_ff[cnt]        = downstream__wr_en_conv[cnt];
+                assign downstream__rd_en_ff[cnt]        = downstream__rd_en_conv[cnt];
+                assign downstream__wr_data_ff[cnt]      = downstream__wr_data_conv[cnt];
             end
         end
-
     endgenerate
+
+    {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
+        {% set child_name = get_inst_name(child) %}
+        {% if isinstance(child, MemNode) %}
+            reg_native_if2mem #(
+                .CDC_ENABLE({{has_cdc(child)}}),
+                .BUS_DATA_WIDTH(DATA_WIDTH),
+                .BUS_ADDR_WIDTH(ADDR_WIDTH),
+                .ADDR_VALID_WIDTH({{valid_bit(child)}}),
+                .MEM_DATA_WIDTH({{get_entry_width(child)}}),
+                .MEM_ADDR_WIDTH({{get_addr_width(child)}})
+            )
+            reg_native_if2mem (
+                .native_clk(clk),
+                .native_rst_n(rst_n),
+                .soft_rst(soft_rst_o),
+                .mem_clk({{child_name}}_clk),
+                .mem_rst_n({{child_name}}_rst_n)
+                .req_vld(),
+                .ack_vld(),
+                .addr(),
+                .wr_en(),
+                .rd_en(),
+                .wr_data(),
+                .rd_data(),
+                .mem_req_vld(),
+                .mem_ack_vld()
+                .mem_addr(),
+                .mem_wr_en(),
+                .mem_rd_en(),
+                .mem_wr_data(),
+                .mem_rd_data()
+            );
+        {% endif %}
+    {% endfor %}
+
+    // generate forward output interface
 
 
     /**************************************************************************
@@ -179,13 +237,13 @@ module {{get_rtl_name(disp_node)}} (
     **************************************************************************/
 
     // backward multiplexor for rd_data and ack_vld
-    assign  upstream__ack_vld_pre   = (| downstream__ack_vld) | dec_dummy_reg_sel;
+    assign  upstream__ack_vld_mux   = (| downstream__ack_vld) | dec_dummy_reg_sel;
     always_comb begin
-        upstream__rd_data_pre = {DATA_WIDTH{1'b0}};
+        upstream__rd_data_mux = {DATA_WIDTH{1'b0}};
         if (!dec_dummy_reg_sel)
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
                 if (downstream__ack_vld[i]) begin
-                    upstream__rd_data_pre   = downstream__rd_data[i];
+                    upstream__rd_data_mux   = downstream__rd_data[i];
                 end
             end
     end
@@ -195,18 +253,18 @@ module {{get_rtl_name(disp_node)}} (
         if (INSERT_BACKWARD_DFF) begin: g_with_in_dff
             always @(posedge clk or negedge rst_n) begin
                 if (!rst_n) begin
-                    upstream__ack_vld   <= 1'b0;
-                    upstream__rd_data   <= {DATA_WIDTH{1'b0}};
+                    upstream__ack_vld_ff    <= 1'b0;
+                    upstream__rd_data_ff    <= {DATA_WIDTH{1'b0}};
                 end
                 else begin
-                    upstream__ack_vld   <= upstream__ack_vld_pre;
-                    upstream__rd_data   <= upstream__rd_data_pre;
+                    upstream__ack_vld_ff    <= upstream__ack_vld_mux;
+                    upstream__rd_data_ff    <= upstream__rd_data_mux;
                 end
             end
         end
         else begin: g_wo_in_dff
-            assign upstream__ack_vld    = upstream__ack_vld_pre;
-            assign upstream__rd_data    = upstream__rd_data_pre;
+            assign upstream__ack_vld_ff     = upstream__ack_vld_mux;
+            assign upstream__rd_data_ff     = upstream__rd_data_mux;
         end
     endgenerate
 

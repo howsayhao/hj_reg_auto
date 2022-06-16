@@ -450,7 +450,7 @@ def get_fsm_ins(module_name, master):
         fsm_rtl += '\t\t.fsm__slv__rd_en(fsm__slv__rd_en),\n'
         fsm_rtl += '\t\t.fsm__slv__wr_data(fsm__slv__wr_data),\n'
         fsm_rtl += '\t\t.slv__fsm__rd_data(slv__fsm__rd_data),\n'
-        fsm_rtl += '\t\t.mst__fsm__sync_reset(soft_rst_i_fsm),\n'
+        fsm_rtl += '\t\t.soft_rst(soft_rst_i_fsm),\n'
         fsm_rtl += '\t\t.fsm__slv__sync_reset()\n'
         fsm_rtl += '\t);\n'
     else:
@@ -746,9 +746,9 @@ def snapshot_reg_ins(reg):
                 '\t\t#(.DATA_WIDTH(%d), .REG_WIDTH(%d))\n'%(32, reg.regwidth) + \
                 '\t%s_snapshot_reg\n'%(reg_name) + \
                 '\t\t(\n' + \
-                '\t\t.clk                     (regslv_clk )                               ,\n' + \
-                '\t\t.rst_n                   (regslv_rstn)                              ,\n' + \
-                '\t\t.mst__fsm__sync_reset    (soft_rst_o)                     ,\n' + \
+                '\t\t.clk                     (regslv_clk )                       ,\n' + \
+                '\t\t.rst_n                   (regslv_rstn)                       ,\n' + \
+                '\t\t.soft_rst                (soft_rst_i)                        ,\n' + \
                 '\t\t.snap_wr_en              ({%s})                              ,\n'%(','.join(snap_reg_wr_en)) + \
                 '\t\t.snap_rd_en              ({%s})                              ,\n'%(','.join(snap_reg_rd_en)) + \
                 '\t\t.snap_wr_data            ({%s})                              ,\n'%(','.join(snap_reg_wr_data)) + \
@@ -779,59 +779,6 @@ def gen_reg_port(reg:Reg):
             reg_port_str += '\t\t%s_o[%d:%d] = %s__curr_value;\n'%(reg_name,field.msb,field.lsb,rtl_field_name)
             i += 1
     return reg_port_str
-
-
-# snapshot mem ins rtl
-def snapshot_mem_ins(ext_list):
-    snapshot_str = ''
-    for module in ext_list:
-        if(isinstance(module, Memory)):
-            memory = module
-            mem_name = module.module_name
-            if(memory.memwidth > 32):
-                snapshot_str +=  '\tsnapshot_reg_mem\n' + \
-                            '\t\t#(.DATA_WIDTH(%d), .MEM_WIDTH(%d), .SUB(%d), .BASE(%d), '%(32, memory.memwidth, memory.addr_sub, memory.addr) + \
-                            '\t.ADDR_WIDTH(64), .VALID_WIDTH(%s), .ENTRY_WIDTH(%s))\n'%(memory.valid_width, memory.entry_width) + \
-                            '\t%s_snapshot_reg_mem\n'%(mem_name) + \
-                            '\t\t(\n' + \
-                            '\t\t.clk                     (regslv_clk)                               ,\n' + \
-                            '\t\t.rst_n                   (regslv_rstn)                              ,\n' + \
-                            '\t\t.mst__fsm__sync_reset    (soft_rst_o)                 ,\n' + \
-                            '\t\t.addr                    (%s_snapshot_addr_fsm)                  ,\n'%(mem_name) + \
-                            '\t\t.wr_en                   (%s_snapshot_wr_en_fsm)                 ,\n'%(mem_name) + \
-                            '\t\t.rd_en                   (%s_snapshot_rd_en_fsm)                 ,\n'%(mem_name) + \
-                            '\t\t.wr_data                 (%s_snapshot_wr_data_fsm)               ,\n'%(mem_name) + \
-                            '\t\t.rd_data                 (%s_snapshot_rd_data_fsm)               ,\n'%(mem_name) + \
-                            '\t\t.req_vld                 (%s_snapshot_req_vld_fsm)               ,\n'%(mem_name) + \
-                            '\t\t.ack_vld                 (%s_snapshot_ack_vld_fsm)               ,\n'%(mem_name) + \
-                            '\t\t.entry_write_protect_en  (1\'b0)                             ,\n' + \
-                            '\t\t.entry_vld               (1\'b1)                             ,\n' + \
-                            '\t\t.entry_vld_nxt           ()                                  ,\n' + \
-                            '\t\t.mem_addr                (%s_addr_fsm)                           ,\n'%(mem_name) + \
-                            '\t\t.mem_wr_en               (%s_wr_en_fsm)                          ,\n'%(mem_name) + \
-                            '\t\t.mem_rd_en               (%s_rd_en_fsm)                          ,\n'%(mem_name) + \
-                            '\t\t.mem_wr_data             (%s_wr_data_fsm)                        ,\n'%(mem_name) + \
-                            '\t\t.mem_rd_data             (%s_rd_data_fsm)                        ,\n'%(mem_name) + \
-                            '\t\t.mem_req_vld             (%s_req_vld_fsm)                        ,\n'%(mem_name) + \
-                            '\t\t.mem_ack_vld             (%s_ack_vld_fsm)                        \n'%(mem_name) + \
-                            '\t);\n'
-            elif(memory.memwidth == 32):
-                snapshot_str += 'wire [ADDR_WIDTH-1:0] %s_valid_addr_fsm ;\n'%(mem_name)
-                if(memory.addr_sub):
-                    snapshot_str += 'assign %s_valid_addr_fsm  = %s_snapshot_addr_fsm - %d   ;\n'%(mem_name, mem_name, memory.addr)
-                else:
-                    snapshot_str += 'assign %s_valid_addr_fsm  = %s_snapshot_addr_fsm              ;\n'%(mem_name, mem_name)
-                snapshot_str += 'assign %s_addr_fsm         = %s_valid_addr_fsm[%d-1:%d-%d]     ;\n'%(mem_name,mem_name,memory.valid_width,memory.valid_width,memory.entry_width)
-                snapshot_str += 'assign %s_wr_en_fsm        = %s_snapshot_wr_en_fsm            ;\n'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_rd_en_fsm        = %s_snapshot_rd_en_fsm            ;\n'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_wr_data_fsm      = %s_snapshot_wr_data_fsm          ;\n'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_snapshot_rd_data_fsm      = %s_rd_data_fsm          ;\n'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_req_vld_fsm      = %s_snapshot_req_vld_fsm          ;\n'%(mem_name,mem_name)
-                snapshot_str += 'assign %s_snapshot_ack_vld_fsm      = %s_ack_vld_fsm          ;\n'%(mem_name,mem_name)
-            else:
-                print("Memwidth Mismatch!")
-    return snapshot_str
-
 
 # convert addr or reset value from int(decimal) to str(hex)
 def get_hex(dec_d:int) -> str:

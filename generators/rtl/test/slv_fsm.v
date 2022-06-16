@@ -23,7 +23,7 @@ module slv_fsm
         fsm__slv__rd_en,
         slv__fsm__rd_data,
         //  sync signal
-        mst__fsm__sync_reset,
+        soft_rst,
         fsm__slv__sync_reset
     );
 
@@ -51,7 +51,7 @@ output                          fsm__slv__rd_en         ;
 output  [DATA_WIDTH-1:0]        fsm__slv__wr_data       ;
 output  [DATA_WIDTH-1:0]        fsm__mst__rd_data       ;
 
-input                           mst__fsm__sync_reset    ;
+input                           soft_rst                ;
 output  reg                     fsm__slv__sync_reset    ;
 // machine state value
 reg                             next_state              ;
@@ -78,14 +78,14 @@ end
 // state transfer flow
 always_comb begin
     case(state)
-        // if mst__fsm__sync_reset, next_state back to IDLE, else check req_vld from the master as well as req_rdy and ack_vld from the slave
+        // if soft_rst, next_state back to IDLE, else check req_vld from the master as well as req_rdy and ack_vld from the slave
         S_IDLE:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE :
+            next_state = soft_rst ? S_IDLE :
                                                 !mst__fsm__req_vld ? S_IDLE :
                                                                      slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK    ;
         end
         S_WAIT_SLV_ACK:begin
-            next_state = mst__fsm__sync_reset ? S_IDLE :
+            next_state = soft_rst ? S_IDLE :
                                                 slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK                         ;
         end
         default: next_state = S_IDLE                                                                                ;
@@ -124,7 +124,7 @@ always_ff@(posedge clk or negedge rst_n)begin
         fsm__slv__sync_reset <= 1'b0;
     end
     else begin
-        fsm__slv__sync_reset <= mst__fsm__sync_reset;
+        fsm__slv__sync_reset <= soft_rst;
     end
 end
 

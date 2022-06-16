@@ -3,7 +3,7 @@
 module snapshot_reg         (// upstream control signal
                              snap_wr_en, snap_rd_data,
                              snap_rd_en, snap_wr_data,
-                             mst__fsm__sync_reset,
+                             soft_rst,
                              // downstram(register) control signal
                              reg_rd_en, reg_rd_data,
                              reg_wr_en, reg_wr_data,
@@ -28,7 +28,7 @@ module snapshot_reg         (// upstream control signal
    output [PARTITION_CNT-1:0] [DATA_WIDTH-1:0]       snap_rd_data;
    input  [PARTITION_CNT-1:0]                        snap_wr_en,snap_rd_en;
 
-   input mst__fsm__sync_reset;
+   input soft_rst;
 
    output                      reg_rd_en, reg_wr_en;
    input [REG_WIDTH-1:0]         reg_rd_data;
@@ -49,7 +49,7 @@ module snapshot_reg         (// upstream control signal
       for (i=0; i<PARTITION_CNT; i=i+1)
         if ((i == PARTITION_CNT-1) && (REM_WIDTH != 0))
           always @(posedge clk or negedge rst_n)
-            if (!rst_n | mst__fsm__sync_reset)
+            if (!rst_n | soft_rst)
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= {REM_WIDTH{1'b0}};
             else if (snap_rd_en[0])
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= reg_rd_data[i*DATA_WIDTH +: REM_WIDTH];
@@ -59,7 +59,7 @@ module snapshot_reg         (// upstream control signal
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= snapshot_ff[i*DATA_WIDTH +: REM_WIDTH];
         else
           always @(posedge clk or negedge rst_n)
-            if (!rst_n | mst__fsm__sync_reset)
+            if (!rst_n | soft_rst)
               snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= {DATA_WIDTH{1'b0}};
 	          else if (snap_rd_en[0])
 	            snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= reg_rd_data[i*DATA_WIDTH +: DATA_WIDTH];

@@ -1,6 +1,6 @@
 import os
 import sys
-from math import log, ceil
+from math import log2, ceil
 
 import jinja2 as jj
 import utils.message as message
@@ -28,17 +28,22 @@ class RTLExporter:
             'AddrmapNode': AddrmapNode,
             'MemNode': MemNode,
             'isinstance': isinstance,
+            'log2': log2,
             'get_comp_addr': self._get_comp_addr,
             'use_abs_addr': self._use_abs_addr,
             'dec_addr_bit': self._dec_addr_bit,
             'is_aligned': self._is_aligned,
             'get_forward_num': self._get_forward_num,
+            'get_inst_name': self._get_inst_name,
             'get_rtl_name': self._get_rtl_name,
             'use_forward_ff': self._use_forward_ff,
             'use_backward_ff': self._use_backward_ff,
-            'remain_bit': self._remain_bit,
+            'valid_bit': self._valid_bit,
             'get_property': self._get_property,
-            'get_abs_addr': self._get_abs_addr
+            'get_abs_addr': self._get_abs_addr,
+            'get_entry_width': self._get_entry_width,
+            'get_addr_width': self._get_addr_width,
+            'has_cdc': self._has_cdc
         }
 
     def export_rtl_new(self, top_node: Node, dir: str):
@@ -102,7 +107,7 @@ class RTLExporter:
 
     def _is_aligned(self, node:AddressableNode):
         # whether the forwarding module of regdisp is aligned to its absolute address
-        return node.absolute_address % (2 ** ceil(log(node.total_size, 2))) == 0
+        return node.absolute_address % (2 ** ceil(log2(node.total_size))) == 0
 
     def _get_comp_addr(self, node:AddressableNode):
         """
@@ -115,7 +120,7 @@ class RTLExporter:
 
         ptr_addr = start_addr
         comp_addr_expr = []
-        prefix = "{}'h".format(self.context["addr_width"] - int(log(self.context["data_width"] // 8, 2)))
+        prefix = "{}'h".format(self.context["addr_width"] - int(log2(self.context["data_width"] // 8)))
 
         while ptr_addr < end_addr:
             step = 1
@@ -137,7 +142,7 @@ class RTLExporter:
         # return list with 2 elements: msb, lsb
         return [
             self.context["addr_width"] - 1,
-            int(log(self.context["data_width"] // 8, 2))
+            int(log2(self.context["data_width"] // 8))
         ]
 
     def _use_backward_ff(self, node:AddrmapNode):
@@ -154,5 +159,17 @@ class RTLExporter:
 
         return forward_ff_param
 
-    def _remain_bit(self, node:AddressableNode):
-        return ceil(log(node.total_size, 2))
+    def _valid_bit(self, node:AddressableNode):
+        return ceil(log2(node.total_size))
+
+    def _get_inst_name(self, node:AddressableNode):
+        return node.get_path_segment(array_suffix="_{index:d}")
+
+    def _get_entry_width(self, node:MemNode):
+        return node.get_property("memwidth", default=32)
+
+    def _get_addr_width(self, node:MemNode):
+        return ceil(log2(node.get_property("mementries", default=2)))
+
+    def _has_cdc(self, node:AddressableNode):
+        return 1 if node.get_property("hj_cdc", default=False) else 0
