@@ -43,18 +43,26 @@ class RTLExporter:
             'get_abs_addr': self._get_abs_addr,
             'get_data_width': self._get_data_width,
             'get_addr_width': self._get_addr_width,
-            'has_cdc': self._has_cdc
+            'has_cdc': self._has_cdc,
+            'is_3rd_party_ip': self._is_3rd_party_ip
         }
 
-    def export_rtl_new(self, top_node: Node, dir: str):
+    def export_rtl_new(self, top_node: Node, rtl_dir: str):
         """
-        traverse all addrmap and generate all regmst and regdisp modules in pre-order
+        traverse all addrmap and generate modules in pre-order
+
+        - regmst
+        - regdisp
+        - filelist
 
         Parameter
         ---------
         `top_node` :
         `path` :
         """
+        # filelist for integration
+        filelist = []
+
         # if it's the root node, skip to the top addrmap
         if isinstance(top_node, RootNode):
             top_node = top_node.top
@@ -69,7 +77,11 @@ class RTLExporter:
             template = self.jj_env.get_template("regmst_template.jinja")
 
             stream = template.stream(self.context)
-            stream.dump(os.path.join(dir,  "%s.v" % (self._get_rtl_name(top_node))))
+            filename = "%s.v" % (self._get_rtl_name(top_node))
+
+            stream.dump(os.path.join(rtl_dir, filename))
+            filelist.append(filename)
+
 
         for child in top_node.children(unroll=True, skip_not_present=False):
             if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
@@ -81,11 +93,11 @@ class RTLExporter:
                 template = self.jj_env.get_template("regdisp_template.jinja")
 
                 stream = template.stream(self.context)
-                stream.dump(os.path.join(dir,  "%s.v" % (self._get_rtl_name(child))))
+                stream.dump(os.path.join(rtl_dir,  "%s.v" % (self._get_rtl_name(child))))
 
-                self.export_rtl_new(child, dir)
+                self.export_rtl_new(child, rtl_dir)
 
-    def _get_rtl_name(self, node:Node):
+    def _get_rtl_name(self, node:AddrmapNode):
         return node.get_property("rtl_module_name")
 
     def _get_forward_num(self, node:AddrmapNode):
@@ -115,12 +127,12 @@ class RTLExporter:
         case statement in RTL code.
         example: 62'h130, 62'h131, ..., 62'h13f -> 62'h13?
         """
-        start_addr = node.absolute_address // (self.context["data_width"] // 8)
-        end_addr = (node.absolute_address + node.size) // (self.context["data_width"] // 8)
+        start_addr = node.absolute_address // (self.context["bus_data_width"] // 8)
+        end_addr = (node.absolute_address + node.size) // (self.context["bus_data_width"] // 8)
 
         ptr_addr = start_addr
         comp_addr_expr = []
-        prefix = "{}'h".format(self.context["addr_width"] - int(log2(self.context["data_width"] // 8)))
+        prefix = "{}'h".format(self.context["bus_addr_width"] - int(log2(self.context["bus_data_width"] // 8)))
 
         while ptr_addr < end_addr:
             step = 1
@@ -141,8 +153,8 @@ class RTLExporter:
     def _dec_addr_bit(self):
         # return list with 2 elements: msb, lsb
         return [
-            self.context["addr_width"] - 1,
-            int(log2(self.context["data_width"] // 8))
+            self.context["bus_addr_width"] - 1,
+            int(log2(self.context["bus_data_width"] // 8))
         ]
 
     def _use_backward_ff(self, node:AddrmapNode):
@@ -179,3 +191,6 @@ class RTLExporter:
 
     def _has_cdc(self, node:AddressableNode):
         return 1 if node.get_property("hj_cdc", default=False) else 0
+
+    def _is_3rd_party_ip(self, node:AddrmapNode):
+        return node.get_property("hj_3rd_party_IP", default=False)

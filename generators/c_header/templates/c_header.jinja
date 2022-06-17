@@ -15,10 +15,10 @@
 
 {%- macro reg_typedef(reg) %}
 typedef union {{"{"}}
-    uint{{reg.size}}_t val;
+    uint{{reg.size * 8}}_t val;
     struct {{"{"}}
     {%- for field in get_all_fields(reg) %}
-        {{"uint%s_t %-12s: %d;"|format(reg.size, field[0], field[1])}}
+        {{"uint%s_t %-12s: %d;"|format(reg.size * 8, field[0], field[1])}}
     {%- endfor %}
     {{"}"}} reg;
 {{"}"}} {{get_hier_name(reg)}}_t;

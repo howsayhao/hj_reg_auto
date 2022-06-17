@@ -580,48 +580,6 @@ def get_regslv_cdc(cdc):
 
     return regslv_cdc_rtl
 
-def get_mem_cdc_rtl(ext_list):
-    mem_cdc_rtl = ''
-    for ext_module in ext_list:
-        module_name = ext_module.module_name
-        if(isinstance(ext_module, Memory) and ext_module.cdc):
-            mem_cdc_rtl += '\tassign %s_value_out_fsm = {%s_req_vld_fsm, %s_wr_en_fsm, %s_rd_en_fsm, %s_wr_data_fsm, %s_addr_fsm};\n'%(module_name, module_name, module_name, module_name, module_name, module_name)
-            mem_cdc_rtl += '\tassign {%s_req_vld, %s_wr_en, %s_rd_en, %s_wr_data, %s_addr} =  %s_value_out;\n'%(module_name, module_name, module_name, module_name, module_name, module_name)
-
-            mem_cdc_rtl += '\n\tassign {%s_ack_vld_fsm, %s_rd_data_fsm} =  %s_value_in_fsm;\n'%(module_name, module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_value_in = {%s_ack_vld, %s_rd_data};\n'%(module_name, module_name, module_name)
-
-            mem_cdc_rtl += '\n\t// create the pulse to deliver the value\n'
-            mem_cdc_rtl += '\talways_ff@(posedge fsm_clk or negedge fsm_rstn)begin\n'
-            mem_cdc_rtl += '\t\tif(~fsm_rstn)\n'
-            mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= 1\'b0;\n'%(module_name)
-            mem_cdc_rtl += '\t\telse\n'
-            mem_cdc_rtl += '\t\t\t%s_req_vld_fsm_ff <= %s_req_vld_fsm;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tend\n'
-
-            mem_cdc_rtl += '\n\tassign %s_sel_pulse = ~%s_req_vld_fsm_ff & %s_req_vld_fsm;\n'%(module_name, module_name, module_name)
-
-            mem_cdc_rtl += '\n\talways_ff@(posedge %s_clk or negedge %s_rstn)begin\n'%(module_name, module_name)
-            mem_cdc_rtl += '\t\tif(~%s_rstn)\n'%(module_name)
-            mem_cdc_rtl += '\t\t\t%s_ack_vld_ff <= 1\'b0;\n'%(module_name)
-            mem_cdc_rtl += '\t\telse\n'
-            mem_cdc_rtl += '\t\t\t%s_ack_vld_ff <= %s_ack_vld;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tend\n'
-
-            mem_cdc_rtl += '\n\tassign %s_ack_pulse = ~%s_ack_vld_ff & %s_ack_vld;\n'%(module_name, module_name, module_name)
-            # mem_cdc_rtl += '\n\tassign %s_ack_pulse = %s_ack_vld;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\n' + value_transmitter_ins(ext_module)
-        else:
-            mem_cdc_rtl += '\tassign %s_req_vld       = %s_req_vld_fsm    ;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_ack_vld_fsm   = %s_ack_vld        ;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_wr_en         = %s_wr_en_fsm      ;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_rd_en         = %s_rd_en_fsm      ;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_addr          = %s_addr_fsm       ;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_wr_data       = %s_wr_data_fsm    ;\n'%(module_name, module_name)
-            mem_cdc_rtl += '\tassign %s_rd_data_fsm   = %s_rd_data        ;\n'%(module_name, module_name)
-
-    return mem_cdc_rtl
-
 def value_transmitter_ins(module):
     module_name = module.module_name
     trans_length = module.DATA_WIDTH + module.ADDR_WIDTH + 4

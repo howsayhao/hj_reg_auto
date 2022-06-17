@@ -1,8 +1,10 @@
-{% set parent_name = get_inst_name(disp_node.parent) %}
+{%- set parent_name = get_inst_name(disp_node.parent) -%}
 module {{get_rtl_name(disp_node)}} (
-    {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
+    {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
+    {% set child_name = get_inst_name(child) -%}
     // reg_native_if forwarding to {{child_name}}
-    {% set child_name = get_inst_name(child) %}
+    {{child_name}}_clk,
+    {{child_name}}_rst_n,
     {{child_name}}_req_vld,
     {{child_name}}_ack_vld,
     {{child_name}}_addr,
@@ -10,9 +12,9 @@ module {{get_rtl_name(disp_node)}} (
     {{child_name}}_rd_en,
     {{child_name}}_wr_data,
     {{child_name}}_rd_data,
-    {% if not isinstance(child, MemNode) %}
+    {% if not isinstance(child, MemNode) and not is_3rd_party_ip(child) -%}
     {{child_name}}_soft_rst,
-    {% endif %}
+    {%- endif -%}
     {% endfor %}
     // reg_native_if forwarded by {{parent_name}}
     {{parent_name}}_clk,
@@ -35,7 +37,6 @@ module {{get_rtl_name(disp_node)}} (
 
     input   logic                                       {{parent_name}}_clk;
     input   logic                                       {{parent_name}}_rst_n;
-
     input   logic                                       {{parent_name}}_req_vld;
     output  logic                                       {{parent_name}}_ack_vld;
     input   logic   [ADDR_WIDTH-1:0]                    {{parent_name}}_addr;
@@ -46,9 +47,11 @@ module {{get_rtl_name(disp_node)}} (
     input   logic                                       {{parent_name}}_soft_rst;
 
     {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
-    {% set child_name = get_inst_name(child) %}
-    {% set child_addr_width = get_addr_width(child)%}
-    {% set child_data_width = get_data_width(child)%}
+    {%- set child_name = get_inst_name(child) -%}
+    {%- set child_addr_width = get_addr_width(child) -%}
+    {%- set child_data_width = get_data_width(child) -%}
+    input   logic                                       {{child_name}}_clk;
+    input   logic                                       {{child_name}}_rst_n;
     output  logic                                       {{child_name}}_req_vld;
     input   logic                                       {{child_name}}_ack_vld;
     output  logic   [{{"%-2d"|format(child_addr_width-1)}}:0]                              {{child_name}}_addr;
@@ -56,10 +59,10 @@ module {{get_rtl_name(disp_node)}} (
     output  logic                                       {{child_name}}_rd_en;
     output  logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{child_name}}_wr_data;
     input   logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{child_name}}_rd_data;
-    {% if not isinstance(child, MemNode) %}
+    {% if not isinstance(child, MemNode) and not is_3rd_party_ip(child) -%}
     output  logic                                       {{child_name}}_soft_rst;
     {% endif %}
-    {% endfor %}
+    {% endfor -%}
 
     logic   [FORWARD_NUM-1:0]                           downstream_req_vld;
     logic   [FORWARD_NUM-1:0]                           downstream_ack_vld;
@@ -69,6 +72,12 @@ module {{get_rtl_name(disp_node)}} (
     logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data;
     logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_rd_data;
     logic   [FORWARD_NUM-1:0]                           downstream_soft_rst;
+
+    logic   [FORWARD_NUM-1:0]                           downstream_req_vld_ff;
+    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_ff;
+    logic   [FORWARD_NUM-1:0]                           downstream_wr_en_ff;
+    logic   [FORWARD_NUM-1:0]                           downstream_rd_en_ff;
+    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data_ff;
 
     logic   [FORWARD_NUM-1:0]                           downstream_req_vld_imux;
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_imux;
@@ -135,13 +144,13 @@ module {{get_rtl_name(disp_node)}} (
                                                                              loop.index0)}}
     {%- elif is_aligned(child) %}
     {{"assign  downstream_addr_conv[%d] = {%d'b0, downstream_addr_imux[%d][%d:0]};"|format(loop.index0,
-                                                                                            addr_width-valid_bit(child),
-                                                                                            loop.index0,
-                                                                                            valid_bit(child)-1)}}
+                                                                                           get_addr_width(child)-valid_bit(child),
+                                                                                           loop.index0,
+                                                                                           valid_bit(child)-1)}}
     {%- else %}
     {{"assign  downstream_addr_conv[%d] = downstream_addr_imux[%d] - %d'h%x;"|format(loop.index0,
                                                                                       loop.index0,
-                                                                                      addr_width,
+                                                                                      get_addr_width(child),
                                                                                       child.absolute_address)}}
     {%- endif %}
     {%- endfor %}
@@ -181,9 +190,9 @@ module {{get_rtl_name(disp_node)}} (
         end
     endgenerate
 
-    {% for child in disp_node.children(unroll=True, skip_not_present=False) %}
-    {% set child_name = get_inst_name(child) %}
-    {% if isinstance(child, MemNode) %}
+    {% for child in disp_node.children(unroll=True, skip_not_present=False) -%}
+    {%- set child_name = get_inst_name(child) -%}
+    {%- if isinstance(child, MemNode) %}
     reg_native_if2mem #(
         .CDC_ENABLE({{has_cdc(child)}}),
         .BUS_DATA_WIDTH(DATA_WIDTH),
@@ -192,7 +201,7 @@ module {{get_rtl_name(disp_node)}} (
         .MEM_DATA_WIDTH({{get_data_width(child)}}),
         .MEM_ADDR_WIDTH({{get_addr_width(child)}})
     )
-    reg_native_if2mem (
+    reg_native_if2mem_{{child_name}} (
         .native_clk({{parent_name}}_clk),
         .native_rst_n({{parent_name}}_rst_n),
         .soft_rst(downstream_soft_rst[{{loop.index0}}]),
@@ -213,11 +222,45 @@ module {{get_rtl_name(disp_node)}} (
         .mem_wr_data({{child_name}}_wr_data),
         .mem_rd_data({{child_name}}_rd_data)
     );
-    {% elif isinstance(child, AddrmapNode) %}
-    assign  downstream_ack_vld[{{loop.index0}}] =
-    {% endif %}
+    {% elif isinstance(child, AddrmapNode) -%}
+    {%- if is_3rd_party_ip(child) %}
+    reg_native_if2third_party_ip #(
+        .CDC_ENABLE({{has_cdc(child)}}),
+        .BUS_DATA_WIDTH(DATA_WIDTH),
+        .BUS_ADDR_WIDTH(ADDR_WIDTH)
+    )
+    reg_native_if2third_party_ip_{{child_name}} (
+        .native_clk({{parent_name}}_clk),
+        .native_rst_n({{parent_name}}_rst_n),
+        .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
+        .ack_vld(downstream_ack_vld[{{loop.index0}}]),
+        .addr(downstream_addr_ff[{{loop.index0}}]),
+        .wr_en(downstream_wr_en_ff[{{loop.index0}}]),
+        .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
+        .wr_data(downstream_wr_data_ff[{{loop.index0}}]),
+        .rd_data(downstream_rd_data[{{loop.index0}}]),
+        .ext_clk({{child_name}}_clk),
+        .ext_rst_n({{child_name}}_rst_n),
+        .ext_req_vld({{child_name}}_req_vld),
+        .ext_ack_vld({{child_name}}_ack_vld),
+        .ext_addr({{child_name}}_addr),
+        .ext_wr_en({{child_name}}_wr_en),
+        .ext_rd_en({{child_name}}_rd_en),
+        .ext_wr_data({{child_name}}_wr_data),
+        .ext_rd_data({{child_name}}_rd_data)
+    );
+    {%- else -%}
+    assign  {{child_name}}_req_vld              = downstream_req_vld_ff[{{loop.index0}}];
+    assign  downstream_ack_vld[{{loop.index0}}] = {{child_name}}_ack_vld;
+    assign  {{child_name}}_addr                 = downstream_addr_ff[{{loop.index0}}];
+    assign  {{child_name}}_wr_en                = downstream_wr_en_ff[{{loop.index0}}];
+    assign  {{child_name}}_rd_en                = downstream_rd_en_ff[{{loop.index0}}];
+    assign  {{child_name}}_wr_data              = downstream_wr_data_ff[{{loop.index0}}];
+    assign  downstream_rd_data[{{loop.index0}}] = {{child_name}}_rd_data;
+    assign  {{child_name}}_soft_rst             = downstream_soft_rst[{{loop.index0}}];
+    {%- endif -%}
+    {%- endif %}
     {% endfor %}
-
 
     /**************************************************************************
     ** backward datapath
@@ -240,18 +283,18 @@ module {{get_rtl_name(disp_node)}} (
         if (INSERT_BACKWARD_FF) begin: g_backward_ff
             always @(posedge {{parent_name}}_clk or negedge {{parent_name}}_rst_n) begin
                 if (!{{parent_name}}_rst_n) begin
-                    {{parent_name}}_ack_vld_ff    <= 1'b0;
-                    {{parent_name}}_rd_data_ff    <= {DATA_WIDTH{1'b0}};
+                    {{parent_name}}_ack_vld     <= 1'b0;
+                    {{parent_name}}_rd_data     <= {DATA_WIDTH{1'b0}};
                 end
                 else begin
-                    {{parent_name}}_ack_vld_ff    <= {{parent_name}}_ack_vld_mux;
-                    {{parent_name}}_rd_data_ff    <= {{parent_name}}_rd_data_mux;
+                    {{parent_name}}_ack_vld     <= {{parent_name}}_ack_vld_mux;
+                    {{parent_name}}_rd_data     <= {{parent_name}}_rd_data_mux;
                 end
             end
         end
         else begin: g_wo_backward_ff
-            assign {{parent_name}}_ack_vld_ff     = {{parent_name}}_ack_vld_mux;
-            assign {{parent_name}}_rd_data_ff     = {{parent_name}}_rd_data_mux;
+            assign {{parent_name}}_ack_vld      = {{parent_name}}_ack_vld_mux;
+            assign {{parent_name}}_rd_data      = {{parent_name}}_rd_data_mux;
         end
     endgenerate
 
