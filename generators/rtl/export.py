@@ -24,7 +24,7 @@ def export_rtl(root:RootNode, out_dir:str):
     try:
         reg_tree = root_str(node=root, folder_name=rtl_dir)
         reg_tree.scan()
-        RTLExporter().export_rtl_new(root, rtl_dir)
+        RTLExporter().export_all(root, rtl_dir)
     except Exception:
         message.error("HRDA encounters some unknown errors")
         message.error(traceback.format_exc())

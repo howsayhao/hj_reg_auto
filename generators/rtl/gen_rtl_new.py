@@ -1,8 +1,10 @@
 import os
+import shutil
 import sys
-from math import log2, ceil
+from math import ceil, log2
 
 import jinja2 as jj
+from numpy import isin
 import utils.message as message
 from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, RootNode)
@@ -47,21 +49,81 @@ class RTLExporter:
             'is_3rd_party_ip': self._is_3rd_party_ip
         }
 
+        # filelist for all generated rtl module files
+        self.filelist = set(
+            [os.path.join("dw", "field", fn) for fn in [
+                "field.v",
+                "hw_ctrl.v",
+                "sw_ctrl.v"
+            ]] +
+            [os.path.join("dw", "fsm", fn) for fn in [
+                "mst_fsm.v",
+                "slv_fsm.v"
+            ]] +
+            [os.path.join("dw", "mux", fn) for fn in [
+                "one_hot_mux_2d.v",
+                "one_hot_mux_ff.v",
+                "one_hot_mux.v",
+                "priority_mux_2d.v",
+                "priority_mux.v",
+                "right_find_first_one.v",
+                "split_mux_2d.v",
+                "split_mux.v"
+            ]] +
+            [os.path.join("dw", "snapshot", fn) for fn in [
+                "snapshot_reg.v"
+            ]]
+        )
+
+        # header file
+        self.hdrlist = set(
+            [os.path.join("header", fn) for fn in [
+                "common_funcs.vh",
+                "xregister.vh"
+            ]]
+        )
+
+    def export_all(self, top_node: Node, rtl_dir: str):
+        dw_dst_dir = os.path.join(rtl_dir, "dw")
+        hdr_dst_dir = os.path.join(rtl_dir, "header")
+        if not os.path.exists(dw_dst_dir):
+            os.mkdir(dw_dst_dir)
+        if not os.path.exists(hdr_dst_dir):
+            os.mkdir(hdr_dst_dir)
+
+        dw_src_dir = os.path.join(os.path.dirname(__file__), "test", "dw")
+        hdr_src_dir = os.path.join(os.path.dirname(__file__), "test", "header")
+
+        # argument dir_exist_ok is only supported in Python 3.8+
+        shutil.copytree(dw_src_dir, dw_dst_dir , dirs_exist_ok=True)
+        shutil.copytree(hdr_src_dir, hdr_dst_dir, dirs_exist_ok=True)
+
+        self.export_rtl_new(top_node, rtl_dir)
+
+        with open(os.path.join(rtl_dir, "file.list"), "w") as fl:
+            fl.write("\n".join(sorted(self.filelist)))
+
+        with open(os.path.join(rtl_dir, "header.list"), "w") as fl:
+            fl.write("\n".join(sorted(self.hdrlist)))
+
+        message.info("if you need to convert reg_native_if to or from some AMBA protocol bus "
+                     "(support APB now), bridge components are in %s" % (os.path.join(dw_dst_dir, "bridge")))
+
     def export_rtl_new(self, top_node: Node, rtl_dir: str):
         """
-        traverse all addrmap and generate modules in pre-order
+        traverse all addrmap, generate modules in pre-order
 
         - regmst
         - regdisp
         - filelist
+
+        and copy necessary files to dw directory
 
         Parameter
         ---------
         `top_node` :
         `path` :
         """
-        # filelist for integration
-        filelist = []
 
         # if it's the root node, skip to the top addrmap
         if isinstance(top_node, RootNode):
@@ -75,27 +137,58 @@ class RTLExporter:
             self.context.update(update_context)
 
             template = self.jj_env.get_template("regmst_template.jinja")
-
             stream = template.stream(self.context)
             filename = "%s.v" % (self._get_rtl_name(top_node))
 
             stream.dump(os.path.join(rtl_dir, filename))
-            filelist.append(filename)
-
+            self.filelist.add(filename)
 
         for child in top_node.children(unroll=True, skip_not_present=False):
-            if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
-                update_context = {
-                    'disp_node': child
-                }
-                self.context.update(update_context)
+            if isinstance(child, AddrmapNode):
+                if child.get_property("hj_gendisp"):
+                    # generate regdisp rtl module and add it to filelist
+                    update_context = {
+                        'disp_node': child
+                    }
+                    self.context.update(update_context)
 
-                template = self.jj_env.get_template("regdisp_template.jinja")
+                    template = self.jj_env.get_template("regdisp_template.jinja")
+                    stream = template.stream(self.context)
+                    filename = "%s.v" % (self._get_rtl_name(child))
 
-                stream = template.stream(self.context)
-                stream.dump(os.path.join(rtl_dir,  "%s.v" % (self._get_rtl_name(child))))
+                    stream.dump(os.path.join(rtl_dir, filename))
+                    self.filelist.add(filename)
 
-                self.export_rtl_new(child, rtl_dir)
+                elif child.get_property("hj_genslv"):
+                    # generate regslv rtl module and add it to filelist
+                    # regslv rtl generation now uses legacy code
+                    filename = "%s.v" % (self._get_rtl_name(child))
+                    self.filelist.add(filename)
+
+                elif child.get_property("hj_3rd_party_IP"):
+                    # no need to generate rtl modules for 3rd party IP
+                    self.filelist.update([
+                        os.path.join("dw", "bridge", "reg_native_if2third_party_ip.v")
+                    ])
+
+            elif isinstance(child, MemNode):
+                # add memory bridge component to filelist
+                self.filelist.update([
+                    os.path.join("dw", "bridge", "reg_native_if2mem.v"),
+                    os.path.join("dw", "snapshot", "snapshot_mem.v")
+                ])
+
+            # add cdc modules to filelist if needed
+            if self._has_cdc(child):
+                self.filelist.update(
+                    [os.path.join("dw", "cdc", fn) for fn in [
+                        "cdc_synczr_rst_1bit.v",
+                        "pulse_deliver_1bit.v",
+                        "pulse_deliver.v",
+                        "value_deliver.v",
+                        "value_transmitter.v"
+                    ]])
+            self.export_rtl_new(child, rtl_dir)
 
     def _get_rtl_name(self, node:AddrmapNode):
         return node.get_property("rtl_module_name")
