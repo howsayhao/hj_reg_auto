@@ -5,7 +5,9 @@ module mst_fsm (
     // reg_native_if
     fsm_req_vld, fsm_ack_vld, fsm_addr, fsm_wr_en, fsm_rd_en, fsm_wr_data, fsm_rd_data,
     // timer
-    tmr_tmout, tmr_rst
+    tmr_tmout, tmr_rst,
+    // dummy reg access assertion
+    err_acc_dummy
 );
 
     parameter       ADDR_WIDTH = 64;
@@ -36,6 +38,7 @@ module mst_fsm (
 
     input   logic                       tmr_tmout;
     output  logic                       tmr_rst;
+    input   logic                       err_acc_dummy;
 
     logic           [DATA_WIDTH-1:0]    fsm_rd_data_ff;
     logic   [1:0]   state;
@@ -76,6 +79,7 @@ module mst_fsm (
     end
 
     // output
+    // all forwarding reg_native_if signals are pulse
     assign  fsm_req_vld     = psel & ~penable;
     assign  fsm_wr_en       = psel & ~penable & pwrite;
     assign  fsm_rd_en       = psel & ~penable & ~pwrite;
@@ -102,6 +106,6 @@ module mst_fsm (
     end
 
     assign  pready          = (state == S_ACK) || ((state == S_WAIT) && (next_state == S_IDLE));
-    assign  pslverr         = tmr_tmout;
+    assign  pslverr         = tmr_tmout | err_acc_dummy;
     assign  tmr_rst         = (next_state == S_IDLE);
 endmodule

@@ -52,6 +52,10 @@ module {{get_rtl_name(mst_node)}} (
     logic                               tmr_tmout;
     logic                               tmr_rst;
 
+    logic                               err_acc_dummy;
+    logic                               int_err_acc_dummy;
+    logic                               ext_err_acc_dummy;
+
     logic   [31:0]                      db_err_addr__snap_0_wr_data;
     logic                               db_err_addr__snap_0_wr_en;
     logic                               db_err_addr__snap_0_rd_en;
@@ -103,7 +107,7 @@ module {{get_rtl_name(mst_node)}} (
     logic                                   int_ack_vld;
     logic   [DATA_WIDTH-1:0]                int_rd_data;
 
-//****************************************ADDRESS DECODER START*****************************************//
+//****************************************ADDRESS DECODER************************************************//
     // distinguish access requests to:
     //      internel debug registers
     //      external regdisp module
@@ -126,9 +130,8 @@ module {{get_rtl_name(mst_node)}} (
             default: dec_dummy_reg_sel  = 1'b1;
         endcase
     end
-//****************************************ADDRESS DECODER END*****************************************//
 
-//****************************************FSM INSTANCE START*****************************************//
+//*****************************************FSM INSTANCE************************************************//
     mst_fsm #(
         .ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
     mst_fsm (
@@ -144,6 +147,7 @@ module {{get_rtl_name(mst_node)}} (
         .prdata                 (prdata),
         .fsm_req_vld            (fsm_req_vld),
         .fsm_ack_vld            (fsm_ack_vld),
+        .err_acc_dummy          (err_acc_dummy),
         .fsm_addr               (fsm_addr),
         .fsm_wr_en              (fsm_wr_en),
         .fsm_rd_en              (fsm_rd_en),
@@ -152,9 +156,8 @@ module {{get_rtl_name(mst_node)}} (
         .tmr_tmout              (tmr_tmout),
         .tmr_rst                (tmr_rst)
     );
-//*****************************************FSM INSTANCE END*******************************************//
 
-//*******************************************TIMER START**********************************************//
+//*******************************************TIMER*****************************************************//
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n || tmr_rst)
             tmr_cnt <= {DATA_WIDTH{1'b0}};
@@ -162,10 +165,11 @@ module {{get_rtl_name(mst_node)}} (
             tmr_cnt <= tmr_cnt + 1'b1;
     end
 
-    assign  tmr_tmout = (tmr_cnt == db_tmr_thr_o);
-//********************************************TIMER END***********************************************//
+//*******************************************EVENT RECORD**********************************************//
+    assign  tmr_tmout           = (tmr_cnt == db_tmr_thr_o);
+    assign  int_err_acc_dummy   = dec_dummy_reg_sel;
 
-//*********************************DEBUG REGISTERS INSTANCE START*************************************//
+//******************************************DEBUG REGISTERS********************************************//
     // debug register: db_err_addr ({{bus_addr_width}}-bit)
     // description:
     //      address of the access where timeout event occurs
@@ -360,9 +364,8 @@ module {{get_rtl_name(mst_node)}} (
         db_err_stat_o[2:2]      = db_err_stat__ERR_ACC_TYPE__curr_value;
     end
 
-//**********************************DEBUG REGISTERS INSTANCE END**************************************//
 
-//*************************INTERNAL/EXTERNAL MUX/IMUX INSTANCE START**********************************//
+//*************************INTERNAL/EXTERNAL MUX/IMUX INSTANCE*****************************************//
     // internal register multiplexor: rd_data and ack_vld from debug registers
     assign  db_reg_rd_data[0]           = db_err_addr__snap_0_o;
     assign  db_reg_rd_data[1]           = db_err_addr__snap_1_o;
@@ -385,7 +388,7 @@ module {{get_rtl_name(mst_node)}} (
 
     assign  int_ack_vld         = int_rd_split_mux_dout_vld | int_wr_sel;
 
-    // internal register inverse multiplexor: to debug registers
+    // internal register inverse multiplexor to debug registers
     assign  db_reg_wr_sel               = {REG_NUM{fsm_wr_en}} & dec_db_reg_sel;
     assign  db_reg_rd_sel               = {REG_NUM{fsm_rd_en}} & dec_db_reg_sel;
     assign  dummy_reg_rd_sel            = dec_dummy_reg_sel & fsm_req_vld & fsm_rd_en;
@@ -407,10 +410,11 @@ module {{get_rtl_name(mst_node)}} (
     assign  db_err_stat_wr_en           = db_reg_wr_sel[3];
     assign  db_err_stat_rd_en           = db_reg_rd_sel[3];
 
-    // ultimate multiplexor: to mst_fsm
-    assign  fsm_rd_data     = int_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
-    assign  fsm_ack_vld     = int_ack_vld | ext_ack_vld;
-    assign  fsm_err         = int_err | ext_err;
+    // ultimate multiplexor to mst_fsm: ack_vld, rd_data, err
+    assign  fsm_rd_data                 = int_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
+    assign  fsm_ack_vld                 = int_ack_vld | ext_ack_vld;
+    assign  ext_err_acc_dummy           = ext_err;
+    assign  err_acc_dummy               = int_err_acc_dummy | ext_err_acc_dummy;
 
     // ultimate inverse multiplexor: to the external downstream regdisp module
     assign  ext_req_vld                 = fsm_req_vld & dec_ext_sel;
@@ -418,6 +422,5 @@ module {{get_rtl_name(mst_node)}} (
     assign  ext_rd_en                   = fsm_rd_en & dec_ext_sel;
     assign  ext_addr                    = dec_ext_sel ? fsm_addr : {ADDR_WIDTH{1'b0}};
     assign  ext_wr_data                 = dec_ext_sel ? fsm_wr_data : {DATA_WIDTH{1'b0}};
-//**************************INTERNAL/EXTERNAL MUX/IMUX INSTANCE END***********************************//
 endmodule
 `default_nettype wire
