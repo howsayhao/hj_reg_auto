@@ -52,7 +52,7 @@ module reg_native_if2mem (
         .ENTRY_WIDTH(MEM_ADDR_WIDTH)
     )
     snapshot_mem (
-        .clk(native_clk)
+        .clk(native_clk),
         .rst_n(native_rst_n),
         .soft_rst(soft_rst),
         .req_vld(req_vld),

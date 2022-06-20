@@ -4,7 +4,6 @@ import sys
 from math import ceil, log2
 
 import jinja2 as jj
-from numpy import isin
 import utils.message as message
 from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, RootNode)
@@ -66,7 +65,7 @@ class RTLExporter:
                 "one_hot_mux.v",
                 "priority_mux_2d.v",
                 "priority_mux.v",
-                "right_find_first_one.v",
+                "right_find_1st_one.v",
                 "split_mux_2d.v",
                 "split_mux.v"
             ]] +

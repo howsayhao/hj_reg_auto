@@ -91,6 +91,7 @@ module {{get_rtl_name(disp_node)}} (
     logic   [DATA_WIDTH-1:0]                            {{parent_name}}_rd_data_mux;
     logic   [FORWARD_NUM-1:0]                           dec_if_sel;
     logic                                               dec_dummy_reg_sel;
+    logic                                               dummy_reg_ack_vld;
 
     /**************************************************************************
     ** forward datapath
@@ -267,7 +268,8 @@ module {{get_rtl_name(disp_node)}} (
     **************************************************************************/
 
     // backward multiplexor for rd_data and ack_vld
-    assign  {{parent_name}}_ack_vld_mux   = (| downstream_ack_vld) | dec_dummy_reg_sel;
+    assign  dummy_reg_ack_vld           = dec_dummy_reg_sel | {{parent_name}}_req_vld;
+    assign  {{parent_name}}_ack_vld_mux = (| downstream_ack_vld) | dummy_reg_ack_vld;
     always_comb begin
         {{parent_name}}_rd_data_mux = {DATA_WIDTH{1'b0}};
         if (!dec_dummy_reg_sel)
