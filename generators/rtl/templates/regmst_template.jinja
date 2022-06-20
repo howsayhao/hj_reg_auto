@@ -6,9 +6,9 @@ module {{get_rtl_name(mst_node)}} (
     // APB interface to upstream SoC interconnect
     psel, penable, pready, pslverr, pwrite, paddr, pwdata, prdata,
     // reg_native_if to the downstream regdisp module
-    ext_req_vld, ext_ack_vld, ext_wr_en, ext_rd_en, ext_addr, ext_wr_data, ext_rd_data,
+    ext_req_vld, ext_ack_vld, ext_err, ext_wr_en, ext_rd_en, ext_addr, ext_wr_data, ext_rd_data,
     // soft reset signal to downstream modules
-    soft_rst_o
+    ext_soft_rst
 );
     parameter       ADDR_WIDTH  = {{get_addr_width(mst_node)}};
     parameter       DATA_WIDTH  = {{get_data_width(mst_node)}};
@@ -28,12 +28,13 @@ module {{get_rtl_name(mst_node)}} (
 
     output  logic                       ext_req_vld;
     input   logic                       ext_ack_vld;
+    input   logic                       ext_err;
     output  logic                       ext_wr_en;
     output  logic                       ext_rd_en;
     output  logic   [ADDR_WIDTH-1:0]    ext_addr;
     output  logic   [DATA_WIDTH-1:0]    ext_wr_data;
     input   logic   [DATA_WIDTH-1:0]    ext_rd_data;
-    output  logic                       soft_rst_o;
+    output  logic                       ext_soft_rst;
 
     logic   [REG_NUM-1:0]               dec_db_reg_sel;
     logic                               dec_ext_sel;
@@ -217,7 +218,7 @@ module {{get_rtl_name(mst_node)}} (
     db_err_addr_snapshot (
         .clk                     (clk),
         .rst_n                   (rst_n),
-        .soft_rst    (soft_rst_o),
+        .soft_rst    (ext_soft_rst),
         .snap_wr_en              (db_err_addr_snapshot_snap_wr_en),
         .snap_rd_en              (db_err_addr_snapshot_snap_rd_en),
         .snap_wr_data            (db_err_addr_snapshot_snap_wr_data),
@@ -296,7 +297,7 @@ module {{get_rtl_name(mst_node)}} (
         .field_value            (db_err_stat__SOFT_RST__curr_value)
     );
     // soft reset signal is from register db_err_stat bit 0 (SOFT_RST)
-    assign  soft_rst_o          = db_err_stat__SOFT_RST__curr_value;
+    assign  ext_soft_rst          = db_err_stat__SOFT_RST__curr_value;
 
     field #(
         .F_WIDTH                (1),
@@ -382,7 +383,7 @@ module {{get_rtl_name(mst_node)}} (
         .dout                   (int_rd_data),
         .dout_vld               (int_rd_split_mux_dout_vld));
 
-    assign  int_ack_vld  = int_rd_split_mux_dout_vld | int_wr_sel;
+    assign  int_ack_vld         = int_rd_split_mux_dout_vld | int_wr_sel;
 
     // internal register inverse multiplexor: to debug registers
     assign  db_reg_wr_sel               = {REG_NUM{fsm_wr_en}} & dec_db_reg_sel;
@@ -409,6 +410,7 @@ module {{get_rtl_name(mst_node)}} (
     // ultimate multiplexor: to mst_fsm
     assign  fsm_rd_data     = int_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
     assign  fsm_ack_vld     = int_ack_vld | ext_ack_vld;
+    assign  fsm_err         = int_err | ext_err;
 
     // ultimate inverse multiplexor: to the external downstream regdisp module
     assign  ext_req_vld                 = fsm_req_vld & dec_ext_sel;

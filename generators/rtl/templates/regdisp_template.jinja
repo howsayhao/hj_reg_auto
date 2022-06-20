@@ -7,6 +7,7 @@ module {{get_rtl_name(disp_node)}} (
     {{child_name}}_rst_n,
     {{child_name}}_req_vld,
     {{child_name}}_ack_vld,
+    {{child_name}}_err,
     {{child_name}}_addr,
     {{child_name}}_wr_en,
     {{child_name}}_rd_en,
@@ -21,6 +22,7 @@ module {{get_rtl_name(disp_node)}} (
     {{parent_name}}_rst_n,
     {{parent_name}}_req_vld,
     {{parent_name}}_ack_vld,
+    {{parent_name}}_err,
     {{parent_name}}_addr,
     {{parent_name}}_wr_en,
     {{parent_name}}_rd_en,
@@ -39,6 +41,7 @@ module {{get_rtl_name(disp_node)}} (
     input   logic                                       {{parent_name}}_rst_n;
     input   logic                                       {{parent_name}}_req_vld;
     output  logic                                       {{parent_name}}_ack_vld;
+    output  logic                                       {{parent_name}}_err;
     input   logic   [ADDR_WIDTH-1:0]                    {{parent_name}}_addr;
     input   logic                                       {{parent_name}}_wr_en;
     input   logic                                       {{parent_name}}_rd_en;
@@ -54,6 +57,7 @@ module {{get_rtl_name(disp_node)}} (
     input   logic                                       {{child_name}}_rst_n;
     output  logic                                       {{child_name}}_req_vld;
     input   logic                                       {{child_name}}_ack_vld;
+    input   logic                                       {{child_name}}_err;
     output  logic   [{{"%-2d"|format(child_addr_width-1)}}:0]                              {{child_name}}_addr;
     output  logic                                       {{child_name}}_wr_en;
     output  logic                                       {{child_name}}_rd_en;
@@ -108,6 +112,8 @@ module {{get_rtl_name(disp_node)}} (
             default: dec_dummy_reg_sel  = 1'b1;
         endcase
     end
+
+    assign  err_acc_dummy   = dec_dummy_reg_sel | {{parent_name}}_req_vld;
 
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data
     always_comb begin
@@ -208,6 +214,7 @@ module {{get_rtl_name(disp_node)}} (
         .soft_rst(downstream_soft_rst[{{loop.index0}}]),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
+        .err(downstream_err[{{loop.index0}}]),
         .addr(downstream_addr_ff[{{loop.index0}}]),
         .wr_en(downstream_wr_en_ff[{{loop.index0}}]),
         .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
@@ -217,6 +224,7 @@ module {{get_rtl_name(disp_node)}} (
         .mem_rst_n({{child_name}}_rst_n),
         .mem_req_vld({{child_name}}_req_vld),
         .mem_ack_vld({{child_name}}_ack_vld),
+        .mem_err({{child_name}}_err),
         .mem_addr({{child_name}}_addr),
         .mem_wr_en({{child_name}}_wr_en),
         .mem_rd_en({{child_name}}_rd_en),
@@ -235,6 +243,7 @@ module {{get_rtl_name(disp_node)}} (
         .native_rst_n({{parent_name}}_rst_n),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
+        .err(downstream_err[{{loop.index0}}]),
         .addr(downstream_addr_ff[{{loop.index0}}]),
         .wr_en(downstream_wr_en_ff[{{loop.index0}}]),
         .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
@@ -244,6 +253,7 @@ module {{get_rtl_name(disp_node)}} (
         .ext_rst_n({{child_name}}_rst_n),
         .ext_req_vld({{child_name}}_req_vld),
         .ext_ack_vld({{child_name}}_ack_vld),
+        .ext_err({{child_name}}_err),
         .ext_addr({{child_name}}_addr),
         .ext_wr_en({{child_name}}_wr_en),
         .ext_rd_en({{child_name}}_rd_en),
@@ -253,6 +263,7 @@ module {{get_rtl_name(disp_node)}} (
     {%- else -%}
     assign  {{child_name}}_req_vld              = downstream_req_vld_ff[{{loop.index0}}];
     assign  downstream_ack_vld[{{loop.index0}}] = {{child_name}}_ack_vld;
+    assign  downstream_err[{{loop.index0}}]     = {{child_name}}_err;
     assign  {{child_name}}_addr                 = downstream_addr_ff[{{loop.index0}}];
     assign  {{child_name}}_wr_en                = downstream_wr_en_ff[{{loop.index0}}];
     assign  {{child_name}}_rd_en                = downstream_rd_en_ff[{{loop.index0}}];
@@ -267,9 +278,11 @@ module {{get_rtl_name(disp_node)}} (
     ** backward datapath
     **************************************************************************/
 
-    // backward multiplexor for rd_data and ack_vld
-    assign  dummy_reg_ack_vld           = dec_dummy_reg_sel | {{parent_name}}_req_vld;
+    // backward multiplexor for rd_data, ack_vld and err
+    assign  dummy_reg_ack_vld           = dec_dummy_reg_sel & {{parent_name}}_req_vld;
     assign  {{parent_name}}_ack_vld_mux = (| downstream_ack_vld) | dummy_reg_ack_vld;
+    assign  {{parent_name}}_err_mux     = (| downstream_err) | err_acc_dummy;
+
     always_comb begin
         {{parent_name}}_rd_data_mux = {DATA_WIDTH{1'b0}};
         if (!dec_dummy_reg_sel)
@@ -286,17 +299,20 @@ module {{get_rtl_name(disp_node)}} (
             always @(posedge {{parent_name}}_clk or negedge {{parent_name}}_rst_n) begin
                 if (!{{parent_name}}_rst_n) begin
                     {{parent_name}}_ack_vld     <= 1'b0;
+                    {{parent_name}}_err         <= 1'b0;
                     {{parent_name}}_rd_data     <= {DATA_WIDTH{1'b0}};
                 end
                 else begin
                     {{parent_name}}_ack_vld     <= {{parent_name}}_ack_vld_mux;
+                    {{parent_name}}_err         <= {{parent_name}}_err_mux;
                     {{parent_name}}_rd_data     <= {{parent_name}}_rd_data_mux;
                 end
             end
         end
         else begin: g_wo_backward_ff
-            assign {{parent_name}}_ack_vld      = {{parent_name}}_ack_vld_mux;
-            assign {{parent_name}}_rd_data      = {{parent_name}}_rd_data_mux;
+            assign  {{parent_name}}_ack_vld     = {{parent_name}}_ack_vld_mux;
+            assign  {{parent_name}}_err         = {{parent_name}}_err_mux;
+            assign  {{parent_name}}_rd_data     = {{parent_name}}_rd_data_mux;
         end
     endgenerate
 
