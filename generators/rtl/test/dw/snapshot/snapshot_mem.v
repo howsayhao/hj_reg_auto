@@ -62,8 +62,8 @@ module snapshot_mem (
     logic                                       snap_wr_vld;
     logic                                       mem_ack_vld_ff;
 
-    logic   [6:0]                               sw_ctrl_cs;
-    logic   [6:0]                               sw_ctrl_ns;
+    logic   [2:0]                               state;
+    logic   [2:0]                               next_state;
 
     always @(posedge clk or negedge rst_n)
         if (!rst_n | soft_rst)
@@ -99,7 +99,7 @@ module snapshot_mem (
             snap_wr_en_ff       <= snap_wr_en;
             addr_ff             <= addr;
         end
-        else if (sw_ctrl_cs != S_IDLE && sw_ctrl_ns == S_IDLE) begin
+        else if (state != S_IDLE && next_state == S_IDLE) begin
             snap_rd_en_ff       <= {PARTITION_CNT{1'b0}};
             snap_wr_en_ff       <= {PARTITION_CNT{1'b0}};
             addr_ff             <= {BUS_ADDR_WIDTH{1'b0}};
@@ -117,7 +117,7 @@ module snapshot_mem (
             always @(posedge clk or negedge rst_n) begin
                 if (!rst_n)
                     snapshot_ff[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= {BUS_DATA_WIDTH{1'b0}};
-                else if (sw_ctrl_ns == S_ACC_MEM & rd_en_ff)
+                else if (next_state == S_ACC_MEM & rd_en_ff)
                     snapshot_ff[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= mem_rd_data[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH];
                 else if (snap_wr_en[i])
                     snapshot_ff[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= wr_data[0 +: BUS_DATA_WIDTH];
@@ -145,9 +145,9 @@ module snapshot_mem (
     // state register
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n | soft_rst)
-            sw_ctrl_cs <= S_IDLE;
+            state <= S_IDLE;
         else
-            sw_ctrl_cs <= sw_ctrl_ns;
+            state <= next_state;
     end
 
     // access to the lowest address location triggers a real memory access
@@ -156,36 +156,36 @@ module snapshot_mem (
     // state transition logic
     always_comb begin
         if (soft_rst)
-            sw_ctrl_ns = S_IDLE;
+            next_state = S_IDLE;
         else begin
-            case (sw_ctrl_cs)
+            case (state)
                 S_IDLE:
                     if (req_vld & (wr_en | rd_en))
                         if (mem_access)
-                            sw_ctrl_ns = S_ACC_MEM;
+                            next_state = S_ACC_MEM;
                         else
-                            sw_ctrl_ns = S_ACC_SNAPSHOT;
+                            next_state = S_ACC_SNAPSHOT;
                     else
-                        sw_ctrl_ns = S_IDLE;
+                        next_state = S_IDLE;
                 S_ACC_MEM:
                     if (mem_ack_vld)
-                        sw_ctrl_ns = S_IDLE;
+                        next_state = S_IDLE;
                     else
-                        sw_ctrl_ns = S_ACC_MEM;
+                        next_state = S_ACC_MEM;
                 S_ACC_SNAPSHOT:
-                    sw_ctrl_ns = S_IDLE;
+                    next_state = S_IDLE;
                 default:
-                    sw_ctrl_ns = S_IDLE;
+                    next_state = S_IDLE;
             endcase
         end
     end
 
     // output
     // one cycle delay for locking data from reading memory
-    assign snap_rd_vld      = snap_rd_en_ff[0] ? mem_ack_vld_ff : sw_ctrl_cs[_S_ACC_SNAPSHOT_] & rd_en_ff;
-    assign snap_wr_vld      = snap_wr_en_ff[0] ? mem_ack_vld_ff : sw_ctrl_cs[_S_ACC_SNAPSHOT_] & wr_en_ff;
+    assign snap_rd_vld      = snap_rd_en_ff[0] ? mem_ack_vld_ff : state[_S_ACC_SNAPSHOT_] & rd_en_ff;
+    assign snap_wr_vld      = snap_wr_en_ff[0] ? mem_ack_vld_ff : state[_S_ACC_SNAPSHOT_] & wr_en_ff;
     assign ack_vld          = snap_rd_vld | snap_wr_vld;
-    assign mem_req_vld      = sw_ctrl_cs == S_ACC_MEM;
+    assign mem_req_vld      = state == S_ACC_MEM;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n | soft_rst)
@@ -194,8 +194,8 @@ module snapshot_mem (
             wr_data_ff  <= wr_data;
     end
 
-    assign mem_addr  = (sw_ctrl_cs == S_IDLE) ? addr[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH] : addr_ff[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH];
-    assign mem_rd_en = snap_rd_en_ff[0] & ((sw_ctrl_cs[_S_IDLE_] & sw_ctrl_ns[_S_ACC_MEM_]) | sw_ctrl_cs[_S_ACC_MEM_]);
-    assign mem_wr_en = snap_wr_en_ff[0] & (sw_ctrl_cs[_S_IDLE_] & sw_ctrl_ns[_S_ACC_MEM_] | sw_ctrl_cs[_S_ACC_MEM_]);
+    assign mem_addr  = (state == S_IDLE) ? addr[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH] : addr_ff[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH];
+    assign mem_rd_en = snap_rd_en_ff[0] & ((state[_S_IDLE_] & next_state[_S_ACC_MEM_]) | state[_S_ACC_MEM_]);
+    assign mem_wr_en = snap_wr_en_ff[0] & (state[_S_IDLE_] & next_state[_S_ACC_MEM_] | state[_S_ACC_MEM_]);
 endmodule
 `default_nettype wire

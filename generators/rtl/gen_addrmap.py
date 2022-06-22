@@ -14,7 +14,7 @@ from .gen_module_rtl import *
 class addrmap_str(object):
     def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list, base_addr) -> None:
         # rtl module name from the Top addressmap(self.node)'s instance name
-        self.module_name = ('__'.join(hierarchy[:]) + '__' + node.get_path_segment() if(master is False) else node.get_path_segment()).replace('][','_').replace('[','').replace(']','')
+        self.module_name = '__'.join(hierarchy[:]) + '__' + node.get_path_segment(array_suffix="_{index:d}")
         self.parent_module_name = '__'.join(hierarchy[:]).replace('][','_').replace('[','').replace(']','')
         self.node = node
         # if the master is true, it will gen a reg_mst
