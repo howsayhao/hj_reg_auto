@@ -48,11 +48,11 @@ def create_obj(node:Node, parent_obj:RTL_NODE, base_addr=0) -> RTL_NODE:
         # for alias or shared registers it will add a mark
         if(node.inst.alias_primary_inst is not None):
             new_obj.alias = True
-            new_obj.alias_origin = node.inst.alias_primary_inst.inst_name
+            new_obj.alias_origin = node.inst.alias_primary_inst
             # self.alias_register_map.append(new_obj)
         if(node.get_property('shared') is True):
             new_obj.shared = True
-            new_obj.shared_origin = node.inst.original_def.type_name
+            new_obj.shared_origin = node.inst.original_def
             # self.shared_register_map.append(new_obj)
         # for independent registers
         new_obj.name = node.get_property('name')
@@ -62,6 +62,7 @@ def create_obj(node:Node, parent_obj:RTL_NODE, base_addr=0) -> RTL_NODE:
         new_obj.offset = node.address_offset
         new_obj.addr = node.absolute_address - base_addr
         new_obj.external = node.external
+        new_obj.ref = node
     elif isinstance(node, FieldNode):
         # get field information
         new_obj = Field(node.get_path_segment())

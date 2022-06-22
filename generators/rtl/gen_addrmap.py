@@ -14,8 +14,8 @@ from .gen_module_rtl import *
 class addrmap_str(object):
     def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list, base_addr) -> None:
         # rtl module name from the Top addressmap(self.node)'s instance name
-        self.module_name = '__'.join(hierarchy[:]) + '__' + node.get_path_segment() if(master is False) else node.get_path_segment()
-        self.parent_module_name = '__'.join(hierarchy[:])
+        self.module_name = ('__'.join(hierarchy[:]) + '__' + node.get_path_segment() if(master is False) else node.get_path_segment()).replace('][','_').replace('[','').replace(']','')
+        self.parent_module_name = '__'.join(hierarchy[:]).replace('][','_').replace('[','').replace(']','')
         self.node = node
         # if the master is true, it will gen a reg_mst
         self.master = master
@@ -330,11 +330,12 @@ class addrmap_str(object):
             if(new_obj.snap_origin is None):
                 if(node.inst.alias_primary_inst is not None):
                     new_obj.alias = True
-                    new_obj.alias_origin = node.inst.alias_primary_inst.inst_name
+                    # new_obj.alias_origin = node.inst.alias_primary_inst
+                    new_obj.alias_origin = node.inst.alias_primary_inst
                     self.alias_register_map.append(new_obj)
                 if(node.get_property('shared') is True):
                     new_obj.shared = True
-                    new_obj.shared_origin = node.inst.original_def.type_name
+                    new_obj.shared_origin = node.inst.original_def
                     self.shared_register_map.append(new_obj)
 
     # handle the regs' alias and shared situation
@@ -351,7 +352,9 @@ class addrmap_str(object):
         # find the alias register and the prime register which is be aliased
         for alias_register in self.alias_register_map:
             for prime_register in all_register_map:
-                if(alias_register.alias_origin == prime_register.obj):
+                if(prime_register.ref is None):
+                    pass
+                elif(alias_register.alias_origin == prime_register.ref.inst):
                     prime_register.alias_reg.append(alias_register)
                     alias_register.origin_reg = prime_register
                     break

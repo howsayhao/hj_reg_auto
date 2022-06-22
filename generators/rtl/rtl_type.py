@@ -84,8 +84,9 @@ class Reg(RTL_NODE):
         RTL_NODE.__init__(self,obj)
         self.id = 0
         self.alias = False
-        self.alias_origin = ""
-        self.shared_origin = ""
+        self.alias_origin = None
+        self.shared_origin = None
+        self.ref = None
         # for snapshot
         self.snap = False
         self.snap_origin = None

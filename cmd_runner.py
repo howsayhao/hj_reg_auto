@@ -251,6 +251,7 @@ class CommandRunner:
                                name="gen_rtl",
                                args=(root, args.gen_dir))
             p_genrtl.start()
+            p_genrtl.join()
         if args.gen_all or args.gen_html:
             p_genhtml = Process(target=export_html,
                                 name="gen_html",
