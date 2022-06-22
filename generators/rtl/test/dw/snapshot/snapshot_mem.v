@@ -48,18 +48,18 @@ module snapshot_mem (
     logic                                       req_vld_ff;
     logic                                       wr_en_ff;
     logic                                       rd_en_ff;
-    logic   [PARTITION_CNT-1:0]                 snap_rd_en;
-    logic   [PARTITION_CNT-1:0]                 snap_wr_en;
-    logic   [PARTITION_CNT-1:0]                 snap_wr_en_ff;
-    logic   [PARTITION_CNT-1:0]                 snap_rd_en_ff;
+    logic   [PARTITION_CNT-1:0]                 snapshot_rd_en;
+    logic   [PARTITION_CNT-1:0]                 snapshot_wr_en;
+    logic   [PARTITION_CNT-1:0]                 snapshot_wr_en_ff;
+    logic   [PARTITION_CNT-1:0]                 snapshot_rd_en_ff;
     logic   [BUS_ADDR_WIDTH-1:0]                addr_ff;
     logic   [BUS_DATA_WIDTH-1:0]                wr_data_ff;
     logic   [MEM_DATA_WIDTH-1:0]                mem_rd_data_int;
-    logic   [MEM_DATA_WIDTH-1:0]                snapshot_ff;
+    logic   [MEM_DATA_WIDTH-1:0]                snapshot_reg;
     logic                                       mem_access;
 
-    logic                                       snap_rd_vld;
-    logic                                       snap_wr_vld;
+    logic                                       ack_vld_rd;
+    logic                                       ack_vld_wr;
     logic                                       mem_ack_vld_ff;
 
     logic   [2:0]                               state;
@@ -73,59 +73,46 @@ module snapshot_mem (
 
     always @(posedge clk or negedge rst_n)
         if (!rst_n | soft_rst) begin
-            req_vld_ff      <= 1'b0;
-            wr_en_ff        <= 1'b0;
-            rd_en_ff        <= 1'b0;
+            req_vld_ff              <= 1'b0;
+            wr_en_ff                <= 1'b0;
+            rd_en_ff                <= 1'b0;
+            addr_ff                 <= {BUS_ADDR_WIDTH{1'b0}};
+        end else if (has_access) begin
+            req_vld_ff              <= req_vld;
+            wr_en_ff                <= wr_en;
+            rd_en_ff                <= rd_en;
+            addr_ff                 <= {BUS_ADDR_WIDTH{1'b0}};
+        end else if (ack_vld) begin
+            req_vld_ff              <= 1'b0;
+            wr_en_ff                <= 1'b0;
+            rd_en_ff                <= 1'b0;
+            addr_ff                 <= {BUS_ADDR_WIDTH{1'b0}};
         end
-        else if (req_vld & (wr_en | rd_en)) begin
-            req_vld_ff      <= req_vld;
-            wr_en_ff        <= wr_en;
-            rd_en_ff        <= rd_en;
-        end
-        else if (ack_vld) begin
-            req_vld_ff      <= 1'b0;
-            wr_en_ff        <= 1'b0;
-            rd_en_ff        <= 1'b0;
-        end
-
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n | soft_rst) begin
-            snap_rd_en_ff       <= {PARTITION_CNT{1'b0}};
-            snap_wr_en_ff       <= {PARTITION_CNT{1'b0}};
-            addr_ff             <= {BUS_ADDR_WIDTH{1'b0}};
-        end
-        else if (req_vld & (wr_en | rd_en)) begin
-            snap_rd_en_ff       <= snap_rd_en;
-            snap_wr_en_ff       <= snap_wr_en;
-            addr_ff             <= addr;
-        end
-        else if (state != S_IDLE && next_state == S_IDLE) begin
-            snap_rd_en_ff       <= {PARTITION_CNT{1'b0}};
-            snap_wr_en_ff       <= {PARTITION_CNT{1'b0}};
-            addr_ff             <= {BUS_ADDR_WIDTH{1'b0}};
-        end
-    end
 
     genvar i;
     generate
-        for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_operation_decoder
-            assign snap_wr_en[i] = addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH) ? wr_en : 1'b0;
-            assign snap_rd_en[i] = addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH) ? rd_en : 1'b0;
-        end
-
-        for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_snapshot_register
-            always @(posedge clk or negedge rst_n) begin
-                if (!rst_n)
-                    snapshot_ff[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= {BUS_DATA_WIDTH{1'b0}};
-                else if (next_state == S_ACC_MEM & rd_en_ff)
-                    snapshot_ff[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= mem_rd_data[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH];
-                else if (snap_wr_en[i])
-                    snapshot_ff[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= wr_data[0 +: BUS_DATA_WIDTH];
-            end
-        end
-
         if (MEM_DATA_WIDTH > BUS_DATA_WIDTH) begin: g_snapshot
-            assign mem_wr_data = {snapshot_ff[MEM_DATA_WIDTH-1:BUS_DATA_WIDTH], wr_data_ff[BUS_DATA_WIDTH-1:0]};
+            for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_snapshot_dec
+                assign snapshot_wr_en[i]    = (addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH)) ? (req_vld & wr_en) : 1'b0;
+                assign snapshot_rd_en[i]    = (addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH)) ? (req_vld & rd_en) : 1'b0;
+            end
+
+            assign mem_access           = snapshot_rd_en[0] | snapshot_wr_en[0];
+            assign snapshot_access      = (| snapshot_rd_en[3:1]) | (| snapshot_wr_en[3:1]);
+            assign has_access           = mem_access | snapshot_access;
+
+            for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_snapshot_reg
+                always @(posedge clk or negedge rst_n) begin
+                    if (!rst_n)
+                        snapshot_reg[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= {BUS_DATA_WIDTH{1'b0}};
+                    else if (next_state == S_ACC_MEM & rd_en_ff)
+                        snapshot_reg[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= mem_rd_data[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH];
+                    else if (snapshot_wr_en[i])
+                        snapshot_reg[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= wr_data[0 +: BUS_DATA_WIDTH];
+                end
+            end
+
+            assign mem_wr_data = snapshot_reg;
         end
         else begin: g_no_snapshot
             assign mem_wr_data = wr_data_ff;
@@ -136,8 +123,8 @@ module snapshot_mem (
         .WIDTH (BUS_DATA_WIDTH), .CNT (PARTITION_CNT)
     )
     x_mux_rd_data (
-        .din (snapshot_ff),
-        .sel (snap_rd_en_ff),
+        .din (snapshot_reg),
+        .sel (snapshot_rd_en_ff),
         .dout (rd_data),
         .err ()
     );
@@ -150,8 +137,8 @@ module snapshot_mem (
             state <= next_state;
     end
 
-    // access to the lowest address location triggers a real memory access
-    assign mem_access       = snap_rd_en[0] | snap_wr_en[0];
+    assign ack_vld_rd      = snapshot_rd_en_ff[0] ? mem_ack_vld : (state == S_ACC_SNAPSHOT) & rd_en_ff;
+    assign ack_vld_wr      = snapshot_wr_en_ff[0] ? mem_ack_vld : (state == S_ACC_SNAPSHOT) & wr_en_ff;
 
     // state transition logic
     always_comb begin
@@ -160,7 +147,7 @@ module snapshot_mem (
         else begin
             case (state)
                 S_IDLE:
-                    if (req_vld & (wr_en | rd_en))
+                    if (has_access)
                         if (mem_access)
                             next_state = S_ACC_MEM;
                         else
@@ -181,21 +168,19 @@ module snapshot_mem (
     end
 
     // output
-    // one cycle delay for locking data from reading memory
-    assign snap_rd_vld      = snap_rd_en_ff[0] ? mem_ack_vld_ff : state[_S_ACC_SNAPSHOT_] & rd_en_ff;
-    assign snap_wr_vld      = snap_wr_en_ff[0] ? mem_ack_vld_ff : state[_S_ACC_SNAPSHOT_] & wr_en_ff;
-    assign ack_vld          = snap_rd_vld | snap_wr_vld;
-    assign mem_req_vld      = state == S_ACC_MEM;
+    assign ack_vld          = ack_vld_rd | ack_vld_wr;
+    assign mem_req_vld      = (state == S_ACC_MEM);
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n | soft_rst)
             wr_data_ff  <= {BUS_DATA_WIDTH{1'b0}};
-        else
+        else if (has_access) begin
             wr_data_ff  <= wr_data;
+        end
     end
 
     assign mem_addr  = (state == S_IDLE) ? addr[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH] : addr_ff[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH];
-    assign mem_rd_en = snap_rd_en_ff[0] & ((state[_S_IDLE_] & next_state[_S_ACC_MEM_]) | state[_S_ACC_MEM_]);
-    assign mem_wr_en = snap_wr_en_ff[0] & (state[_S_IDLE_] & next_state[_S_ACC_MEM_] | state[_S_ACC_MEM_]);
+    assign mem_rd_en = snapshot_rd_en_ff[0] &  (state == S_ACC_MEM);
+    assign mem_wr_en = snapshot_wr_en_ff[0] &  (state == S_ACC_MEM);
 endmodule
 `default_nettype wire
