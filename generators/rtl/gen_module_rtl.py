@@ -38,7 +38,7 @@ def get_regfile_port(reg_list, sync_reset_list, N):
                 regfile_port_rtl += '\t// ports of %s\n'%(field.hierachy)
                 regfile_port_rtl += '\t%s__next_value        ,\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_port_rtl += '\t%s__pulse             ,\n'%(field_name) if (field.hw != "`HW_RO") else ''
-                regfile_port_rtl += '\t%s__curr_value        ,\n'%(field_name)
+                regfile_port_rtl += '\t%s__curr_value        ,\n'%(field_name) if (field.hw != "w") else ''
                 regfile_port_rtl += '\t%s__swmod_out         ,\n'%(field_name) if field.swmod else ''
                 regfile_port_rtl += '\t%s__swacc_out         ,\n'%(field_name) if field.swacc else ''
     for signal in sync_reset_list:
@@ -70,6 +70,7 @@ def get_regslv_port(master,cdc):
         regslv_port_rtl += '\trst_n                   ,\n'
         regslv_port_rtl += '\treq_vld                 ,\n'
         regslv_port_rtl += '\tack_vld                 ,\n'
+        regslv_port_rtl += '\terr                     ,\n'
         regslv_port_rtl += '\twr_en                   ,\n'
         regslv_port_rtl += '\trd_en                   ,\n'
         regslv_port_rtl += '\taddr                    ,\n'
@@ -100,10 +101,11 @@ def get_regslv_define(master,cdc):
         regslv_define_rtl += '\twire                          fsm_clk = PCLK          ;\n'
         regslv_define_rtl += '\twire                          fsm_rstn = PRESETn      ;\n'
     else:
-        regslv_define_rtl += '\tinput                         clk                 ;\n'
-        regslv_define_rtl += '\tinput                         rst_n                ;\n'
+        regslv_define_rtl += '\tinput                         clk                     ;\n'
+        regslv_define_rtl += '\tinput                         rst_n                   ;\n'
         regslv_define_rtl += '\tinput                         req_vld                 ;\n'
         regslv_define_rtl += '\toutput                        ack_vld                 ;\n'
+        regslv_define_rtl += '\toutput                        err                     ;\n'
         regslv_define_rtl += '\tinput                         wr_en                   ;\n'
         regslv_define_rtl += '\tinput                         rd_en                   ;\n'
         regslv_define_rtl += '\tinput     [ADDR_WIDTH-1:0]    addr                    ;\n'
@@ -117,7 +119,7 @@ def get_regslv_define(master,cdc):
             regslv_define_rtl += '\tinput                         regslv_rstn         ;\n'
         else:
             regslv_define_rtl += '\twire regslv_clk     = clk           ;\n'
-            regslv_define_rtl += '\twire regslv_rstn    = rst_n          ;\n'
+            regslv_define_rtl += '\twire regslv_rstn    = rst_n         ;\n'
     return regslv_define_rtl
 
 def get_ext_define():
@@ -150,7 +152,7 @@ def get_regfile_define(reg_list, sync_reset_list, N):
                 regfile_define_rtl += '\t// ports of %s\n'%(field.hierachy)
                 regfile_define_rtl += '\tinput  [%d-1:0]    %s__next_value        ;\n'%(field.fieldwidth, field_name) if (field.hw != "`HW_RO") else ''
                 regfile_define_rtl += '\tinput              %s__pulse             ;\n'%(field_name) if (field.hw != "`HW_RO") else ''
-                regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value        ;\n'%(field.fieldwidth, field_name)
+                regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value        ;\n'%(field.fieldwidth, field_name) if (field.hw != "w") else ''
                 regfile_define_rtl += '\toutput             %s__swmod_out         ;\n'%(field_name) if field.swmod else ''
                 regfile_define_rtl += '\toutput             %s__swacc_out         ;\n'%(field_name) if field.swacc else ''
 
@@ -180,7 +182,7 @@ def get_regslv_wire(master,cdc):
         regslv_wire_rtl += '\twire [ADDR_WIDTH-1:0]                  addr_fsm         ;\n'
         regslv_wire_rtl += '\twire [DATA_WIDTH-1:0]                  wr_data_fsm      ;\n'
         regslv_wire_rtl += '\twire [DATA_WIDTH-1:0]                  rd_data_fsm      ;\n'
-        regslv_wire_rtl += '\twire                                   soft_rst_i_fsm      ;\n'
+        regslv_wire_rtl += '\twire                                   soft_rst_i_fsm   ;\n'
         if(cdc):
             regslv_wire_rtl += '\n\t// regslv interface signal to handle cdc\n'
             regslv_wire_rtl += '\tlogic [100-1:0] regslv_value_in_fsm;\n'
@@ -734,7 +736,7 @@ def gen_reg_port(reg:Reg):
         field_origin = field_bin[i]
         if(field.sw == "`SW_RW" or field.sw == "`SW_RO" or field.sw == "`SW_RW1" ):
             rtl_field_name = '_'.join(field_origin.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
-            reg_port_str += '\t\t%s_o[%d:%d] = %s__curr_value;\n'%(reg_name,field.msb,field.lsb,rtl_field_name)
+            reg_port_str += '\t\t%s_o[%d:%d] = %s__curr_value;\n'%(reg_name,field.msb,field.lsb,rtl_field_name) if (field.hw != "w") else ''
             i += 1
     return reg_port_str
 

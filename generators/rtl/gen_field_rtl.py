@@ -70,7 +70,7 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.SWMOD                 ({%s}),'%(''.join(str(swmod)).replace('[','').replace(']','')) if f_obj.swmod else ''
             fstr += '\n\t\t.SWACC                 ({%s}),'%(''.join(str(swacc)).replace('[','').replace(']','')) if f_obj.swacc else ''
             fstr += '\n\t\t.PULSE                 ({%s}),'%(''.join(str(pulse)).replace('[','').replace(']','')) if f_obj.singlepulse else ''
-            fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw)
+            fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw) if (f_obj.hw != "w") else ''
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
             f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(f_obj.hierachy[-1])
@@ -114,7 +114,7 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.SWMOD                 ({%s}),'%(int(f_obj.swmod)) if f_obj.swmod else ''
             fstr += '\n\t\t.SWACC                 ({%s}),'%(int(f_obj.swacc)) if f_obj.swacc else ''
             fstr += '\n\t\t.PULSE                 ({%s}),'%(int(f_obj.singlepulse)) if f_obj.singlepulse else ''
-            fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw)
+            fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw) if (f_obj.hw != "w") else ''
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
 

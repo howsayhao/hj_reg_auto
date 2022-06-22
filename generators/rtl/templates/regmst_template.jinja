@@ -354,7 +354,7 @@ module {{get_rtl_name(mst_node)}} (
         .field_value            (db_err_stat__ERR_ACC_TYPE__curr_value)
     );
     // field ERR_ACC_TYPE records whether error occurs in write or read transaction
-    assign  db_err_stat__ERR_ACC_TYPE__pulse        = tmr_tmout;
+    assign  db_err_stat__ERR_ACC_TYPE__pulse        = tmr_tmout | err_acc_dummy;
     assign  db_err_stat__ERR_ACC_TYPE__next_value   = pwrite;
 
     always_comb begin

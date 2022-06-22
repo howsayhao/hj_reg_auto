@@ -70,6 +70,7 @@ module {{get_rtl_name(disp_node)}} (
 
     logic   [FORWARD_NUM-1:0]                           downstream_req_vld;
     logic   [FORWARD_NUM-1:0]                           downstream_ack_vld;
+    logic   [FORWARD_NUM-1:0]                           downstream_err;
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr;
     logic   [FORWARD_NUM-1:0]                           downstream_wr_en;
     logic   [FORWARD_NUM-1:0]                           downstream_rd_en;
@@ -92,10 +93,12 @@ module {{get_rtl_name(disp_node)}} (
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_conv;
 
     logic                                               {{parent_name}}_ack_vld_mux;
+    logic                                               {{parent_name}}_err_mux;
     logic   [DATA_WIDTH-1:0]                            {{parent_name}}_rd_data_mux;
     logic   [FORWARD_NUM-1:0]                           dec_if_sel;
     logic                                               dec_dummy_reg_sel;
     logic                                               dummy_reg_ack_vld;
+    logic                                               err_acc_dummy;
 
     /**************************************************************************
     ** forward datapath
@@ -113,7 +116,7 @@ module {{get_rtl_name(disp_node)}} (
         endcase
     end
 
-    assign  err_acc_dummy   = dec_dummy_reg_sel | {{parent_name}}_req_vld;
+    assign  err_acc_dummy   = dec_dummy_reg_sel & {{parent_name}}_req_vld;
 
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data
     always_comb begin
@@ -203,8 +206,7 @@ module {{get_rtl_name(disp_node)}} (
     reg_native_if2mem #(
         .CDC_ENABLE({{has_cdc(child)}}),
         .BUS_DATA_WIDTH(DATA_WIDTH),
-        .BUS_ADDR_WIDTH(ADDR_WIDTH),
-        .ADDR_VALID_WIDTH({{valid_bit(child)}}),
+        .BUS_ADDR_WIDTH({{valid_bit(child)}}),
         .MEM_DATA_WIDTH({{get_data_width(child)}}),
         .MEM_ADDR_WIDTH({{get_addr_width(child)}})
     )
@@ -215,7 +217,7 @@ module {{get_rtl_name(disp_node)}} (
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
         .err(downstream_err[{{loop.index0}}]),
-        .addr(downstream_addr_ff[{{loop.index0}}]),
+        .addr(downstream_addr_ff[{{loop.index0}}][{{valid_bit(child)-1}}:0]),
         .wr_en(downstream_wr_en_ff[{{loop.index0}}]),
         .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
         .wr_data(downstream_wr_data_ff[{{loop.index0}}]),
@@ -285,12 +287,13 @@ module {{get_rtl_name(disp_node)}} (
 
     always_comb begin
         {{parent_name}}_rd_data_mux = {DATA_WIDTH{1'b0}};
-        if (!dec_dummy_reg_sel)
+        if (!dummy_reg_ack_vld) begin
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
                 if (downstream_ack_vld[i]) begin
                     {{parent_name}}_rd_data_mux   = downstream_rd_data[i];
                 end
             end
+        end
     end
 
     // optionally insert backward flip-flops after data passes through mux

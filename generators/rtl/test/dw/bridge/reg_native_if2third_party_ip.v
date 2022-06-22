@@ -1,3 +1,4 @@
+`default_nettype none
 module reg_native_if2third_party_ip (
     // reg_native_if inside regdisp
     native_clk, native_rst_n,
@@ -86,3 +87,4 @@ module reg_native_if2third_party_ip (
     endgenerate
 //**************************************************************************************************************************//
 endmodule
+`default_nettype wire

@@ -8,12 +8,11 @@ module reg_native_if2mem (
     parameter   CDC_ENABLE                  = 0;
     parameter   BUS_DATA_WIDTH              = 32;
     parameter   BUS_ADDR_WIDTH              = 64;
-    parameter   ADDR_VALID_WIDTH            = 1;
     parameter   MEM_DATA_WIDTH              = 64;
-    parameter   MEM_ADDR_WIDTH              = 1;
+    parameter   MEM_ADDR_WIDTH              = 5;
 
-    parameter   FORWARD_DELIVER_NUM         = MEM_ADDR_WIDTH + MEM_DATA_WIDTH + 3;
-    parameter   BACKWARD_DELIVER_NUM        = MEM_DATA_WIDTH;
+    localparam  FORWARD_DELIVER_NUM         = MEM_ADDR_WIDTH + MEM_DATA_WIDTH + 3;
+    localparam  BACKWARD_DELIVER_NUM        = MEM_DATA_WIDTH;
 
     input   logic                           native_clk;
     input   logic                           native_rst_n;
@@ -47,9 +46,8 @@ module reg_native_if2mem (
 
 //****************************************SNAPSHOT MEMORY******************************************//
     snapshot_mem #(
-        .DATA_WIDTH(BUS_DATA_WIDTH), .ADDR_WIDTH(BUS_ADDR_WIDTH),
-        .MEM_WIDTH(MEM_DATA_WIDTH), .VALID_WIDTH(ADDR_VALID_WIDTH),
-        .ENTRY_WIDTH(MEM_ADDR_WIDTH)
+        .BUS_DATA_WIDTH(BUS_DATA_WIDTH), .BUS_ADDR_WIDTH(BUS_ADDR_WIDTH),
+        .MEM_WIDTH(MEM_DATA_WIDTH), .MEM_ADDR_WIDTH(MEM_ADDR_WIDTH)
     )
     snapshot_mem (
         .clk(native_clk),
@@ -78,23 +76,24 @@ module reg_native_if2mem (
             logic                                   reg_native_if__mem__value_deliver_pulse_in;
             logic   [FORWARD_DELIVER_NUM-1:0]       reg_native_if__mem__value_deliver_value_in;
             logic   [FORWARD_DELIVER_NUM-1:0]       reg_native_if__mem__value_deliver_value_out;
+            logic                                   reg_native_if__mem__value_deliver_pulse_out;
             logic                                   mem__reg_native_if__value_deliver_pulse_in;
             logic   [BACKWARD_DELIVER_NUM-1:0]      mem__reg_native_if__value_deliver_value_in;
             logic   [BACKWARD_DELIVER_NUM-1:0]      mem__reg_native_if__value_deliver_value_out;
             logic                                   mem__reg_native_if__value_deliver_pulse_out;
+            logic                                   mem_req_vld_snapshot_ff;
             logic                                   mem_req_vld_snapshot_pulse;
             logic   [MEM_DATA_WIDTH-1:0]            mem_rd_data_ff;
 
             // forward
-            // one-cycle pulse of mem_req_vld_snapshot
+            // pulse of mem_req_vld_snapshot
             always_ff @(posedge native_clk or negedge native_rst_n) begin
                 if (!native_rst_n || soft_rst)
-                    mem_req_vld_snapshot_pulse  <= 1'b0;
-                else if (req_vld & ~mem_req_vld_snapshot_pulse)
-                    mem_req_vld_snapshot_pulse  <= 1'b1;
+                    mem_req_vld_snapshot_ff     <= 1'b0;
                 else
-                    mem_req_vld_snapshot_pulse  <= 1'b0;
+                    mem_req_vld_snapshot_ff     <= mem_req_vld_snapshot;
             end
+            assign  mem_req_vld_snapshot_pulse  = mem_req_vld_snapshot & ~mem_req_vld_snapshot_ff;
 
             assign  reg_native_if__mem__value_deliver_pulse_in  = mem_req_vld_snapshot_pulse;
             assign  reg_native_if__mem__value_deliver_value_in  = {
@@ -113,11 +112,15 @@ module reg_native_if2mem (
                 .rst_b_n                    (mem_rst_n),
                 .pulse_in                   (reg_native_if__mem__value_deliver_pulse_in),
                 .value_in                   (reg_native_if__mem__value_deliver_value_in),
-                .pulse_out                  (),
+                .pulse_out                  (reg_native_if__mem__value_deliver_pulse_out),
                 .value_out                  (reg_native_if__mem__value_deliver_value_out)
             );
-
-            assign  {mem_req_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data} = reg_native_if__mem__value_deliver_value_out;
+            always_ff @(posedge mem_clk or mem_rst_n) begin
+                if (!mem_rst_n || mem_ack_vld)
+                    {mem_req_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data}  <= {FORWARD_DELIVER_NUM{1'b0}};
+                else if (reg_native_if__mem__value_deliver_pulse_out)
+                    {mem_req_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data}  <= reg_native_if__mem__value_deliver_value_out;
+            end
 
             // backward
             // store rd_data until value_deliver captures it

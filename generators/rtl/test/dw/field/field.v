@@ -1,5 +1,3 @@
-// - \insertfigure{Field block diagram}{field}{fig:field}
-
 `include "xregister.vh"
 
 module field (clk, rst_n,
@@ -30,7 +28,7 @@ module field (clk, rst_n,
    parameter [3:0] SW_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`SW_RW}};
    parameter [3:0] SW_ONREAD_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`NA}};
    parameter [3:0] SW_ONWRITE_TYPE[ALIAS_NUM-1:0]       = '{ALIAS_NUM{`NA}};
-   parameter HW_TYPE       = `HW_RO;
+   parameter HW_TYPE       = `HW_RW;
 
    parameter SWMOD[ALIAS_NUM-1:0]       = '{ALIAS_NUM{0}};
    parameter SWACC[ALIAS_NUM-1:0]       = '{ALIAS_NUM{0}};

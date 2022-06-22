@@ -133,32 +133,60 @@ reg shared_tem{
 	} FIELD_2[13:12] = 0x0;
 };
 
-addrmap test_map_2 {
-	hj_gendisp = false;
-	hj_genslv = false;
-	hj_flatten_addrmap=true;
-	shared_tem shared_2;
-	shared_2 -> name = "SHARED_IN_TEST_MAP_2";
-	shared_2.FIELD_1 -> onread = rset;
-	shared_2.FIELD_1 -> onwrite = wzt;
-};
-
-addrmap test_map_3 {
-	hj_gendisp = false;
-	hj_genslv = false;
-	hj_flatten_addrmap=true;
-	shared_tem shared_3;
-	shared_3 -> name = "SHARED_IN_TEST_MAP_3";
-	shared_3.FIELD_1 -> sw = r;
-	shared_3.FIELD_1 -> onread = rclr;
-};
-
 addrmap root_map {
 	hj_genmst = true;
 	hj_flatten_addrmap=false;
 
-	// reg {regwidth = 64; field {} addr[63:0];} err_log_0 @0x40000000;
-	// reg {field {} soft_reset[1:1]; field {} intr[0:0];} err_log_1 @0x40001000;
+	regfile regfile_test{
+		reg shared_reg_1{
+			shared;
+			name = "SHARED";
+			desc = "xxx";
+			regwidth = 32;
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = rw;
+			} FIELD_1[16:14] = 0x0;
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = rw;
+			} FIELD_2[13:12] = 0x0;
+		};
+		reg shared_reg_2{
+			shared;
+			name = "SHARED";
+			desc = "xxx";
+			regwidth = 32;
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = rw;
+			} FIELD_1[16:14] = 0x0;
+			field {
+				name = "FIELD_1";
+				desc = "xxx";
+				sw = rw;
+			} FIELD_2[13:12] = 0x0;
+		};
+		shared_reg_1 shared_reg_1;
+		shared_reg_2 shared_reg_2;
+	};
+
+	addrmap test_map_2 {
+		hj_gendisp = false;
+		hj_genslv = false;
+		hj_flatten_addrmap=true;
+		regfile_test regfile_test;
+	};
+
+	addrmap test_map_3 {
+		hj_gendisp = false;
+		hj_genslv = false;
+		hj_flatten_addrmap=true;
+		regfile_test regfile_test;
+	};
 
 	addrmap {
 		hj_gendisp = true;
@@ -171,10 +199,10 @@ addrmap root_map {
 			hj_flatten_addrmap=false;
 			test_map_2 map_2;
 			test_map_3 map_3;
-		} shared_map;
+		} shared_map[10];
 
-		ipxact_block_example ipxact_map;
-		ipxact_map -> hj_use_abs_addr = true;
+		// ipxact_block_example ipxact_map;
+		// ipxact_map -> hj_use_abs_addr = true;
 	} root_map;
 
 	// debug registers implemented in regmst, please don't touch it and keep this level clean

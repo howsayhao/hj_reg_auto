@@ -110,6 +110,8 @@ def create_obj(node:Node, parent_obj:RTL_NODE, base_addr=0) -> RTL_NODE:
             new_obj.hw = '`HW_SET'
         elif(new_obj.hw == 'rw'):
             new_obj.hw = '`HW_RW'
+        elif(new_obj.hw == 'w'):
+            pass
         else:
             new_obj.hw = '`HW_RO'
         new_obj.precedence = node.get_property('precedence').name
