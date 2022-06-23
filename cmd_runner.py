@@ -3,11 +3,11 @@ import os
 import sys
 from multiprocessing import Process
 
-import generators.preprocess as preprocess
 import utils.message as message
 from generators.c_header.export import export_cheader
 from generators.html.export import export_html
 from generators.pdf.export import export_org, export_pdf
+from generators.preprocess import preprocess
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
 from parsers.parse import parse
@@ -244,39 +244,27 @@ class CommandRunner:
             message.error("-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
             sys.exit(1)
 
-        preprocess.preprocess(root, filter=args.filter, quiet=args.quiet)
+        preprocess(root, filter=args.filter, quiet=args.quiet)
+
+        proc_list = []
 
         if args.gen_all or args.gen_rtl:
-            p_genrtl = Process(target=export_rtl,
-                               name="gen_rtl",
-                               args=(root, args.gen_dir))
-            p_genrtl.start()
-            p_genrtl.join()
+            proc_list.append(Process(target=export_rtl, name="gen_rtl", args=(root, args.gen_dir)))
         if args.gen_all or args.gen_html:
-            p_genhtml = Process(target=export_html,
-                                name="gen_html",
-                                args=(root, args.gen_dir))
-            p_genhtml.start()
+            proc_list.append(Process(target=export_html, name="gen_html", args=(root, args.gen_dir)))
         if args.gen_org:
-            p_genorg = Process(target=export_org,
-                                name="gen_org",
-                                args=(root, args.gen_dir))
-            p_genorg.start()
+            proc_list.append(Process(target=export_org, name="gen_org", args=(root, args.gen_dir)))
         if args.gen_all or args.gen_pdf:
-            p_genpdf = Process(target=export_pdf,
-                                name="gen_pdf",
-                                args=(root, args.gen_dir))
-            p_genpdf.start()
+            proc_list.append(Process(target=export_pdf, name="gen_pdf", args=(root, args.gen_dir)))
         if args.gen_all or args.gen_ral:
-            p_genral = Process(target=export_uvm,
-                                name="gen_ral",
-                                args=(root, args.gen_dir))
-            p_genral.start()
+            proc_list.append(Process(target=export_uvm, name="gen_ral", args=(root, args.gen_dir)))
         if args.gen_all or args.gen_cheader:
-            p_gencheader = Process(target=export_cheader,
-                                   name="gen_cheader",
-                                   args=(root, args.gen_dir))
-            p_gencheader.start()
+            proc_list.append(Process(target=export_cheader, name="gen_cheader", args=(root, args.gen_dir)))
+
+        for proc in proc_list:
+            proc.start()
+        for proc in proc_list:
+            proc.join()
 
     def run(self):
         parser = self.build_parser()

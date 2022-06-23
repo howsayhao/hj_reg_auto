@@ -47,7 +47,7 @@ module reg_native_if2mem (
 //****************************************SNAPSHOT MEMORY******************************************//
     snapshot_mem #(
         .BUS_DATA_WIDTH(BUS_DATA_WIDTH), .BUS_ADDR_WIDTH(BUS_ADDR_WIDTH),
-        .MEM_WIDTH(MEM_DATA_WIDTH), .MEM_ADDR_WIDTH(MEM_ADDR_WIDTH)
+        .MEM_DATA_WIDTH(MEM_DATA_WIDTH), .MEM_ADDR_WIDTH(MEM_ADDR_WIDTH)
     )
     snapshot_mem (
         .clk(native_clk),

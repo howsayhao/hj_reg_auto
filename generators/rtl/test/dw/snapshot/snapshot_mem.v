@@ -21,113 +21,65 @@ module snapshot_mem (
 
     localparam  S_IDLE                          = 3'b001;
     localparam  S_ACC_MEM                       = 3'b010;
-    localparam  S_ACC_SNAPSHOT                  = 3'b100;
-
-    localparam  _S_IDLE_                        = 0;
-    localparam  _S_ACC_MEM_                     = 1;
-    localparam  _S_ACC_SNAPSHOT_                = 2;
+    localparam  S_READ_SS                       = 3'b100;
 
     input   logic                               clk;
     input   logic                               rst_n;
-    input   logic   [BUS_ADDR_WIDTH-1:0]        addr;
-    input   logic   [BUS_DATA_WIDTH-1:0]        wr_data;
-    output  logic   [BUS_DATA_WIDTH-1:0]        rd_data;
+    input   logic                               soft_rst;
     input   logic                               req_vld;
     output  logic                               ack_vld;
-    input                                       wr_en,rd_en;
-    input                                       soft_rst;
+    input   logic   [BUS_ADDR_WIDTH-1:0]        addr;
+    input   logic                               wr_en;
+    input   logic                               rd_en;
+    input   logic   [BUS_DATA_WIDTH-1:0]        wr_data;
+    output  logic   [BUS_DATA_WIDTH-1:0]        rd_data;
 
     output  logic                               mem_req_vld;
     input   logic                               mem_ack_vld;
     output  logic   [MEM_ADDR_WIDTH-1:0]        mem_addr;
-    output  logic                               mem_rd_en;
     output  logic                               mem_wr_en;
+    output  logic                               mem_rd_en;
     output  logic   [MEM_DATA_WIDTH-1:0]        mem_wr_data;
     input   logic   [MEM_DATA_WIDTH-1:0]        mem_rd_data;
 
-    logic                                       req_vld_ff;
-    logic                                       wr_en_ff;
-    logic                                       rd_en_ff;
-    logic   [PARTITION_CNT-1:0]                 snapshot_rd_en;
-    logic   [PARTITION_CNT-1:0]                 snapshot_wr_en;
-    logic   [PARTITION_CNT-1:0]                 snapshot_wr_en_ff;
-    logic   [PARTITION_CNT-1:0]                 snapshot_rd_en_ff;
-    logic   [BUS_ADDR_WIDTH-1:0]                addr_ff;
-    logic   [BUS_DATA_WIDTH-1:0]                wr_data_ff;
-    logic   [MEM_DATA_WIDTH-1:0]                mem_rd_data_int;
-    logic   [MEM_DATA_WIDTH-1:0]                snapshot_reg;
-    logic                                       mem_access;
+    logic   [PARTITION_CNT-1:0]                 ss_rd_en;
+    logic   [PARTITION_CNT-1:0]                 ss_wr_en;
+    logic   [PARTITION_CNT-1:0]                 ss_rd_en_ff;
+    logic   [MEM_DATA_WIDTH-1:0]                ss_reg;
+    logic                                       ss_acc_wr;
+    logic                                       ss_acc_rd;
+    logic                                       ss_acc;
+    logic   [BUS_DATA_WIDTH-1:0]                ss_rd_data;
 
-    logic                                       ack_vld_rd;
-    logic                                       ack_vld_wr;
-    logic                                       mem_ack_vld_ff;
+    logic                                       mem_acc_wr;
+    logic                                       mem_acc_rd;
+    logic                                       mem_acc;
 
     logic   [2:0]                               state;
     logic   [2:0]                               next_state;
 
-    always @(posedge clk or negedge rst_n)
-        if (!rst_n | soft_rst)
-            mem_ack_vld_ff  <= 1'b0;
-        else
-            mem_ack_vld_ff  <= mem_ack_vld;
+    genvar                                      i, j;
 
-    always @(posedge clk or negedge rst_n)
-        if (!rst_n | soft_rst) begin
-            req_vld_ff              <= 1'b0;
-            wr_en_ff                <= 1'b0;
-            rd_en_ff                <= 1'b0;
-            addr_ff                 <= {BUS_ADDR_WIDTH{1'b0}};
-        end else if (has_access) begin
-            req_vld_ff              <= req_vld;
-            wr_en_ff                <= wr_en;
-            rd_en_ff                <= rd_en;
-            addr_ff                 <= {BUS_ADDR_WIDTH{1'b0}};
-        end else if (ack_vld) begin
-            req_vld_ff              <= 1'b0;
-            wr_en_ff                <= 1'b0;
-            rd_en_ff                <= 1'b0;
-            addr_ff                 <= {BUS_ADDR_WIDTH{1'b0}};
-        end
-
-    genvar i;
     generate
-        if (MEM_DATA_WIDTH > BUS_DATA_WIDTH) begin: g_snapshot
-            for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_snapshot_dec
-                assign snapshot_wr_en[i]    = (addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH)) ? (req_vld & wr_en) : 1'b0;
-                assign snapshot_rd_en[i]    = (addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH)) ? (req_vld & rd_en) : 1'b0;
-            end
-
-            assign mem_access           = snapshot_rd_en[0] | snapshot_wr_en[0];
-            assign snapshot_access      = (| snapshot_rd_en[3:1]) | (| snapshot_wr_en[3:1]);
-            assign has_access           = mem_access | snapshot_access;
-
-            for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_snapshot_reg
-                always @(posedge clk or negedge rst_n) begin
-                    if (!rst_n)
-                        snapshot_reg[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= {BUS_DATA_WIDTH{1'b0}};
-                    else if (next_state == S_ACC_MEM & rd_en_ff)
-                        snapshot_reg[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= mem_rd_data[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH];
-                    else if (snapshot_wr_en[i])
-                        snapshot_reg[i*BUS_DATA_WIDTH +: BUS_DATA_WIDTH] <= wr_data[0 +: BUS_DATA_WIDTH];
-                end
-            end
-
-            assign mem_wr_data = snapshot_reg;
+        for (i = 0; i < PARTITION_CNT; i = i + 1) begin: g_ss_dec
+            assign ss_wr_en[i]      = (addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH)) ? (req_vld & wr_en) : 1'b0;
+            assign ss_rd_en[i]      = (addr[RESERVERD_BITS-1:0] == i * (BUS_DATA_WIDTH / BYTE_WIDTH)) ? (req_vld & rd_en) : 1'b0;
         end
-        else begin: g_no_snapshot
-            assign mem_wr_data = wr_data_ff;
+
+        if (PARTITION_CNT > 1) begin: g_ss_acc
+            assign  ss_acc_wr           = | ss_wr_en[PARTITION_CNT-1:1];
+            assign  ss_acc_rd           = | ss_rd_en[PARTITION_CNT-1:1];
+            assign  ss_acc              = ss_acc_wr | ss_acc_rd;
+        end else begin : g_no_ss_acc
+            assign  ss_acc_wr           = 1'b0;
+            assign  ss_acc_rd           = 1'b0;
+            assign  ss_acc              = 1'b0;
         end
     endgenerate
 
-    one_hot_mux #(
-        .WIDTH (BUS_DATA_WIDTH), .CNT (PARTITION_CNT)
-    )
-    x_mux_rd_data (
-        .din (snapshot_reg),
-        .sel (snapshot_rd_en_ff),
-        .dout (rd_data),
-        .err ()
-    );
+    assign  mem_acc_wr              = ss_wr_en[0];
+    assign  mem_acc_rd              = ss_rd_en[0];
+    assign  mem_acc                 = mem_acc_wr | mem_acc_rd;
 
     // state register
     always @(posedge clk or negedge rst_n) begin
@@ -137,9 +89,6 @@ module snapshot_mem (
             state <= next_state;
     end
 
-    assign ack_vld_rd      = snapshot_rd_en_ff[0] ? mem_ack_vld : (state == S_ACC_SNAPSHOT) & rd_en_ff;
-    assign ack_vld_wr      = snapshot_wr_en_ff[0] ? mem_ack_vld : (state == S_ACC_SNAPSHOT) & wr_en_ff;
-
     // state transition logic
     always_comb begin
         if (soft_rst)
@@ -147,19 +96,18 @@ module snapshot_mem (
         else begin
             case (state)
                 S_IDLE:
-                    if (has_access)
-                        if (mem_access)
-                            next_state = S_ACC_MEM;
-                        else
-                            next_state = S_ACC_SNAPSHOT;
-                    else
+                    if (mem_acc)
+                        next_state = S_ACC_MEM;
+                    else if (ss_acc_rd)
+                        next_state = S_READ_SS;
+                    else    // snapshot write finishes immediately
                         next_state = S_IDLE;
                 S_ACC_MEM:
                     if (mem_ack_vld)
                         next_state = S_IDLE;
                     else
                         next_state = S_ACC_MEM;
-                S_ACC_SNAPSHOT:
+                S_READ_SS:
                     next_state = S_IDLE;
                 default:
                     next_state = S_IDLE;
@@ -167,20 +115,83 @@ module snapshot_mem (
         end
     end
 
-    // output
-    assign ack_vld          = ack_vld_rd | ack_vld_wr;
-    assign mem_req_vld      = (state == S_ACC_MEM);
+    // snapshot register
+    generate
+        for (j = 0; j < PARTITION_CNT; j = j + 1) begin: g_ss_reg
+            always @(posedge clk or negedge rst_n) begin
+                if (!rst_n)
+                    ss_reg[j*BUS_DATA_WIDTH +: BUS_DATA_WIDTH]  <= {BUS_DATA_WIDTH{1'b0}};
+                else if (state == S_ACC_MEM && mem_ack_vld)    // read from memory
+                    ss_reg[j*BUS_DATA_WIDTH +: BUS_DATA_WIDTH]  <= mem_rd_data[j*BUS_DATA_WIDTH +: BUS_DATA_WIDTH];
+                else if (ss_wr_en[j])           // write to snapshot register
+                    ss_reg[j*BUS_DATA_WIDTH +: BUS_DATA_WIDTH]  <= wr_data[0 +: BUS_DATA_WIDTH];
+            end
+        end
+    endgenerate
 
+    // output
+
+    // convert reg_native_if to memory interface: write and read memory
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n | soft_rst)
-            wr_data_ff  <= {BUS_DATA_WIDTH{1'b0}};
-        else if (has_access) begin
-            wr_data_ff  <= wr_data;
+        if (!rst_n | soft_rst) begin
+            mem_req_vld             <= 1'b0;
+            mem_wr_en               <= 1'b0;
+            mem_rd_en               <= 1'b0;
+            mem_addr                <= {MEM_ADDR_WIDTH{1'b0}};
+        end else if (state == S_IDLE && next_state == S_ACC_MEM) begin
+            mem_req_vld             <= 1'b1;
+            if (mem_acc_wr)
+                mem_wr_en           <= 1'b1;
+            if (mem_acc_rd)
+                mem_rd_en           <= 1'b1;
+            mem_addr                <= addr[RESERVERD_BITS+MEM_ADDR_WIDTH-1:RESERVERD_BITS];
+        end else if (state == S_ACC_MEM && next_state == S_IDLE) begin
+            mem_req_vld             <= 1'b0;
+            mem_wr_en               <= 1'b0;
+            mem_rd_en               <= 1'b0;
+            mem_addr                <= {MEM_ADDR_WIDTH{1'b0}};
         end
     end
+    assign  mem_wr_data             = (state == S_ACC_MEM) ? ss_reg : {MEM_DATA_WIDTH{1'b0}};
 
-    assign mem_addr  = (state == S_IDLE) ? addr[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH] : addr_ff[BUS_ADDR_WIDTH-1:BUS_ADDR_WIDTH-MEM_ADDR_WIDTH];
-    assign mem_rd_en = snapshot_rd_en_ff[0] &  (state == S_ACC_MEM);
-    assign mem_wr_en = snapshot_wr_en_ff[0] &  (state == S_ACC_MEM);
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n | soft_rst)
+            ss_rd_en_ff <= {PARTITION_CNT{1'b0}};
+        else
+            ss_rd_en_ff <= ss_rd_en;
+    end
+
+    one_hot_mux #(
+        .WIDTH (BUS_DATA_WIDTH), .CNT (PARTITION_CNT)
+    ) ss_rd_data_mux (
+        .din (ss_reg),
+        .sel (ss_rd_en_ff),
+        .dout (ss_rd_data),
+        .err ()
+    );
+
+    // ack_vld and rd_data to upstream reg_native_if
+    always_comb begin
+        ack_vld                 = 1'b0;
+        rd_data                 = {BUS_DATA_WIDTH{1'b0}};
+        case (state)
+            S_IDLE:
+                if (ss_acc_wr)
+                    ack_vld     = 1'b1;
+            S_READ_SS: begin
+                ack_vld         = 1'b1;
+                rd_data         = ss_rd_data;
+            end
+            S_ACC_MEM:
+                if (mem_ack_vld) begin
+                    ack_vld     = 1'b1;
+                    rd_data     = mem_rd_data[BUS_DATA_WIDTH-1:0];
+                end
+            default: begin
+                ack_vld         = 1'b0;
+                rd_data         = {BUS_DATA_WIDTH{1'b0}};
+            end
+        endcase
+    end
 endmodule
 `default_nettype wire
