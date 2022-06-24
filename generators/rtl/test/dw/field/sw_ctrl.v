@@ -69,10 +69,12 @@ module sw_ctrl (field_value,
              assign sw_onread_value = field_value;
          end
          else begin:g_SW_ONREAD_unknown
+// synopsys translate_off
             initial begin
                      $display("%m:Unknown SW_ONREAD_TYPE %d", SW_TYPE);
                      $finish;
                   end
+// synopsys translate_on
          end
       end
       else if(SW_TYPE == `SW_WO || SW_TYPE == `SW_W1)begin: g_SW_NR//no readable
@@ -80,6 +82,7 @@ module sw_ctrl (field_value,
          assign sw_onread_value = {F_WIDTH{1'b0}};
       end
       else begin:g_SW_R_unknown
+// synopsys translate_off
         initial begin
                 $display("%m:Unknown SW_TYPE %d", SW_TYPE);
                 $finish;
@@ -158,11 +161,12 @@ module sw_ctrl (field_value,
             assign sw_onwrite_value = sw_mux_value & ~(field_value);
          end
          else begin:g_SW_ONWRITE_unknown
-         // synopsys translate_off
+// synopsys translate_off
                initial begin
                         $display("%m:Unknown SW_ONWRITE_TYPE %d", SW_TYPE);
                         $finish;
                      end
+// synopsys translate_on
          end
       end
       else if(SW_TYPE == `SW_RO)begin: g_SW_RO//no writable
