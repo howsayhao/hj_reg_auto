@@ -64,6 +64,7 @@ class RDLGenerator:
 		"\t\thj_flatten_addrmap = false;\n" \
         "\t{sub_maps_str}" \
         "\t}} {second_level_name};\n" \
+        "\tdb_regs db_regs %= 0x1000;\n" \
         "}};\n"
 
     sub_map_str = "\t{sub_map_def} {sub_map_inst};\n"
