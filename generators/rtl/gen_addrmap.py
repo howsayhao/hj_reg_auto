@@ -138,14 +138,11 @@ class addrmap_str(object):
         self.Root.field_in  += self.field_in
         self.Root.field_out += self.field_out
 
-        if(self.master is True):
-            file_name = 'regmst_' + self.module_name + '.v'
-        else:
+        if(self.master is False):
             file_name = 'regslv_' + self.module_name + '.v'
-
-        # generate the .v file and move the file into designated folder
-        with open(os.path.join(self.folder_name, file_name), 'w') as f:
-            f.write(self.rtl)
+            # generate the .v file and move the file into designated folder
+            with open(os.path.join(self.folder_name, file_name), 'w') as f:
+                f.write(self.rtl)
 
     # get information from node tree and generate corresponding rtl str
     def get_internal_strcture(self) -> None:

@@ -19,12 +19,15 @@ def export_rtl(root:RootNode, out_dir:str):
     `out_dir` : output directory
     """
     rtl_dir = os.path.join(out_dir, "rtl")
+    os_env = "{}_DIR".format(root.top.inst_name.upper())
+    os.environ[os_env] = os.path.realpath(rtl_dir)
+
     if not os.path.exists(rtl_dir):
         os.makedirs(rtl_dir)
     try:
         reg_tree = root_str(node=root, folder_name=rtl_dir)
         reg_tree.scan()
-        RTLExporter().export_all(root, rtl_dir)
+        RTLExporter().export_all(root, rtl_dir, os_env)
     except Exception:
         message.error("HRDA encounters some unknown errors")
         message.error(traceback.format_exc())
