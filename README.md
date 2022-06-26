@@ -32,15 +32,14 @@ For someone who is going to maintain HRDA code repository and update new feature
 
 ## **1. Introduction**
 
-HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which can be divided into two major parts: front-end and back-end. The front-end supports for generating register description templates in the Excel worksheet (.xlsx) format, parsing the **input Excel worksheets (.xlsx), SystemRDL (.rdl) and IP-XACT (.xml) files**. The back-end, or generator, supports for generating Register Transfer Level (RTL) Verilog/SystemVerilog modules, pdf documents, UVM Register Abstraction Layer (RAL) models and C header files.
+HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which can be divided into two major parts: front-end and back-end. The front-end supports for generating register description templates in the Excel worksheet (.xlsx) format, parsing the **input Excel worksheets (.xlsx), SystemRDL (.rdl) and IP-XACT (.xml) files**. The back-end, or generator, supports for generating Register Transfer Level (RTL) Verilog/SystemVerilog modules, documentations, UVM Register Abstraction Layer (RAL) models and C header files.
 
 For generating RTL modules with a few number of registers and simple address mapping, Excel worksheet is recommended. Nonetheless, for some complicated modules with numerous registers and sophisticated address mappings, SystemRDL is more expressive and flexible.
 
 The overall HRDA tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
-<span id="pics_tool_flow"></span>
 <center>
-    <img src="docs/pics/tool_flow.svg" width="80%">
+    <img id="pics_tool_flow" src="docs/pics/tool_flow.svg" width="80%"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 1.1 HRDA tool flow
@@ -67,12 +66,11 @@ To learn what rules are checked and how to write an acceptable Excel worksheet, 
 
 SystemRDL parser relies on an open-source project [SystemRDL Compiler](https://github.com/SystemRDL/systemrdl-compiler). SystemRDL Compiler is able to parse, compile, elaborate and check SystemRDL files followed by [SystemRDL 2.0 Specification](https://www.accellera.org/images/downloads/standards/systemrdl/SystemRDL_2.0_Jan2018.pdf) to generate a traversable and hierarchical register model as a Python object. Its basic workflow is shown in [Figure 1.2](#pics_systemrdl_compiler).
 
-<span id="pics_systemrdl_compiler"></span>
 <center>
-    <img src="docs/pics/systemrdl_compiler.svg" width="80%">
+    <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler.svg" width="60%"><br>
     <div style="display: inline-block;
     color: #999;
-    padding: 5px;">Figure 1.2 SystemRDL compiler workflow </div>
+    padding: 5px;">Figure 1.2 SystemRDL Compiler workflow </div>
 </center>
 
 Simple example:
@@ -91,9 +89,8 @@ addrmap top {
 
 Once compiled, the register model can be described like this:
 
-<span id="pics_systemrdl_compiler"></span>
 <center>
-    <img src="docs/pics/rdlcompiler_ex1.svg" width="80%">
+    <img id="pics_systemrdl_compiler" src="docs/pics/rdlcompiler_ex1.svg" width="80%"><br>
     <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 1.3 hierarchical register model</div>
@@ -138,12 +135,12 @@ For the detailed architecture, see [2. RTL Architecture](#2-rtl-architecture).
 
 The HTML generator relies on an open-source project [PeakRDL-html](https://github.com/SystemRDL/peakrdl-html). It is able to generate address space documentation HTML file from the preprocessed register model. A simple example of exported HTML is shown in [Figure 1.4](#pics_html_ex).
 
-<span id="pics_html_ex"></span>
 <center>
-    <img src="docs/pics/html_ex.png" width="80%">
+    <img id="pics_html_ex" src="docs/pics/html_ex.png" width="80%"><br>
     <div style="display: inline-block;
-    color: #999;
-    padding: 5px;">Figure 1.4 HTML document example</div>
+        color: #999;
+        padding: 5px;">Figure 1.4 HTML document example
+    </div>
 </center>
 
 ------------------------------
@@ -176,9 +173,9 @@ Control and status regsiters are distributed all around the chip in different su
 
 Register Network, or `reg_network`, is a multi-root hierarchical network. A typical network architecture is shown in [Figure 2.1](#pics_reg_network).
 
-<span id="pics_reg_network"></span>
+
 <center>
-    <img src="docs/pics/reg_network.svg"><br>
+    <img id="pics_reg_network" src="docs/pics/reg_network.svg"><br>
     <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 2.1 register network architecture</div>
@@ -224,7 +221,6 @@ Typically, except that the upstream interface of `regmst` is `APB`, every module
 
 All signals are listed in [Table 2.2](#table_rni_def):
 
-<span id="table_rni_def"></span>
 | Signal Name | Direction | Width | Description |
 | ----------- | --------- | ----- | ----------- |
 | req_vld | input from upstream, output to downsream | 1 | request valid |
@@ -235,7 +231,7 @@ All signals are listed in [Table 2.2](#table_rni_def):
 | wr_data | input from upstream, output to downsream | BUS_DATA_WIDTH | write data |
 | rd_data | output to upstream, input from downsream | BUS_DATA_WIDTH | read data |
 <center>
-    <div style="display: inline-block;
+    <div id="table_rni_def" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 2.2 reg_native_if signal definitions
     </div>
@@ -251,18 +247,16 @@ For one read or write transaction, **`ack_vld` is not allowed to be asserted by 
 
 There are two methods for write transactions. One is with no wait state: `ack_vld` is asserted once `req_vld` and `wr_en` raises. The other is with one or more wait states: `ack_vld` is asserted after `req_vld` and `wr_en` have raised for more than one cycles. `req_vld`, `addr`, `wr_en` and `wr_data` should be valid at the same cycle, and are valid for **only one cycle**.
 
-<span id="pics_rni_write_trans_1"></span>
 <center>
-    <img src="docs/pics/reg_native_if/write_trans_1.svg"><br>
+    <img id="pics_rni_write_trans_1" src="docs/pics/reg_native_if/write_trans_1.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.3 write transaction with no wait state
     </div>
 </center>
 
-<span id="pics_rni_write_trans_2"></span>
 <center>
-    <img src="docs/pics/reg_native_if/write_trans_2.svg"><br>
+    <img id="pics_rni_write_trans_2" src="docs/pics/reg_native_if/write_trans_2.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.4 write transaction with one or more wait states
@@ -273,18 +267,16 @@ There are two methods for write transactions. One is with no wait state: `ack_vl
 
 There are two methods for read transactions. One is with no wait state: `ack_vld` is asserted and `rd_data` are valid once `req_vld` and `rd_en` raises. The other is with one or more wait states: `ack_vld` is asserted after `req_vld` and `rd_en` have raised for more than one cycles. `req_vld`, `addr`, `rd_en` should be valid at the same cycle, and are valid for **only one cycle**.
 
-<span id="pics_rni_read_trans_1"></span>
 <center>
-    <img src="docs/pics/reg_native_if/read_trans_1.svg"><br>
+    <img id="pics_rni_read_trans_1" src="docs/pics/reg_native_if/read_trans_1.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.5 read transaction with no wait state
     </div>
 </center>
 
-<span id="pics_rni_read_trans_2"></span>
 <center>
-    <img src="docs/pics/reg_native_if/read_trans_2.svg"><br>
+    <img id="pics_rni_read_trans_2" src="docs/pics/reg_native_if/read_trans_2.svg"><br>
     <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 2.6 read transaction with one or more wait states
@@ -299,9 +291,8 @@ If input files are Excel worksheets only, all of them will be converted to Syste
 
 `regmst` is the root node of `reg_tree`, and is responsible for monitoring all downstream nodes. [Figure 2.7](#pics_regmst_rtl_infra) shows the architecture of `regmst`.
 
-<span id="pics_regmst_rtl_infra"></span>
 <center>
-    <img src="docs/pics/regmst_rtl_infra.svg">
+    <img id="pics_regmst_rtl_infra" src="docs/pics/regmst_rtl_infra.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.7 regmst architecture
@@ -314,7 +305,7 @@ Then `regmst` starts a timer. If a timeout event occurs in waiting for response 
 
 `regmst` module does not support outstanding transactions, so the process logic is quite straitforward:
 
-  1. Once receiving a APB transaction, `addr_decoder` in `regmst` decodes the **absolute address** to determine whether current access belongs to its downstream modules
+  1. Once receiving an APB transaction, `addr_decoder` in `regmst` decodes the **absolute address** to determine whether current access belongs to its downstream modules
 
   2. `regmst` forwards access to the downstream `regdisp` module, then waits for response (`ack_vld`), and starts a timer as well.
 
@@ -329,11 +320,10 @@ With regard to clock domain, `regmst` runs on the register native domain (typica
 [Table 2.8](#table_regmst_ports) shows port definitions of `regmst`.
 
 // TODO
-<span id="table_regmst_ports"></span>
 |    Port     | Direction | Width | Description |
 | ----------- | --------- | ----- | ----------- |
 <center>
-    <div style="display: inline-block;
+    <div id="table_regmst_ports" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 2.8 regmst port definition
     </div>
@@ -345,9 +335,8 @@ The immediate sub-addrmap instance of root `addrmap` or any `addrmap` instance w
 
 `regdisp` is responsible for one-to-many access request dispatch like an inverse multiplexor, and it is **the only module in `reg_tree` that can connect multiple downstream modules which may be `regslv` modules implementing internal registers, 3rd party IPs, external memories or another `regdisp` module via `reg_native_if`**. [Figure 2.9](#pics_regdisp_rtl_infra) shows the architecture of `regdisp`.
 
-<span id="pics_regdisp_rtl_infra"></span>
 <center>
-    <img src="docs/pics/regdisp_rtl_infra.svg"><br>
+    <img id="pics_regdisp_rtl_infra" src="docs/pics/regdisp_rtl_infra.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.9 regdisp architecture
@@ -380,7 +369,6 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 
 [Table 2.10](#table_regdisp_ports) shows port definitions of `regdisp`.
 
-<span id="table_regdisp_ports"></span>
 |    Port             | Direction | Width | Description |
 | ------------------  | --------- | ----- | ----------- |
 | upstream__req_vld   | input     | 1 |
@@ -398,7 +386,7 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 | downstream__wr_data | output    | BUS_DATA_WIDTH |
 | downstream__rd_data | input     | BUS_DATA_WIDTH |
 <center>
-    <div style="display: inline-block;
+    <div id="table_regdisp_ports" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 2.10 regdisp port definition
     </div>
@@ -410,9 +398,8 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 
 [Figure 2.11](#pics_regslv_rtl_infra) shows the architecture of `regslv`.
 
-<span id="pics_regslv_rtl_infra"></span>
 <center>
-    <img src="docs/pics/regslv_rtl_infra.svg"><br>
+    <img id="pics_regslv_rtl_infra" src="docs/pics/regslv_rtl_infra.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.11 regslv architecture
@@ -424,11 +411,10 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 [Table 2.12](#table_regdisp_ports) shows port definition of `regslv`.
 
 // TODO
-<span id="table_regslv_ports"></span>
 |    Port     | Direction | Width | Description |
 | ----------- | --------- | ----- | ----------- |
 <center>
-    <div style="display: inline-block;
+    <div id="table_regslv_ports" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 2.12 regslv port definition
     </div>
@@ -439,12 +425,11 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 `slv_fsm` is a finite state machine (FSM) that copes with transactions dispatched from the upstream `regdisp` module and controls read and write access to internal registers. Its operating states are shown in [Figure 2.13](#pics_slv_state).
 
 // TODO
-<span id="pics_slv_state"></span>
 <center>
-    <img src="">
+    <img id="pics_slv_state" src=""><br>
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Table 2.12 regslv port definition
+        padding: 5px;">Figure 2.13 transition diagram of slv_fsm
     </div>
 </center>
 
@@ -484,9 +469,8 @@ end
 
 `field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.14](#pics_field_rtl_infra).
 
-<span id="pics_field_rtl_infra"></span>
 <center>
-    <img src="docs/pics/field_rtl_infra.svg">
+    <img id="pics_field_rtl_infra" src="docs/pics/field_rtl_infra.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.14 field architecture
@@ -499,7 +483,6 @@ The `field` module implements hardware and software access types defined in Exce
 
 All supported software access types are listed in [Table 2.15](#table_sw_acc_prop). `field` can be readable and writeable, write only once, and has some read or write side-effects on software behavior. Additionally, *alias* and *shared* property in SystemRDL can be used to describe `reg` if designers wants to generate registers with more than one software address locations and access types but only one physical implementation. If *alias* or *shared* property is assigned in SystemRDL, a corresponding number of software control (`sw_ctrl`) units will be generated. So for simple register description without *alias* or *shared* property, there is only one `sw_ctrl` unit.
 
-<span id="table_sw_acc_prop"></span>
 | Software Access Type | Description                     |
 | -------------------- | ------------------------------- |
 | RO                   | read only                       |
@@ -516,7 +499,7 @@ All supported software access types are listed in [Table 2.15](#table_sw_acc_pro
 | WZC                  | write 0 to clear                |
 | WZT                  | write 0 to toggle               |
 <center>
-    <div style="display: inline-block;
+    <div id="table_sw_acc_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 2.15 supported software access (read and write) types
     </div>
@@ -526,21 +509,21 @@ All supported software access types are listed in [Table 2.15](#table_sw_acc_pro
 
 All supported hardware access types are listed in [Table 2.16](#table_hw_acc_prop).
 
-<span id="table_hw_acc_prop"></span>
 | Hardware Access Type | Description                                 |
 | -------------------- | ------------------------------------------- |
-| RO | read only, thus `hw_pulse` and `hw_value` are not generated as `regslv` module ports |
+| RO | read only, thus `<field_name>__pulse` and `<field_name>__next_value` are not generated as `regslv` ports |
+| WO | write only, thus `<field_name>__curr_value` are not generated as `regslv` ports |
 | RW | read, and write when `hw_pulse` is asserted |
 | CLR | bitwise clear, and `hw_pulse` input is ignored |
 | SET | bitwise set, and `hw_pulse` input is ignored |
 <center>
-    <div style="display: inline-block;
+    <div id="table_hw_acc_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 2.16 supported software access (read and write) types
     </div>
 </center>
 
-All supported sodtware and hardware access types also can be found in a generated verilog header file `xregister.vh`.
+All supported sodtware and hardware access types also can be found in a generated verilog header file `field_attr.vh`.
 
 ------------------------------
 
@@ -553,9 +536,8 @@ Additionally, there are some other advanced features in SystemRDL that can be im
 `field` is concatenated to form `register` and mapped into address space for software access, as shown in [Figure 2.17](#pics_field_concat_reg).
 
 // FIXME
-<span id="pics_field_concat_reg"></span>
 <center>
-    <img src="">
+    <img src="" id="pics_field_concat_reg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.17 fields are concatenated to form registers
@@ -785,13 +767,12 @@ Dynamic assignment allows the designer to overwrite or assign properties outside
 
 All general component properties supported by HRDA are described in [Table 3.1](#table_general_prop), and other supported component-specific properties are also discussed in following chapters.
 
-<span id="table_general_prop"></span>
 | Property | Description                                                    | Type       | Dynamic Assignment |
 | -------- | -------------------------------------------------------------- | ---------- | ------------------ |
 | name     | Specifies a more descriptivename (for documentation purposes). | *string*   | Support            |
 | desc     | Describes the component’s purpose.                             | *string*   | Support            |
 <center>
-    <div style="display: inline-block;
+    <div id="table_general_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 3.1 all supported general component properties
     </div>
@@ -970,7 +951,6 @@ For example, register instance name is `ring_cfg`, field instance name is `rd_pt
 
 All specific properties supported in `field` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.2](#table_field_prop)
 
-<span id="table_field_prop"></span>
 | Property | Notes | Type | Default | Dynamic Assignment |
 |----------|-------|------|---------|--------------------|
 | `fieldwidth`      | Width of field.                                                                                                                   | *longint unsigned* | 1       | Not Support  |
@@ -989,7 +969,7 @@ All specific properties supported in `field` component besides general component
 | `hwset`           | Hardware set.  field is set upon assertion on hardware signal in bitwise mode.                                                    | *boolean*          | false   | Support |
 | `precedence`      | One of `hw` or `sw`, controls whether precedence is granted to hardware (`hw`) or software (`sw`) when contention occurs.         | *precedencetype*   | `sw`    | Support |
 <center>
-    <div style="display: inline-block;
+    <div id="table_field_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 3.2 supported field component properties
     </div>
@@ -1085,16 +1065,15 @@ Registers which *share* or *alias* the same `reg` type are all generated in the 
 
 All supported properties are listed in [Table 3.3](#table_reg_prop).
 
-<span id="table_reg_prop"></span>
 | Property      | Notes                                                              | Type               | Default | Dynamic Assignment |
 |---------------|--------------------------------------------------------------------|--------------------|---------|--------------------|
 | `regwidth`    | Width of Register.                                                 | *longint unsigned* | 32      | Not Support        |
 | `accesswidth` | Minimum software access width operation performed on the register. | *longint unsigned* | 32      | Not Support        |
 | `shared`      | Defines a register as being shared in different address maps.      | *boolean*          | false   | Not Support        |
 <center>
-<div style="display: inline-block;
-color: #999;
-padding: 5px;">Table 3.3 supported register component properties</div>
+    <div id="table_reg_prop" style="display: inline-block;
+        color: #999;
+        padding: 5px;">Table 3.3 supported register component properties</div>
 </center>
 
 #### **3.1.7.3 Example**
@@ -1123,12 +1102,11 @@ SystemRDL Specification allows *external* to be applied on `regfile` instances, 
 
 All supported properties are listed in [Table 3.4](#table_regfile_prop).
 
-<span id="table_regfile_prop"></span>
 | Property    | Notes                                                                               | Type               | Default | Dynamic Assignment |
 |-------------|-------------------------------------------------------------------------------------|--------------------|---------|---------|
 | `alignment` | Specifies alignment of all instantiated components in the associated register file. | *longint unsigned* |         | Not Support |
 <center>
-    <div style="display: inline-block;
+    <div id="table_regfile_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 3.4 supported regfile component properties
     </div>
@@ -1151,7 +1129,6 @@ Memory (`mem`) instances **should always be declared as *external* during instan
 
 Other supported properties besides general properties for `mem` are listed in [Table 3.5](#table_mem_prop).
 
-<span id="table_mem_prop"></span>
 | Property     | Notes                                             | Type                | Default | Dynamic Assignment |
 |--------------|---------------------------------------------------|---------------------|---------|--------------------|
 | *mementries* | The number of memory entries, a.k.a memory depth. | *longint unsigned*  |         | Not Support        |
@@ -1159,7 +1136,7 @@ Other supported properties besides general properties for `mem` are listed in [T
 | *hj_cdc*     | Whether to generate a clock domain crossing (CDC) module from register native domain to target domain. | *boolean* | false | Support |
 | *hj_use_upstream_ff* | Whether to insert flip-flops for `reg_native_if` from upstream `regdisp`.                      | *boolean* | false | Support |
 <center>
-    <div style="display: inline-block;
+    <div id="table_mem_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 3.5 supported memory component properties
     </div>
@@ -1196,7 +1173,6 @@ An address map component (`addrmap`) contains registers (`reg`), register files 
 
 Different types of `addrmap` are distinguished by following user-defined properties: `hj_genmst`, `hj_gendisp`, `hj_genslv` and `hj_flatten_addrmap`, as listed in [Table 3.6](#table_addrmap_recog).
 
-<span id="table_addrmap_recog"></span>
 | hj_genmst | hj_gendisp   | hj_genslv    | hj_flatten_addrmap | `addrmap` type | RTL module   | usage |
 |-----------|--------------|--------------|--------------------|----------------|--------------|-------|
 | true      | *don't care* | *don't care* | *don't care*       | Type 1         | `regmst`     | Generate a `regmst` module as the root node of `reg_tree`. |
@@ -1205,7 +1181,7 @@ Different types of `addrmap` are distinguished by following user-defined propert
 | false     | false        | false        | false              | Type 4         | 3rd party IP | Forward a `reg_native_if` to this IP from `regdisp`. |
 | false     | false        | false        | true               | Type 5         | All contents in the `addrmap` is flattened in its parent scope. | Use *shared* property to map same register into different address spaces |
 <center>
-    <div style="display: inline-block;
+    <div id="table_addrmap_recog" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 3.6 user-defined properties to recognize different types of addrmap
     </div>
@@ -1233,7 +1209,6 @@ Naming conventions of RTL module name (also file name) for five types of `addrma
 
 Other suppored properties besides general component properties for `addrmap` is listed in [Table 3.7](#table_addrmap_prop).
 
-<span id="table_addrmap_prop"></span>
 | Property       | Notes                                                                                                            | Type               | Default | Dynamic Assignment |
 |----------------|------------------------------------------------------------------------------------------------------------------|--------------------|---------|--------------------|
 | *hj_genmst*    | Whether to generate a `regmst` for this `addrmap`.                                                               | *longint unsigned* |         | Support            |
@@ -1248,7 +1223,7 @@ Other suppored properties besides general component properties for `addrmap` is 
 | *addressing*   | Controls how addresses are computed in an address map.                                                           | *addressingtype*   |         | Not Support        |
 | *rsvdset*      | The read value of all fields not explicitly defined is set to 1 if rsvdset is `true`; otherwise, it is set to 0. | *boolean*          | true    | Not Support        |
 <center>
-    <div style="display: inline-block;
+    <div id="table_addrmap_prop" style="display: inline-block;
         color: #999;
         padding: 5px;">Table 3.7 other supported addrmap component properties
     </div>
@@ -1397,6 +1372,8 @@ addrmap template_mst {
         // or designers can define an addrmap here
         template_slv template_slv;
     } template_disp;
+    // debug registers implemented in regmst, please don't touch it and keep this level clean
+    db_regs db_regs %= 0x1000;
 };
 ```
 
@@ -1412,18 +1389,16 @@ This guideline is provided for designers who are not familiar with SystemRDL and
 
 An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), and designers can use command `hrda template -excel` to generate these templates and modify them (see [5.2 Command Options and Arguments](#52-command-options-and-arguments)).
 
-<span id="pics_excel_temp_cn"></span>
 <center>
-  <img src="docs/pics/temp_cn.png" width="80%">
+  <img id="pics_excel_temp_cn" src="docs/pics/temp_cn.png" width="80%"><br>
   <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 4.1 Excel worksheet template (Chinese version)
   </div>
 </center>
 
-<span id="pics_excel_temp_en"></span>
 <center>
-  <img src="docs/pics/temp_en.png" width="80%">
+  <img id="pics_excel_temp_en" src="docs/pics/temp_en.png" width="80%"><br>
   <div style="display: inline-block;
     color: #999;
     padding: 5px;">Table 4.2 Excel worksheet template (English version)</div>
@@ -1451,11 +1426,12 @@ Register elements are as follows.
 
   - Field Description: consistent with the `desc` property in SystemRDL.
 
-  - Software Read property (SW Read Type): consistent with the `onread` property in SystemRDL. `R`, `RCLR` and `RSET` are supported.
+  - Software Read property (SW Read Type): consistent with the `onread` property in SystemRDL. `R`, `RCLR` and `RSET` are supported (see [Table 2.15](#table_sw_acc_prop)).
 
-  - Software Write property (SW Write Type): consistent with the `onwrite` property in SystemRDL. `W`, `W1`,`WOC`, `WOS`, `WOT`, `WZC`, `WZS`, `WZT` are supported.
+  - Software Write property (SW Write Type): consistent with the `onwrite` property in SystemRDL. `W`, `W1`,`WOC`, `WOS`, `WOT`, `WZC`, `WZS`, `WZT` are supported (see [Table 2.15](#table_sw_acc_prop)).
 
-  - Hardware Type (HW Access Type): consistent with the `hw` property in SystemRDL
+  - Hardware Type (HW Access Type): consistent with the `hw` property in SystemRDL. `RO`, `WO`, `RW`, `CLR`, `SET` are supported (see [Table 2.16](#table_hw_acc_prop)).
+
   - Reset value: field reset value for synchronous and generic asynchronous reset signals.
 
   - Synchronous Reset Signals: In addition to the generic asynchronous reset by default, declaration of independent, one or more synchronous reset signals are supported.
@@ -1472,7 +1448,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
   2. the address offset must be hexdecimal and prefixed with `0X(x)`
 
-  3. the register bitwidth can only be `32 bit` or `64 bit`.
+  3. the register width can only be `32` or `64`.
 
   4. supported field software read and write properties: `R`, `RCLR`, `RSET`, `W`, `W1`, `WOC`, `WOS`, `WOT`, `WZC`, `WZS`, `WZT`
 
@@ -1640,7 +1616,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
     Specify this option explicitly to generate the UVM RAL verification model.
 
-  - `-gch,--gen_cheader`
+  - `-gch,--gen_chdr`
 
     Specifying this option explicitly generates the register C header file.
 
@@ -1677,8 +1653,8 @@ If you can execute `hrda` successfully, it is recommanded to use subcommands and
 
   ```bash
   mkdir test
-  hrda template -n test.xlsx -rnum 3 -rname tem1 tem2 tem3 -d ./test
-  hrda template -n test.rdl -d ./test
+  hrda template -excel test.xlsx -rnum 3 -rname tem1 tem2 tem3 -d ./test
+  hrda template -rdl -n test.rdl -d ./test
   ```
 
 - Parse the Excel worksheet and generate corresponding SystemRDL files.
@@ -1701,7 +1677,7 @@ If you can execute `hrda` successfully, it is recommanded to use subcommands and
 
 ## **6. Miscellaneous**
 
-list file format:
+filelist format:
 
 ```text
 # This is a comment.
@@ -1718,6 +1694,7 @@ list file format:
 
 ## **7. Errata**
 
+// TODO
 uvm access type mismatch
 
 <div style="page-break-after: always;"></div>
