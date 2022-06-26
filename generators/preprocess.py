@@ -76,8 +76,7 @@ class PreprocessListener(RDLListener):
                                    self.is_in_regdisp,
                                    self.is_in_flatten_addrmap,
                                    self.is_in_3rd_party_IP,
-                                   self.is_filtered,
-                                   self.field_hdl_path))
+                                   self.is_filtered))
 
         # reset properties
         (self.is_in_regmst,
@@ -86,11 +85,11 @@ class PreprocessListener(RDLListener):
         self.is_in_flatten_addrmap,
         self.is_in_3rd_party_IP,
         self.is_filtered) = False, False, False, False, False, False
-        self.field_hdl_path = []
 
         # distinguish different types of addrmap
         if isinstance(node.parent, RootNode):
-            # the model traverses in the root addrmap, so it shall generate a regmst module in RTL
+            # the model traverses in the root addrmap (the immediate and only child of RootNode),
+            # so it shall generate a regmst module in RTL
             if (not node.get_property("hj_genmst") is True) or (not node.get_property("hj_flatten_addrmap") is False):
                 message.warning("%s: the root/top addrmap is automatically treated as a regmst, "
                                 "it's recommended to explicitly assign: hj_genmst=true, "
@@ -110,8 +109,10 @@ class PreprocessListener(RDLListener):
 
             self.is_in_regmst = True
             self.reginst_name.append(node.inst_name)
+
             rtl_module_name = "regmst_{}".format("__".join(self.reginst_name))
             node.inst.properties["rtl_module_name"] = rtl_module_name
+            self.field_hdl_path = []
             self.field_hdl_path.append(rtl_module_name)
             self.total_size = node.total_size
 
@@ -199,19 +200,23 @@ class PreprocessListener(RDLListener):
                 message.warning("%s: the current addrmap is treated as a regslv, the property hj_use_abs_addr "
                                 "is forced to false" % (node.get_path()))
 
-            # set properties
+            # dynamic properties during walking
+            self.is_in_regslv = True
+            self.reginst_name.append(node.inst_name)
+            self.field_hdl_path = []
+
+            # set instance properties
             node.inst.properties["hj_genmst"] = False
             node.inst.properties["hj_genslv"] = True
             node.inst.properties["hj_gendisp"] = False
             node.inst.properties["hj_flatten_addrmap"] = False
             node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = False
+            node.inst.properties["rtl_module_name"] = "regslv_{}".format("__".join(self.reginst_name))
 
-            self.is_in_regslv = True
-            self.reginst_name.append(node.inst_name)
-
+            # fix: array instance in SystemRDL needs index suffix of corresponding RTL module names
+            self.reginst_name[-1] = node.get_path_segment(array_suffix="_{index:d}")
             rtl_module_name = "regslv_{}".format("__".join(self.reginst_name))
-            node.inst.properties["rtl_module_name"] = rtl_module_name
             self.field_hdl_path.append(rtl_module_name)
 
             if not self.keep_quiet:
@@ -288,10 +293,15 @@ class PreprocessListener(RDLListener):
         self.is_in_regdisp,
         self.is_in_flatten_addrmap,
         self.is_in_3rd_party_IP,
-        self.is_filtered,
-        self.field_hdl_path) = self.runtime_stack.pop()
+        self.is_filtered) = self.runtime_stack.pop()
 
-        if node.get_property("hj_genmst") or node.get_property("hj_genslv") or node.get_property("hj_gendisp"):
+        if node.get_property("hj_genmst") or \
+            node.get_property("hj_genslv"):
+            self.field_hdl_path = []
+
+        if node.get_property("hj_genmst") or \
+            node.get_property("hj_genslv") or \
+            node.get_property("hj_gendisp"):
             self.reginst_name.pop()
 
     def enter_Mem(self, node):
