@@ -1,4 +1,4 @@
-`include "xregister.vh"
+`include "field_attr.vh"
 
 module snapshot_reg         (// upstream control signal
                              snap_wr_en, snap_rd_data,

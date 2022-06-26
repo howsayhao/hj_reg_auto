@@ -8,8 +8,10 @@ from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, RootNode)
 
 
-class CHeaderExporter:
-
+class CHdrExporter:
+    """
+    Export C header files
+    """
     def __init__(self):
         """
         load jinja environment and basic context
@@ -54,7 +56,7 @@ class CHeaderExporter:
                     }
                     self.context.update(update_context)
 
-                    template = self.jj_env.get_template("c_header.jinja")
+                    template = self.jj_env.get_template("chdr.jinja")
 
                     stream = template.stream(self.context)
                     stream.dump(os.path.join(dir, "%s.h" % (node.get_path_segment())))
@@ -103,7 +105,7 @@ class CHeaderExporter:
 
         return all_flds
 
-def export_cheader(root:RootNode, out_dir:str):
+def export_chdr(root:RootNode, out_dir:str):
     """
     Export C header files.
 
@@ -112,17 +114,17 @@ def export_cheader(root:RootNode, out_dir:str):
     `root` : `systemrdl.node.RootNode`, the root node of the compiled register model
     `out_dir` : ouput directory to save the generated C header files (.h)
     """
-    exporter = CHeaderExporter()
-    cheader_dir = os.path.join(out_dir, "c_header")
-    if not os.path.exists(cheader_dir):
-        os.makedirs(cheader_dir)
+    exporter = CHdrExporter()
+    chdr_dir = os.path.join(out_dir, "chdr")
+    if not os.path.exists(chdr_dir):
+        os.makedirs(chdr_dir)
 
     try:
-        exporter.export(root, root, cheader_dir)
+        exporter.export(root, root, chdr_dir)
     except Exception:
         message.error("HRDA encounters some unknown errors")
         message.error(traceback.format_exc())
         message.error("C header exporter aborted due to previous errors")
         sys.exit(1)
     else:
-        message.info("save C header files in directory: %s" % (cheader_dir))
+        message.info("save C header files in directory: %s" % (chdr_dir))

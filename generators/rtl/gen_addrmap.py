@@ -475,7 +475,7 @@ class addrmap_str(object):
 
     def get_module_rtl(self) -> None:
         # collect all parts of rtl together into whole .v file
-        self.rtl += '`include "xregister.vh"\n'
+        self.rtl += '`include "field_attr.vh"\n'
         self.rtl += '`default_nettype none\n'
         if(self.master):
             self.rtl += 'module ' + 'regmst_' + self.module_name + '(\n'

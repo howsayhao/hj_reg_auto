@@ -1,4 +1,5 @@
 module apb2reg_native_if (
+    clk, rst_n
     psel, penable, pready, pwrite, paddr, pwdata, prdata,
     req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data
 );
@@ -39,7 +40,7 @@ module apb2reg_native_if (
         if (!rst_n)
             state       <= S_IDLE;
         else
-            next_state  <= state;
+            state       <= next_state;
     end
 
     // state transition logic
@@ -65,7 +66,7 @@ module apb2reg_native_if (
         endcase
     end
 
-    always_ff (posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             rd_data_ff  <= {DATA_WIDTH{1'b0}};
         else

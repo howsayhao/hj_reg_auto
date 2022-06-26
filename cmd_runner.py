@@ -4,7 +4,7 @@ import sys
 from multiprocessing import Process
 
 import utils.message as message
-from generators.c_header.export import export_cheader
+from generators.chdr.export import export_chdr
 from generators.html.export import export_html
 from generators.pdf.export import export_org, export_pdf
 from generators.preprocess import preprocess
@@ -135,7 +135,7 @@ class CommandRunner:
                                      nargs="+",
                                      help="filter some instances in UVM simulation "
                                           "(support wildcard character)")
-        parser_generate.add_argument("-gch", "--gen_cheader",
+        parser_generate.add_argument("-gch", "--gen_chdr",
                                      action="store_true",
                                      help="generate C headers")
         parser_generate.add_argument("-gall", "--gen_all",
@@ -232,7 +232,7 @@ class CommandRunner:
         `args.gen_org` : `bool`, whether to generate org mode documentations
         `args.gen_pdf` : `bool`, whether to generate PDF documentations
         `args.gen_ral` : `bool`, whether to generate the UVM RAL model (.sv)
-        `args.gen_cheader` : `bool`, whether to generate C header files
+        `args.gen_chdr` : `bool`, whether to generate C header files
         """
         root = parse(args.file,
                      args.list,
@@ -258,8 +258,8 @@ class CommandRunner:
             proc_list.append(Process(target=export_pdf, name="gen_pdf", args=(root, args.gen_dir)))
         if args.gen_all or args.gen_ral:
             proc_list.append(Process(target=export_uvm, name="gen_ral", args=(root, args.gen_dir)))
-        if args.gen_all or args.gen_cheader:
-            proc_list.append(Process(target=export_cheader, name="gen_cheader", args=(root, args.gen_dir)))
+        if args.gen_all or args.gen_chdr:
+            proc_list.append(Process(target=export_chdr, name="gen_chdr", args=(root, args.gen_dir)))
 
         for proc in proc_list:
             proc.start()

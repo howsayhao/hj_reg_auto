@@ -1,4 +1,4 @@
-`include "xregister.vh"
+`include "field_attr.vh"
 
 module hw_ctrl (hw_pulse, hw_value,
                 field_value,

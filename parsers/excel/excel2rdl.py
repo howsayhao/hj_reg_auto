@@ -286,9 +286,9 @@ class RDLGenerator:
                                                           onread=onread_str,
                                                           onwrite=onwrite_str)
 
-                    # handle hardware access properties: r, rw, clr, set
+                    # handle hardware access properties: r, w, rw, clr, set
                     hwtype = fld["FieldHwAccType"].lower()
-                    if hwtype in ("r", "rw"):
+                    if hwtype in ("r", "w", "rw"):
                         hw = hwtype
                         onwrite_str = ""
                     elif hwtype == "clr":

@@ -1,5 +1,4 @@
 $(call declare-mod,hrda)
-$(call add,ihdr,hrda,$(sop_base)/rtl/hrda/xregister.vh)
 $(call add,mod,hrda,common_funcs)
 $(call add,mod,hrda,bridge cdc field fsm mux sim snapshot)
 
@@ -14,13 +13,14 @@ $(call add,rtl,cdc,$(sop_base)/rtl/hrda/cdc/value_transmitter.v)
 $(call add,mod,cdc,value_deliver pulse_deliver)
 
 $(call declare-mod,field)
-$(call add,rtl,field,$(sop_base)/rtl/hrda/hw_ctrl.v \
-	$(sop_base)/rtl/hrda/sw_ctrl.v \
-	$(sop_base)/rtl/hrda/field.v)
+$(call add,idir,hrda,$(sop_base)/rtl/hrda/field)
+$(call add,rtl,field,$(sop_base)/rtl/hrda/field/hw_ctrl.v \
+	$(sop_base)/rtl/hrda/field/sw_ctrl.v \
+	$(sop_base)/rtl/hrda/field/field.v)
 
 $(call declare-mod,fsm)
-$(call add,rtl,fsm,$(sop_base)/rtl/hrda/mst_fsm.v \
-	$(sop_base)/rtl/hrda/slv_fsm.v)
+$(call add,rtl,fsm,$(sop_base)/rtl/hrda/fsm/mst_fsm.v \
+	$(sop_base)/rtl/hrda/fsm/slv_fsm.v)
 
 $(call declare-mod,mux)
 $(call add,mod,mux,priority_mux one_hot_mux split_mux_2d)

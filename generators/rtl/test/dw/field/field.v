@@ -1,4 +1,4 @@
-`include "xregister.vh"
+`include "field_attr.vh"
 
 module field (clk, rst_n,
 

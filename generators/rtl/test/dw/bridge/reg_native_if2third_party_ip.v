@@ -5,7 +5,7 @@ module reg_native_if2third_party_ip (
     req_vld, ack_vld, addr, wr_en, rd_en, wr_data, rd_data,
     // reg_native_if forwarding to external 3rd party IP
     ext_clk, ext_rst_n,
-    ext_req_vld, ext ack vid, ext_addr, ext_wr_en, ext_rd_en, ext_wr_data, ext_rd_data
+    ext_req_vld, ext_ack_vld, ext_addr, ext_wr_en, ext_rd_en, ext_wr_data, ext_rd_data
 );
 
     parameter   CDC_ENABLE                  = 0;

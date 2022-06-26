@@ -1,4 +1,4 @@
-`include "xregister.vh"
+`include "field_attr.vh"
 
 module sw_ctrl (field_value,
 		sw_wr, sw_rd, sw_wr_data, sw_type_alter_signal,
