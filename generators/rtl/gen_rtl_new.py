@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 from math import ceil, log2
 from turtle import update

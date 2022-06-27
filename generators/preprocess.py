@@ -99,7 +99,17 @@ class PreprocessListener(RDLListener):
                 message.warning("%s: the current addrmap is treated as a regmst, the property hj_use_abs_addr "
                                 "is forced to true" % (node.get_path()))
 
-            # set properties
+            # dynamic properties during walking
+            self.is_in_regmst = True
+            self.reginst_name.append(node.inst_name)
+            rtl_module_name = "regmst_{}".format("__".join(self.reginst_name))
+            node.inst.properties["rtl_module_name"] = rtl_module_name
+            self.runtime_stack.append(self.field_hdl_path)
+            self.field_hdl_path.clear()
+            self.field_hdl_path.append(rtl_module_name)
+            self.total_size = node.total_size
+
+            # update instance properties
             node.inst.properties["hj_genmst"] = True
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = False
@@ -107,15 +117,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = True
 
-            self.is_in_regmst = True
-            self.reginst_name.append(node.inst_name)
-
-            rtl_module_name = "regmst_{}".format("__".join(self.reginst_name))
-            node.inst.properties["rtl_module_name"] = rtl_module_name
-            self.field_hdl_path = []
-            self.field_hdl_path.append(rtl_module_name)
-            self.total_size = node.total_size
-
+            # regmst addrmap should consist of 2 immediate children: regdisp and regfile (db_regs)
             mst_child_nodes = list(node.children(skip_not_present=False))
             if len(mst_child_nodes) == 2:
                 if not isinstance(mst_child_nodes[0], AddrmapNode):
@@ -155,6 +157,7 @@ class PreprocessListener(RDLListener):
                               "assign hj_gendisp to false (default: true)" % (node.get_path()))
                 sys.exit(1)
 
+            # check if immediate children of regdisp are regslv, 3rd party IP or memory
             for child in node.children(skip_not_present=False):
                 if not isinstance(child, (AddrmapNode, MemNode)):
                     message.error("%s: addrmap recognized as a regdisp module is allowed to have immediate "
@@ -167,7 +170,12 @@ class PreprocessListener(RDLListener):
                 message.warning("%s: the current addrmap is treated as a regdisp, the property hj_use_abs_addr "
                                 "is forced to true" % (node.get_path()))
 
-            # set properties
+            # dynamic properties during walking
+            self.is_in_regdisp = True
+            self.reginst_name.append(node.inst_name)
+            rtl_module_name = "regdisp_{}".format("__".join(self.reginst_name))
+
+            # update instance properties
             node.inst.properties["hj_genmst"] = False
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = True
@@ -175,10 +183,6 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = True
             node.inst.properties["forward_num"] = len(list(node.children(unroll=True, skip_not_present=False)))
-
-            self.is_in_regdisp = True
-            self.reginst_name.append(node.inst_name)
-            rtl_module_name = "regdisp_{}".format("__".join(self.reginst_name))
             node.inst.properties["rtl_module_name"] = rtl_module_name
 
             if not self.keep_quiet:
@@ -203,9 +207,10 @@ class PreprocessListener(RDLListener):
             # dynamic properties during walking
             self.is_in_regslv = True
             self.reginst_name.append(node.inst_name)
+            self.runtime_stack.append(self.field_hdl_path)
             self.field_hdl_path = []
 
-            # set instance properties
+            # update instance properties
             node.inst.properties["hj_genmst"] = False
             node.inst.properties["hj_genslv"] = True
             node.inst.properties["hj_gendisp"] = False
@@ -237,7 +242,12 @@ class PreprocessListener(RDLListener):
                 message.warning("%s: the current addrmap is to be flatten in its parent scope, it's recommended "
                                 "to explicitly assign: hj_flatten_addrmap=true" % (node.get_path()))
 
-            # set properties
+            # dynamic properties during walking
+            self.is_in_regslv = True    # FIXME
+            self.is_in_flatten_addrmap = True
+            self.reg_name.append(node.inst_name)
+
+            # update instance properties
             node.inst.properties["hj_genmst"] = False
             node.inst.properties["hj_genslv"] = False
             node.inst.properties["hj_gendisp"] = False
@@ -250,10 +260,7 @@ class PreprocessListener(RDLListener):
                 message.error("%s: the addrmap cannot be flatten in the parent addrmap which "
                               "is instantiated as regdisp/regmst in RTL" % (node.get_path()))
                 sys.exit(1)
-            self.is_in_regslv = True
 
-            self.is_in_flatten_addrmap = True
-            self.reg_name.append(node.inst_name)
         else:
             # the model traverses in a sub-addrmap, which is imported from IP-XACT (.xml), or it satisfies:
             # hj_gendisp = false, hj_genslv = false, hj_genmst = false and hj_flatten_addrmap = false, so it
@@ -288,6 +295,10 @@ class PreprocessListener(RDLListener):
 
         # pop properties of the parent addrmap instance to stack (restore)
         # once exiting new addrmap instance
+        if node.get_property("hj_genmst") or \
+            node.get_property("hj_genslv"):
+            self.field_hdl_path = self.runtime_stack.pop()
+
         (self.is_in_regmst,
         self.is_in_regslv,
         self.is_in_regdisp,
@@ -296,18 +307,15 @@ class PreprocessListener(RDLListener):
         self.is_filtered) = self.runtime_stack.pop()
 
         if node.get_property("hj_genmst") or \
-            node.get_property("hj_genslv"):
-            self.field_hdl_path = []
-
-        if node.get_property("hj_genmst") or \
             node.get_property("hj_genslv") or \
             node.get_property("hj_gendisp"):
             self.reginst_name.pop()
 
     def enter_Mem(self, node):
-        if not node.parent.get_property("hj_gendisp"):
-            message.error("%s: the parent addrmap %s is not recognized as regdisp, but external memories"
-                            "must be forwarded by a regdisp module" % (node.get_path(), node.parent.get_path()))
+        if not node.parent.get_property("hj_gendisp") and \
+            not node.parent.get_property("hj_3rd_party_IP"):
+            message.error("%s: the parent addrmap %s is not recognized as regdisp or 3rd party IP, but external memories"
+                            "must be forwarded by a regdisp or 3rd party IP" % (node.get_path(), node.parent.get_path()))
             sys.exit(1)
 
         if not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
