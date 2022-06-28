@@ -1,33 +1,34 @@
 $(call declare-mod,hrda)
-$(call add,mod,hrda,common_funcs)
-$(call add,mod,hrda,bridge cdc field fsm mux sim snapshot)
+$(call add,mod,hrda,hrda_bridge hrda_cdc hrda_field hrda_fsm hrda_sim hrda_snapshot)
 
-$(call declare-mod,bridge)
-$(call add,rtl,bridge,$(sop_base)/rtl/hrda/bridge/apb2reg_native_if.v \
+$(call declare-mod,hrda_bridge)
+$(call add,rtl,hrda_bridge,$(sop_base)/rtl/hrda/bridge/apb2reg_native_if.v \
 	$(sop_base)/rtl/hrda/bridge/reg_native_if2apb.v \
 	$(sop_base)/rtl/hrda/bridge/reg_native_if2mem.v \
 	$(sop_base)/rtl/hrda/bridge/reg_native_if2third_party_ip.v)
+$(call add,mod,hrda_bridge,hrda_snapshot)
 
-$(call declare-mod,cdc)
-$(call add,rtl,cdc,$(sop_base)/rtl/hrda/cdc/value_transmitter.v)
-$(call add,mod,cdc,value_deliver pulse_deliver)
+$(call declare-mod,hrda_cdc)
+$(call add,rtl,hrda_cdc,$(sop_base)/rtl/hrda/cdc/value_transmitter.v)
+$(call add,mod,hrda_cdc,value_deliver pulse_deliver)
 
-$(call declare-mod,field)
-$(call add,idir,hrda,$(sop_base)/rtl/hrda/field)
-$(call add,rtl,field,$(sop_base)/rtl/hrda/field/hw_ctrl.v \
+$(call declare-mod,hrda_field)
+$(call add,idir,hrda_field,$(sop_base)/rtl/hrda)
+$(call add,rtl,hrda_field,$(sop_base)/rtl/hrda/field/hw_ctrl.v \
 	$(sop_base)/rtl/hrda/field/sw_ctrl.v \
 	$(sop_base)/rtl/hrda/field/field.v)
+$(call add,mod,hrda_field,priority_mux)
 
-$(call declare-mod,fsm)
-$(call add,rtl,fsm,$(sop_base)/rtl/hrda/fsm/mst_fsm.v \
+$(call declare-mod,hrda_fsm)
+$(call add,rtl,hrda_fsm,$(sop_base)/rtl/hrda/fsm/mst_fsm.v \
 	$(sop_base)/rtl/hrda/fsm/slv_fsm.v)
 
-$(call declare-mod,mux)
-$(call add,mod,mux,priority_mux one_hot_mux split_mux_2d)
+$(call declare-mod,hrda_sim)
+$(call add,rtl,hrda_sim,$(sop_base)/rtl/hrda/sim/ext_mem.v)
 
-$(call declare-mod,sim)
-$(call add,rtl,sim,$(sop_base)/rtl/hrda/sim/ext_mem.v)
-
-$(call declare-mod,snapshot)
-$(call add,rtl,snapshot,$(sop_base)/rtl/hrda/snapshot/snapshot_mem.v \
+$(call declare-mod,hrda_snapshot)
+$(call add,mod,hrda_snapshot,common_funcs)
+$(call add,idir,hrda_snapshot,$(sop_base)/rtl/hrda)
+$(call add,rtl,hrda_snapshot,$(sop_base)/rtl/hrda/snapshot/snapshot_mem.v \
 	$(sop_base)/rtl/hrda/snapshot/snapshot_reg.v)
+$(call add,mod,hrda_snapshot,one_hot_mux)
