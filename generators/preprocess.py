@@ -38,6 +38,7 @@ class PreprocessListener(RDLListener):
         self.is_in_ext_mem = False
         self.is_filtered = False
 
+        self.all_rtl_module = []
         self.field_hdl_path = []
         self.reg_name = []
         self.runtime_stack = []
@@ -101,7 +102,8 @@ class PreprocessListener(RDLListener):
             # dynamic properties during walking
             self.is_in_regmst = True
             rtl_module_name = "regmst_{}".format(node.inst_name)
-            node.inst.properties["rtl_module_name"] = rtl_module_name
+
+            self.all_rtl_module.append(rtl_module_name)
             self.runtime_stack.append(self.field_hdl_path)
             self.field_hdl_path.clear()
             self.field_hdl_path.append(rtl_module_name)
@@ -114,6 +116,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_flatten_addrmap"] = False
             node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = True
+            node.inst.properties["rtl_module_name"] = rtl_module_name
 
             # regmst addrmap should consist of 2 immediate children: regdisp and regfile (db_regs)
             mst_child_nodes = list(node.children(skip_not_present=False))
@@ -171,6 +174,7 @@ class PreprocessListener(RDLListener):
             # dynamic properties during walking
             self.is_in_regdisp = True
             rtl_module_name = "regdisp_{}".format(node.inst_name)
+            self.all_rtl_module.append(rtl_module_name)
 
             # update instance properties
             node.inst.properties["hj_genmst"] = False
@@ -204,7 +208,7 @@ class PreprocessListener(RDLListener):
             # dynamic properties during walking
             self.is_in_regslv = True
             self.runtime_stack.append(self.field_hdl_path)
-            self.field_hdl_path = []
+            self.field_hdl_path.clear()
 
             # update instance properties
             node.inst.properties["hj_genmst"] = False
@@ -217,6 +221,7 @@ class PreprocessListener(RDLListener):
 
             # fix: array instance in SystemRDL needs index suffix of corresponding RTL module names
             rtl_module_name = "regslv_{}".format(node.get_path_segment(array_suffix="_{index:d}"))
+            self.all_rtl_module.append(rtl_module_name)
             self.field_hdl_path.append(rtl_module_name)
 
             if not self.keep_quiet:
@@ -393,12 +398,19 @@ class PreprocessListener(RDLListener):
                 "\t"*self.indent,
                 node.get_path_segment(),
                 hex(node.absolute_address) if isinstance(node, AddressableNode) else "",
-                self.is_filtered)
-            )
+                self.is_filtered))
 
     def exit_Component(self, node):
         self.indent -= 1
         self.is_filtered = self.runtime_stack.pop()
+
+    def post_check(self):
+        """
+        """
+        if len(self.all_rtl_module) != len(set(self.all_rtl_module)):
+            message.error("duplicate RTL module names found, please check your addrmap instance names that "
+                          "represent for regmst, regdisp or regslv modules")
+            sys.exit(1)
 
     def get_report(self):
         """
@@ -421,5 +433,8 @@ def preprocess(root:RootNode, **user_ops):
     """
     preprocess_walker = RDLWalker(unroll=True)
     preprocess_listener = PreprocessListener(user_ops)
+
     preprocess_walker.walk(root, preprocess_listener)
+
+    preprocess_listener.post_check()
     preprocess_listener.get_report()
