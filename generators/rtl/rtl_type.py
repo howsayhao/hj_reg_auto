@@ -57,7 +57,7 @@ class Field(RTL_NODE):
         self.fieldwidth = 0
         self.reset = 0
         self.next = ""
-        self.resetsignal = "regslv_rstn"
+        self.resetsignal = "regslv_rst_n"
         self.syncresetsignal = ""
         self.syncresetsignal = ""
 

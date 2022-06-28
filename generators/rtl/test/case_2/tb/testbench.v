@@ -152,7 +152,7 @@ regslv_reg_top__reg_block_1_dut (
     .wr_data(reg_top__reg_block_1__wr_data),
     .rd_data(reg_top__reg_block_1__rd_data),
     // synchronous reset signals
-    .soft_rst_i(reg_top__downstream__glb_srst),
+    .soft_rst(reg_top__downstream__glb_srst),
     .soft_rst_o()
 );
 

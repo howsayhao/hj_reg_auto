@@ -1,7 +1,7 @@
 module reg_native_if2apb (
     clk, rst_n,
-    req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data,
-    psel, penable, pready, pwrite, paddr, pwdata, prdata
+    req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data, err,
+    psel, penable, pready, pwrite, paddr, pwdata, prdata, pslverr
 );
     parameter   ADDR_WIDTH  = 64;
     parameter   DATA_WIDTH  = 32;
@@ -17,6 +17,7 @@ module reg_native_if2apb (
     input   logic   [ADDR_WIDTH-1:0]    addr;
     input   logic   [DATA_WIDTH-1:0]    wr_data;
     output  logic   [DATA_WIDTH-1:0]    rd_data;
+    output  logic                       err;
 
     output  logic                       psel;
     output  logic                       penable;
@@ -25,6 +26,7 @@ module reg_native_if2apb (
     output  logic   [ADDR_WIDTH-1:0]    paddr;
     output  logic   [DATA_WIDTH-1:0]    pwdata;
     input   logic   [DATA_WIDTH-1:0]    prdata;
+    output  logic                       pslverr;
 
     localparam  S_IDLE                  = 2'd0,
                 S_SETUP                 = 2'd1,
@@ -47,18 +49,18 @@ module reg_native_if2apb (
         case(state)
             S_IDLE: begin
                 if (req_vld)
-                    next_state = S_SETUP;
+                    next_state  = S_SETUP;
                 else
-                    next_state = S_IDLE;
+                    next_state  = S_IDLE;
             end
             S_SETUP: next_state = S_ACCESS;
             S_ACCESS: begin
                 if (pready && req_vld)
-                    next_state = S_SETUP;
+                    next_state  = S_SETUP;
                 else if (pready && !req_vld)
-                    next_state = S_IDLE;
+                    next_state  = S_IDLE;
                 else
-                    next_state = S_ACCESS;
+                    next_state  = S_ACCESS;
             end
             default: next_state = S_IDLE;
         endcase
@@ -70,20 +72,21 @@ module reg_native_if2apb (
     // pwrite, pwdata, prdata
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            psel    <=  1'b0;
-            pwrite  <=  1'b0;
-            paddr   <=  {ADDR_WIDTH{1'b0}};
-            pwdata  <=  {DATA_WIDTH{1'b0}};
+            psel        <=  1'b0;
+            pwrite      <=  1'b0;
+            paddr       <=  {ADDR_WIDTH{1'b0}};
+            pwdata      <=  {DATA_WIDTH{1'b0}};
         end else if (next_state == S_SETUP) begin
-            psel    <=  req_vld;
-            pwrite  <=  wr_en;
-            paddr   <=  addr;
-            pwdata  <=  wr_data;
+            psel        <=  req_vld;
+            pwrite      <=  wr_en;
+            paddr       <=  addr;
+            pwdata      <=  wr_data;
         end
     end
 
-    assign penable = (state == S_ACCESS);
-    assign rd_data = prdata;
-    assign ack_vld = pready;
+    assign  penable     = (state == S_ACCESS);
+    assign  rd_data     = prdata;
+    assign  ack_vld     = pready;
+    assign  err         = pslverr;
 
 endmodule

@@ -1,7 +1,7 @@
 module apb2reg_native_if (
-    clk, rst_n
-    psel, penable, pready, pwrite, paddr, pwdata, prdata,
-    req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data
+    clk, rst_n,
+    psel, penable, pready, pwrite, paddr, pwdata, prdata, pslverr,
+    req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data, err
 );
     parameter   ADDR_WIDTH  = 64;
     parameter   DATA_WIDTH  = 32;
@@ -16,6 +16,7 @@ module apb2reg_native_if (
     output  logic   [ADDR_WIDTH-1:0]    addr;
     output  logic   [DATA_WIDTH-1:0]    wr_data;
     input   logic   [DATA_WIDTH-1:0]    rd_data;
+    input   logic                       err;
 
     input   logic                       psel;
     input   logic                       penable;
@@ -24,9 +25,10 @@ module apb2reg_native_if (
     input   logic   [ADDR_WIDTH-1:0]    paddr;
     input   logic   [DATA_WIDTH-1:0]    pwdata;
     output  logic   [DATA_WIDTH-1:0]    prdata;
+    output  logic                       pslverr;
 
-    logic   [ADDR_WIDTH-1:0]            ack_vld_ff;
     logic   [ADDR_WIDTH-1:0]            rd_data_ff;
+    logic                               err_ff;
 
     logic   [1:0]                       state;
     logic   [1:0]                       next_state;
@@ -67,10 +69,13 @@ module apb2reg_native_if (
     end
 
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
+        if (!rst_n) begin
             rd_data_ff  <= {DATA_WIDTH{1'b0}};
-        else
+            err_ff      <= 1'b0;
+        end else begin
             rd_data_ff  <= rd_data;
+            err_ff      <= err;
+        end
     end
 
     assign  req_vld     = psel & ~penable;
@@ -80,5 +85,5 @@ module apb2reg_native_if (
     assign  wr_data     = (psel & ~penable) ? pwdata : {DATA_WIDTH{1'b0}};
     assign  pready      = (state == S_ACK) || (state == S_WAIT && next_state == S_IDLE);
     assign  prdata      = (state == S_ACK) ? rd_data_ff : ((state == S_WAIT && next_state == S_IDLE) ? rd_data : {DATA_WIDTH{1'b0}});
-
+    assign  pslverr     = (state == S_ACK) ? err_ff : ((state == S_WAIT && next_state == S_IDLE) ? err : 1'b0);
 endmodule

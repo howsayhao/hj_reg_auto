@@ -263,7 +263,7 @@ regslv_reg_top__reg_block_1_dut (
     .wr_data(reg_top__reg_block_1__wr_data),
     .rd_data(reg_top__reg_block_1__rd_data),
     // synchronous reset signals
-    .soft_rst_i(reg_top__downstream__glb_srst),
+    .soft_rst(reg_top__downstream__glb_srst),
     .soft_rst_o(regslv_reg_top__reg_block_1__ext__glb_srst)
 );
 
@@ -312,7 +312,7 @@ regslv_reg_top__reg_block_1__test_11_dut (
     .wr_data(regslv_reg_top__reg_block_1__ext__wr_data[0]),
     .rd_data(regslv_reg_top__reg_block_1__ext__rd_data[0]),
     // synchronous reset signals
-    .soft_rst_i(regslv_reg_top__reg_block_1__ext__glb_srst),
+    .soft_rst(regslv_reg_top__reg_block_1__ext__glb_srst),
     .soft_rst_o()
 );
 
@@ -452,7 +452,7 @@ regslv_reg_top__reg_block_2_dut (
     .wr_data(reg_top__reg_block_2__wr_data),
     .rd_data(reg_top__reg_block_2__rd_data),
     // synchronous reset signals
-    .soft_rst_i(reg_top__downstream__glb_srst),
+    .soft_rst(reg_top__downstream__glb_srst),
     .soft_rst_o()
 );
 

@@ -69,7 +69,7 @@ class RTLExporter:
         self.context.update(update_context)
 
         template = self.jj_env.get_template("filelist_template.jinja")
-        filename = "%s.mk" % (top_node.inst_name)
+        filename = "list_%s.mk" % (top_node.inst_name)
 
         stream = template.stream(self.context)
         stream.dump(os.path.join(rtl_dir, filename))
