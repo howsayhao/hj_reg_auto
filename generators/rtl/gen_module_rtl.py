@@ -112,7 +112,7 @@ def get_regfile_define(reg_list, sync_reset_list, N):
     if(N == 0):
         return regfile_define_rtl
 
-    regfile_define_rtl += '\t//ports define of internal regfile\n'
+    regfile_define_rtl += '\n'
 
     for reg in reg_list:
         if(reg.alias is True or (reg.shared is True and reg.first_shared is False)):
@@ -120,12 +120,11 @@ def get_regfile_define(reg_list, sync_reset_list, N):
         else:
             for field in reg.children:
                 field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
-                regfile_define_rtl += '\t// ports of %s\n'%(field.hierachy)
-                regfile_define_rtl += '\tinput  [%d-1:0]    %s__next_value        ;\n'%(field.fieldwidth, field_name) if (field.hw != "`HW_RO") else ''
-                regfile_define_rtl += '\tinput              %s__pulse             ;\n'%(field_name) if (field.hw != "`HW_RO") else ''
-                regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value        ;\n'%(field.fieldwidth, field_name) if (field.hw != "w") else ''
-                regfile_define_rtl += '\toutput             %s__swmod_out         ;\n'%(field_name) if field.swmod else ''
-                regfile_define_rtl += '\toutput             %s__swacc_out         ;\n'%(field_name) if field.swacc else ''
+                regfile_define_rtl += '\tinput  [%d-1:0]    %s__next_value;\n'%(field.fieldwidth, field_name) if (field.hw != "`HW_RO") else ''
+                regfile_define_rtl += '\tinput             %s__pulse;\n'%(field_name) if (field.hw != "`HW_RO") else ''
+                regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value;\n'%(field.fieldwidth, field_name) if (field.hw != "w") else ''
+                regfile_define_rtl += '\toutput             %s__swmod_out;\n'%(field_name) if field.swmod else ''
+                regfile_define_rtl += '\toutput             %s__swacc_out;\n'%(field_name) if field.swacc else ''
 
     for signal in sync_reset_list:
         signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')

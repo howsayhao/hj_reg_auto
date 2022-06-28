@@ -40,7 +40,6 @@ class PreprocessListener(RDLListener):
 
         self.field_hdl_path = []
         self.reg_name = []
-        self.reginst_name = []  # regslv/regdisp RTL module name (hierarchical)
         self.runtime_stack = []
         self.total_reg_num = 0
         self.filter_reg_num = 0
@@ -101,8 +100,7 @@ class PreprocessListener(RDLListener):
 
             # dynamic properties during walking
             self.is_in_regmst = True
-            self.reginst_name.append(node.inst_name)
-            rtl_module_name = "regmst_{}".format("__".join(self.reginst_name))
+            rtl_module_name = "regmst_{}".format(node.inst_name)
             node.inst.properties["rtl_module_name"] = rtl_module_name
             self.runtime_stack.append(self.field_hdl_path)
             self.field_hdl_path.clear()
@@ -172,8 +170,7 @@ class PreprocessListener(RDLListener):
 
             # dynamic properties during walking
             self.is_in_regdisp = True
-            self.reginst_name.append(node.inst_name)
-            rtl_module_name = "regdisp_{}".format("__".join(self.reginst_name))
+            rtl_module_name = "regdisp_{}".format(node.inst_name)
 
             # update instance properties
             node.inst.properties["hj_genmst"] = False
@@ -206,7 +203,6 @@ class PreprocessListener(RDLListener):
 
             # dynamic properties during walking
             self.is_in_regslv = True
-            self.reginst_name.append(node.inst_name)
             self.runtime_stack.append(self.field_hdl_path)
             self.field_hdl_path = []
 
@@ -217,11 +213,10 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_flatten_addrmap"] = False
             node.inst.properties["hj_3rd_party_IP"] = False
             node.inst.properties["hj_use_abs_addr"] = False
-            node.inst.properties["rtl_module_name"] = "regslv_{}".format("__".join(self.reginst_name))
+            node.inst.properties["rtl_module_name"] = "regslv_{}".format(node.inst_name)
 
             # fix: array instance in SystemRDL needs index suffix of corresponding RTL module names
-            self.reginst_name[-1] = node.get_path_segment(array_suffix="_{index:d}")
-            rtl_module_name = "regslv_{}".format("__".join(self.reginst_name))
+            rtl_module_name = "regslv_{}".format(node.get_path_segment(array_suffix="_{index:d}"))
             self.field_hdl_path.append(rtl_module_name)
 
             if not self.keep_quiet:
@@ -306,11 +301,6 @@ class PreprocessListener(RDLListener):
         self.is_in_3rd_party_IP,
         self.is_filtered) = self.runtime_stack.pop()
 
-        if node.get_property("hj_genmst") or \
-            node.get_property("hj_genslv") or \
-            node.get_property("hj_gendisp"):
-            self.reginst_name.pop()
-
     def enter_Mem(self, node):
         if not node.parent.get_property("hj_gendisp") and \
             not node.parent.get_property("hj_3rd_party_IP"):
@@ -358,10 +348,8 @@ class PreprocessListener(RDLListener):
         self.reg_name.pop()
 
     def enter_Reg(self, node):
-
-        reg_rtl_inst_name = node.alias_primary.inst_name if node.is_alias else node.inst_name
-
-        self.reg_name.append(reg_rtl_inst_name)
+        # physical implementation of alias registers is the same as the original register
+        self.reg_name.append(node.alias_primary.inst_name if node.is_alias else node.inst_name)
         self.total_reg_num += 1
         if self.is_filtered:
             self.filter_reg_num += 1

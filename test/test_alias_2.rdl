@@ -30,8 +30,8 @@ addrmap root_map {
 			hj_gendisp = false;
 			hj_genslv = true;
 			hj_flatten_addrmap = false;
-			flatten_map map_11;
-			flatten_map map_12;
+			flatten_map map_11[5];
+			flatten_map map_12[10];
 		} slv_map;
 	} disp_map;
 	// debug registers implemented in regmst, please don't touch it and keep this level clean

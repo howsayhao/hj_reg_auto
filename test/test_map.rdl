@@ -228,7 +228,7 @@ addrmap root_map {
 	addrmap {
 		hj_gendisp = true;
 		hj_flatten_addrmap=false;
-		test_map_1 map_1;
+		test_map_1 map_1[3];
 		addrmap {
 			hj_gendisp = false;
 			hj_genslv = true;
@@ -236,7 +236,7 @@ addrmap root_map {
 			hj_flatten_addrmap=false;
 			test_map_2 map_2;
 			test_map_3 map_3;
-		} shared_map[10];
+		} shared_map;
 
 		// ipxact_block_example ipxact_map;
 		// ipxact_map -> hj_use_abs_addr = true;
