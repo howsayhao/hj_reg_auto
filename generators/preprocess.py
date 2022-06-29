@@ -245,7 +245,7 @@ class PreprocessListener(RDLListener):
             # dynamic properties during walking
             self.is_in_regslv = True    # FIXME
             self.is_in_flatten_addrmap = True
-            self.reg_name.append(node.inst_name)
+            self.reg_name.append(node.get_path_segment(array_suffix="_{index:d}"))
 
             # update instance properties
             node.inst.properties["hj_genmst"] = False
@@ -283,6 +283,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_3rd_party_IP"] = True
             node.inst.properties["ispresent"] = False
             node.inst.properties["hj_use_abs_addr"] = True
+            node.inst.properties["rtl_module_name"] = node.inst_name
 
             self.is_in_3rd_party_IP = True
             self.is_filtered = True
@@ -298,6 +299,9 @@ class PreprocessListener(RDLListener):
         if node.get_property("hj_genmst") or \
             node.get_property("hj_genslv"):
             self.field_hdl_path = self.runtime_stack.pop()
+
+        if node.get_property("hj_flatten_addrmap"):
+            self.reg_name.pop()
 
         (self.is_in_regmst,
         self.is_in_regslv,
@@ -323,7 +327,9 @@ class PreprocessListener(RDLListener):
         if node.get_property("hj_use_abs_addr"):
             message.warning("%s: the property hj_use_abs_addr in a memory instance"
                             "is forced to false" % (node.get_path()))
+
         node.inst.properties["hj_use_abs_addr"] = False
+        node.inst.properties["rtl_module_name"] = "mem_{}".format(node.inst_name)
         self.is_in_ext_mem = True
 
     def exit_Mem(self, node):

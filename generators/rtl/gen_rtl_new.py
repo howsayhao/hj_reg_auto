@@ -45,7 +45,9 @@ class RTLExporter:
             'get_data_width': self._get_data_width,
             'get_addr_width': self._get_addr_width,
             'has_cdc': self._has_cdc,
-            'is_3rd_party_ip': self._is_3rd_party_ip
+            'is_3rd_party_ip': self._is_3rd_party_ip,
+            'is_regslv': self._is_regslv,
+            'is_mem': self._is_mem
         }
 
         # filelist for all generated RTL module files: regmst, regdisp, regslv
@@ -95,8 +97,12 @@ class RTLExporter:
         """
         # if it's the top addrmap, generate a regmst module
         if isinstance(top_node, AddrmapNode) and top_node.get_property("hj_genmst"):
+            for child in top_node.children(unroll=True, skip_not_present=False):
+                if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
+                    top_disp_node = child
             update_context = {
-                'mst_node': top_node
+                'mst_node': top_node,
+                'disp_node': top_disp_node,
             }
             self.context.update(update_context)
 
@@ -229,3 +235,9 @@ class RTLExporter:
 
     def _is_3rd_party_ip(self, node:AddrmapNode):
         return node.get_property("hj_3rd_party_IP", default=False)
+
+    def _is_regslv(self, node:AddrmapNode):
+        return node.get_property("hj_genslv", default=False)
+
+    def _is_mem(self, node:Node):
+        return isinstance(node, MemNode)

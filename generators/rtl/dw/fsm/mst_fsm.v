@@ -1,5 +1,5 @@
 module mst_fsm (
-    clk, rst_n,
+    pclk, presetn,
     // APB interface
     psel, penable, pready, pslverr, paddr, pwrite, pwdata, prdata,
     // reg_native_if
@@ -10,15 +10,14 @@ module mst_fsm (
     err_acc_dummy
 );
 
-    parameter       ADDR_WIDTH = 64;
-    parameter       DATA_WIDTH = 32;
+    parameter       ADDR_WIDTH          = 64;
+    parameter       DATA_WIDTH          = 32;
     localparam      S_IDLE              = 2'd0,
                     S_WAIT              = 2'd1,
                     S_ACK               = 2'd2;
 
-    input   logic   clk;
-    input   logic   rst_n;
-
+    input   logic                       pclk;
+    input   logic                       presetn;
     input   logic                       psel;
     input   logic                       penable;
     output  logic                       pready;
@@ -45,8 +44,8 @@ module mst_fsm (
     logic   [1:0]   next_state;
 
     // state register
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always_ff @(posedge pclk or negedge presetn) begin
+        if (!presetn) begin
             state <= S_IDLE;
         end else begin
             state <= next_state;
@@ -86,8 +85,8 @@ module mst_fsm (
     assign  fsm_addr        = (psel & ~penable) ? paddr : {ADDR_WIDTH{1'b0}};
     assign  fsm_wr_data     = (psel & ~penable) ? pwdata : {DATA_WIDTH{1'b0}};
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
+    always_ff @(posedge pclk or negedge presetn) begin
+        if (!presetn)
             fsm_rd_data_ff  <= {DATA_WIDTH{1'b0}};
         else
             fsm_rd_data_ff  <= fsm_rd_data;

@@ -1,22 +1,21 @@
 `include "field_attr.vh"
 `default_nettype none
 module regmst_root_map (
-    // regmst is at register native clock domain
-    clk, rst_n,
     // APB interface to upstream SoC interconnect
-    psel, penable, pready, pslverr, pwrite, paddr, pwdata, prdata,
+    pclk, presetn, psel, penable, pready, pslverr, pwrite, paddr, pwdata, prdata,
     // reg_native_if to the downstream regdisp module
-    ext_req_vld, ext_ack_vld, ext_err, ext_wr_en, ext_rd_en, ext_addr, ext_wr_data, ext_rd_data,
-    // soft reset signal to downstream modules
-    ext_soft_rst
+    regmst_root_map__regdisp_disp_map__req_vld, regdisp_disp_map__regmst_root_map__ack_vld,
+    regdisp_disp_map__regmst_root_map__err, regmst_root_map__regdisp_disp_map__wr_en,
+    regmst_root_map__regdisp_disp_map__rd_en, regmst_root_map__regdisp_disp_map__addr,
+    regmst_root_map__regdisp_disp_map__wr_data, regdisp_disp_map__regmst_root_map__rd_data,
+    regmst_root_map__regdisp_disp_map__soft_rst
 );
     parameter       ADDR_WIDTH  = 64;
     parameter       DATA_WIDTH  = 32;
     localparam      REG_NUM     = 4;
 
-    input   logic                       clk;
-    input   logic                       rst_n;
-
+    input   logic                       pclk;
+    input   logic                       presetn;
     input   logic                       psel;
     input   logic                       penable;
     output  logic                       pready;
@@ -26,15 +25,15 @@ module regmst_root_map (
     input   logic   [DATA_WIDTH-1:0]    pwdata;
     output  logic   [DATA_WIDTH-1:0]    prdata;
 
-    output  logic                       ext_req_vld;
-    input   logic                       ext_ack_vld;
-    input   logic                       ext_err;
-    output  logic                       ext_wr_en;
-    output  logic                       ext_rd_en;
-    output  logic   [ADDR_WIDTH-1:0]    ext_addr;
-    output  logic   [DATA_WIDTH-1:0]    ext_wr_data;
-    input   logic   [DATA_WIDTH-1:0]    ext_rd_data;
-    output  logic                       ext_soft_rst;
+    output  logic                       regmst_root_map__regdisp_disp_map__req_vld;
+    input   logic                       regdisp_disp_map__regmst_root_map__ack_vld;
+    input   logic                       regdisp_disp_map__regmst_root_map__err;
+    output  logic                       regmst_root_map__regdisp_disp_map__wr_en;
+    output  logic                       regmst_root_map__regdisp_disp_map__rd_en;
+    output  logic   [ADDR_WIDTH-1:0]    regmst_root_map__regdisp_disp_map__addr;
+    output  logic   [DATA_WIDTH-1:0]    regmst_root_map__regdisp_disp_map__wr_data;
+    input   logic   [DATA_WIDTH-1:0]    regdisp_disp_map__regmst_root_map__rd_data;
+    output  logic                       regmst_root_map__regdisp_disp_map__soft_rst;
 
     logic   [REG_NUM-1:0]               dec_db_reg_sel;
     logic                               dec_ext_sel;
@@ -130,8 +129,8 @@ module regmst_root_map (
     mst_fsm #(
         .ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
     mst_fsm (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .pclk                   (pclk),
+        .presetn                (presetn),
         .psel                   (psel),
         .penable                (penable),
         .pready                 (pready),
@@ -142,19 +141,19 @@ module regmst_root_map (
         .prdata                 (prdata),
         .fsm_req_vld            (fsm_req_vld),
         .fsm_ack_vld            (fsm_ack_vld),
-        .err_acc_dummy          (err_acc_dummy),
         .fsm_addr               (fsm_addr),
         .fsm_wr_en              (fsm_wr_en),
         .fsm_rd_en              (fsm_rd_en),
         .fsm_wr_data            (fsm_wr_data),
         .fsm_rd_data            (fsm_rd_data),
+        .err_acc_dummy          (err_acc_dummy),
         .tmr_tmout              (tmr_tmout),
         .tmr_rst                (tmr_rst)
     );
 
 //*******************************************TIMER*****************************************************//
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n || tmr_rst)
+    always_ff @(posedge pclk or negedge presetn) begin
+        if (!presetn || tmr_rst)
             tmr_cnt <= {DATA_WIDTH{1'b0}};
         else if (tmr_cnt < db_regs_tmr_thr_o)
             tmr_cnt <= tmr_cnt + 1'b1;
@@ -188,8 +187,8 @@ module regmst_root_map (
         .HW_TYPE                (`HW_RW),
         .PRECEDENCE             (`SW))
     x__db_regs_err_addr__ADDR (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
         .sync_rst               (1'b0),
         .sw_wr_data             (db_regs_err_addr_snapshot_reg_wr_data[63:0]),
         .sw_rd                  (db_regs_err_addr_snapshot_reg_rd_en),
@@ -215,9 +214,9 @@ module regmst_root_map (
 
     snapshot_reg #(.DATA_WIDTH(32), .REG_WIDTH(64))
     db_regs_err_addr_snapshot (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
-        .soft_rst               (ext_soft_rst),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
+        .soft_rst               (regmst_root_map__regdisp_disp_map__soft_rst),
         .snap_wr_en             (db_regs_err_addr_snapshot_snap_wr_en),
         .snap_rd_en             (db_regs_err_addr_snapshot_snap_rd_en),
         .snap_wr_data           (db_regs_err_addr_snapshot_snap_wr_data),
@@ -244,8 +243,8 @@ module regmst_root_map (
         .HW_TYPE                (`HW_RW),
         .PRECEDENCE             (`SW))
     x__db_regs_tmr_thr__CNT (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
         .sync_rst               (1'b0),
         .sw_wr_data             (db_regs_tmr_thr_wr_data[31:0]),
         .sw_rd                  (db_regs_tmr_thr_rd_en),
@@ -281,8 +280,8 @@ module regmst_root_map (
         .HW_TYPE                (`HW_RW),
         .PRECEDENCE             (`SW))
     x__db_regs_err_stat__SOFT_RST (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
         .sync_rst               (1'b0),
         .sw_wr_data             (db_regs_err_stat_wr_data[0:0]),
         .sw_rd                  (db_regs_err_stat_rd_en),
@@ -296,7 +295,7 @@ module regmst_root_map (
         .field_value            (db_regs_err_stat__SOFT_RST__curr_value)
     );
     // soft reset signal is from register db_regs_err_stat bit 0 (SOFT_RST)
-    assign  ext_soft_rst          = db_regs_err_stat__SOFT_RST__curr_value;
+    assign  regmst_root_map__regdisp_disp_map__soft_rst          = db_regs_err_stat__SOFT_RST__curr_value;
 
     field #(
         .F_WIDTH                (1),
@@ -307,8 +306,8 @@ module regmst_root_map (
         .HW_TYPE                (`HW_RW),
         .PRECEDENCE             (`SW))
     x__db_regs_err_stat__ERR_OCCUR (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
         .sync_rst               (1'b0),
         .sw_wr_data             (db_regs_err_stat_wr_data[1:1]),
         .sw_rd                  (db_regs_err_stat_rd_en),
@@ -334,10 +333,10 @@ module regmst_root_map (
         .HW_TYPE                (`HW_RW),
         .PRECEDENCE             (`SW))
     x__db_regs_err_stat__ERR_TYPE (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
         .sync_rst               (1'b0),
-        .sw_wr_data             (db_regs_err_stat_wr_data[2:2]),
+        .sw_wr_data             (db_regs_err_stat_wr_data[3:2]),
         .sw_rd                  (db_regs_err_stat_rd_en),
         .sw_wr                  (db_regs_err_stat_wr_en),
         .write_protect_en       (1'b0),
@@ -374,8 +373,8 @@ module regmst_root_map (
         .WIDTH(DATA_WIDTH), .CNT(REG_NUM+1),
         .GROUP_SIZE(128), .SKIP_DFF_0(1), .SKIP_DFF_1(1))
     int_rd_split_mux (
-        .clk                    (clk),
-        .rst_n                  (rst_n),
+        .clk                    (pclk),
+        .rst_n                  (presetn),
         .din                    (int_rd_split_mux_din),
         .sel                    (int_rd_split_mux_sel),
         .dout                   (int_rd_data),
@@ -406,16 +405,16 @@ module regmst_root_map (
     assign  db_regs_err_stat_rd_en           = db_reg_rd_sel[3];
 
     // ultimate multiplexor to mst_fsm: ack_vld, rd_data, err
-    assign  fsm_rd_data                 = int_ack_vld ? int_rd_data : (ext_ack_vld ? ext_rd_data : {DATA_WIDTH{1'b0}});
-    assign  fsm_ack_vld                 = int_ack_vld | ext_ack_vld;
-    assign  ext_err_acc_dummy           = ext_err;
+    assign  fsm_rd_data                 = int_ack_vld ? int_rd_data : (regdisp_disp_map__regmst_root_map__ack_vld ? regdisp_disp_map__regmst_root_map__rd_data : {DATA_WIDTH{1'b0}});
+    assign  fsm_ack_vld                 = int_ack_vld | regdisp_disp_map__regmst_root_map__ack_vld;
+    assign  ext_err_acc_dummy           = regdisp_disp_map__regmst_root_map__err;
     assign  err_acc_dummy               = int_err_acc_dummy | ext_err_acc_dummy;
 
     // ultimate inverse multiplexor: to the external downstream regdisp module
-    assign  ext_req_vld                 = fsm_req_vld & dec_ext_sel;
-    assign  ext_wr_en                   = fsm_wr_en & dec_ext_sel;
-    assign  ext_rd_en                   = fsm_rd_en & dec_ext_sel;
-    assign  ext_addr                    = dec_ext_sel ? fsm_addr : {ADDR_WIDTH{1'b0}};
-    assign  ext_wr_data                 = dec_ext_sel ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  regmst_root_map__regdisp_disp_map__req_vld       = fsm_req_vld & dec_ext_sel;
+    assign  regmst_root_map__regdisp_disp_map__wr_en         = fsm_wr_en & dec_ext_sel;
+    assign  regmst_root_map__regdisp_disp_map__rd_en         = fsm_rd_en & dec_ext_sel;
+    assign  regmst_root_map__regdisp_disp_map__addr          = dec_ext_sel ? fsm_addr : {ADDR_WIDTH{1'b0}};
+    assign  regmst_root_map__regdisp_disp_map__wr_data       = dec_ext_sel ? fsm_wr_data : {DATA_WIDTH{1'b0}};
 endmodule
 `default_nettype wire

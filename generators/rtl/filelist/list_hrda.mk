@@ -1,5 +1,6 @@
 $(call declare-mod,hrda)
 $(call add,mod,hrda,hrda_bridge hrda_cdc hrda_field hrda_fsm hrda_sim hrda_snapshot)
+$(call add,mod,hrda,split_mux_2d)
 
 $(call declare-mod,field_attr)
 $(call add,idir,field_attr,$(sop_base)/rtl/hrda)
