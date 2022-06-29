@@ -884,6 +884,7 @@ module regslv_slv_map(
 
 //***************************************ADDRESS DECODER START****************************************//
 	// internal regfile decoder @regfile domain
+	assign err = dummy_reg;
 	always_comb begin
 			reg_sel = {REG_NUM{1'b0}};
 			dummy_reg = 1'b0;

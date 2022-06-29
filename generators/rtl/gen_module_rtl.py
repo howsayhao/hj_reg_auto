@@ -338,6 +338,7 @@ def get_decoder(int_addr_list):
 
     if(len(int_addr_list) > 0):
         decoder_rtl += '\t// internal regfile decoder @regfile domain\n'
+        decoder_rtl += '\tassign err = dummy_reg;\n'
         decoder_rtl += '\talways_comb begin\n'
         decoder_rtl += '\t\t\treg_sel = {REG_NUM{1\'b0}};\n'
         decoder_rtl += '\t\t\tdummy_reg = 1\'b0;\n'
