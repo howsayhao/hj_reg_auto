@@ -2,9 +2,9 @@
 module snapshot_mem (
     clk, rst_n, soft_rst,
     // upstream reg_native_if
-    req_vld, ack_vld, addr, wr_en, rd_en, wr_data, rd_data,
+    req_vld, ack_vld, err, addr, wr_en, rd_en, wr_data, rd_data,
     // downstream memory interface
-    mem_req_vld, mem_ack_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data, mem_rd_data
+    mem_req_vld, mem_ack_vld, mem_err, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data, mem_rd_data
 );
 
     `include "common_funcs.vh"
@@ -28,6 +28,7 @@ module snapshot_mem (
     input   logic                               soft_rst;
     input   logic                               req_vld;
     output  logic                               ack_vld;
+    output  logic                               err;
     input   logic   [BUS_ADDR_WIDTH-1:0]        addr;
     input   logic                               wr_en;
     input   logic                               rd_en;
@@ -36,6 +37,7 @@ module snapshot_mem (
 
     output  logic                               mem_req_vld;
     input   logic                               mem_ack_vld;
+    input   logic                               mem_err;
     output  logic   [MEM_ADDR_WIDTH-1:0]        mem_addr;
     output  logic                               mem_wr_en;
     output  logic                               mem_rd_en;
@@ -170,25 +172,29 @@ module snapshot_mem (
         .err ()
     );
 
-    // ack_vld and rd_data to upstream reg_native_if
+    // ack_vld, err, rd_data to upstream reg_native_if
     always_comb begin
         ack_vld                 = 1'b0;
+        err                     = 1'b0;
         rd_data                 = {BUS_DATA_WIDTH{1'b0}};
         case (state)
             S_IDLE:
                 if (ss_acc_wr)
                     ack_vld     = 1'b1;
-            S_READ_SS: begin
+            S_READ_SS: begin    // snapshot does not raise error
                 ack_vld         = 1'b1;
                 rd_data         = ss_rd_data;
             end
             S_ACC_MEM:
                 if (mem_ack_vld) begin
                     ack_vld     = 1'b1;
+                    if (mem_err)
+                        err     = 1'b1;
                     rd_data     = mem_rd_data[BUS_DATA_WIDTH-1:0];
                 end
             default: begin
                 ack_vld         = 1'b0;
+                err             = 1'b0;
                 rd_data         = {BUS_DATA_WIDTH{1'b0}};
             end
         endcase

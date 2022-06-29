@@ -2,10 +2,10 @@
 module reg_native_if2third_party_ip (
     // reg_native_if inside regdisp
     native_clk, native_rst_n,
-    req_vld, ack_vld, addr, wr_en, rd_en, wr_data, rd_data,
+    req_vld, ack_vld, err, addr, wr_en, rd_en, wr_data, rd_data,
     // reg_native_if forwarding to external 3rd party IP
     ext_clk, ext_rst_n,
-    ext_req_vld, ext_ack_vld, ext_addr, ext_wr_en, ext_rd_en, ext_wr_data, ext_rd_data
+    ext_req_vld, ext_ack_vld, ext_err, ext_addr, ext_wr_en, ext_rd_en, ext_wr_data, ext_rd_data
 );
 
     parameter   CDC_ENABLE                  = 0;
@@ -13,12 +13,13 @@ module reg_native_if2third_party_ip (
     parameter   BUS_ADDR_WIDTH              = 64;
 
     parameter   FORWARD_DELIVER_NUM         = BUS_ADDR_WIDTH + BUS_DATA_WIDTH + 3;
-    parameter   BACKWARD_DELIVER_NUM        = BUS_DATA_WIDTH + 1;
+    parameter   BACKWARD_DELIVER_NUM        = BUS_DATA_WIDTH + 2;
 
     input   logic                           native_clk;
     input   logic                           native_rst_n;
     input   logic                           req_vld;
     output  logic                           ack_vld;
+    output  logic                           err;
     input   logic   [BUS_ADDR_WIDTH-1:0]    addr;
     input   logic                           wr_en;
     input   logic                           rd_en;
@@ -29,6 +30,7 @@ module reg_native_if2third_party_ip (
     input   logic                           ext_rst_n;
     output  logic                           ext_req_vld;
     input   logic                           ext_ack_vld;
+    input   logic                           ext_err;
     output  logic   [BUS_ADDR_WIDTH-1:0]    ext_addr;
     output  logic                           ext_wr_en;
     output  logic                           ext_rd_en;
@@ -60,9 +62,9 @@ module reg_native_if2third_party_ip (
             assign  {ext_req_vld, ext_addr, ext_wr_en, ext_rd_en, ext_wr_data}  = pulse_deliver_o_pulse_out;
 
             // deliver reg_native_if pulse from 3rd party IP to native clock domain
-            assign  pulse_deliver_i_pulse_in    = {ext_ack_vld, ext_rd_data};
+            assign  pulse_deliver_i_pulse_in    = {ext_ack_vld, ext_err, ext_rd_data};
             pulse_deliver #(
-                .WIDTH(FORWARD_DELIVER_NUM)
+                .WIDTH(BACKWARD_DELIVER_NUM)
             )
             pulse_deliver_i (
                 .scan_enable                (1'b0),
@@ -73,7 +75,7 @@ module reg_native_if2third_party_ip (
                 .rst_b_n                    (native_rst_n),
                 .pulse_out                  (pulse_deliver_i_pulse_out)
             );
-            assign  {ack_vld, rd_data}      = pulse_deliver_i_pulse_out;
+            assign  {ack_vld, err, rd_data} = pulse_deliver_i_pulse_out;
 
         end else begin: g_no_cdc
             assign  ext_req_vld             = req_vld;
@@ -82,9 +84,9 @@ module reg_native_if2third_party_ip (
             assign  ext_rd_en               = rd_en;
             assign  ext_wr_data             = wr_data;
             assign  ack_vld                 = ext_ack_vld;
+            assign  err                     = ext_err;
             assign  rd_data                 = ext_rd_data;
         end
     endgenerate
-//**************************************************************************************************************************//
 endmodule
 `default_nettype wire
