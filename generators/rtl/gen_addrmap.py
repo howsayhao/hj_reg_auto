@@ -351,7 +351,7 @@ class addrmap_str(object):
             for prime_register in all_register_map:
                 if(prime_register.ref is None):
                     pass
-                elif(alias_register.alias_origin == prime_register.ref.inst):
+                elif(alias_register.alias_origin_node == prime_register.ref):
                     prime_register.alias_reg.append(alias_register)
                     alias_register.origin_reg = prime_register
                     break

@@ -48,7 +48,7 @@ def create_obj(node:Node, parent_obj:RTL_NODE, base_addr=0) -> RTL_NODE:
         # for alias or shared registers it will add a mark
         if(node.inst.alias_primary_inst is not None):
             new_obj.alias = True
-            new_obj.alias_origin = node.inst.alias_primary_inst
+            new_obj.alias_origin_node = node.alias_primary
             # self.alias_register_map.append(new_obj)
         if(node.get_property('shared') is True):
             new_obj.shared = True
