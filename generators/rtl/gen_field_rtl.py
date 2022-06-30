@@ -11,13 +11,13 @@ def gen_field_rtl(register):
     if(len(register.alias_reg)>0):
         sw_wr_str_list = []
         sw_rd_str_list = []
-        register_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        register_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
 
         sw_wr_str_list.append('%s_wr_en'%register_name)
         sw_rd_str_list.append('%s_rd_en'%register_name)
 
         for r_obj in register.alias_reg:
-            alias_register_name = '_'.join(r_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+            alias_register_name = '_'.join(r_obj.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
             sw_wr_str_list.append('%s_wr_en'%alias_register_name)
             sw_rd_str_list.append('%s_rd_en'%alias_register_name)
 
@@ -46,7 +46,7 @@ def gen_field_rtl(register):
             # collect the alias register's corresponding fields information
 
             for alias in register.alias_reg:
-                alias_reg_name = '_'.join(alias.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                alias_reg_name = '_'.join(alias.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                 sw_wr_data_str_list.append(alias_reg_name + '_wr_data' + '[%d:%d]'%(f_obj.msb,f_obj.lsb))
 
                 sw_type.append(alias.children[i].sw)
@@ -73,7 +73,7 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw) if (f_obj.hw != "w") else ''
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
-            f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(f_obj.hierachy[-1])
+            f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','_').replace(']','') + '__%s'%(f_obj.hierachy[-1])
 
 
             sw_wr_data_str = ','.join(sw_wr_data_str_list)
@@ -118,8 +118,8 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
 
-            f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(f_obj.hierachy[-1])
-            r_obj_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+            f_obj_name = '_'.join(f_obj.hierachy[:-1]).replace('][','_').replace('[','_').replace(']','') + '__%s'%(f_obj.hierachy[-1])
+            r_obj_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
 
             fstr += '\tx__%s\n'%(f_obj_name)
             fstr += '\t\t//' + 'PORT INSTANTIATE'.center(50,"*") + '//\n'

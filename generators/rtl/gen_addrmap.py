@@ -15,7 +15,7 @@ class addrmap_str(object):
     def __init__(self, node:Node, master:bool, Root:RTL_NODE, hierarchy:list, base_addr) -> None:
         # rtl module name from the Top addressmap(self.node)'s instance name
         self.module_name = node.get_path_segment(array_suffix="_{index:d}")
-        self.parent_module_name = '__'.join(hierarchy[:]).replace('][','_').replace('[','').replace(']','')
+        self.parent_module_name = '__'.join(hierarchy[:]).replace('][','_').replace('[','_').replace(']','')
         self.node = node
         # if the master is true, it will gen a reg_mst
         self.master = master
@@ -94,7 +94,7 @@ class addrmap_str(object):
                 pass
             else:
                 for field in internal_register.children:
-                    field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
+                    field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','_').replace(']','') + '__%s'%(field.hierachy[-1])
                     if(field.hw != "`HW_RO"):
                         next_value_signal = Signal(field_name + '__next_value')
                         next_value_signal.width = field.fieldwidth
@@ -195,7 +195,7 @@ class addrmap_str(object):
 
                 # for regslv gen_rtl
                 if(genslv is True and child not in self.Root.genslv_node):
-                    rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                    rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                     base_addr = child.absolute_address
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy, base_addr=base_addr)
                     ext_addr.write()
@@ -210,7 +210,7 @@ class addrmap_str(object):
 
                 # for 3rd party IP
                 elif(genslv is False and flatten_addrmap is False):
-                    rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                    rtl_obj.hierachy_name = '_'.join(rtl_obj.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                     base_addr = child.absolute_address
                     ext_addr = addrmap_str(node = child,master =  False,Root = self.Root, hierarchy = self.hierarchy, base_addr=base_addr)
                     new_obj.DATA_WIDTH = 32
@@ -242,7 +242,7 @@ class addrmap_str(object):
             new_obj.hierachy= rtl_obj.hierachy[:]
             new_obj.hierachy.append(new_obj.obj)
             rtl_obj.children.append(new_obj)
-            new_obj.module_name = self.module_name + '__'  +'_'.join(new_obj.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+            new_obj.module_name = self.module_name + '__'  +'_'.join(new_obj.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
 
             # handle snap_shot register situation
             if(isinstance(new_obj, Reg)):
@@ -299,7 +299,7 @@ class addrmap_str(object):
                     signal_is_defined = 0
                     for ref_signal in signal_map:
                         if(signal == ref_signal.obj and set(parent_obj.hierachy)>set(ref_signal.hierachy[:-1])):
-                            signal_name = '_'.join(ref_signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                            signal_name = '_'.join(ref_signal.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                             ref_signal.hierachy_name = signal_name
                             syn_rst.append(signal_name)
                             signal_is_defined = 1
@@ -432,7 +432,7 @@ class addrmap_str(object):
         define_str += '//' + 'Address Definition Here'.center(100,"*") + '//\n'
         for addr in self.internal_addr_map:
             for register in addr.registers:
-                register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                 addr.register_names.append('`' + register.hierachy_name)
                 rtl_reg_name = register.hierachy_name
                 rtl_reg_addr = '64\'h' + self.get_hex(register.addr)
@@ -440,7 +440,7 @@ class addrmap_str(object):
 
         for addr in self.external_addr_map:
             for register in addr.registers:
-                register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                register.hierachy_name = '_'.join(register.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                 addr.register_names.append('`' + register.hierachy_name)
                 rtl_reg_name = register.hierachy_name
                 if(isinstance(register.addr,str)):

@@ -32,14 +32,14 @@ def get_regfile_port(reg_list, sync_reset_list, N):
             pass
         else:
             for field in reg.children:
-                field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
+                field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','_').replace(']','') + '__%s'%(field.hierachy[-1])
                 regfile_port_rtl += '\t%s__next_value,\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_port_rtl += '\t%s__pulse,\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_port_rtl += '\t%s__curr_value,\n'%(field_name) if (field.hw != "w") else ''
                 regfile_port_rtl += '\t%s__swmod_out,\n'%(field_name) if field.swmod else ''
                 regfile_port_rtl += '\t%s__swacc_out,\n'%(field_name) if field.swacc else ''
     for signal in sync_reset_list:
-        signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         regfile_port_rtl += '\t%s        ,\n'%(signal_name)
     return regfile_port_rtl
 
@@ -119,7 +119,7 @@ def get_regfile_define(reg_list, sync_reset_list, N):
             pass
         else:
             for field in reg.children:
-                field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
+                field_name = '_'.join(field.hierachy[:-1]).replace('][','_').replace('[','_').replace(']','') + '__%s'%(field.hierachy[-1])
                 regfile_define_rtl += '\tinput  [%d-1:0]    %s__next_value;\n'%(field.fieldwidth, field_name) if (field.hw != "`HW_RO") else ''
                 regfile_define_rtl += '\tinput             %s__pulse;\n'%(field_name) if (field.hw != "`HW_RO") else ''
                 regfile_define_rtl += '\toutput [%d-1:0]    %s__curr_value;\n'%(field.fieldwidth, field_name) if (field.hw != "w") else ''
@@ -127,7 +127,7 @@ def get_regfile_define(reg_list, sync_reset_list, N):
                 regfile_define_rtl += '\toutput             %s__swacc_out;\n'%(field_name) if field.swacc else ''
 
     for signal in sync_reset_list:
-        signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        signal_name = '_'.join(signal.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         regfile_define_rtl += '\tinput \t%s        ;\n'%(signal_name)
 
     return regfile_define_rtl
@@ -230,7 +230,7 @@ def get_regfile_wire(N):
 def get_internal_reg_wire(int_reg_list):
     reg_wire_rtl = ''
     for reg in int_reg_list:
-        reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         reg_wire_rtl += '\tlogic [%d:0] %s_wr_data'%(reg.regwidth-1,reg_name) + ';\n'
         reg_wire_rtl += '\tlogic %s_wr_en'%(reg_name) + ';\n'
         reg_wire_rtl += '\tlogic %s_rd_en'%(reg_name) + ';\n'
@@ -240,7 +240,7 @@ def get_internal_reg_wire(int_reg_list):
 def get_snaped_reg_wire(snaped_reg_list):
     snaped_reg_wire_rtl = ''
     for reg in snaped_reg_list:
-        reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         snaped_reg_wire_rtl += '\tlogic [%d:0] %s_wr_data'%(reg.regwidth-1,reg_name) + ';\n'
         snaped_reg_wire_rtl += '\tlogic [%d:0] %s_snapshot_wr_data'%(reg.regwidth-1,reg_name) + ';\n'
         snaped_reg_wire_rtl += '\tlogic [%d:0] %s_snapshot_reg_rd_data'%(reg.regwidth-1,reg_name) + ';\n'
@@ -345,7 +345,7 @@ def get_decoder(int_addr_list):
         decoder_rtl += '\t\tunique casez (regfile_addr)\n'
         for addr in int_addr_list:
             for reg in addr.registers:
-                reg.hierachy_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+                reg.hierachy_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
                 addr.register_names.append('`' + reg.hierachy_name)
                 reg_addr = '64\'h' + get_hex(reg.addr)
             decoder_rtl += '\t\t\t' + reg_addr + ':' + 'reg_sel[%s] = 1\'b1;//%s\n'%(reg.id,reg.hierachy[:])
@@ -518,7 +518,7 @@ def get_reg_rtl(reg_list, rsvdset):
     for reg in reg_list:
         addr = '64\'h' + get_hex(reg.addr)
         offset = '64\'h' + get_hex(reg.offset)
-        reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         reg_rtl += '\t//' + 'REG INSTANT'.center(100,"=") + '//\n'
         reg_rtl += '\t//' + ('REG NAME: %s'%(reg_name)) + '//\n'
         reg_rtl += '\t//' + ('REG HIERARCHY: %s'%(reg.hierachy)) + '//\n'
@@ -550,7 +550,7 @@ def get_snapped_reg_rtl(snapped_reg_list, rsvdset):
         # for regs which are snapshoted, additional logic would be generated
         addr = '64\'h' + get_hex(reg.addr)
         offset = '64\'h' + '64\'h' + get_hex(reg.offset)
-        rtl_reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        rtl_reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         snapped_reg_rtl += '\t//' + 'REG INSTANT'.center(100,"=") + '//\n'
         snapped_reg_rtl += '\t//' + ('REG NAME: %s'%(rtl_reg_name)) + '//\n'
         snapped_reg_rtl += '\t//' + ('REG HIERARCHY: %s'%(reg.hierachy)) + '//\n'
@@ -574,13 +574,13 @@ def get_snapped_reg_rtl(snapped_reg_list, rsvdset):
 
 def snapshot_reg_ins(reg):
     ins_str = ''
-    reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+    reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
     snap_reg_wr_en = []
     snap_reg_rd_en = []
     snap_reg_wr_data = []
     snap_reg_rd_data = []
     for snap_reg in reg.snap_reg:
-        snap_reg_name = '_'.join(snap_reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+        snap_reg_name = '_'.join(snap_reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
         snap_reg_wr_en.append('%s_wr_en'%(snap_reg_name))
         snap_reg_rd_en.append('%s_rd_en'%(snap_reg_name))
         snap_reg_wr_data.append('%s_wr_data'%(snap_reg_name))
@@ -612,7 +612,7 @@ def snapshot_reg_ins(reg):
 
 def gen_reg_port(reg:Reg):
     reg_port_str = ''
-    reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','').replace(']','')
+    reg_name = '_'.join(reg.hierachy[:]).replace('][','_').replace('[','_').replace(']','')
     # if the reg is alias or share
     if(reg.alias or (reg.shared and len(reg.alias_reg) == 0)):
         field_bin = reg.origin_reg.children
@@ -625,7 +625,7 @@ def gen_reg_port(reg:Reg):
     for field in reg.children:
         field_origin = field_bin[i]
         if(field.sw == "`SW_RW" or field.sw == "`SW_RO" or field.sw == "`SW_RW1" ):
-            rtl_field_name = '_'.join(field_origin.hierachy[:-1]).replace('][','_').replace('[','').replace(']','') + '__%s'%(field.hierachy[-1])
+            rtl_field_name = '_'.join(field_origin.hierachy[:-1]).replace('][','_').replace('[','_').replace(']','') + '__%s'%(field.hierachy[-1])
             reg_port_str += '\t\t%s_o[%d:%d] = %s__curr_value;\n'%(reg_name,field.msb,field.lsb,rtl_field_name) if (field.hw != "w") else ''
             i += 1
     return reg_port_str

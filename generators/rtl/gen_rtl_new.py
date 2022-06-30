@@ -1,7 +1,6 @@
 import os
 import sys
 from math import ceil, log2
-from turtle import update
 
 import jinja2 as jj
 import utils.message as message
