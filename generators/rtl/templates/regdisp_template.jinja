@@ -9,7 +9,7 @@ module {{disp_name}} (
     {%- set down_prefix_o = disp_name + "__" + child_name %}
     {% if not is_regslv(child) -%}
     // {{child_name}} clock and reset domain
-    clk_{{child_name}},
+    {{child_name}}_clk,
     {{child_name}}_rst_n,
     {%- endif -%}
     // reg_native_if forwarding to {{child_name}}
@@ -21,12 +21,12 @@ module {{disp_name}} (
     {{down_prefix_o}}__rd_en,
     {{down_prefix_o}}__wr_data,
     {{down_prefix_i}}__rd_data,
-    {% if not is_regslv(child) -%}
+    {% if is_regslv(child) -%}
     {{down_prefix_o}}__soft_rst,
     {%- endif -%}
-    {% endfor -%}
+    {% endfor %}
     // regdisp is in register native clock and reset domain
-    clk_{{disp_name}},
+    {{disp_name}}_clk,
     {{disp_name}}_rst_n,
     // reg_native_if forwarded by {{parent_name}}
     {{up_prefix_i}}__req_vld,
@@ -46,7 +46,7 @@ module {{disp_name}} (
     parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_DFF  = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
     parameter                       INSERT_BACKWARD_FF  = {{use_backward_ff(disp_node)}};
 
-    input   logic                                       clk_{{disp_name}};
+    input   logic                                       {{disp_name}}_clk;
     input   logic                                       {{disp_name}}_rst_n;
     input   logic                                       {{up_prefix_i}}__req_vld;
     output  logic                                       {{up_prefix_o}}__ack_vld;
@@ -64,8 +64,10 @@ module {{disp_name}} (
     {%- set down_prefix_o = disp_name + "__" + child_name -%}
     {%- set child_addr_width = get_addr_width(child) -%}
     {%- set child_data_width = get_data_width(child) -%}
-    input   logic                                       clk_{{child_name}};
+    {% if not is_regslv(child) -%}
+    input   logic                                       {{child_name}}_clk;
     input   logic                                       {{child_name}}_rst_n;
+    {%- endif -%}
     output  logic                                       {{down_prefix_o}}__req_vld;
     input   logic                                       {{down_prefix_i}}__ack_vld;
     input   logic                                       {{down_prefix_i}}__err;
@@ -74,7 +76,7 @@ module {{disp_name}} (
     output  logic                                       {{down_prefix_o}}__rd_en;
     output  logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{down_prefix_o}}__wr_data;
     input   logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{down_prefix_i}}__rd_data;
-    {% if not isinstance(child, MemNode) and not is_3rd_party_ip(child) -%}
+    {% if is_regslv(child) -%}
     output  logic                                       {{down_prefix_o}}__soft_rst;
     {% endif %}
     {% endfor -%}
@@ -111,10 +113,7 @@ module {{disp_name}} (
     logic                                               dummy_reg_ack_vld;
     logic                                               err_acc_dummy;
 
-    /**************************************************************************
-    ** forward datapath
-    **************************************************************************/
-
+//**************************************FORWARD DATAPATH***********************************************//
     // decode upstream absolute address
     always_comb begin
         dec_if_sel          = {FORWARD_NUM{1'b0}};
@@ -178,7 +177,7 @@ module {{disp_name}} (
     generate
         for (cnt = 0; cnt < FORWARD_NUM; cnt = cnt + 1) begin: g_forward_ff_out
             if (INSERT_FORWARD_DFF[cnt]) begin: g_forward_ff_in
-                always @(posedge clk_{{disp_name}} or negedge {{disp_name}}_rst_n) begin
+                always @(posedge {{disp_name}}_clk or negedge {{disp_name}}_rst_n) begin
                     if (!{{disp_name}}_rst_n) begin
                         downstream_req_vld_ff[cnt]      <= 1'b0;
                         downstream_addr_ff[cnt]         <= {ADDR_WIDTH{1'b0}};
@@ -220,7 +219,7 @@ module {{disp_name}} (
         .MEM_ADDR_WIDTH({{get_addr_width(child)}})
     )
     reg_native_if2mem__{{disp_name}}2{{child_name}} (
-        .native_clk(clk_{{disp_name}}),
+        .native_clk({{disp_name}}_clk),
         .native_rst_n({{disp_name}}_rst_n),
         .soft_rst(downstream_soft_rst[{{loop.index0}}]),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
@@ -231,7 +230,7 @@ module {{disp_name}} (
         .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
         .wr_data(downstream_wr_data_ff[{{loop.index0}}]),
         .rd_data(downstream_rd_data[{{loop.index0}}]),
-        .mem_clk(clk_{{child_name}}),
+        .mem_clk({{child_name}}_clk),
         .mem_rst_n({{child_name}}_rst_n),
         .mem_req_vld({{down_prefix_o}}__req_vld),
         .mem_ack_vld({{down_prefix_i}}__ack_vld),
@@ -250,7 +249,7 @@ module {{disp_name}} (
         .BUS_ADDR_WIDTH(ADDR_WIDTH)
     )
     reg_native_if2third_party_ip__{{disp_name}}2{{child_name}} (
-        .native_clk(clk_{{disp_name}}),
+        .native_clk({{disp_name}}_clk),
         .native_rst_n({{disp_name}}_rst_n),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
@@ -260,7 +259,7 @@ module {{disp_name}} (
         .rd_en(downstream_rd_en_ff[{{loop.index0}}]),
         .wr_data(downstream_wr_data_ff[{{loop.index0}}]),
         .rd_data(downstream_rd_data[{{loop.index0}}]),
-        .ext_clk(clk_{{child_name}}),
+        .ext_clk({{child_name}}_clk),
         .ext_rst_n({{child_name}}_rst_n),
         .ext_req_vld({{down_prefix_o}}__req_vld),
         .ext_ack_vld({{down_prefix_i}}__ack_vld),
@@ -286,21 +285,19 @@ module {{disp_name}} (
     {%- endif %}
     {% endfor %}
 
-    /**************************************************************************
-    ** backward datapath
-    **************************************************************************/
+//**************************************BACKWARD DATAPATH**********************************************//
 
     // backward multiplexor for rd_data, ack_vld and err
-    assign  dummy_reg_ack_vld           = dec_dummy_reg_sel & {{up_prefix_i}}__req_vld;
-    assign  {{up_prefix_o}}_ack_vld_mux = (| downstream_ack_vld) | dummy_reg_ack_vld;
-    assign  {{up_prefix_o}}_err_mux     = (| downstream_err) | err_acc_dummy;
+    assign  dummy_reg_ack_vld               = dec_dummy_reg_sel & {{up_prefix_i}}__req_vld;
+    assign  {{up_prefix_o}}__ack_vld_mux    = (| downstream_ack_vld) | dummy_reg_ack_vld;
+    assign  {{up_prefix_o}}__err_mux        = (| downstream_err) | err_acc_dummy;
 
     always_comb begin
-        {{up_prefix_o}}_rd_data_mux = {DATA_WIDTH{1'b0}};
+        {{up_prefix_o}}__rd_data_mux = {DATA_WIDTH{1'b0}};
         if (!dummy_reg_ack_vld) begin
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
                 if (downstream_ack_vld[i]) begin
-                    {{up_prefix_o}}_rd_data_mux   = downstream_rd_data[i];
+                    {{up_prefix_o}}__rd_data_mux   = downstream_rd_data[i];
                 end
             end
         end
@@ -309,24 +306,23 @@ module {{disp_name}} (
     // optionally insert backward flip-flops after data passes through mux
     generate
         if (INSERT_BACKWARD_FF) begin: g_backward_ff
-            always @(posedge clk_{{disp_name}} or negedge {{disp_name}}_rst_n) begin
+            always @(posedge {{disp_name}}_clk or negedge {{disp_name}}_rst_n) begin
                 if (!{{disp_name}}_rst_n) begin
                     {{up_prefix_o}}__ack_vld     <= 1'b0;
                     {{up_prefix_o}}__err         <= 1'b0;
                     {{up_prefix_o}}__rd_data     <= {DATA_WIDTH{1'b0}};
                 end
                 else begin
-                    {{up_prefix_o}}__ack_vld     <= {{up_prefix_o}}_ack_vld_mux;
-                    {{up_prefix_o}}__err         <= {{up_prefix_o}}_err_mux;
-                    {{up_prefix_o}}__rd_data     <= {{up_prefix_o}}_rd_data_mux;
+                    {{up_prefix_o}}__ack_vld     <= {{up_prefix_o}}__ack_vld_mux;
+                    {{up_prefix_o}}__err         <= {{up_prefix_o}}__err_mux;
+                    {{up_prefix_o}}__rd_data     <= {{up_prefix_o}}__rd_data_mux;
                 end
             end
         end
         else begin: g_wo_backward_ff
-            assign  {{up_prefix_o}}__ack_vld     = {{up_prefix_o}}_ack_vld_mux;
-            assign  {{up_prefix_o}}__err         = {{up_prefix_o}}_err_mux;
-            assign  {{up_prefix_o}}__rd_data     = {{up_prefix_o}}_rd_data_mux;
+            assign  {{up_prefix_o}}__ack_vld     = {{up_prefix_o}}__ack_vld_mux;
+            assign  {{up_prefix_o}}__err         = {{up_prefix_o}}__err_mux;
+            assign  {{up_prefix_o}}__rd_data     = {{up_prefix_o}}__rd_data_mux;
         end
     endgenerate
-
 endmodule
