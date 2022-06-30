@@ -88,10 +88,10 @@ class PreprocessListener(RDLListener):
         self.is_in_3rd_party_IP,
         self.is_filtered) = False, False, False, False, False, False
 
-        # distinguish different types of addrmap
+        # distinguish different types and hierarchical levels of addrmap
         if isinstance(node.parent, RootNode):
             # the model traverses in the root addrmap (the immediate and only child of RootNode),
-            # so it shall generate a regmst module in RTL
+            # so it represents for the whole register network on the chip
             if (not node.get_property("hj_genmst") is True) or (not node.get_property("hj_flatten_addrmap") is False):
                 message.warning("%s: the root/top addrmap is automatically treated as a regmst, "
                                 "it's recommended to explicitly assign: hj_genmst=true, "

@@ -95,7 +95,7 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.swacc_out             (%s__swacc_out)'%(f_obj_name) if f_obj.swacc else '\n\t\t.swacc_out(),'
             fstr += '\n\t\t.hw_value              (%s__next_value),'%(f_obj_name) if(f_obj.hw != "`HW_RO") else '\n\t\t.hw_value(%s\'b0),'%(f_obj.fieldwidth)
             fstr += '\n\t\t.hw_pulse              (%s__pulse),'%(f_obj_name) if(f_obj.hw != "`HW_RO") else '\n\t\t.hw_pulse(1\'b0),'
-            fstr += '\n\t\t.field_value           (%s__curr_value)'%(f_obj_name)
+            fstr += '\n\t\t.field_value           (%s__curr_value)'%(f_obj_name) if(f_obj.hw != "w") else '\n\t\t.field_value           ()'
             fstr += '\n\t\t);\n'
             i += 1
 
@@ -136,7 +136,7 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.swacc_out             (%s__swacc_out),'%(f_obj_name) if f_obj.swacc else '\n\t\t.swacc_out(),'
             fstr += '\n\t\t.hw_value              (%s__next_value),'%(f_obj_name) if(f_obj.hw != "`HW_RO") else '\n\t\t.hw_value(%s\'b0),'%(f_obj.fieldwidth)
             fstr += '\n\t\t.hw_pulse              (%s__pulse),'%(f_obj_name) if(f_obj.hw != "`HW_RO") else '\n\t\t.hw_pulse(1\'b0),'
-            fstr += '\n\t\t.field_value           (%s__curr_value)'%(f_obj_name)
+            fstr += '\n\t\t.field_value           (%s__curr_value)'%(f_obj_name) if(f_obj.hw != "w") else '\n\t\t.field_value           ()'
             fstr += '\n\t\t);\n'
 
     return fstr
