@@ -7,8 +7,6 @@ import utils.message as message
 from systemrdl import RDLListener, RDLWalker
 from systemrdl.node import AddrmapNode, RegfileNode , FieldNode, RootNode, MemNode, AddressableNode
 
-# FIXME: node.inst_name vs. node.get_path_segment()
-# thus hierarchical path for array would be ambiguous
 
 class PreprocessListener(RDLListener):
     """
@@ -30,6 +28,7 @@ class PreprocessListener(RDLListener):
         set some properties used in the traverse process
         """
         self.indent = 0
+        self.rtl_hier_depth = 0
         self.is_in_regmst = False
         self.is_in_regslv = False
         self.is_in_regdisp = False
@@ -51,7 +50,7 @@ class PreprocessListener(RDLListener):
         self.filter_pattern = user_ops.pop("filter", None)
         self.keep_quiet = user_ops.pop("quiet", False)
 
-        message.info("Start preprocessing...")
+        message.info("HRDA Generator: start preprocessing")
 
     def enter_Addrmap(self, node):
         """
@@ -66,6 +65,9 @@ class PreprocessListener(RDLListener):
         - flatten addrmap (no module)
         - 3rd party IP (forward interface)
         """
+        self.rtl_hier_depth += 1
+
+        # debug message
         if not self.keep_quiet:
             message.debug("%sEntering addrmap: %s" % ("\t"*self.indent, node.get_path()))
 
@@ -233,6 +235,9 @@ class PreprocessListener(RDLListener):
             # hj_genslv = false, hj_flatten_addrmap = true/not declared, so it shall generate no module in RTL,
             # all components inside this addrmap will be flatten in the parent scope
 
+            # rtl hierarchy depth doesn't change in flatten addrmap
+            self.rtl_hier_depth -= 1
+
             if node.get_property("hj_genmst") or node.get_property("hj_genslv") or node.get_property("hj_gendisp"):
                 message.error("%s: the property hj_genmst/hj_genslv/hj_gendisp is not allowed to assigned to true in "
                               "an addrmap to be flatten, possible reasons: an ancestor addrmap instance is assigned"
@@ -291,6 +296,9 @@ class PreprocessListener(RDLListener):
                 message.debug("%sRecognized as 3rd party IP" % ("\t"*self.indent))
 
     def exit_Addrmap(self, node):
+        self.rtl_hier_depth -= 1
+
+        # debug message
         if not self.keep_quiet:
             message.debug("%sExiting addrmap: %s" % ("\t"*self.indent, node.get_path()))
 
@@ -301,6 +309,7 @@ class PreprocessListener(RDLListener):
             self.field_hdl_path = self.runtime_stack.pop()
 
         if node.get_property("hj_flatten_addrmap"):
+            self.rtl_hier_depth += 1
             self.reg_name.pop()
 
         (self.is_in_regmst,
@@ -311,6 +320,8 @@ class PreprocessListener(RDLListener):
         self.is_filtered) = self.runtime_stack.pop()
 
     def enter_Mem(self, node):
+        self.rtl_hier_depth += 1
+
         if not node.parent.get_property("hj_gendisp") and \
             not node.parent.get_property("hj_3rd_party_IP"):
             message.error("%s: the parent addrmap %s is not recognized as regdisp or 3rd party IP, but external memories"
@@ -333,6 +344,8 @@ class PreprocessListener(RDLListener):
         self.is_in_ext_mem = True
 
     def exit_Mem(self, node):
+        self.rtl_hier_depth -= 1
+
         if not self.keep_quiet:
             message.debug("%sExiting memory: %s" % ("\t"*self.indent, node.get_path()))
 

@@ -3,12 +3,13 @@ from __future__ import annotations
 import os.path
 import re
 import sys
+from multiprocessing import Process
 
 import utils.message as message
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
-from systemrdl import RDLCompileError, RDLCompiler
 from peakrdl.ipxact import IPXACTImporter
+from systemrdl import RDLCompileError, RDLCompiler
 
 from .excel.args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
 
@@ -529,9 +530,8 @@ def parse_excel(files:list[str], top_name:str, gen_rdl_dir:str,
 def show_excel_rules():
     """
     show rules which the Excel parser checks
-
-    !!TO BE FIXED!!
     """
+    # FIXME
     print(ExcelParser.__doc__, "\n",
           ExcelParser.check_format.__doc__, "\n",
           ExcelParser.check_name.__doc__, "\n",
@@ -540,16 +540,16 @@ def show_excel_rules():
 
 def parse_rdl_ipxact(files:list[str]):
     """
-    使用`systemrdl-compiler`编译并解析SystemRDL文件
+    Import and compile SystemRDL and IP-XACT files
 
     Parameter
     ---------
-    `files` : `list`, all SystemRDL and IP-XACT files
+    `files` : all SystemRDL and IP-XACT files
 
     Return
     ------
     `root` : `systemrdl.node.RootNode`
-    `None` : when `files` is an empty list
+    `None` : if `files` is empty
     """
     if files == []:
         return None
@@ -558,18 +558,28 @@ def parse_rdl_ipxact(files:list[str]):
     ipxact = IPXACTImporter(rdlc)
 
     try:
-        for file in files:
-            message.info("SystemRDL Compiler: import %s" % (file))
+        proc_list = []
+        def parse_single_file(file):
+            message.info("SystemRDL Compiler: import and compile %s" % (file))
             if file.endswith(".xml"):
                 ipxact.import_file(file)
             else:
                 rdlc.compile_file(file)
 
+        for file in files:
+            proc_list.append(Process(target=parse_single_file, args=(file)))
+
+        for proc in proc_list:
+            proc.start()
+        for proc in proc_list:
+            proc.join()
+
         message.info("SystemRDL Compiler: start elaborating")
         root = rdlc.elaborate()
     except RDLCompileError:
+        message.error("SystemRDL Compiler: aborted due to previous errors")
         sys.exit(1)
     else:
-        message.info("SystemRDL Compiler: all files are properly parsed")
+        message.info("SystemRDL Compiler: all files are parsed successfully")
 
     return root
