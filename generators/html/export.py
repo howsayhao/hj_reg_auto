@@ -8,7 +8,7 @@ from systemrdl.node import RootNode
 
 def export_html(root:RootNode, out_dir:str):
     """
-    输出HTML形式的寄存器说明文档
+    Export documentations in HTML format
 
     Parameter
     ---------
@@ -17,14 +17,20 @@ def export_html(root:RootNode, out_dir:str):
     """
     exporter = HTMLExporter()
 
+    # html output directory
     html_dir = os.path.join(out_dir, "html")
+
     if not os.path.exists(html_dir):
         os.makedirs(html_dir)
+
     try:
         exporter.export(root, html_dir)
     except:
-        message.error("HRDA encounters some unknown errors")
-        message.error(traceback.format_exc())
-        message.error("HTML export failed")
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "HTML export failed due to previous errors".format(
+                traceback.format_exc()
+            )
+        )
     else:
         message.info("save HTML in directory: %s" % (html_dir))

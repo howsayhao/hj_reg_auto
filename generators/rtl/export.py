@@ -29,9 +29,11 @@ def export_rtl(root:RootNode, out_dir:str):
         reg_tree.scan()
         RTLExporter().export_all(root, rtl_dir, os_env)
     except Exception:
-        message.error("HRDA encounters some unknown errors")
-        message.error(traceback.format_exc())
-        message.error("RTL export failed due to previous error")
-        sys.exit(1)
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "RTL export failed due to previous error".format(
+                traceback.format_exc()
+            )
+        )
     else:
         message.info("save RTL in directory: %s" % (rtl_dir))

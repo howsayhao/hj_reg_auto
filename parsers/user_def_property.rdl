@@ -1,76 +1,42 @@
-// User-defined properties
+// user-defined properties
 
-// Define synchronous reset signals for regslv blocks
-property hj_syncresetsignal {
-    component = field;
-    type = string;
-};
-
-// Define clock domain crossing properties for regslv' regfile blocks and memories
-// When the property is used in regslv/mst, it means the regfile inside the regslv/mst needs cdc handling and rtl would includes this
-// When the property is used in memory, it means the memory outside the regslv/mst needs cdc handling and rtl would include this
-// When the property is used in 3rd IP, it means the 3rd IP outside the regslv/mst needs cdc handling,
-// however, rtl would ignore this and straight foward the interface
-// The property is not permitted to use in internal addrmap
-property hj_cdc {
-    component = addrmap | mem;
+// used to distinguish 6 different types of addrmap:
+// reg_network, regmst, regdisp, regslv, 3rd party IP, flatten addrmap
+property hj_gennetwork {
+    component = addrmap;
     type = boolean;
 };
-
 property hj_genmst {
     component = addrmap;
     type = boolean;
 };
-
-property hj_genslv {
-    component = addrmap;
-    type = boolean;
-};
-
 property hj_gendisp {
     component = addrmap;
     type = boolean;
 };
-
+property hj_genslv {
+    component = addrmap;
+    type = boolean;
+};
+property hj_3rd_party_ip {
+    component = addrmap;
+    type = boolean;
+};
 property hj_flatten_addrmap {
     component = addrmap;
     type = boolean;
 };
 
-// Define whether to skip the 1st DFF in regslv/mst for internal regfile, the property is not permitted to use in internal addrmap, default value = False
-property hj_skip_reg_mux_dff_0{
-    component = addrmap;
+// synchronous reset signals for fields
+property hj_syncresetsignal {
+    component = field;
+    type = string;
+};
+
+// whether this module needs clock domain crossing (CDC)
+property hj_cdc {
+    component = addrmap | mem;
     type = boolean;
-};
-
-// Define whether to skip the 2nd DFF in regslv/mst for internal regfile, the property is not permitted to use in internal addrmap, default value = True
-property hj_skip_reg_mux_dff_1{
-    component = addrmap;
-    type = boolean;
-};
-
-// Define whether to skip the 1st DFF in regslv/mst for external module, the property is not permitted to use in internal addrmap, default value = False
-property hj_skip_ext_mux_dff_0{
-    component = addrmap;
-    type = boolean;
-};
-
-// Define whether to skip the wnd DFF in regslv/mst for external module, the property is not permitted to use in internal addrmap, default value = True
-property hj_skip_ext_mux_dff_1{
-    component = addrmap;
-    type = boolean;
-};
-
-// Define the max num of mux can handle for internal regfile, values more than this would generate two level split_mux, default value = 128
-property hj_reg_mux_size{
-    component = addrmap;
-    type = longint;
-};
-
-// Define the max num of mux can handle for external module, values more than this would generate two level split_mux, default value = 128
-property hj_ext_mux_size{
-    component = addrmap;
-    type = longint;
 };
 
 property hj_reserved_space{
@@ -78,17 +44,60 @@ property hj_reserved_space{
     type = boolean;
 };
 
-property hj_use_upstream_ff{
+property hj_use_upstream_ff {
     component = addrmap | mem;
     type = boolean;
 };
 
-property hj_use_backward_ff{
+property hj_use_backward_ff {
     component = addrmap;
     type = boolean;
 };
 
-property hj_use_abs_addr{
+// whether this module uses absolute address to access its internal space
+property hj_use_abs_addr {
     component = addrmap | mem;
     type = boolean;
+};
+
+// whether to skip the 1st DFF in regslv for internal regfile,
+// the property is not permitted to use in internal addrmap, default false
+property hj_skip_reg_mux_dff_0{
+    component = addrmap;
+    type = boolean;
+};
+
+// whether to skip the 2nd DFF in regslv for internal regfile,
+// the property is not permitted to use in internal addrmap, default true
+property hj_skip_reg_mux_dff_1{
+    component = addrmap;
+    type = boolean;
+};
+
+// whether to skip the 1st DFF in regslv for external module,
+// the property is not permitted to use in internal addrmap, default false
+property hj_skip_ext_mux_dff_0{
+    component = addrmap;
+    type = boolean;
+};
+
+// whether to skip the wnd DFF in regslv for external module,
+// the property is not permitted to use in internal addrmap, default true
+property hj_skip_ext_mux_dff_1{
+    component = addrmap;
+    type = boolean;
+};
+
+// maximum input number of mux can handle for internal regfile,
+// two-level split_mux will be generated if input number exceeds this value, default 128
+property hj_reg_mux_size{
+    component = addrmap;
+    type = longint;
+};
+
+// maximum input number of mux can handle for external module,
+// two-level split_mux will be generated if input number exceeds this value, default 128
+property hj_ext_mux_size{
+    component = addrmap;
+    type = longint;
 };

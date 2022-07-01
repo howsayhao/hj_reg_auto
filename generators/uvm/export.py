@@ -1,8 +1,10 @@
 import os
+import traceback
 
 import utils.message as message
 from peakrdl.uvm import UVMExporter
 from systemrdl.node import RootNode
+
 
 def export_uvm(root:RootNode, out_dir:str):
     """
@@ -21,6 +23,11 @@ def export_uvm(root:RootNode, out_dir:str):
                         reuse_class_definitions=False,
                         use_uvm_factory=True)
     except:
-        message.error("UVM RAL exporter aborted due to previous errors")
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "UVM RAL exporter aborted due to previous errors".format(
+                traceback.format_exc()
+            )
+        )
     else:
         message.info("save UVM RAL model in: %s" % (export_file))

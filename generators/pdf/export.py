@@ -133,10 +133,12 @@ def export_org(root:RootNode, out_dir:str):
     try:
         exporter.export(root, export_file)
     except:
-        message.error("HRDA encounters some unknown errors")
-        message.error(traceback.format_exc())
-        message.error("org exporter aborted due to previous errors")
-        sys.exit(1)
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "org exporter aborted due to previous errors".format(
+                traceback.format_exc()
+            )
+        )
     else:
         message.info("save the org mode documentation in: %s" % (export_file))
 
@@ -150,15 +152,17 @@ def export_pdf(root:RootNode, out_dir:str):
     `out_dir` : ouput directory to save the generated PDF file
     """
     exporter = PDFExporter()
-    export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
+    export_file = os.path.join(out_dir, "%s.pdf" % (root.top.inst_name))
 
     try:
         exporter.export(root, export_file)
     except:
-        message.error("HRDA encounters some unknown errors")
-        message.error(traceback.format_exc())
-        message.error("pdf exporter aborted due to previous errors")
-        sys.exit(1)
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "pdf exporter aborted due to previous errors".format(
+                traceback.format_exc()
+            )
+        )
     else:
         message.info("save the pdf documentation in: %s" % (export_file))
 

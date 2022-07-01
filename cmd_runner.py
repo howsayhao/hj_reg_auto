@@ -167,10 +167,8 @@ class CommandRunner:
         if (not args.excel) and (not args.rdl):
             message.error("no template type (Excel worksheet or SystemRDL) is specified, "
                           "please use -excel or -rdl option")
-            sys.exit(1)
         if not os.path.exists(args.dir):
             message.error("directory does not exists!")
-            sys.exit(1)
 
         if args.excel:
             print(args.excel)
@@ -234,7 +232,6 @@ class CommandRunner:
 
         if not os.path.exists(args.gen_dir):
             message.error("-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
-            sys.exit(1)
 
         preprocess(root, filter=args.filter, quiet=args.quiet)
 
@@ -264,6 +261,5 @@ class CommandRunner:
 
         if len(sys.argv) <= 1:
             message.error("no command is specified, use -h/--help option to get instruction")
-            sys.exit(1)
 
         args.func(args)

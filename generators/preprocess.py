@@ -23,6 +23,7 @@ class PreprocessListener(RDLListener):
     - filter some instances by setting ispresent=false, thus the UVM RAL model won't consists of them
     - complement RTL module names of all `addrmap` instances
     """
+    # FIXME
     def __init__(self, user_ops:dict):
         """
         set some properties used in the traverse process
@@ -126,16 +127,13 @@ class PreprocessListener(RDLListener):
                 if not isinstance(mst_child_nodes[0], AddrmapNode):
                     message.error("first instance under root addrmap (regmst) %s "
                                   "is not an addrmap (regdisp)" % (node.get_path()))
-                    sys.exit(1)
                 elif not isinstance(mst_child_nodes[1], RegfileNode):
                     message.error("second instance under root addrmap (regmst) %s "
                                   "is not debug regfile, please follow the template format "
                                   "and don't touch it" % (node.get_path()))
-                    sys.exit(1)
             else:
                 message.error("there should be two instances under root addrmap (regmst) %s: "
                               "addrmap (regdisp) and regfile (debug registers)" % (node.get_path()))
-                sys.exit(1)
 
             if not self.keep_quiet:
                 message.debug("%sgenerate %s" % ("\t"*self.indent, rtl_module_name))
@@ -158,7 +156,6 @@ class PreprocessListener(RDLListener):
                               "treated as regdisp, possible reasons: immediate sub-addrmap of the root/top "
                               "addrmap is automatically treated as regdisp module, or you don't explicitly "
                               "assign hj_gendisp to false (default: true)" % (node.get_path()))
-                sys.exit(1)
 
             # check if immediate children of regdisp are regslv, 3rd party IP or memory
             for child in node.children(skip_not_present=False):
@@ -167,7 +164,6 @@ class PreprocessListener(RDLListener):
                                   "children of addrmap or mem type only, the child instance %s is illegal. "
                                   "If you do want a regslv, please explicitly assign hj_gendisp to false"
                                   % (node.get_path(), child.get_path()))
-                    sys.exit(1)
 
             if node.get_property("hj_use_abs_addr") is False:
                 message.warning("%s: the current addrmap is treated as a regdisp, the property hj_use_abs_addr "
@@ -242,7 +238,7 @@ class PreprocessListener(RDLListener):
                 message.error("%s: the property hj_genmst/hj_genslv/hj_gendisp is not allowed to assigned to true in "
                               "an addrmap to be flatten, possible reasons: an ancestor addrmap instance is assigned"
                               "hj_flatten_addrmap=true, so all of its descendants will be flatten" % (node.get_path()))
-                sys.exit(1)
+
             if not node.get_property("hj_flatten_addrmap"):
                 message.warning("%s: the current addrmap is to be flatten in its parent scope, it's recommended "
                                 "to explicitly assign: hj_flatten_addrmap=true" % (node.get_path()))
@@ -264,7 +260,6 @@ class PreprocessListener(RDLListener):
             if node.parent.get_property("hj_gendisp") or node.parent.get_property("hj_genmst"):
                 message.error("%s: the addrmap cannot be flatten in the parent addrmap which "
                               "is instantiated as regdisp/regmst in RTL" % (node.get_path()))
-                sys.exit(1)
 
         else:
             # the model traverses in a sub-addrmap, which is imported from IP-XACT (.xml), or it satisfies:
@@ -274,7 +269,6 @@ class PreprocessListener(RDLListener):
             if not node.parent.get_property("hj_gendisp"):
                 message.error("%s: the parent addrmap %s is not recognized as regdisp, but 3rd party IP "
                               "must be forwarded by a regdisp module" % (node.get_path(), node.parent.get_path()))
-                sys.exit(1)
 
             if node.get_property("hj_use_abs_addr") is None:
                 message.warning("%s: the current addrmap is treated as a 3rd party IP, but you don't explicitly "
@@ -326,11 +320,9 @@ class PreprocessListener(RDLListener):
             not node.parent.get_property("hj_3rd_party_IP"):
             message.error("%s: the parent addrmap %s is not recognized as regdisp or 3rd party IP, but external memories"
                             "must be forwarded by a regdisp or 3rd party IP" % (node.get_path(), node.parent.get_path()))
-            sys.exit(1)
 
         if not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
             message.error("%s: memory width does not satisfy 32 * (2^i), where i is an integer, like 32, 64, 128...")
-            sys.exit(1)
 
         if not self.keep_quiet:
             message.debug("%sEntering memory: %s" % ("\t"*self.indent, node.get_path()))
@@ -361,7 +353,6 @@ class PreprocessListener(RDLListener):
             if not node.type_name == "db_regs":
                 message.error("%s: illegal to instantiate other regfile under %s which is recognized as regdisp/regmst" %
                           (node.get_path(), node.parent.get_path()))
-                sys.exit(1)
 
         self.reg_name.append(node.inst_name)
 
@@ -375,6 +366,7 @@ class PreprocessListener(RDLListener):
         # physical implementation of alias registers is the same as the original register
         self.reg_name.append(node.alias_primary.inst_name if node.is_alias else node.inst_name)
         self.total_reg_num += 1
+
         if self.is_filtered:
             self.filter_reg_num += 1
 
@@ -383,11 +375,16 @@ class PreprocessListener(RDLListener):
 
     def enter_Field(self, node):
         if not self.is_in_3rd_party_IP:
-            field_rtl_inst_name = "x__{reg_name}__{field_name}".format(reg_name="_".join(self.reg_name),
-                                                                       field_name=node.inst_name)
+            field_rtl_inst_name = "x__{reg_name}__{field_name}".format(
+                reg_name="_".join(self.reg_name),
+                field_name=node.inst_name
+            )
+
             self.field_hdl_path.append("{}.field_value".format(field_rtl_inst_name))
+
             # assign hdl_path_slice for each field to recognize RTL hierarchy
             node.inst.properties["hdl_path_slice"] = [".".join(self.field_hdl_path)]
+
             if not self.keep_quiet:
                 message.debug("%sgenerate hdl_path_slice: %s" %
                               ("\t"*self.indent, node.inst.properties["hdl_path_slice"][0]))
@@ -429,7 +426,6 @@ class PreprocessListener(RDLListener):
         if len(self.all_rtl_module) != len(set(self.all_rtl_module)):
             message.error("duplicate RTL module names found, please check your addrmap instance names that "
                           "represent for regmst, regdisp or regslv modules")
-            sys.exit(1)
 
     def get_report(self):
         """

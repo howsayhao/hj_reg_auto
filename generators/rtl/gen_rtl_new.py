@@ -94,6 +94,7 @@ class RTLExporter:
         `top_node` :
         `path` :
         """
+        # FIXME
         # if it's the top addrmap, generate a regmst module
         if isinstance(top_node, AddrmapNode) and top_node.get_property("hj_genmst"):
             for child in top_node.children(unroll=True, skip_not_present=False):
@@ -144,7 +145,6 @@ class RTLExporter:
         # only for regdisp
         if not node.get_property("hj_gendisp") is True:
             message.error("addrmap %s is not recognized as a regdisp module" % (node.get_path()))
-            sys.exit(1)
 
         return node.get_property("forward_num")
 

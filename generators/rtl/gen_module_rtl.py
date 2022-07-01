@@ -411,7 +411,6 @@ def get_ultimate_mux(master,M,N):
             ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld ? regfile_rd_data : 0;\n'
         else:
             message.error('No internal regs found!')
-            sys.exit(1)
 
     return ultimate_mux_rtl
 

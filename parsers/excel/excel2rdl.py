@@ -225,7 +225,6 @@ class RDLGenerator:
                         onwrite_str = "hwset;"
                     else:
                         message.error("unsupported hardware access type %s" % (hwtype))
-                        sys.exit(1)
 
                     hw_type_str = self.hw_type_str.format(hw=hw,
                                                           onwrite=onwrite_str)

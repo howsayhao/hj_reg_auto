@@ -122,9 +122,11 @@ def export_chdr(root:RootNode, out_dir:str):
     try:
         exporter.export(root, root, chdr_dir)
     except Exception:
-        message.error("HRDA encounters some unknown errors")
-        message.error(traceback.format_exc())
-        message.error("C header exporter aborted due to previous errors")
-        sys.exit(1)
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "C header exporter aborted due to previous errors".format(
+                traceback.format_exc()
+            )
+        )
     else:
         message.info("save C header files in directory: %s" % (chdr_dir))

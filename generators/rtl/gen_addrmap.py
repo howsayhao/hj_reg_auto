@@ -312,7 +312,6 @@ class addrmap_str(object):
 
                     if(not signal_is_defined and not parent_obj.external):
                         message.error("Signal %s in Field %s(%s) Hasn't Been Defined Yet!"%(signal,node.get_path_segment(),parent_obj.hierachy))
-                        sys.exit(1)
 
             new_obj.syncresetsignal = node.get_property('hj_syncresetsignal') if('hj_syncresetsignal' in node.inst.properties) else ''
             new_obj.syncresetsignal = syn_rst
