@@ -10,7 +10,7 @@ from generators.pdf.export import export_org, export_pdf
 from generators.preprocess import preprocess
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
-from parsers.parse import parse
+from parsers.parse import Parser
 from templates.gen_temp import gen_excel_template, gen_rdl_template
 
 __version__ = "0.3.0"
@@ -209,11 +209,7 @@ class CommandRunner:
         `args.module` : top-level addrmap name in generated SystemRDL when all input are Excel files
         `args.gen_dir` : generation directory
         """
-        parse(args.file,
-              args.list,
-              args.gen_dir,
-              to_generate_rdl=args.gen_rdl,
-              excel_top=args.module)
+        Parser().parse(args.file, args.list, args.gen_dir, args.gen_rdl, args.module)
 
     @staticmethod
     def _generate(args):
@@ -234,11 +230,7 @@ class CommandRunner:
         `args.gen_ral` : `bool`, whether to generate the UVM RAL model (.sv)
         `args.gen_chdr` : `bool`, whether to generate C header files
         """
-        root = parse(args.file,
-                     args.list,
-                     args.gen_dir,
-                     to_generate_rdl=True,
-                     excel_top=args.module)
+        root = Parser().parse(args.file, args.list, args.gen_dir, True, args.module)
 
         if not os.path.exists(args.gen_dir):
             message.error("-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir))
