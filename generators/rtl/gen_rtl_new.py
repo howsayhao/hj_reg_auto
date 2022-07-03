@@ -138,8 +138,8 @@ class RTLExporter:
             self.export_rtl_new(child, rtl_dir)
 
     def _get_rtl_name(self, node:AddrmapNode):
-        return node.get_property("rtl_module_name") if not node.is_array else \
-            "%s_%d" % (node.get_property("rtl_module_name"), node.current_idx[0])
+        return node.get_property("rtl_mod_name") if not node.is_array else \
+            "%s_%d" % (node.get_property("rtl_mod_name"), node.current_idx[0])
 
     def _get_forward_num(self, node:AddrmapNode):
         # only for regdisp
@@ -233,7 +233,7 @@ class RTLExporter:
         return 1 if node.get_property("hj_cdc", default=False) else 0
 
     def _is_3rd_party_ip(self, node:AddrmapNode):
-        return node.get_property("hj_3rd_party_IP", default=False)
+        return node.get_property("hj_3rd_party_ip", default=False)
 
     def _is_regslv(self, node:AddrmapNode):
         return node.get_property("hj_genslv", default=False)

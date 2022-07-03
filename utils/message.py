@@ -17,9 +17,9 @@ class HRDAError(Exception):
 
 def debug(msg:str, raise_err = False):
     """
-    Debug message with cyan color
+    Debug message with white color
     """
-    print(PrintFormat.OKCYAN + msg + PrintFormat.ENDC)
+    print(msg)
 
     if raise_err:
         raise HRDAError(msg)

@@ -50,7 +50,7 @@ class CHdrExporter:
         """
         for node in curr_node.children(unroll=True, skip_not_present=False):
             if isinstance(node, AddrmapNode):
-                if node.get_property("hj_genslv") or node.get_property("hj_3rd_party_IP"):
+                if node.get_property("hj_genslv") or node.get_property("hj_3rd_party_ip"):
                     update_context = {
                         'node': node
                     }
