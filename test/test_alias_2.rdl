@@ -1,6 +1,5 @@
 addrmap root_map {
-	hj_genmst = true;
-	hj_flatten_addrmap=false;
+	hj_gendisp = true;
     reg tem_alias_1{
         field {} FIELD_1[17:17] = 0x0;
         field {} FIELD_2[16:14] = 0x0;
@@ -12,8 +11,6 @@ addrmap root_map {
         field {} FIELD_3[13:13] = 0x1;
     };
     addrmap flatten_map {
-        hj_gendisp = false;
-        hj_genslv = false;
         hj_flatten_addrmap = true;
 
         tem_alias_1 TEM21 @0xc;
@@ -24,16 +21,10 @@ addrmap root_map {
     };
 	addrmap {
 		hj_gendisp = true;
-		hj_flatten_addrmap=false;
-
 		addrmap {
-			hj_gendisp = false;
 			hj_genslv = true;
-			hj_flatten_addrmap = false;
 			flatten_map map_11[5];
 			flatten_map map_12[10];
 		} slv_map;
 	} disp_map;
-	// debug registers implemented in regmst, please don't touch it and keep this level clean
-	db_regs db_regs %= 0x1000;
 };

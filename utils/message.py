@@ -15,42 +15,58 @@ class HRDAError(Exception):
     """
     pass
 
-def debug(msg:str, raise_err = False):
+def debug(msg:str, indent=0, msg_prefix="", raise_err=False):
     """
     Debug message with white color
+
+    Raises
+    ------
+    Optional:
+        `HRDAError`
     """
-    print(msg)
+    print(" " * indent * 4 + msg_prefix + msg)
 
     if raise_err:
         raise HRDAError(msg)
 
-def info(msg:str, raise_err = False):
+def info(msg:str, indent=0, msg_prefix="Info: ", raise_err=False):
     """
     Info message with blue color
+
+    Raises
+    ------
+    Optional:
+        `HRDAError`
     """
-    print(PrintFormat.OKBLUE + "Info: " + msg + PrintFormat.ENDC)
+    print(" " * indent * 4 + PrintFormat.OKBLUE + msg_prefix + msg + PrintFormat.ENDC)
 
     if raise_err:
         raise HRDAError(msg)
 
-def warning(msg:str, raise_err = False):
+def warning(msg:str, indent=0, msg_prefix="Warning: ", raise_err=False):
     """
     Warning message with yellow color
+
+    Raises
+    ------
+    Optional:
+        `HRDAError`
     """
-    print(PrintFormat.WARNING + PrintFormat.BOLD + "Warning: " + msg + PrintFormat.ENDC)
+    print(" " * indent * 4 + PrintFormat.WARNING + msg_prefix + msg + PrintFormat.ENDC)
 
     if raise_err:
         raise HRDAError(msg)
 
-def error(msg:str, raise_err = True):
+def error(msg:str, indent=0, msg_prefix="Error: ", raise_err = True):
     """
     Error message with red color
 
     Raises
     ------
-    `HRDAError`
+    Optional:
+        `HRDAError`
     """
-    print(PrintFormat.FAIL + PrintFormat.BOLD + "Error: " + msg + PrintFormat.ENDC)
+    print(" " * indent * 4 + PrintFormat.FAIL + msg_prefix + msg + PrintFormat.ENDC)
 
     if raise_err:
         raise HRDAError(msg)

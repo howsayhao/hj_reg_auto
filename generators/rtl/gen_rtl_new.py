@@ -1,5 +1,4 @@
 import os
-import sys
 from math import ceil, log2
 
 import jinja2 as jj
@@ -75,9 +74,11 @@ class RTLExporter:
         stream = template.stream(self.context)
         stream.dump(os.path.join(rtl_dir, filename))
 
-        message.info("if you need to convert reg_native_if to or from some AMBA protocol bus "
-                     "(support APB now), bridge components are already avaliable and you can "
-                     "use them by instantiate apb2reg_native_if/reg_native_if2apb in your design.")
+        message.info(
+            "if you need to convert reg_native_if to or from some AMBA protocol bus "
+            "(support APB now), bridge components are already avaliable and you can "
+            "use them by instantiate apb2reg_native_if/reg_native_if2apb in your design."
+        )
 
     def export_rtl_new(self, top_node: Node, rtl_dir: str):
         """
@@ -86,17 +87,10 @@ class RTLExporter:
         - regmst
         - regdisp
         - filelist
-
-        and copy necessary files to dw directory
-
-        Parameter
-        ---------
-        `top_node` :
-        `path` :
         """
         # FIXME
         # if it's the top addrmap, generate a regmst module
-        if isinstance(top_node, AddrmapNode) and top_node.get_property("hj_genmst"):
+        if top_node.get_property("hj_genmst"):
             for child in top_node.children(unroll=True, skip_not_present=False):
                 if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
                     top_disp_node = child
@@ -113,7 +107,8 @@ class RTLExporter:
             stream.dump(os.path.join(rtl_dir, filename))
             self.filelist.append(filename)
 
-        for child in top_node.children(unroll=True, skip_not_present=False):
+        # pre-order traversal to generate all regmst, regdisp and regslv modules
+        for child in top_node.descendants(unroll=True, skip_not_present=False):
             if isinstance(child, AddrmapNode):
                 if child.get_property("hj_gendisp"):
                     # generate regdisp rtl module and add it to filelist
@@ -132,10 +127,41 @@ class RTLExporter:
                 elif child.get_property("hj_genslv"):
                     # generate regslv rtl module and add it to filelist
                     # regslv rtl generation now uses legacy code
+                    # TODO: refactor regslv generation code
                     filename = "%s.v" % (self._get_rtl_name(child))
                     self.filelist.append(filename)
 
             self.export_rtl_new(child, rtl_dir)
+
+    # FIXME
+    def export_rtl(self, node:AddrmapNode, rtl_dir, template):
+        """
+        Export inhouse RTL modules: regmst, regdisp and regslv
+        """
+        if node.get_property("hj_genmst"):
+            update_context = {
+                'mst_node': node,
+                'disp_node': next(node.children(unroll=True, skip_not_present=False))
+            }
+
+            template = self.jj_env.get_template("regdisp_template.jinja")
+
+        elif node.get_property("hj_gendisp"):
+            update_context = {
+                'disp_node': node
+            }
+
+            template = self.jj_env.get_template("regdisp_template.jinja")
+
+        elif node.get_property("hj_genslv"):
+            update_context = {
+                'slv_node': node
+            }
+
+            template = None
+
+        if template:
+            self.context.update(update_context)
 
     def _get_rtl_name(self, node:AddrmapNode):
         return node.get_property("rtl_mod_name") if not node.is_array else \
@@ -143,9 +169,6 @@ class RTLExporter:
 
     def _get_forward_num(self, node:AddrmapNode):
         # only for regdisp
-        if not node.get_property("hj_gendisp") is True:
-            message.error("addrmap %s is not recognized as a regdisp module" % (node.get_path()))
-
         return node.get_property("forward_num")
 
     def _get_abs_addr(self, base_node:AddressableNode, offset=0, byte_step=1, suffix="62'h"):
@@ -153,9 +176,6 @@ class RTLExporter:
 
     def _use_abs_addr(self, node:Node):
         return node.get_property("hj_use_abs_addr")
-
-    def _get_property(self, node:Node, prop_name):
-        return node.get_property(prop_name)
 
     def _is_aligned(self, node:AddressableNode):
         # whether the forwarding module of regdisp is aligned to its absolute address
