@@ -19,6 +19,7 @@ class RTLExporter:
             undefined=jj.StrictUndefined
         )
 
+        # basic context for all templates
         self.context = {
             'bus_addr_width': 64,
             'bus_data_width': 32,
@@ -38,7 +39,6 @@ class RTLExporter:
             'use_forward_ff': self._use_forward_ff,
             'use_backward_ff': self._use_backward_ff,
             'valid_bit': self._valid_bit,
-            'get_property': self._get_property,
             'get_abs_addr': self._get_abs_addr,
             'get_data_width': self._get_data_width,
             'get_addr_width': self._get_addr_width,
@@ -48,120 +48,101 @@ class RTLExporter:
             'is_mem': self._is_mem
         }
 
-        # filelist for all generated RTL module files: regmst, regdisp, regslv
-        self.filelist = []
-
-    def export_all(self, top_node: Node, rtl_dir: str, os_env: str):
+    def export(self, root:RootNode, rtl_dir:str):
         """
-        export all files related to RTL modules
+        Export inhouse RTL module files: regmst, regdisp and regslv.
+
+        Parameters
+        ----------
+        root : RootNode
+            root node of the design
+        rtl_dir : str
+            directory to save RTL modules
         """
-        # if it's the root node, skip to the top addrmap
-        if isinstance(top_node, RootNode):
-            top_node = top_node.top
+        # filelist for all inhouse generated RTL files: regmst, regdisp, regslv
+        filelist = []
 
-        self.export_rtl_new(top_node, rtl_dir)
+        # top-level (root) addrmap instance name (not the RootNode)
+        top_name = root.top.inst_name
 
-        update_context = {
-            'top_name': top_node.inst_name,
-            'filelist': self.filelist,
-            'os_env': os_env
-        }
-        self.context.update(update_context)
+        # traverse all addrmap to get complete filelist and generate modules in pre-order
+        for node in root.descendants(unroll=True, skip_not_present=False):
+            if isinstance(node, AddrmapNode):
+                if node.get_property("hj_genmst"):
+                    update_context = {
+                        'mst_node': node,
+                        'disp_node': next(node.children(unroll=True, skip_not_present=False))
+                    }
 
+                    template = self.jj_env.get_template("regmst_template.jinja")
+
+                    dump_file = os.path.join(rtl_dir, "{}.v".format(self._get_rtl_name(node)))
+
+                    # add regmst to filelist
+                    filelist.append(dump_file)
+
+                elif node.get_property("hj_gendisp"):
+                    update_context = {
+                        'disp_node': node
+                    }
+
+                    template = self.jj_env.get_template("regdisp_template.jinja")
+
+                    dump_file = os.path.join(rtl_dir, "{}.v".format(self._get_rtl_name(node)))
+
+                    # add regdisp to filelist
+                    filelist.append(dump_file)
+
+                elif node.get_property("hj_genslv"):
+                    update_context = {
+                        'slv_node': node
+                    }
+
+                    template = None
+
+                    dump_file = os.path.join(rtl_dir, "{}.v".format(self._get_rtl_name(node)))
+
+                    # add regslv to filelist
+                    filelist.append(dump_file)
+                else:
+                    template = None
+
+            # dump generated RTL module files
+            # TODO: regslv rtl generation now uses legacy method without Jinja2
+            # need to refactor regslv generation code
+            if template:
+                self.context.update(update_context)
+
+                stream = template.stream(self.context)
+
+                stream.dump(
+                    os.path.join(
+                        rtl_dir,
+                        "{}.v".format(self._get_rtl_name(node))
+                    )
+                )
+
+        # after addrmap traversal is done, dump filelist
         template = self.jj_env.get_template("filelist_template.jinja")
-        filename = "list_%s.mk" % (top_node.inst_name)
+        stream = template.stream(
+            {
+                'top_name': top_name,
+                'filelist': filelist
+            }
+        )
 
-        stream = template.stream(self.context)
-        stream.dump(os.path.join(rtl_dir, filename))
+        stream.dump(
+            os.path.join(
+                rtl_dir,
+                "list_{}.mk".format(top_name)
+            )
+        )
 
         message.info(
             "if you need to convert reg_native_if to or from some AMBA protocol bus "
             "(support APB now), bridge components are already avaliable and you can "
             "use them by instantiate apb2reg_native_if/reg_native_if2apb in your design."
         )
-
-    def export_rtl_new(self, top_node: Node, rtl_dir: str):
-        """
-        traverse all addrmap, generate modules in pre-order
-
-        - regmst
-        - regdisp
-        - filelist
-        """
-        # FIXME
-        # if it's the top addrmap, generate a regmst module
-        if top_node.get_property("hj_genmst"):
-            for child in top_node.children(unroll=True, skip_not_present=False):
-                if isinstance(child, AddrmapNode) and child.get_property("hj_gendisp"):
-                    top_disp_node = child
-            update_context = {
-                'mst_node': top_node,
-                'disp_node': top_disp_node,
-            }
-            self.context.update(update_context)
-
-            template = self.jj_env.get_template("regmst_template.jinja")
-            stream = template.stream(self.context)
-            filename = "%s.v" % (self._get_rtl_name(top_node))
-
-            stream.dump(os.path.join(rtl_dir, filename))
-            self.filelist.append(filename)
-
-        # pre-order traversal to generate all regmst, regdisp and regslv modules
-        for child in top_node.descendants(unroll=True, skip_not_present=False):
-            if isinstance(child, AddrmapNode):
-                if child.get_property("hj_gendisp"):
-                    # generate regdisp rtl module and add it to filelist
-                    update_context = {
-                        'disp_node': child
-                    }
-                    self.context.update(update_context)
-
-                    template = self.jj_env.get_template("regdisp_template.jinja")
-                    stream = template.stream(self.context)
-                    filename = "%s.v" % (self._get_rtl_name(child))
-
-                    stream.dump(os.path.join(rtl_dir, filename))
-                    self.filelist.append(filename)
-
-                elif child.get_property("hj_genslv"):
-                    # generate regslv rtl module and add it to filelist
-                    # regslv rtl generation now uses legacy code
-                    # TODO: refactor regslv generation code
-                    filename = "%s.v" % (self._get_rtl_name(child))
-                    self.filelist.append(filename)
-
-            self.export_rtl_new(child, rtl_dir)
-
-    # FIXME
-    def export_rtl(self, node:AddrmapNode, rtl_dir, template):
-        """
-        Export inhouse RTL modules: regmst, regdisp and regslv
-        """
-        if node.get_property("hj_genmst"):
-            update_context = {
-                'mst_node': node,
-                'disp_node': next(node.children(unroll=True, skip_not_present=False))
-            }
-
-            template = self.jj_env.get_template("regdisp_template.jinja")
-
-        elif node.get_property("hj_gendisp"):
-            update_context = {
-                'disp_node': node
-            }
-
-            template = self.jj_env.get_template("regdisp_template.jinja")
-
-        elif node.get_property("hj_genslv"):
-            update_context = {
-                'slv_node': node
-            }
-
-            template = None
-
-        if template:
-            self.context.update(update_context)
 
     def _get_rtl_name(self, node:AddrmapNode):
         return node.get_property("rtl_mod_name") if not node.is_array else \

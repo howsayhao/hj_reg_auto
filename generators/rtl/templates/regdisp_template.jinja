@@ -1,7 +1,6 @@
 {%- set disp_name = get_rtl_name(disp_node) -%}
-{%- set parent_name = get_rtl_name(disp_node.parent) -%}
-{%- set up_prefix_i = parent_name + "__" + disp_name -%}
-{%- set up_prefix_o = disp_name + "__" + parent_name -%}
+{%- set up_prefix_i = "upstream" + "__" + disp_name -%}
+{%- set up_prefix_o = disp_name + "__" + "upstream" -%}
 module {{disp_name}} (
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
     {%- set child_name = get_rtl_name(child) -%}
@@ -21,14 +20,14 @@ module {{disp_name}} (
     {{down_prefix_o}}__rd_en,
     {{down_prefix_o}}__wr_data,
     {{down_prefix_i}}__rd_data,
-    {% if is_regslv(child) -%}
+    {%- if is_regslv(child) %}
     {{down_prefix_o}}__soft_rst,
     {%- endif -%}
-    {% endfor %}
+    {%- endfor %}
     // regdisp is in register native clock and reset domain
     {{disp_name}}_clk,
     {{disp_name}}_rst_n,
-    // reg_native_if forwarded by {{parent_name}}
+    // reg_native_if forwarded by upstream module
     {{up_prefix_i}}__req_vld,
     {{up_prefix_o}}__ack_vld,
     {{up_prefix_o}}__err,
@@ -67,7 +66,7 @@ module {{disp_name}} (
     {% if not is_regslv(child) -%}
     input   logic                                       {{child_name}}_clk;
     input   logic                                       {{child_name}}_rst_n;
-    {%- endif -%}
+    {%- endif %}
     output  logic                                       {{down_prefix_o}}__req_vld;
     input   logic                                       {{down_prefix_i}}__ack_vld;
     input   logic                                       {{down_prefix_i}}__err;
