@@ -1,5 +1,4 @@
 import os.path
-import sys
 
 import utils.message as message
 from .args import EXCEL_REG_FIELD, EXCEL_REG_HEAD
@@ -57,14 +56,8 @@ class RDLGenerator:
         "}};\n"
 
     extra_top_str = "addrmap {top_level_name} {{\n" \
-        "\thj_genmst = true;\n" \
-        "\thj_flatten_addrmap = false;\n" \
-        "\taddrmap {{\n" \
-        "\t\thj_gendisp = true;\n" \
-		"\t\thj_flatten_addrmap = false;\n" \
-        "\t{sub_maps_str}" \
-        "\t}} {second_level_name};\n" \
-        "\tdb_regs db_regs %= 0x1000;\n" \
+        "\thj_gendisp = true;\n" \
+        "{sub_maps_str}" \
         "}};\n"
 
     sub_map_str = "\t{sub_map_def} {sub_map_inst};\n"
@@ -264,18 +257,24 @@ class RDLGenerator:
         if gen_extra_top:
             sub_maps_str = ""
             for def_name in addrmap_def_names:
-                sub_maps_str += self.sub_map_str.format(sub_map_def=def_name,
-                                                        sub_map_inst=def_name)
+                sub_maps_str += self.sub_map_str.format(
+                    sub_map_def=def_name,
+                    sub_map_inst=def_name
+                )
 
-            extra_top_str = self.extra_top_str.format(top_level_name=top_name,
-                                                      second_level_name="forward",
-                                                      sub_maps_str=sub_maps_str)
+            extra_top_str = self.extra_top_str.format(
+                top_level_name=top_name,
+                sub_maps_str=sub_maps_str
+            )
 
             with open(top_filename, "w", encoding="utf-8") as f:
                 f.write(self.header_comment)
                 f.write(extra_top_str)
-                message.info("extra RDL file including Excel-oriented sub-addrmap instance "
-                             "and top addrmap saved as %s" % (top_filename))
+
+                message.info(
+                    "extra RDL file including Excel-oriented sub-addrmap instance "
+                    "and top addrmap saved as %s" % (top_filename)
+                )
 
             all_files.append(top_filename)
 

@@ -28,7 +28,6 @@ class RTLExporter:
             'AddrmapNode': AddrmapNode,
             'MemNode': MemNode,
             'isinstance': isinstance,
-            'log2': log2,
             'get_comp_addr': self._get_comp_addr,
             'use_abs_addr': self._use_abs_addr,
             'dec_addr_bit': self._dec_addr_bit,

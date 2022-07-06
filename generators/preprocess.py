@@ -5,14 +5,23 @@ from time import time
 import utils.message as message
 from utils.misc import convert_size
 from systemrdl import RDLListener, RDLWalker
-from systemrdl.node import AddrmapNode, RegfileNode , FieldNode, RootNode, MemNode, SignalNode
+from systemrdl.node import AddrmapNode, RegfileNode, RootNode
 
 
-class PreprocessChecker:
+class PreprocessAddressHandler:
     """
-
+    Handle address mapping preprocessing.
     """
-    pass
+    @staticmethod
+    def remap_top_addrmap(root:RootNode):
+        """
+        It's so annoying that SystemRDL does not allow to allocate base address
+        other than 0, so here is just a compromise solution
+        """
+        # base address assigned by user-defined property base_addr
+        # only in addrmap which represents for regdisp and is at top level
+        if root.top.get_property("base_addr") and root.top.get_property("hj_gendisp"):
+            root.top.inst.addr_offset = root.top.get_property("base_addr")
 
 class PreprocessListener(RDLListener):
     """
@@ -52,10 +61,16 @@ class PreprocessListener(RDLListener):
         self.field_hdl_path = []
         self.reg_name = []
         self.runtime_stack = []
+
         self.total_reg_num = 0
         self.filter_reg_num = 0
         self.total_size = 0
         self.start_time = time()
+
+
+        self.user_def_base_addr = 0
+
+        self.mode = 0
 
         # 6 types of addrmap instance
         self.prop_list = [
@@ -66,7 +81,6 @@ class PreprocessListener(RDLListener):
             "hj_flatten_addrmap",
             "hj_3rd_party_ip"
         ]
-
 
         # user-defined operations
         # filter
@@ -89,7 +103,7 @@ class PreprocessListener(RDLListener):
             )
 
         # addrmap imported by IP-XACT (.xml) files are treated as 3rd party IP automatically
-        if node.inst.def_src_ref.filename.endswith(".xml"):
+        if self.ref.filename.endswith(".xml"):
             node.inst.properties["hj_3rd_party_ip"] = True
 
         # check if addrmap is assigned one of following properties exclusively:
@@ -106,10 +120,10 @@ class PreprocessListener(RDLListener):
                 "%s, %d: %d:\n%s\n"
                 "addrmap instance %s must be explicitly assigned one of following properties exclusively: "
                 "hj_gennetwork, hj_genmst, hj_gendisp, hj_genslv, hj_flatten_addrmap, hj_3rd_party_ip" % (
-                    node.inst.inst_src_ref.filename,
-                    node.inst.inst_src_ref.line,
-                    node.inst.inst_src_ref.line_selection[0],
-                    node.inst.inst_src_ref.line_text,
+                    self.ref.filename,
+                    self.ref.line,
+                    self.ref.line_selection[0],
+                    self.ref.line_text,
                     node.get_path_segment(array_suffix="_{index:d}"),
                 )
             )
@@ -137,15 +151,16 @@ class PreprocessListener(RDLListener):
             # top-level addrmap instance can only be register network, regdisp or regslv
             if not (node.get_property("hj_gennetwork") or
                     node.get_property("hj_gendisp") or
-                    node.get_property("hj_genslv")):
+                    node.get_property("hj_genslv") or
+                    node.get_property("hj_3rd_party_ip")):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "top-level addrmap instance %s can only be one of following types: "
-                    "reg_network, regdisp, regslv" % (
-                        node.inst.def_src_ref.filename,
-                        node.inst.def_src_ref.line,
-                        node.inst.def_src_ref.line_selection[0],
-                        node.inst.def_src_ref.line_text,
+                    "reg_network, regdisp, regslv or 3rd party IP" % (
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                     )
                 )
@@ -162,10 +177,10 @@ class PreprocessListener(RDLListener):
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for the whole register network, "
                     "so it must be a top-level (root) addrmap instance" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                     )
                 )
@@ -183,10 +198,10 @@ class PreprocessListener(RDLListener):
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for regmst, "
                     "so it must be instantiated under addrmap which represents for the whole register network" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                     )
                 )
@@ -204,10 +219,10 @@ class PreprocessListener(RDLListener):
                     message.error(
                         "%s, %d: %d:\n%s\n"
                         "first instance under regmst addrmap %s is not regdisp addrmap" % (
-                            node.inst.inst_src_ref.filename,
-                            node.inst.inst_src_ref.line,
-                            node.inst.inst_src_ref.line_selection[0],
-                            node.inst.inst_src_ref.line_text,
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
                             node.get_path_segment(array_suffix="_{index:d}")
                         )
                     )
@@ -220,10 +235,10 @@ class PreprocessListener(RDLListener):
                     message.error(
                         "%s, %d: %d:\n%s\n"
                         "second instance under regmst addrmap %s is not debug regfile" % (
-                            node.inst.inst_src_ref.filename,
-                            node.inst.inst_src_ref.line,
-                            node.inst.inst_src_ref.line_selection[0],
-                            node.inst.inst_src_ref.line_text,
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
                             node.get_path_segment(array_suffix="_{index:d}")
                         )
                     )
@@ -238,10 +253,10 @@ class PreprocessListener(RDLListener):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "less than two instances under regmst addrmap %s found" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
@@ -253,10 +268,10 @@ class PreprocessListener(RDLListener):
                     message.error(
                         "%s, %d: %d:\n%s\n"
                         "more than two instances under regmst addrmap %s found" % (
-                            node.inst.inst_src_ref.filename,
-                            node.inst.inst_src_ref.line,
-                            node.inst.inst_src_ref.line_selection[0],
-                            node.inst.inst_src_ref.line_text,
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
                             node.get_path_segment(array_suffix="_{index:d}")
                         )
                     )
@@ -269,10 +284,10 @@ class PreprocessListener(RDLListener):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for regmst, so hj_use_abs_addr must be true" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
@@ -303,10 +318,10 @@ class PreprocessListener(RDLListener):
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for regdisp, so it must be instantiated at top level, "
                     "or under addrmap which represents for regmst or regdisp, but parent addrmap %s does not" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                         node.parent.get_path_segment(array_suffix="_{index:d}")
                     )
@@ -317,10 +332,10 @@ class PreprocessListener(RDLListener):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for regdisp, so hj_use_abs_addr must be true" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
@@ -348,10 +363,10 @@ class PreprocessListener(RDLListener):
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for regslv, so it must be instantiated at top level, "
                     "or under addrmap which represents for regdisp, but parent addrmap %s does not" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                         node.parent.get_path_segment(array_suffix="_{index:d}")
                     )
@@ -362,10 +377,10 @@ class PreprocessListener(RDLListener):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for regslv, so hj_use_abs_addr must be false" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
@@ -393,10 +408,10 @@ class PreprocessListener(RDLListener):
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s can only be flattened in parent addrmap which "
                     "represents for regslv or is also flattened, but parent addrmap %s does not." % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                         node.parent.get_path_segment(array_suffix="_{index:d}")
                     )
@@ -415,16 +430,19 @@ class PreprocessListener(RDLListener):
             if not self.keep_quiet:
                 message.debug("Recognized as 3rd party IP", self.indent)
 
-            # check whether 3rd party IP are forwarded by regdisp
-            if not node.parent.get_property("hj_gendisp") and not node.parent.get_property("hj_3rd_party_ip"):
+            # check whether 3rd party IP are forwarded by regdisp,
+            # or at the top level of the design
+            if not isinstance(node.parent, RootNode) and \
+                not node.parent.get_property("hj_gendisp") and \
+                not node.parent.get_property("hj_3rd_party_ip"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s representing for 3rd party IP must be covered by 3rd party IP addrmap, "
                     "or have a parent addrmap which represents for regdisp, but parent addrmap %s does not." % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                         node.parent.get_path_segment(array_suffix="_{index:d}")
                     )
@@ -436,10 +454,10 @@ class PreprocessListener(RDLListener):
                     "%s, %d: %d:\n%s\n"
                     "current addrmap %s represents for 3rd party IP, but you don't explicitly "
                     "assign the property hj_use_abs_addr, and it will be assigned to true" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
@@ -483,10 +501,10 @@ class PreprocessListener(RDLListener):
                 "%s, %d: %d:\n%s\n"
                 "the parent addrmap %s of memory instance %s is not recognized as "
                 "regdisp or 3rd party IP, and memories must be forwarded by a regdisp or 3rd party IP" % (
-                    node.inst.inst_src_ref.filename,
-                    node.inst.inst_src_ref.line,
-                    node.inst.inst_src_ref.line_selection[0],
-                    node.inst.inst_src_ref.line_text,
+                    self.ref.filename,
+                    self.ref.line,
+                    self.ref.line_selection[0],
+                    self.ref.line_text,
                     node.parent.get_path_segment(array_suffix="_{index:d}"),
                     node.get_path_segment(array_suffix="_{index:d}")
                 )
@@ -497,10 +515,10 @@ class PreprocessListener(RDLListener):
             message.error(
                 "%s, %d: %d:\n%s\n"
                 "width of memory %s requires a number of 32 * (2^i), such as 32, 64, 128..." % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}")
                 )
             )
@@ -510,10 +528,10 @@ class PreprocessListener(RDLListener):
             message.warning(
                 "%s, %d: %d:\n%s\n"
                 "current addrmap %s represents for regmst, so hj_use_abs_addr must be true" % (
-                    node.inst.inst_src_ref.filename,
-                    node.inst.inst_src_ref.line,
-                    node.inst.inst_src_ref.line_selection[0],
-                    node.inst.inst_src_ref.line_text,
+                    self.ref.filename,
+                    self.ref.line,
+                    self.ref.line_selection[0],
+                    self.ref.line_text,
                     node.get_path_segment(array_suffix="_{index:d}")
                 )
             )
@@ -547,10 +565,10 @@ class PreprocessListener(RDLListener):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "illegal to instantiate regfile %s under %s which represents for regmst" % (
-                        node.inst.inst_src_ref.filename,
-                        node.inst.inst_src_ref.line,
-                        node.inst.inst_src_ref.line_selection[0],
-                        node.inst.inst_src_ref.line_text,
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
                         node.get_path_segment(array_suffix="_{index:d}"),
                         node.parent.get_path_segment(array_suffix="_{index:d}")
                     )
@@ -560,10 +578,10 @@ class PreprocessListener(RDLListener):
             message.error(
                 "%s, %d: %d:\n%s\n"
                 "illegal to instantiate regfile %s under %s which is neither regslv nor regfile" % (
-                    node.inst.inst_src_ref.filename,
-                    node.inst.inst_src_ref.line,
-                    node.inst.inst_src_ref.line_selection[0],
-                    node.inst.inst_src_ref.line_text,
+                    self.ref.filename,
+                    self.ref.line,
+                    self.ref.line_selection[0],
+                    self.ref.line_text,
                     node.get_path_segment(array_suffix="_{index:d}"),
                     node.parent.get_path_segment(array_suffix="_{index:d}")
                 )
@@ -610,6 +628,25 @@ class PreprocessListener(RDLListener):
 
     def enter_Component(self, node):
         self.indent += 1
+
+        # get instance source reference
+        if node.inst.inst_src_ref:
+            self.ref = node.inst.inst_src_ref
+        elif node.inst.def_src_ref:
+            self.ref = node.inst.def_src_ref
+        else:
+            message.error(
+                "instance {} has no source reference".format(
+                    node.inst_name
+                )
+            )
+
+        if not hasattr(self.ref, "line"):
+            self.ref.line = 1
+        if not hasattr(self.ref, "line_selection"):
+            self.ref.line_selection = [1, 1]
+        if not hasattr(self.ref, "line_text"):
+            self.ref.line_text = ""
 
         self.runtime_stack.append(self.is_filtered)
 
@@ -659,6 +696,8 @@ def preprocess(root:RootNode, **user_ops):
     """
     traverse the register model
     """
+    PreprocessAddressHandler.remap_top_addrmap(root)
+
     preprocess_walker = RDLWalker(unroll=True)
     preprocess_listener = PreprocessListener(user_ops)
 

@@ -39,6 +39,11 @@ property hj_cdc {
     type = boolean;
 };
 
+property base_addr {
+    component = addrmap;
+    type = longint;
+};
+
 property hj_reserved_space{
     component = mem;
     type = boolean;

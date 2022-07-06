@@ -145,28 +145,27 @@ module {{disp_name}} (
             end
         end
     end
-
-    // generate address offset and forward other signals
-    //      regdisp: absolute address (forced)
-    //      regslv: address offset (forced)
-    //      3rd party IP: generate absolute address (default)
-    //      memory interface: address offset (default)
-    // there are two methods to convert absolute address to offset,
-    // which depends on the base address alignment:
-    //      1. base_addr = N * pow(2, ceil(log2(total_size))):
-    //          simply set several higher bits to 0 by slicing
-    //      2. otherwise:
-    //          subtract base address from absolute address by generating a subtractor
+{#  generate address offset and forward other signals
+        regdisp: absolute address (forced)
+        regslv: address offset (forced)
+        3rd party IP: generate absolute address (default)
+        memory interface: address offset (default)
+    there are two methods to convert absolute address to offset,
+    which depends on the base address alignment:
+        1. base_addr = N * pow(2, ceil(log2(total_size))):
+             simply set several higher bits to 0 by slicing
+        2. otherwise:
+             subtract base address from absolute address by generating a subtractor #}
+    // address conversion
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) -%}
     {%- if use_abs_addr(child) %}
-    {{"assign  downstream_addr_conv[%d] = downstream_addr_imux[%d];"|format(
-        loop.index0, loop.index0)}}
-    {%- elif is_aligned(child) %}
-    {{"assign  downstream_addr_conv[%d] = {%d'b0, downstream_addr_imux[%d][%d:0]};"|format(
-        loop.index0,get_addr_width(disp_node)-valid_bit(child), loop.index0, valid_bit(child)-1)}}
+    assign  downstream_addr_conv[{{loop.index0}}] = downstream_addr_imux[{{loop.index0}}];
+    {%- elif is_aligned(child) -%}
+    {%- set trunc_num = get_addr_width(disp_node) - valid_bit(child) -%}
+    {%- set rem_num = valid_bit(child) - 1 %}
+    assign  downstream_addr_conv[{{loop.index0}}] = {{"{"}}{{trunc_num}}'b0, downstream_addr_imux[{{loop.index0}}][{{rem_num}}:0]{{"}"}};
     {%- else %}
-    {{"assign  downstream_addr_conv[%d] = downstream_addr_imux[%d] - %d'h%x;"|format(
-        loop.index0, loop.index0, get_addr_width(disp_node), child.absolute_address)}}
+    assign  downstream_addr_conv[{{loop.index0}}] = downstream_addr_imux[{{loop.index0}}] - {{get_addr_width(disp_node)}}'h{{"%x"|format(child.absolute_address)}};
     {%- endif %}
     {%- endfor %}
 
