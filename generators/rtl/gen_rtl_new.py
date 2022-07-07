@@ -75,10 +75,11 @@ class RTLExporter:
 
                     template = self.jj_env.get_template("regmst_template.jinja")
 
-                    dump_file = os.path.join(rtl_dir, "{}.v".format(self._get_rtl_name(node)))
+                    filename = "{}.v".format(self._get_rtl_name(node))
+                    dump_file = os.path.join(rtl_dir, filename)
 
                     # add regmst to filelist
-                    filelist.append(dump_file)
+                    filelist.append(filename)
 
                 elif node.get_property("hj_gendisp"):
                     update_context = {
@@ -87,10 +88,11 @@ class RTLExporter:
 
                     template = self.jj_env.get_template("regdisp_template.jinja")
 
-                    dump_file = os.path.join(rtl_dir, "{}.v".format(self._get_rtl_name(node)))
+                    filename = "{}.v".format(self._get_rtl_name(node))
+                    dump_file = os.path.join(rtl_dir, filename)
 
                     # add regdisp to filelist
-                    filelist.append(dump_file)
+                    filelist.append(filename)
 
                 elif node.get_property("hj_genslv"):
                     update_context = {
@@ -99,10 +101,11 @@ class RTLExporter:
 
                     template = None
 
-                    dump_file = os.path.join(rtl_dir, "{}.v".format(self._get_rtl_name(node)))
+                    filename = "{}.v".format(self._get_rtl_name(node))
+                    dump_file = os.path.join(rtl_dir, filename)
 
                     # add regslv to filelist
-                    filelist.append(dump_file)
+                    filelist.append(filename)
                 else:
                     template = None
 
@@ -114,12 +117,7 @@ class RTLExporter:
 
                 stream = template.stream(self.context)
 
-                stream.dump(
-                    os.path.join(
-                        rtl_dir,
-                        "{}.v".format(self._get_rtl_name(node))
-                    )
-                )
+                stream.dump(dump_file)
 
         # after addrmap traversal is done, dump filelist
         template = self.jj_env.get_template("filelist_template.jinja")

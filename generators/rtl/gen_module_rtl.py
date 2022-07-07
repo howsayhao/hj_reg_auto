@@ -487,7 +487,7 @@ def value_transmitter_ins(module):
     trans_ins_rtl += '\t\t.pulse_in                               (%s_sel_pulse),\n'%(module_name)
     trans_ins_rtl += '\t\t.value_in                               (%s_value_in),\n'%(module_name)
     trans_ins_rtl += '\t\t.clk_b                                  (%s_clk),\n'%(module_name)
-    trans_ins_rtl += '\t\t.rst_b_n                                (%s_rstn),\n'%(module_name)
+    trans_ins_rtl += '\t\t.rst_b_n                                (%s_rst_n),\n'%(module_name)
     trans_ins_rtl += '\t\t.value_out_ack                          (ack_vld_fsm | soft_rst_fsm),\n'
     trans_ins_rtl += '\t\t.pulse_out                              (),\n'
     trans_ins_rtl += '\t\t.value_out                              (%s_value_in_fsm)\n'%(module_name)
@@ -498,7 +498,7 @@ def value_transmitter_ins(module):
     trans_ins_rtl += '\t\t%s_value_receiver\n'%(module_name)
     trans_ins_rtl += '\t\t(\n'
     trans_ins_rtl += '\t\t.clk_a                                  (%s_clk),\n'%(module_name)
-    trans_ins_rtl += '\t\t.rst_a_n                                (%s_rstn),\n'%(module_name)
+    trans_ins_rtl += '\t\t.rst_a_n                                (%s_rst_n),\n'%(module_name)
     trans_ins_rtl += '\t\t.pulse_in                               (%s_ack_pulse),\n'%(module_name)
     trans_ins_rtl += '\t\t.value_in                               (%s_value_out_fsm),\n'%(module_name)
     trans_ins_rtl += '\t\t.clk_b                                  (clk),\n'

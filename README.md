@@ -2,94 +2,6 @@
 
 ## **Table of Content**
 
-<!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=6 orderedList=false} -->
-
-<!-- code_chunk_output -->
-
-- [**HJ-micro Register Design Automation Tool (HRDA Tool)**](#hj-micro-register-design-automation-tool-hrda-tool)
-  - [**Table of Content**](#table-of-content)
-  - [**Revision History**](#revision-history)
-  - [**0. HOW TO USE THIS MANUAL**](#0-how-to-use-this-manual)
-  - [**1. Introduction**](#1-introduction)
-    - [**1.1 Register Template Generator**](#11-register-template-generator)
-    - [**1.2 Parser**](#12-parser)
-      - [**1.2.1 Excel Parser**](#121-excel-parser)
-      - [**1.2.2 SystemRDL Parser/Compiler**](#122-systemrdl-parsercompiler)
-      - [**1.2.3 IP-XACT Importer**](#123-ip-xact-importer)
-    - [**1.3 Generator**](#13-generator)
-      - [**1.3.1 Model Preprocessor**](#131-model-preprocessor)
-      - [**1.3.2 RTL Generator**](#132-rtl-generator)
-      - [**1.3.3 HTML Generator**](#133-html-generator)
-      - [**1.3.4 PDF Generator**](#134-pdf-generator)
-      - [**1.3.5 UVM RAL Generator**](#135-uvm-ral-generator)
-      - [**1.3.6 C Header Generator**](#136-c-header-generator)
-  - [**2. RTL Architecture**](#2-rtl-architecture)
-    - [**2.1 Register Network**](#21-register-network)
-    - [**2.2 Register Native Access Interface (reg_native_if)**](#22-register-native-access-interface-reg_native_if)
-      - [**2.2.1 Write Transaction**](#221-write-transaction)
-      - [**2.2.2 Read Transaction**](#222-read-transaction)
-    - [**2.3 Register Access Master (regmst)**](#23-register-access-master-regmst)
-    - [**2.4 Register Dispatcher (regdisp)**](#24-register-dispatcher-regdisp)
-    - [**2.5 Register Access Slave (regslv)**](#25-register-access-slave-regslv)
-      - [**2.5.1 slv_fsm**](#251-slv_fsm)
-      - [**2.5.2 addr_decoder**](#252-addr_decoder)
-      - [**2.5.4 split_mux**](#254-split_mux)
-      - [**2.5.5 snapshot module**](#255-snapshot-module)
-      - [**2.5.6 value_deliver**](#256-value_deliver)
-    - [**2.6 Register and Field**](#26-register-and-field)
-    - [**2.7 Detailed Register Tree Architecture and Performance Evaluation**](#27-detailed-register-tree-architecture-and-performance-evaluation)
-  - [**3. SystemRDL Coding Guideline**](#3-systemrdl-coding-guideline)
-    - [**3.1 General Concepts, Rules, and Properties**](#31-general-concepts-rules-and-properties)
-      - [**3.1.1 Component Definition**](#311-component-definition)
-      - [**3.1.2 Component Instantiation and Parameterization**](#312-component-instantiation-and-parameterization)
-      - [**3.1.3 Component Property**](#313-component-property)
-        - [**3.1.3.1 Property Assignment**](#3131-property-assignment)
-        - [**3.1.3.2 Property Default Value**](#3132-property-default-value)
-        - [**3.1.3.3 Dynamic Assignment**](#3133-dynamic-assignment)
-        - [**3.1.3.4 Supported General Properties**](#3134-supported-general-properties)
-      - [**3.1.4 Instance Address Allocation**](#314-instance-address-allocation)
-        - [**3.1.4.1 Alignment**](#3141-alignment)
-        - [**3.1.4.2 Addressing Mode**](#3142-addressing-mode)
-        - [**3.1.4.3 Address Allocation Operator**](#3143-address-allocation-operator)
-    - [**3.1.6 Field Component**](#316-field-component)
-      - [**3.1.6.1 RTL Naming Convention**](#3161-rtl-naming-convention)
-      - [**3.1.6.2 Description Guideline**](#3162-description-guideline)
-      - [**3.1.6.3 Examples**](#3163-examples)
-    - [**3.1.7 Register Component**](#317-register-component)
-      - [**3.1.7.1 RTL Naming Convention**](#3171-rtl-naming-convention)
-      - [**3.1.7.2 Description Guideline**](#3172-description-guideline)
-      - [**3.1.7.3 Example**](#3173-example)
-    - [**3.1.8 Regfile Component**](#318-regfile-component)
-      - [**3.1.8.1 Description Guideline**](#3181-description-guideline)
-      - [**3.1.8.2 Example**](#3182-example)
-    - [**3.1.9 Memory Description**](#319-memory-description)
-      - [**3.1.9.1 Descriptions Guideline**](#3191-descriptions-guideline)
-      - [**3.1.9.2 Example**](#3192-example)
-    - [**3.1.10 Addrmap Component**](#3110-addrmap-component)
-      - [**3.1.10.1 RTL Naming Convention**](#31101-rtl-naming-convention)
-      - [**3.1.10.2 Description Guideline**](#31102-description-guideline)
-      - [**3.1.10.3 Example**](#31103-example)
-    - [**3.1.11 Other User-defined Property (Experimental)**](#3111-other-user-defined-property-experimental)
-      - [**hj_skip_reg_mux_dff_0**](#hj_skip_reg_mux_dff_0)
-      - [**hj_skip_reg_mux_dff_1**](#hj_skip_reg_mux_dff_1)
-      - [**hj_skip_ext_mux_dff_0**](#hj_skip_ext_mux_dff_0)
-      - [**hj_skip_ext_mux_dff_1**](#hj_skip_ext_mux_dff_1)
-      - [**hj_reg_mux_size**](#hj_reg_mux_size)
-      - [**hj_ext_mux_size**](#hj_ext_mux_size)
-  - [**3.2 Overall Example**](#32-overall-example)
-  - [**4. Excel Worksheet Guideline**](#4-excel-worksheet-guideline)
-    - [**4.1 Table Format**](#41-table-format)
-    - [**4.2 Rules**](#42-rules)
-  - [**5. Tool Flow Guideline**](#5-tool-flow-guideline)
-    - [**5.1 Environment and dependencies**](#51-environment-and-dependencies)
-    - [**5.2 Command options and arguments**](#52-command-options-and-arguments)
-    - [**5.3 Tool Configuration and Usage Examples**](#53-tool-configuration-and-usage-examples)
-  - [**6. Miscellaneous**](#6-miscellaneous)
-  - [**7. Errata**](#7-errata)
-  - [**8. Bibliography**](#8-bibliography)
-
-<!-- /code_chunk_output -->
-
 ## **Revision History**
 
 | Date       | Revision | Description                               |
@@ -97,6 +9,7 @@
 | 2022-03-22 | 0.1.0    | Add regmst for deadlock detection.        |
 | 2022-05-12 | 0.2.0    | Support IP-XACT integration in SystemRDL. |
 | 2022-06-03 | 0.3.0    | Decouple regdisp from regslv.             |
+| 2022-06-04 | 0.4.0    | Divide RTL into SoC level and subsystem level. |
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -129,7 +42,7 @@ For generating RTL modules with a few number of registers and simple address map
 The overall HRDA tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
 <center>
-    <img id="pics_tool_flow" src="docs/pics/tool_flow.svg" width="80%"><br>
+    <img id="pics_tool_flow" src="docs/pics/tool_flow.drawio.svg" width="80%"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 1.1 HRDA tool flow
@@ -157,7 +70,7 @@ To learn what rules are checked and how to write an acceptable Excel worksheet, 
 SystemRDL parser relies on an open-source project [SystemRDL Compiler](https://github.com/SystemRDL/systemrdl-compiler). SystemRDL Compiler is able to parse, compile, elaborate and check SystemRDL files followed by [SystemRDL 2.0 Specification](https://www.accellera.org/images/downloads/standards/systemrdl/SystemRDL_2.0_Jan2018.pdf) to generate a traversable and hierarchical register model as a Python object. Its basic workflow is shown in [Figure 1.2](#pics_systemrdl_compiler).
 
 <center>
-    <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler.svg" width="60%"><br>
+    <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler/flow.svg" width="60%"><br>
     <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 1.2 SystemRDL Compiler workflow </div>
@@ -180,7 +93,7 @@ addrmap top {
 Once compiled, the register model can be described like this:
 
 <center>
-    <img id="pics_systemrdl_compiler" src="docs/pics/rdlcompiler_ex1.svg" width="80%"><br>
+    <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler/ex1.svg" width="80%"><br>
     <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 1.3 hierarchical register model</div>
@@ -263,9 +176,8 @@ Control and status regsiters are distributed all around the chip in different su
 
 Register Network, or `reg_network`, is a multi-root hierarchical network. A typical network architecture is shown in [Figure 2.1](#pics_reg_network).
 
-
 <center>
-    <img id="pics_reg_network" src="docs/pics/reg_network.svg"><br>
+    <img id="pics_reg_network" src="docs/pics/rtl/reg_network.drawio.svg"><br>
     <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 2.1 register network architecture</div>
@@ -323,7 +235,7 @@ All signals are listed in [Table 2.2](#table_rni_def):
 <center>
     <div id="table_rni_def" style="display: inline-block;
         color: #999;
-        padding: 5px;">Table 2.2 reg_native_if signal definitions
+        padding: 5px;">Table 2.2 reg_native_if definition
     </div>
 </center>
 
@@ -341,7 +253,7 @@ There are two methods for write transactions. One is with no wait state: `ack_vl
     <img id="pics_rni_write_trans_1" src="docs/pics/reg_native_if/write_trans_1.svg"><br>
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Figure 2.3 write transaction with no wait state
+        padding: 5px;">Figure 2.3 write transaction without wait state
     </div>
 </center>
 
@@ -382,7 +294,7 @@ If input files are Excel worksheets only, all of them will be converted to Syste
 `regmst` is the root node of `reg_tree`, and is responsible for monitoring all downstream nodes. [Figure 2.7](#pics_regmst_rtl_infra) shows the architecture of `regmst`.
 
 <center>
-    <img id="pics_regmst_rtl_infra" src="docs/pics/regmst_rtl_infra.svg"><br>
+    <img id="pics_regmst_rtl_infra" src="docs/pics/rtl/regmst_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.7 regmst architecture
@@ -426,7 +338,7 @@ The immediate sub-addrmap instance of root `addrmap` or any `addrmap` instance w
 `regdisp` is responsible for one-to-many access request dispatch like an inverse multiplexor, and it is **the only module in `reg_tree` that can connect multiple downstream modules which may be `regslv` modules implementing internal registers, 3rd party IPs, external memories or another `regdisp` module via `reg_native_if`**. [Figure 2.9](#pics_regdisp_rtl_infra) shows the architecture of `regdisp`.
 
 <center>
-    <img id="pics_regdisp_rtl_infra" src="docs/pics/regdisp_rtl_infra.svg"><br>
+    <img id="pics_regdisp_rtl_infra" src="docs/pics/rtl/regdisp_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.9 regdisp architecture
@@ -489,7 +401,7 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 [Figure 2.11](#pics_regslv_rtl_infra) shows the architecture of `regslv`.
 
 <center>
-    <img id="pics_regslv_rtl_infra" src="docs/pics/regslv_rtl_infra.svg"><br>
+    <img id="pics_regslv_rtl_infra" src="docs/pics/rtl/regslv_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.11 regslv architecture
@@ -514,9 +426,9 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 
 `slv_fsm` is a finite state machine (FSM) that copes with transactions dispatched from the upstream `regdisp` module and controls read and write access to internal registers. Its operating states are shown in [Figure 2.13](#pics_slv_state).
 
-// TODO
+// FIXME
 <center>
-    <img id="pics_slv_state" src=""><br>
+    <img id="pics_slv_state" src="docs/pics/rtl/slv_fsm.drawio.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.13 transition diagram of slv_fsm
@@ -560,7 +472,7 @@ end
 `field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.14](#pics_field_rtl_infra).
 
 <center>
-    <img id="pics_field_rtl_infra" src="docs/pics/field_rtl_infra.svg"><br>
+    <img id="pics_field_rtl_infra" src="docs/pics/rtl/field_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
         color: #999;
         padding: 5px;">Figure 2.14 field architecture
@@ -625,18 +537,13 @@ Additionally, there are some other advanced features in SystemRDL that can be im
 
 `field` is concatenated to form `register` and mapped into address space for software access, as shown in [Figure 2.17](#pics_field_concat_reg).
 
-// FIXME
 <center>
-    <img src="" id="pics_field_concat_reg"><br>
+    <img id="pics_field_concat_reg" src="docs/pics/rtl/field_concat_reg.drawio.svg" width="80%"><br>
     <div style="display: inline-block;
         color: #999;
-        padding: 5px;">Figure 2.17 fields are concatenated to form registers
+        padding: 5px;">Figure 2.17 fields are concatenated to form registers (software view)
     </div>
 </center>
-
-### **2.7 Detailed Register Tree Architecture and Performance Evaluation**
-
-// FIXME
 
 <div style="page-break-after: always;"></div>
 
