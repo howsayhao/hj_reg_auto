@@ -1,6 +1,96 @@
 # **HJ-micro Register Design Automation Tool (HRDA Tool)**
 
-## **Table of Content**
+<!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [**HJ-micro Register Design Automation Tool (HRDA Tool)**](#hj-micro-register-design-automation-tool-hrda-tool)
+  - [**Revision History**](#revision-history)
+  - [**0. HOW TO USE THIS MANUAL**](#0-how-to-use-this-manual)
+  - [**1. Introduction**](#1-introduction)
+    - [**1.1 Template Generator**](#11-template-generator)
+    - [**1.2 Parser**](#12-parser)
+      - [**1.2.1 Excel Parser**](#121-excel-parser)
+      - [**1.2.2 SystemRDL Parser/Compiler**](#122-systemrdl-parsercompiler)
+      - [**1.2.3 IP-XACT Importer**](#123-ip-xact-importer)
+    - [**1.3 Generator**](#13-generator)
+      - [**1.3.1 Model Preprocessor**](#131-model-preprocessor)
+      - [**1.3.2 RTL Generator**](#132-rtl-generator)
+      - [**1.3.3 HTML Generator**](#133-html-generator)
+      - [**1.3.4 PDF Generator**](#134-pdf-generator)
+      - [**1.3.5 UVM RAL Generator**](#135-uvm-ral-generator)
+      - [**1.3.6 C Header Generator**](#136-c-header-generator)
+  - [**2. RTL Architecture**](#2-rtl-architecture)
+    - [**2.1 Register Network**](#21-register-network)
+    - [**2.2 Register Native Access Interface (reg_native_if)**](#22-register-native-access-interface-reg_native_if)
+      - [**2.2.1 Write Transaction**](#221-write-transaction)
+      - [**2.2.2 Read Transaction**](#222-read-transaction)
+    - [**2.3 Register Access Master (regmst)**](#23-register-access-master-regmst)
+    - [**2.4 Register Dispatcher (regdisp)**](#24-register-dispatcher-regdisp)
+    - [**2.5 Register Access Slave (regslv)**](#25-register-access-slave-regslv)
+      - [**2.5.1 slv_fsm**](#251-slv_fsm)
+      - [**2.5.2 addr_decoder**](#252-addr_decoder)
+      - [**2.5.4 split_mux**](#254-split_mux)
+      - [**2.5.5 snapshot module**](#255-snapshot-module)
+      - [**2.5.6 value_deliver**](#256-value_deliver)
+    - [**2.6 Register and Field**](#26-register-and-field)
+  - [**3. SystemRDL Coding Guideline**](#3-systemrdl-coding-guideline)
+    - [**3.1 General Concepts, Rules, and Properties**](#31-general-concepts-rules-and-properties)
+      - [**3.1.1 Component Definition**](#311-component-definition)
+      - [**3.1.2 Component Instantiation and Parameterization**](#312-component-instantiation-and-parameterization)
+      - [**3.1.3 Component Property**](#313-component-property)
+        - [**3.1.3.1 Property Assignment**](#3131-property-assignment)
+        - [**3.1.3.2 Property Default Value**](#3132-property-default-value)
+        - [**3.1.3.3 Dynamic Assignment**](#3133-dynamic-assignment)
+        - [**3.1.3.4 Supported General Properties**](#3134-supported-general-properties)
+      - [**3.1.4 Instance Address Allocation**](#314-instance-address-allocation)
+        - [**3.1.4.1 Alignment**](#3141-alignment)
+        - [**3.1.4.2 Addressing Mode**](#3142-addressing-mode)
+        - [**3.1.4.3 Address Allocation Operator**](#3143-address-allocation-operator)
+    - [**3.1.6 Field Component**](#316-field-component)
+      - [**3.1.6.1 RTL Naming Convention**](#3161-rtl-naming-convention)
+      - [**3.1.6.2 Description Guideline**](#3162-description-guideline)
+      - [**3.1.6.3 Examples**](#3163-examples)
+    - [**3.1.7 Register Component**](#317-register-component)
+      - [**3.1.7.1 RTL Naming Convention**](#3171-rtl-naming-convention)
+      - [**3.1.7.2 Description Guideline**](#3172-description-guideline)
+      - [**3.1.7.3 Example**](#3173-example)
+    - [**3.1.8 Regfile Component**](#318-regfile-component)
+      - [**3.1.8.1 Description Guideline**](#3181-description-guideline)
+      - [**3.1.8.2 Example**](#3182-example)
+    - [**3.1.9 Memory Description**](#319-memory-description)
+      - [**3.1.9.1 Descriptions Guideline**](#3191-descriptions-guideline)
+      - [**3.1.9.2 Example**](#3192-example)
+    - [**3.1.10 Addrmap Component**](#3110-addrmap-component)
+      - [**3.1.10.1 RTL Naming Convention**](#31101-rtl-naming-convention)
+      - [**3.1.10.2 Description Guideline**](#31102-description-guideline)
+      - [**3.1.10.3 Example**](#31103-example)
+    - [**3.1.11 Other User-defined Property (Experimental)**](#3111-other-user-defined-property-experimental)
+      - [**hj_skip_reg_mux_dff_0**](#hj_skip_reg_mux_dff_0)
+      - [**hj_skip_reg_mux_dff_1**](#hj_skip_reg_mux_dff_1)
+      - [**hj_skip_ext_mux_dff_0**](#hj_skip_ext_mux_dff_0)
+      - [**hj_skip_ext_mux_dff_1**](#hj_skip_ext_mux_dff_1)
+      - [**hj_reg_mux_size**](#hj_reg_mux_size)
+      - [**hj_ext_mux_size**](#hj_ext_mux_size)
+  - [**3.2 Overall Example**](#32-overall-example)
+  - [**4. Excel Worksheet Guideline**](#4-excel-worksheet-guideline)
+    - [**4.1 Table Format**](#41-table-format)
+    - [**4.2 Rules**](#42-rules)
+  - [**5. Tool Flow Guideline**](#5-tool-flow-guideline)
+    - [**5.1 Environment and Dependencies**](#51-environment-and-dependencies)
+    - [**5.2 Command Options and Arguments**](#52-command-options-and-arguments)
+      - [**5.2.1 General Options and Arguments**](#521-general-options-and-arguments)
+      - [**5.2.2 Template Generator Options and Arguments**](#522-template-generator-options-and-arguments)
+      - [**5.2.3 Paser Options and Arguments**](#523-paser-options-and-arguments)
+      - [**5.2.4 Generator Options and Arguments**](#524-generator-options-and-arguments)
+    - [**5.3 Tool Configuration and Usage Examples**](#53-tool-configuration-and-usage-examples)
+  - [**6. Miscellaneous**](#6-miscellaneous)
+  - [**7. Errata**](#7-errata)
+  - [**8. Bibliography**](#8-bibliography)
+
+<!-- /code_chunk_output -->
+
+<div STYLE="page-break-after: always;"></div>
 
 ## **Revision History**
 
@@ -9,7 +99,7 @@
 | 2022-03-22 | 0.1.0    | Add regmst for deadlock detection.        |
 | 2022-05-12 | 0.2.0    | Support IP-XACT integration in SystemRDL. |
 | 2022-06-03 | 0.3.0    | Decouple regdisp from regslv.             |
-| 2022-06-04 | 0.4.0    | Divide RTL into SoC level and subsystem level. |
+| 2022-07-08 | 0.4.0    | Divide RTL into SoC level and subsystem level. |
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -35,7 +125,7 @@ For someone who is going to maintain HRDA code repository and update new feature
 
 ## **1. Introduction**
 
-HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which can be divided into two major parts: front-end and back-end. The front-end supports for generating register description templates in the Excel worksheet (.xlsx) format, parsing the **input Excel worksheets (.xlsx), SystemRDL (.rdl) and IP-XACT (.xml) files**. The back-end, or generator, supports for generating Register Transfer Level (RTL) Verilog/SystemVerilog modules, documentations, UVM Register Abstraction Layer (RAL) models and C header files.
+HJ-micro Register design Automation (HRDA) Tool is a command-line register automation tool developed by Python, which consists of three major parts: Template Generator, Parser and Generator. Template Generator is used to generate register description templates in Excel worksheet (.xlsx) or SystemRDL (.rdl) format. Parser is used to parse and compile **input Excel worksheets (.xlsx), SystemRDL (.rdl) and IP-XACT (.xml) files**. Generator is used to generate Verilog RTL, documentations, UVM register abstraction layer (RAL) models and C header files.
 
 For generating RTL modules with a few number of registers and simple address mapping, Excel worksheet is recommended. Nonetheless, for some complicated modules with numerous registers and sophisticated address mappings, SystemRDL is more expressive and flexible.
 
@@ -51,11 +141,11 @@ The overall HRDA tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
 <div style="page-break-after: always;"></div>
 
-### **1.1 Register Template Generator**
+### **1.1 Template Generator**
 
-The template generator provide convenience for designers who edit Excel worksheets. It generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. Designers can refer to these templates and modify them to meet their own requirements.
+Template Generator provides convenience for designers working with Excel worksheets or not familiar with SystemRDL. For Excel worksheets, it generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. For SystemRDL, it provides example code. Designers can refer to these templates and modify them to meet their own requirements.
 
-See template format in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en).
+See Excel worksheet template format in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), SystemRDL template format in [3.2 Overall Example](#32-overall-example), and command options in [5.2.2 Template Generator Command Options and Arguments](#522-template-generator-options-and-arguments).
 
 ### **1.2 Parser**
 
@@ -99,13 +189,13 @@ Once compiled, the register model can be described like this:
     padding: 5px;">Figure 1.3 hierarchical register model</div>
 </center>
 
-The hierarchical register model bridges the front-end and the back-end of HRDA. The front-end parser ultimately generates this model, and everything in the back-end is based on it after some pre-processing.
+The hierarchical register model bridges HRDA Parser and Generator. Parser ultimately generates this model, and everything generated by Generator is based on it.
 
-For a detailed description of this model, see SystemRDL Compiler Documentation : <https://systemrdl-compiler.readthedocs.io/en/stable/index.html>
+For a detailed description of this model, see [SystemRDL Compiler Documentation](https://systemrdl-compiler.readthedocs.io/en/stable/index.html).
 
 #### **1.2.3 IP-XACT Importer**
 
-The IP-XACT importer relies on an open-source project [PeakRDL-ipxact](https://github.com/SystemRDL/peakrdl-ipxact), and involves the ability to translate from IP-XACT data exchange document format to a SystemRDL register model.
+The IP-XACT importer relies on an open-source project [PeakRDL-ipxact](https://github.com/SystemRDL/peakrdl-ipxact), and involves the ability to compile from IP-XACT data exchange document (.xml) format into a SystemRDL register model.
 
 Importing IP-XACT definitions can occur at any point alongside normal SystemRDL file compilation. When an IP-XACT file is imported, the register description is loaded into the SystemRDL register model as if it were an `addrmap` component declaration. Once imported, the IP-XACT contents can be used as-is, or referenced from another SystemRDL file.
 
@@ -113,30 +203,40 @@ Importing IP-XACT definitions can occur at any point alongside normal SystemRDL 
 
 #### **1.3.1 Model Preprocessor**
 
-The preprocessor traverse the register model compiled by the front-end, during which it modifies and double-check some node properties related to RTL generation.
+Model Preprocessor traverses the register model compiled by Parser, during which it modifies and double-check properties and hierarchical relationship.
 
-To be more concrete:
+To be more concrete, for component instances in SystemRDL:
 
-- insert *hdl_path_slice* properties for each `field` instance
-- complement user-defined properties for instances
-  - *hj_genmst*
-  - *hj_genslv*
-  - *hj_gendisp*
-  - *hj_flatten_addrmap*
-  - *hj_use_abs_addr*
-- check whether there are illegal assignments and try to fix some wrong property assignments
-- filter some instances by assigning *ispresent = false*, thus the UVM RAL model won't consists of them
-- complement RTL module names of all `addrmap` instances
+- addrmap
+  - complement user-defined properties to distinguish different RTL types of addrmap instances
+    - *hj_gennetwork*
+    - *hj_genmst*
+    - *hj_gendisp*
+    - *hj_genslv*
+    - *hj_flatten_addrmap*
+    - *hj_3rd_party_ip*
+  - check whether properties above are mutually exclusive
+  - complement RTL module names of all regmst, regdisp, regslv instances
+- mem
+  - check memory width
+  - whether memories are instantiated under regdisp or 3rd party IP
+- field
+  - insert `hdl_path_slice` for UVM RAL model generation
+
+Addtionally:
+
+- check violations of instance hierarchy relationship
+- filter some instances by setting ispresent to false, thus generated uvm ral model would ignore them (wildcard matching are supported)
 
 #### **1.3.2 RTL Generator**
 
-The RTL Generator is the core functionality of HRDA. It traverses the preprocessed register model and generate RTL code in Verilog/SystemVerilog format.
+RTL Generator is the core functionality of HRDA. It traverses the preprocessed register model and generate RTL code in Verilog/SystemVerilog format.
 
 For the detailed architecture, see [2. RTL Architecture](#2-rtl-architecture).
 
 #### **1.3.3 HTML Generator**
 
-The HTML generator relies on an open-source project [PeakRDL-html](https://github.com/SystemRDL/peakrdl-html). It is able to generate address space documentation HTML file from the preprocessed register model. A simple example of exported HTML is shown in [Figure 1.4](#pics_html_ex).
+HTML Generator relies on an open-source project [PeakRDL-html](https://github.com/SystemRDL/peakrdl-html). It is able to generate address space documentation HTML file from the preprocessed register model. A simple example of exported HTML is shown in [Figure 1.4](#pics_html_ex).
 
 <center>
     <img id="pics_html_ex" src="docs/pics/html_ex.png" width="80%"><br>
@@ -154,27 +254,23 @@ The HTML generator relies on an open-source project [PeakRDL-html](https://githu
 
 #### **1.3.4 PDF Generator**
 
-(TO BE DONE)
-
 #### **1.3.5 UVM RAL Generator**
 
-The export of the UVM register model relies on an open-source project [PeakRDL-uvm](https://github.com/SystemRDL/peakrdl-uvm).
+UVM RAL Generator relies on an open-source project [PeakRDL-uvm](https://github.com/SystemRDL/peakrdl-uvm).
 
 #### **1.3.6 C Header Generator**
-
-(TO BE DONE)
 
 <div style="page-break-after: always;"></div>
 
 ## **2. RTL Architecture**
 
-Control and status regsiters are distributed all around the chip in different subsystems, such as Network-on-chip (NoC), PCIe, MMU, SoC interconnect, Generic Interrupt Controller, etc. Not only hardware logic inside the respective subsystem, but also software needs to access them via system bus. HRDA provides a unified RTL architecture to make all these registers accessible by hardware, and software, namely visible to Application Processors (APs). All RTL modules generated by HRDA tool ultimately forms a network where each subsystem designer occupies one or more register trees (see more details in [2.1 Register Network](#21-register-network)).
+Control and status regsiters are distributed all around the chip in different subsystems, such as NoC, PCIe, MMU, SoC interconnect, Generic Interrupt Controller, Security, etc. Not only hardware logic inside the respective subsystem, but also software needs to access them via system bus. HRDA provides a unified RTL architecture to make all these registers accessible by hardware, and software, namely visible to Application Processors (APs). All RTL modules generated by HRDA ultimately forms a network where each subsystem designer occupies one or more register trees (see more details in [2.1 Register Network](#21-register-network)).
 
 <div style="page-break-after: always;"></div>
 
 ### **2.1 Register Network**
 
-Register Network, or `reg_network`, is a multi-root hierarchical network. A typical network architecture is shown in [Figure 2.1](#pics_reg_network).
+Register Network, or `reg_network`, is a multi-root hierarchical network. The overall network architecture is shown in [Figure 2.1](#pics_reg_network).
 
 <center>
     <img id="pics_reg_network" src="docs/pics/rtl/reg_network.drawio.svg"><br>
@@ -182,6 +278,9 @@ Register Network, or `reg_network`, is a multi-root hierarchical network. A typi
     color: #999;
     padding: 5px;">Figure 2.1 register network architecture</div>
 </center>
+
+// FIXME
+`reg_network` is divided into SoC level and subsystem level. At SoC level, there are `regmst` and `regdisp` modules.
 
 The entire network consists of many Register Tree (`reg_tree`) modules generated by HRDA which may connect to upstream interconnect unit, such as ARM NIC-450 Non-coherent Interconnect. The number of `reg_tree` modules determines the number of interface the upstream interconnect forwards.
 
@@ -1304,16 +1403,13 @@ Overall example also can be generated by command `hrda template -rdl` (see [5.2 
 
 ```SystemRDL
 // this is an addrmap definition
-// it will be instantiated in the top-level (root) addrmap below and treated as regslv
-// in order to generate a regslv module to implement internal registers, designers need assign:
-//      hj_gendisp = false;
+// it will be instantiated in the top-level (root) addrmap below and
+// represents for a regslv module
+// in order to generate a regslv module to implement internal registers,
+// designers need assign:
 //      hj_genslv = true;
-//      hj_flatten_addrmap = false;
-addrmap template_slv{
-    hj_gendisp = false;
+addrmap template_slv {
     hj_genslv = true;
-    hj_flatten_addrmap = false;
-
     name = "template_slv";
     desc = "[Reserved for editing]";
 
@@ -1323,7 +1419,7 @@ addrmap template_slv{
         activehigh;
     } srst_10;
 
-    // user-defined register definitions start here
+    // register definitions start here
     reg {
         name = "TEM";
         desc = "Template Register";
@@ -1354,23 +1450,17 @@ addrmap template_slv{
     } TEM @0x0;
 };
 
-// at least three levels of addrmap instance are needed
-// this is the top-level addrmap, and it will be automatically treated as regmst
-addrmap template_mst {
-    // it is recommended to assign hj_genmst = true and hj_flatten_addrmap = false
-    hj_genmst = true;
-    hj_flatten_addrmap = false;
-    // this is the second-level addrmap, and it will be automatically treated as regdisp
-    addrmap {
-        // it is recommended to assign hj_gendisp = true and hj_flatten_addrmap = false
-        hj_gendisp = true;
-        hj_flatten_addrmap = false;
-        // instantiate an addrmap defined above to generate a regslv module,
-        // or designers can define an addrmap here
-        template_slv template_slv;
-    } template_disp;
-    // debug registers implemented in regmst, please don't touch it and keep this level clean
-    db_regs db_regs %= 0x1000;
+// if designers only need a regslv module, following example two-level hierarchy is not used,
+// and only regslv above is used.
+
+// regdisp is at the top level and it can forward transactions to
+// downstream regdisp, regslv, memory and 3rd party IP
+addrmap template_disp {
+    hj_gendisp = true;
+
+    // instantiate an addrmap defined above to generate a regslv module,
+    // or designers can define and instantiate addrmap here
+    template_slv template_slv;
 };
 ```
 
@@ -1387,7 +1477,7 @@ This guideline is provided for designers who are not familiar with SystemRDL and
 An Excel worksheet example that describes one register is shown in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), and designers can use command `hrda template -excel` to generate these templates and modify them (see [5.2 Command Options and Arguments](#52-command-options-and-arguments)).
 
 <center>
-  <img id="pics_excel_temp_cn" src="docs/pics/temp_cn.png" width="80%"><br>
+  <img id="pics_excel_temp_cn" src="docs/pics/template/excel_cn.png" width="80%"><br>
   <div style="display: inline-block;
     color: #999;
     padding: 5px;">Figure 4.1 Excel worksheet template (Chinese version)
@@ -1395,7 +1485,7 @@ An Excel worksheet example that describes one register is shown in [Figure 4.1](
 </center>
 
 <center>
-  <img id="pics_excel_temp_en" src="docs/pics/temp_en.png" width="80%"><br>
+  <img id="pics_excel_temp_en" src="docs/pics/template/excel_en.png" width="80%"><br>
   <div style="display: inline-block;
     color: #999;
     padding: 5px;">Table 4.2 Excel worksheet template (English version)</div>
@@ -1485,7 +1575,7 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
 <div style="page-break-after: always;"></div>
 
-### **5.1 Environment and dependencies**
+### **5.1 Environment and Dependencies**
 
 - Available OS: Windows/Linux
 
@@ -1497,7 +1587,9 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
   - PeakRDL-uvm: <https://github.com/SystemRDL/PeakRDL-uvm>
 
-### **5.2 Command options and arguments**
+### **5.2 Command Options and Arguments**
+
+#### **5.2.1 General Options and Arguments**
 
 - `-h,--help`
 
@@ -1507,119 +1599,119 @@ Follows are rules that designers should not violate when editing Excel worksheet
 
   Show tool version.
 
-- `template`
+#### **5.2.2 Template Generator Options and Arguments**
 
-  Subcommand to generate register templates in Excel worksheet (.xlsx) or SystemRDL (.rdl) format with following command options.
+Subcommand `hrda template` is used to generate register templates in Excel worksheet (.xlsx) or SystemRDL (.rdl) format with following options and arguments.
 
-  - `-h, --help`
+- `-h, --help`
 
-    Show help information for this subcommand.
+  Show help information for `hrda template`.
 
-  - `-rdl`
+- `-rdl`
 
-    Generate a SystemRDL (.rdl) template.
+  Generate a SystemRDL (.rdl) template.
 
-  - `-excel`
+- `-excel`
 
-    Generate an Excel worksheet (.xlsx) template.
+  Generate an Excel worksheet (.xlsx) template.
 
-  - `-d,--dir [DIR]`
+- `-d,--dir [DIR]`
 
-    Directory where the template will be generated, the default is the current directory.
+  Directory where the template will be generated. Default is current directory.
 
-  - `-n,--name [NAME]`
+- `-n,--name [NAME]`
 
-    File name of the generated template, if there is a duplicate name, it will be automatically suffixed with a number. Default is `template.xlsx`.
+  File name of the generated template, if there is a duplicate name, it will be automatically suffixed with a number. Default is `template.xlsx`.
 
-  - `-rnum [RNUM]`
+- `-rnum [RNUM]`
 
-    Number of registers to be included in the generated template. Default is `1`. This option is only for Excel worksheets with `-excel` option.
+  Number of registers to be included in the generated template. Default is `1`. This option is only for Excel worksheets with `-excel` option.
 
-  - `-rname [TEM1 TEM2 ...]`
+- `-rname [TEM1 TEM2 ...]`
 
-    Names of registers in the template to be generated. Default is `TEM` (also for abbreviation). This option is only for Excel worksheets with `-excel` option.
+  Names of registers in the template to be generated. Default is `TEM` (also for abbreviation). This option is only for Excel worksheets with `-excel` option.
 
-  - `-l, --language [cn | en]`
+- `-l, --language [cn | en]`
 
-    Specify the language format of the generated template: `cn/en`, default is `cn`. This option is only for Excel worksheets with `-excel` option.
+  Specify the language format of the generated template: `cn/en`, default is `cn`. This option is only for Excel worksheets with `-excel` option.
 
-- `parse`
+#### **5.2.3 Paser Options and Arguments**
 
-  Sub-command to parse input Excel(.xlsx) worksheets and SystemRDL(.rdl) files, and compile them into a hierarchical model defined in `systemrdl-compiler`, with following command options.
+Subcommand `hrda parse` is used to parse input Excel(.xlsx) worksheets and SystemRDL(.rdl) files, and compile them into a hierarchical model defined in `systemrdl-compiler`, with following options and arguments.
 
-  - `-h, --help`
+- `-h, --help`
 
-    Show help information for this subcommand.
+  Show help information for this subcommand.
 
-  - `-f, --file [FILE1 FILE2 ...]`
+- `-f, --file [FILE1 FILE2 ...]`
 
-    Specify the input Excel(.xlsx)/SystemRDL(.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
+  Specify the input Excel(.xlsx)/SystemRDL(.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
 
-  - `-l, --list [LIST]`
+- `-l, --list [LIST]`
 
-    Specify a file list text including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
+  Specify a file list text including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
 
-    Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
+  Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
 
-  - `-g, --generate`
+- `-g, --generate`
 
-    Explicitly specifying this option parses and converts all input Excel (.xlsx) files to SystemRDL (.rdl) files one by one, with separate `addrmap` for each Excel worksheet. When the input is all Excel (.xlsx) files, parser generates an additional SystemRDL (.rdl) file containing the top-level `addrmap`, which instantiates all child `addrmaps`.
+  Explicitly specifying this option parses and converts all input Excel (.xlsx) files to SystemRDL (.rdl) files one by one, with separate `addrmap` for each Excel worksheet. When the input is all Excel (.xlsx) files, parser generates an additional SystemRDL (.rdl) file containing the top-level `addrmap`, which instantiates all child `addrmaps`.
 
-    If this option is not used, Parser will only conduct rule check and parse, thus no additional files will be generated.
+  If this option is not used, Parser will only conduct rule check and parse, thus no additional files will be generated.
 
-  - `-m, --module [MODULE_NAME]`
+- `-m, --module [MODULE_NAME]`
 
-    If `-g, --generate` option is specified, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification.
+  If `-g, --generate` option is specified, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification.
 
-  - `-gdir, --gen_dir [GEN_DIR]`
+- `-gdir, --gen_dir [GEN_DIR]`
 
-    When using the `-g, --generate` option, this option specifies the directory where the files are generated, the default is the current directory.
+  When using the `-g, --generate` option, this option specifies the directory where the files are generated, the default is the current directory.
 
-- `generate`
+#### **5.2.4 Generator Options and Arguments**
 
-  subcommand for generating RTL Module, HTML Docs, UVM RAL, C Header Files, with the following command options.
+Subcommand `hrda generate` is used to generate Verilog RTL, documentations, UVM RAL model, C header Files, with following options and arguments.
 
-  - `-h, --help`
+- `-h, --help`
 
-    Show help information for this subcommand.
+  Show help information for this subcommand.
 
-  - `-f, --file [FILE1 FILE2 ...]`
+- `-f, --file [FILE1 FILE2 ...]`
 
-    Specify the input Excel (.xlsx) / SystemRDL (.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
+  Specify the input Excel (.xlsx) / SystemRDL (.rdl) files, support multiple, mixed input files at the same time, error will be reported if any of input files do not exist.
 
-  - `-l, --list [LIST]`
+- `-l, --list [LIST]`
 
-    Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
+  Specify a text-based file list including all files to be read. Parser will read and parse files in order, if the file list or any file in it does not exist, an error will be reported.
 
-    Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
+  Note that `-f, --file` or `-l, --list` options must be used but not at the same time. If so, warning message will be reported and parser will ignore the `-l, --list` option.
 
-  - `-m, --module [MODULE_NAME]`
+- `-m, --module [MODULE_NAME]`
 
-    Used in the situation where all input files are Excel worksheets. Like `-m` option in `parse` sub-command, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification.
+  Used in the situation where all input files are Excel worksheets. Like `-m` option in `parse` sub-command, this option specifies top-level `addrmap` name and top-level RDL file name to be generated for subsequent analysis and further modification.
 
-  - `-gdir, --gen_dir [dir]`
+- `-gdir, --gen_dir [dir]`
 
-    Specify the directory where the generated files will be stored. If the directory does not exist, an error will be reported. Default is the current directory.
+  Specify the directory where the generated files will be stored. If the directory does not exist, an error will be reported. Default is the current directory.
 
-  - `-grtl, --gen_rtl`
+- `-grtl, --gen_rtl`
 
-    Specify this option explicitly to generate RTL Module code.
+  Specify this option explicitly to generate RTL Module code.
 
-  - `-ghtml, --gen_html`
+- `-ghtml, --gen_html`
 
-    Specify this option explicitly to generate the register description in HTML format.
+  Specify this option explicitly to generate the register description in HTML format.
 
-  - `-gral, --gen_ral`
+- `-gral, --gen_ral`
 
-    Specify this option explicitly to generate the UVM RAL verification model.
+  Specify this option explicitly to generate the UVM RAL verification model.
 
-  - `-gch,--gen_chdr`
+- `-gch,--gen_chdr`
 
-    Specifying this option explicitly generates the register C header file.
+  Specifying this option explicitly generates the register C header file.
 
-  - `-gall,--gen_all`
+- `-gall,--gen_all`
 
-    Specifying this option explicitly generates all of the above files.
+  Specifying this option explicitly generates all of the above files.
 
 ### **5.3 Tool Configuration and Usage Examples**
 
@@ -1646,7 +1738,7 @@ Before trying all below examples, please ensure that you can execute `hrda` comm
 
 If you can execute `hrda` successfully, it is recommanded to use subcommands and options `-h`, `template -h`, `parse -h`, `generate -h` to get more help information. Examples are as follows:
 
-- Generate a register template.
+- Generate a register template in Excel format.
 
   ```bash
   mkdir test

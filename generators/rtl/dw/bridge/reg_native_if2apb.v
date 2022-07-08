@@ -26,7 +26,7 @@ module reg_native_if2apb (
     output  logic   [ADDR_WIDTH-1:0]    paddr;
     output  logic   [DATA_WIDTH-1:0]    pwdata;
     input   logic   [DATA_WIDTH-1:0]    prdata;
-    output  logic                       pslverr;
+    input   logic                       pslverr;
 
     localparam  S_IDLE                  = 2'd0,
                 S_SETUP                 = 2'd1,

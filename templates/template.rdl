@@ -3,47 +3,47 @@
 // this is an addrmap definition
 // it will be instantiated in the top-level (root) addrmap below and represents for a regslv module
 // in order to generate a regslv module to implement internal registers, designers need assign:
-//		hj_genslv = true;
+//      hj_genslv = true;
 addrmap template_slv {
-	hj_genslv = true;
-	name = "template_slv";
-	desc = "[Reserved for editing]";
+    hj_genslv = true;
+    name = "template_slv";
+    desc = "[Reserved for editing]";
 
-	signal {
-		name = "srst_10";
-		desc = "[Reserved for editing]";
-		activehigh;
-	} srst_10;
+    signal {
+        name = "srst_10";
+        desc = "[Reserved for editing]";
+        activehigh;
+    } srst_10;
 
     // register definitions start here
-	reg {
-		name = "TEM";
-		desc = "Template Register";
-		regwidth = 32;
+    reg {
+        name = "TEM";
+        desc = "Template Register";
+        regwidth = 32;
 
         // field definitions start here
-		field {
-			name = "FIELD_1";
-			desc = "[Reserved for editing]";
-			sw = r; onread = rclr;
-			hw = rw;
-			hj_syncresetsignal = "srst_10";
-		} FIELD_1[17:17] = 0x0;
+        field {
+            name = "FIELD_1";
+            desc = "[Reserved for editing]";
+            sw = r; onread = rclr;
+            hw = rw;
+            hj_syncresetsignal = "srst_10";
+        } FIELD_1[17:17] = 0x0;
 
-		field {
-			name = "FIELD_2";
-			desc = "[Reserved for editing]";
-			sw = rw; onread = rset; onwrite = woset;
-			hw = rw; hwclr;
-		} FIELD_2[16:14] = 0x0;
+        field {
+            name = "FIELD_2";
+            desc = "[Reserved for editing]";
+            sw = rw; onread = rset; onwrite = woset;
+            hw = rw; hwclr;
+        } FIELD_2[16:14] = 0x0;
 
-		field {
-			name = "FIELD_3";
-			desc = "[Reserved for editing]";
-			sw = rw; onwrite = wot;
-			hw = rw; hwset;
-		} FIELD_3[13:13] = 0x1;
-	} TEM @0x0;
+        field {
+            name = "FIELD_3";
+            desc = "[Reserved for editing]";
+            sw = rw; onwrite = wot;
+            hw = rw; hwset;
+        } FIELD_3[13:13] = 0x1;
+    } TEM @0x0;
 };
 
 // if designers only need a regslv module, following example two-level hierarchy is not used,
@@ -52,9 +52,9 @@ addrmap template_slv {
 // regdisp is at the top level and it can forward transactions to
 // downstream regdisp, regslv, memory and 3rd party IP
 addrmap template_disp {
-	hj_gendisp = true;
+    hj_gendisp = true;
 
-	// instantiate an addrmap defined above to generate a regslv module,
-	// or designers can define and instantiate addrmap here
-	template_slv template_slv;
+    // instantiate an addrmap defined above to generate a regslv module,
+    // or designers can define and instantiate addrmap here
+    template_slv template_slv;
 };

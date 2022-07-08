@@ -36,11 +36,16 @@ module sw_ctrl (field_value,
    logic [F_WIDTH-1:0] 		      sw_mux_value;
 
    generate
-      if(SWMOD)begin:g_SWMOD
+      if (SWMOD) begin:g_SWMOD
         assign swmod_out = sw_modify;
+      end else begin
+         assign swmod_out = 1'b0;
       end
-      if(SWACC)begin:g_SWACC
+
+      if (SWACC) begin:g_SWACC
         assign swacc_out = (|sw_rd) | (|sw_wr);
+      end else begin
+         assign swacc_out = 1'b0;
       end
    endgenerate
 

@@ -549,11 +549,6 @@ class addrmap_str(object):
         self.rtl += '//' + 'SPLIT MUX INSTANCE END'.center(100,"*") + '//\n'
         self.rtl += '\n\n'
 
-        self.rtl += '//' + 'ULTIMATE MUX START'.center(100,"*") + '//\n'
-        self.rtl += get_ultimate_mux(self.master, self.M, self.N)
-        self.rtl += '//' + 'ULTIMATE MUX END'.center(100,"*") + '//\n'
-        self.rtl += '\n\n'
-
         if(not self.master):
             self.rtl += '//' + 'REGSLV CDC DELIVER INSTANT START'.center(100,"*") + '//\n'
             self.rtl += get_regslv_cdc(self.cdc)
