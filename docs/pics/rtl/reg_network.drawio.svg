@@ -1,256 +1,262 @@
-<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1921px" height="821px" viewBox="-0.5 -0.5 1921 821" content="&lt;mxfile&gt;&lt;diagram id=&quot;1t-_wO7JJA0Vt9ppAdN1&quot; name=&quot;第 1 页&quot;&gt;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&lt;/diagram&gt;&lt;/mxfile&gt;">
+<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1922px" height="841px" viewBox="-0.5 -0.5 1922 841" content="&lt;mxfile&gt;&lt;diagram id=&quot;1t-_wO7JJA0Vt9ppAdN1&quot; name=&quot;第 1 页&quot;&gt;7V1bb6M4FP41lXYfWmGMDTy2nensSDur0fZhd55GBJwEDcER0Ev2169JbBJsJ5DEQEmbShUcDIHv3I8PzhW8X7x+yYLl/BuNSHJlW9HrFfx0ZdsOwOx/SVhtCMCyOGWWxRGnbQmP8X9EDOTUpzgieW1gQWlSxMs6MaRpSsKiRguyjL7Uh01pUv/WZTAjCuExDBKV+k8cFfMN1YYQbw/8QeLZXHw1Rs7myCIQo/mj5PMgoi87JPj5Ct5nlBabrcXrPUlK9AQwm/Me9hyt7iwjadHmBHFjz0HyxJ+O31ixEo+b0ac0IuUJ1hW8m9K04CwBXrkfJ8k9TWi2HgynqPzj43bomw+j50VGf5GdI3j9YUfUe+eP80yygrzukPizfCF0QYpsxYYI2XI4rly0bLH/suUTwEKO5js8csXIgAvHrLr4Fj62wRHcAz/wm+FkLF+WmwVh/+9e5nFBHpdBWJJemL4w2rxYJCW8bHOtNBCXwK/VBfrlZkaLoIhpygjXwLNULkyC0Iu0aNvQcVCk4aMB9BGS0PdU9H2sAR+bAR+bluXp1A5DHYoRnmBkSGYBciXYfKTA5kAdbBY6HzbfGidqlXBx1BDWqLqrQQ2aEDYHjBI15DeDhjsDDVhQAYlEzLXyXZoVczqjaZB83lLv6jBy21hukte4+LfcvrER3/3BzWa5/el1Z9ynldhJ2U1vzkJi98fuse1p673VHvblRZAVt2UwwShhEuR5HAryQ5wI+73hpogSbB1/Hx4s9jnE35w+ZSHHi4sZ+5oZEaMsTiyxPCgFGUmY33iuhzHncdQxytHLY44zHGtQN8rmvmtlQ0Px01Yczu3f3xjhr6/3104ZeFl/0fQ6pHOyfiTb+poWJBMpUINvkn0RwXt8ketPrIpD/HKgo2hSYC3SRF0sD3xtXHQ+3B5sdvDN6rTVmu6VRpX+OpNbKpEkCxEiXuToZMGzJ3Cdt7Xm/a5qOapqeYO5MTUJzshskR+rNl5I9Goz8VCponW10Rk6E4GxhesxHrQ1emN3pDZq/guzaPNIRXmTX7+3CZMPICRhTgATUFeHuY9dGBgKm7EcNmsS284ghS1SjWMd+0mh81leWWc4VIt1csCwx2i1MkVA1BB3bJFgZv+2CKqO3iC733rw1k5MzLMbDsVut0N2gx1ebyOQDpS7DW/28/dkrrlgMK4ZiQ73KOkRXKt0FNQ0dKuwXSdYPXLbH4rZQHXALDyM4nx5ZHx4XFrVUXzouQPGMrZabGZQ5snzcUhGAfGmWiRx6JHJtB8kMawj6QK1bt8Zktg1b4F6tAIn5YzCS+9aBYwH8wEtppt2OZDSlJyEla6s1S6VNwWyO1jVy20xoaoB+ZQIaBvvHudLx6g1nvH0hp/6ncbr4qMwoABINtKRpiw3d8VPk+Siuo92vkWNyUbspn00oHOBXrPWzRiIy7OevWrQCSbiotZBTGyrjolvaUIXXX8BNIHJkZaoncNtMWHB+2aaZO7M8q7KNiEEXdsIRyrztzMQymWupWgMODfSlTZGUbkSwyxY7QxblgNyzf3KF1buZM8AtrH5jlMtm6NGzbff7xTpY9pVKCKkiTo4KUjiWdlBFJJyoogRSgWNwyC55QcWcRRphFapyNamgvaKUXvT52q0WkiFaa121PILcxo/i4wQRv0tf5rkq7wgi99HgvbxSYxkUz3kqejrJtlMoI9alLbfgp9xNJh05WeQKpF9+Jl6jNmnnxFC8OFnhvYzSBtB/0zXqP+MpyOxgehoI9inx0FIDzIpXmj2ayQQH9+YjWSTqoO8I5OK1UrNeKuOcmLoAagi2VViqJXdsTZKuHYdSQjcmx6TbN8/268P1Qz71ktegBfHa9NH3aSzrb16JXWS/iJ7r58Xp2Cn4ZSzPT8QEe8Im0VHKYyuaWFsPZmpzhuNuEqq2HCnXxtutyiUnt6s89Grg1TVAYOpDlbLcOMNIxXNQa7dp+bgDsocp2jOgBpwqtKe7HUE3zqf9XPld/OQ27JI0uJannItc3OIrlqQHLGKW3Ko2Werj6vmiguyoPwiI2sAd6UG8F5nYz3V71xCU73aG9ArqKp4GvQ/Hzl49TZPLXbrptR/dA5uye9zONIqGdIJPjw4/uz02+ugme8jB28QRs945+BpwghkL90gjABi1K00qqH5mEsE8vtwTp/vw3kddA31+1LpG1dsrFFs45Xe1tzWTjSNVnOgJRmaPvMHTy2t3aw/CpR9TpF2+8o7gE5zSIw0gNsGAPdbLAVG0kgYA45mFOTzNURAAUxjFNpC1qi6DXgI2pmFDFueeLEknNtWMWxLrmLIVzJXw/DVzOaRsrOsP8lzuRDfgNqzt8HAiPbY0ptNDtCYK906WibWNvJV0/8omgffA/ZShoSRBnvdwlJGsFfTp4sokHhS5Npzid5XPfB4K3gAyRa4XzCBpS0t805jZjwgKLF6Bx3Hysp9nq4XzOmMD64a1ZjodPiYrK3WoasvTjfYC5rV/VxEuxqWquW9LutTleo/tMa81mhKGAAYX5BEn5g4+1ZRbchLjq1yYnnVAXC4yImsg+MNNLxdVKlGNg691jgBUO3sxZdqfElAsSaI0b4iZGDJ5so6vCfAnRbrlnQHuFobu3jAXXkdQdgn4GoR6+IBB9CVEdelqN1hrm0Nrt6FfaT3l5uTytUB7WuwukqzifeTgK1NVN4F8nKNS/ebEVrgTygcst3tL6tsgsbtD9TAz/8D&lt;/diagram&gt;&lt;/mxfile&gt;">
     <defs/>
     <g>
-        <rect x="210" y="100" width="1480" height="720" fill="#f5f5f5" stroke="#666666" pointer-events="all"/>
-        <rect x="1240" y="157.5" width="430" height="600" fill="#fff2cc" stroke="#d6b656" pointer-events="all"/>
-        <rect x="1050" y="410" width="170" height="350" fill="#fff2cc" stroke="#d6b656" pointer-events="all"/>
-        <rect x="360" y="410" width="670" height="350" fill="#fff2cc" stroke="#d6b656" pointer-events="all"/>
-        <path d="M 592.49 68.24 L 592.43 120 L 440 120 L 440 171.76" fill="none" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 592.5 62.24 L 596.49 70.24 L 592.49 68.24 L 588.49 70.23 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 440 177.76 L 436 169.76 L 440 171.76 L 444 169.76 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 890 68.24 L 890 171.76" fill="none" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 890 62.24 L 894 70.24 L 890 68.24 L 886 70.24 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 890 177.76 L 886 169.76 L 890 171.76 L 894 169.76 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 1187.51 68.24 L 1187.57 120 L 1450 120 L 1450 171.76" fill="none" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 1187.5 62.24 L 1191.51 70.23 L 1187.51 68.24 L 1183.51 70.24 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 1450 177.76 L 1446 169.76 L 1450 171.76 L 1454 169.76 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="295" y="0" width="1190" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="all"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" text-anchor="middle" font-size="16px">
-            <text x="889.5" y="36.5">
+        <rect x="279" y="100" width="1610" height="740" fill="#f5f5f5" stroke="#666666" pointer-events="all"/>
+        <path d="M 389 140 L 1349 140 L 1349 530 L 1049 530 L 1049 780 L 689 780 L 689 530 L 389 530 Z" fill="#bac8d3" stroke="#23445d" stroke-miterlimit="10" transform="rotate(-180,869,460)" pointer-events="all"/>
+        <rect x="1409" y="155" width="430" height="605" fill="#fff2cc" stroke="#d6b656" pointer-events="all"/>
+        <rect x="1119" y="420" width="170" height="340" fill="#fff2cc" stroke="#d6b656" pointer-events="all"/>
+        <rect x="429" y="420" width="670" height="340" fill="#fff2cc" stroke="#d6b656" pointer-events="all"/>
+        <path d="M 661.5 68.24 L 661.47 120 L 509 120 L 509 171.76" fill="none" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 661.5 62.24 L 665.49 70.24 L 661.5 68.24 L 657.49 70.23 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 509 177.76 L 505 169.76 L 509 171.76 L 513 169.76 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 959 68.24 L 959 171.76" fill="none" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 959 62.24 L 963 70.24 L 959 68.24 L 955 70.24 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 959 177.76 L 955 169.76 L 959 171.76 L 963 169.76 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1256.5 68.24 L 1256.53 118.71 L 1619 118.71 L 1619 169.26" fill="none" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 1256.5 62.24 L 1260.51 70.23 L 1256.5 68.24 L 1252.51 70.24 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 1619 175.26 L 1615 167.26 L 1619 169.26 L 1623 167.26 Z" fill="#ff0000" stroke="#ff0000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="364" y="0" width="1190" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="all"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" text-anchor="middle" font-size="18px">
+            <text x="958.5" y="37.5">
                 ARM NIC-450 Non-coherent Interconnect
             </text>
         </g>
-        <path d="M 890 248.24 L 890 271.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 890 242.24 L 894 250.24 L 890 248.24 L 886 250.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 890 277.76 L 886 269.76 L 890 271.76 L 894 269.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="830" y="180" width="120" height="60" fill="#f8cecc" stroke="#b85450" pointer-events="all"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="16px">
-            <text x="889.5" y="216.5">
+        <path d="M 959 248.24 L 959 271.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 959 242.24 L 963 250.24 L 959 248.24 L 955 250.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 959 277.76 L 955 269.76 L 959 271.76 L 963 269.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="899" y="180" width="120" height="60" fill="#f8cecc" stroke="#b85450" pointer-events="all"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="18px">
+            <text x="958.5" y="217.5">
                 regmst
             </text>
         </g>
-        <rect x="460" y="440" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="all"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="16px">
-            <text x="519.5" y="476.5">
+        <rect x="529" y="440" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="all"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="18px">
+            <text x="588.5" y="477.5">
                 3rd party IP
             </text>
         </g>
-        <path d="M 670 508.24 L 670 537.43 L 460 537.43 L 460 566.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 670 502.24 L 674 510.24 L 670 508.24 L 666 510.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 460 572.76 L 456 564.76 L 460 566.76 L 464 564.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 730 508.24 L 730 537.43 L 780 537.43 L 780 566.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 730 502.24 L 734 510.24 L 730 508.24 L 726 510.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 780 572.76 L 776 564.76 L 780 566.76 L 784 564.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 768.24 470 L 811.76 470" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 762.24 470 L 770.24 466 L 768.24 470 L 770.24 474 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 817.76 470 L 809.76 474 L 811.76 470 L 809.76 466 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 631.76 470 L 588.24 470" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 637.76 470 L 629.76 474 L 631.76 470 L 629.76 466 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 582.24 470 L 590.24 466 L 588.24 470 L 590.24 474 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="640" y="440" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="all"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="16px">
-            <text x="699.5" y="476.5">
+        <path d="M 739 508.24 L 739 537.53 L 529 537.53 L 529 566.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 739 502.24 L 743 510.24 L 739 508.24 L 735 510.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 529 572.76 L 525 564.76 L 529 566.76 L 533 564.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 799 508.24 L 799 537.53 L 849 537.53 L 849 566.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 799 502.24 L 803 510.24 L 799 508.24 L 795 510.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 849 572.76 L 845 564.76 L 849 566.76 L 853 564.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 837.24 470 L 880.76 470" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 831.24 470 L 839.24 466 L 837.24 470 L 839.24 474 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 886.76 470 L 878.76 474 L 880.76 470 L 878.76 466 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 700.76 470 L 657.24 470" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 706.76 470 L 698.76 474 L 700.76 470 L 698.76 466 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 651.24 470 L 659.24 466 L 657.24 470 L 659.24 474 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="709" y="440" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="all"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="18px">
+            <text x="768.5" y="477.5">
                 regdisp
             </text>
         </g>
-        <rect x="400" y="575" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="16px">
-            <text x="459.5" y="611.5">
+        <rect x="469" y="575" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="18px">
+            <text x="528.5" y="612.5">
                 regslv
             </text>
         </g>
-        <path d="M 780 643.24 L 780 664.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 780 637.24 L 784 645.24 L 780 643.24 L 776 645.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 780 670.76 L 776 662.76 L 780 664.76 L 784 662.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 711.76 605 L 688.24 605" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 717.76 605 L 709.76 609 L 711.76 605 L 709.76 601 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 682.24 605 L 690.24 601 L 688.24 605 L 690.24 609 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 848.24 605 L 871.76 605" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 842.24 605 L 850.24 601 L 848.24 605 L 850.24 609 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 877.76 605 L 869.76 609 L 871.76 605 L 869.76 601 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="720" y="575" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="all"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="16px">
-            <text x="779.5" y="611.5">
+        <path d="M 849 643.24 L 849 664.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 849 637.24 L 853 645.24 L 849 643.24 L 845 645.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 849 670.76 L 845 662.76 L 849 664.76 L 853 662.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 780.76 605 L 757.24 605" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 786.76 605 L 778.76 609 L 780.76 605 L 778.76 601 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 751.24 605 L 759.24 601 L 757.24 605 L 759.24 609 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 917.24 605 L 940.76 605" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+        <path d="M 911.24 605 L 919.24 601 L 917.24 605 L 919.24 609 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 946.76 605 L 938.76 609 L 940.76 605 L 938.76 601 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+        <rect x="789" y="575" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="all"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" text-anchor="middle" font-size="18px">
+            <text x="848.5" y="612.5">
                 regdisp
             </text>
         </g>
-        <path d="M 1738.24 754.52 L 1760 754.57 L 1796.76 754.92" fill="none" stroke="#ff3333" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1732.24 754.51 L 1740.25 750.52 L 1738.24 754.52 L 1740.23 758.52 Z" fill="#ff3333" stroke="#ff3333" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1802.76 754.98 L 1794.73 758.9 L 1796.76 754.92 L 1794.8 750.9 Z" fill="#ff3333" stroke="#ff3333" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1862" y="761.5">
+        <path d="M 17.24 774.49 L 39 774.47 L 75.76 774.9" fill="none" stroke="#ff3333" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 11.24 774.5 L 19.23 770.49 L 17.24 774.49 L 19.24 778.49 Z" fill="#ff3333" stroke="#ff3333" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 81.76 774.97 L 73.72 778.88 L 75.76 774.9 L 73.81 770.88 Z" fill="#ff3333" stroke="#ff3333" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="166" y="782.5">
                 APB
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="464.5" y="739.5">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="533.5" y="740.5">
                 reg_tree (subsystem)
             </text>
         </g>
-        <path d="M 1738.24 802.48 L 1760 802.43 L 1796.76 802.9" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1732.24 802.49 L 1740.23 798.48 L 1738.24 802.48 L 1740.25 806.48 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1802.76 802.97 L 1794.71 806.87 L 1796.76 802.9 L 1794.82 798.87 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1862" y="809.5">
+        <path d="M 17.24 822.49 L 39 822.47 L 75.76 822.9" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 11.24 822.5 L 19.23 818.49 L 17.24 822.49 L 19.24 826.49 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 81.76 822.97 L 73.72 826.88 L 75.76 822.9 L 73.81 818.88 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="166" y="830.5">
                 reg_native_if
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="274.5" y="801.5">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="343.5" y="822.5">
                 reg_network
             </text>
         </g>
-        <rect x="720" y="673" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="779.5" y="709.5">
+        <rect x="789" y="673" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="848.5" y="710.5">
                 regslv
             </text>
         </g>
-        <rect x="1390" y="180" width="120" height="60" fill="#f8cecc" stroke="#b85450" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1449.5" y="216.5">
+        <rect x="1559" y="177.5" width="120" height="60" fill="#f8cecc" stroke="#b85450" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1618.5" y="215">
                 regmst
             </text>
         </g>
-        <path d="M 1420 348.24 L 1420 387 L 1310 387 L 1310 426.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1420 342.24 L 1424 350.24 L 1420 348.24 L 1416 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1310 432.76 L 1306 424.76 L 1310 426.76 L 1314 424.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1480 348.24 L 1480 387.43 L 1590 387.43 L 1590 426.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1480 342.24 L 1484 350.24 L 1480 348.24 L 1476 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1590 432.76 L 1586 424.76 L 1590 426.76 L 1594 424.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="1390" y="280" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1449.5" y="316.5">
+        <path d="M 1589 345.74 L 1589 384.47 L 1479 384.47 L 1479 424.26" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1589 339.74 L 1593 347.74 L 1589 345.74 L 1585 347.74 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1479 430.26 L 1475 422.26 L 1479 424.26 L 1483 422.26 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1649 345.74 L 1649 385.06 L 1759 385.06 L 1759 424.26" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1649 339.74 L 1653 347.74 L 1649 345.74 L 1645 347.74 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1759 430.26 L 1755 422.26 L 1759 424.26 L 1763 422.26 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="1559" y="277.5" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1618.5" y="315">
                 regdisp
             </text>
         </g>
-        <path d="M 1450 248.24 L 1450 271.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1450 242.24 L 1454 250.24 L 1450 248.24 L 1446 250.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1450 277.76 L 1446 269.76 L 1450 271.76 L 1454 269.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="1390" y="435" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1449.5" y="471.5">
+        <path d="M 1619 245.74 L 1619 269.26" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1619 239.74 L 1623 247.74 L 1619 245.74 L 1615 247.74 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1619 275.26 L 1615 267.26 L 1619 269.26 L 1623 267.26 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="1559" y="432.5" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1618.5" y="470">
                 regslv
             </text>
         </g>
-        <path d="M 1450 348.24 L 1450 426.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1450 342.24 L 1454 350.24 L 1450 348.24 L 1446 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1450 432.76 L 1446 424.76 L 1450 426.76 L 1454 424.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="820" y="440" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="879.5" y="476.5">
+        <path d="M 1619 345.74 L 1619 424.26" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1619 339.74 L 1623 347.74 L 1619 345.74 L 1615 347.74 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1619 430.26 L 1615 422.26 L 1619 424.26 L 1623 422.26 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="889" y="440" width="120" height="60" fill="#dae8fc" stroke="#6c8ebf" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="948.5" y="477.5">
                 regslv
             </text>
         </g>
-        <rect x="560" y="575" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="619.5" y="611.5">
+        <rect x="629" y="575" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="688.5" y="612.5">
                 memory
             </text>
         </g>
-        <rect x="880" y="575" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="939.5" y="611.5">
+        <rect x="949" y="575" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1008.5" y="612.5">
                 3rd party IP
             </text>
         </g>
-        <path d="M 860 348.24 L 860 390 L 700 390 L 700 431.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 860 342.24 L 864 350.24 L 860 348.24 L 856 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 700 437.76 L 696 429.76 L 700 431.76 L 704 429.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 920 348.24 L 920 390 L 1135 390 L 1135 431.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 920 342.24 L 924 350.24 L 920 348.24 L 916 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1135 437.76 L 1131 429.76 L 1135 431.76 L 1139 429.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="830" y="280" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="889.5" y="316.5">
+        <path d="M 929 348.24 L 929 400 L 769 400 L 769 431.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 929 342.24 L 933 350.24 L 929 348.24 L 925 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 769 437.76 L 765 429.76 L 769 431.76 L 773 429.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 989 348.24 L 989 400 L 1204.06 400 L 1204.01 431.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 989 342.24 L 993 350.24 L 989 348.24 L 985 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1204 437.76 L 1200.02 429.76 L 1204.01 431.76 L 1208.02 429.77 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="899" y="280" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="958.5" y="317.5">
                 regdisp
             </text>
         </g>
-        <path d="M 1135 508.24 L 1135 566.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1135 502.24 L 1139 510.24 L 1135 508.24 L 1131 510.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 1135 572.76 L 1131 564.76 L 1135 566.76 L 1139 564.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="1075" y="440" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1134.5" y="476.5">
+        <path d="M 1204 508.24 L 1204 566.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1204 502.24 L 1208 510.24 L 1204 508.24 L 1200 510.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 1204 572.76 L 1200 564.76 L 1204 566.76 L 1208 564.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="1144" y="440" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1203.5" y="477.5">
                 regdisp
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1134.5" y="591.5">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1203.5" y="592.5">
                 ......
             </text>
         </g>
-        <path d="M 10 370 L 1700 370" fill="none" stroke="rgb(0, 0, 0)" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="6 6" pointer-events="none"/>
+        <path d="M 79 360 L 1919 360" fill="none" stroke="rgb(0, 0, 0)" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="6 6" pointer-events="none"/>
         <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
-            <text x="104.5" y="297.5">
+            <text x="173.5" y="297.5">
                 SoC Level
             </text>
         </g>
         <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
-            <text x="84.5" y="537.5">
+            <text x="153.5" y="537.5">
                 Subsystem Level
             </text>
         </g>
-        <rect x="1530" y="435" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1589.5" y="471.5">
+        <rect x="1699" y="432.5" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1758.5" y="470">
                 3rd party IP
             </text>
         </g>
-        <rect x="1250" y="435" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1309.5" y="471.5">
+        <rect x="1419" y="432.5" width="120" height="60" fill="#e1d5e7" stroke="#9673a6" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1478.5" y="470">
                 memory
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1119.5" y="727">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1188.5" y="726.5">
                 reg_tree
             </text>
-            <text x="1119.5" y="746">
+            <text x="1188.5" y="748.5">
                 (subsystem)
             </text>
         </g>
-        <path d="M 440 248.24 L 440 271.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 440 242.24 L 444 250.24 L 440 248.24 L 436 250.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 440 277.76 L 436 269.76 L 440 271.76 L 444 269.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="380" y="180" width="120" height="60" fill="#f8cecc" stroke="#b85450" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="439.5" y="216.5">
+        <path d="M 509 248.24 L 509 271.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 509 242.24 L 513 250.24 L 509 248.24 L 505 250.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 509 277.76 L 505 269.76 L 509 271.76 L 513 269.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="449" y="180" width="120" height="60" fill="#f8cecc" stroke="#b85450" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="508.5" y="217.5">
                 regmst
             </text>
         </g>
-        <path d="M 440 348.24 L 440 390 L 270 390 L 270 431.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 440 342.24 L 444 350.24 L 440 348.24 L 436 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <path d="M 270 437.76 L 266 429.76 L 270 431.76 L 274 429.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
-        <rect x="380" y="280" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="439.5" y="316.5">
+        <path d="M 509 348.24 L 509 370 L 339 370 L 339 431.76" fill="none" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 509 342.24 L 513 350.24 L 509 348.24 L 505 350.24 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 339 437.76 L 335 429.76 L 339 431.76 L 343 429.76 Z" fill="#82b366" stroke="#82b366" stroke-width="2" stroke-miterlimit="10" pointer-events="none"/>
+        <rect x="449" y="280" width="120" height="60" fill="#ffe6cc" stroke="#d79b00" pointer-events="none"/>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="508.5" y="317.5">
                 regdisp
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="699.5" y="524">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="768.5" y="525">
                 ......
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="269.5" y="464">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="338.5" y="465">
                 ......
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="669.5" y="216.5">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="628.5" y="215">
                 ......
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1169.5" y="216.5">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1238.5" y="217.5">
                 ......
             </text>
         </g>
-        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="16px">
-            <text x="1324.5" y="739.5">
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="1493.5" y="740.5">
+                reg_tree (SoC)
+            </text>
+        </g>
+        <g fill="rgb(0, 0, 0)" font-family="Helvetica" font-weight="bold" pointer-events="none" text-anchor="middle" font-size="18px">
+            <text x="773.5" y="167.5">
                 reg_tree (SoC)
             </text>
         </g>

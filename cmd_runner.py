@@ -103,7 +103,7 @@ class CommandRunner:
         parser_template.add_argument(
             "-l",
             "--language",
-            default="cn",
+            default="en",
             choices=["cn", "en"],
             help="language of the generated Excel template "
             "(default: %(default)s)"
