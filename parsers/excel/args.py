@@ -98,7 +98,7 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,4),
             "Format": "str",
-            "Pattern": "^((R)|(NA)|(RCLR)|(RSET)|(RUSER))$"
+            "Pattern": "^((R)|(NA)|(RCLR)|(RSET))$"
         } # Access Type
     },
     "FieldSwWrType": {
@@ -109,7 +109,7 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,5),
             "Format": "str",
-            "Pattern": "^((W)|(NA)|(W1)|(WOSET)|(WOCLR)|(WOT)|(WZS)|(WZC)|(WZT)|(WUSER))$"
+            "Pattern": "^((W)|(NA)|(W1)|(WOSET)|(WOCLR)|(WOT)|(WZS)|(WZC)|(WZT))$"
         }
     },
     "FieldHwAccType": {

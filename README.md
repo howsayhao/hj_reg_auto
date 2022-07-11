@@ -4,89 +4,78 @@
 
 <!-- code_chunk_output -->
 
-- [**HJ-micro Register Design Automation Tool (HRDA Tool)**](#hj-micro-register-design-automation-tool-hrda-tool)
-  - [**Revision History**](#revision-history)
-  - [**0. HOW TO USE THIS MANUAL**](#0-how-to-use-this-manual)
-  - [**1. Introduction**](#1-introduction)
-    - [**1.1 Template Generator**](#11-template-generator)
-    - [**1.2 Parser**](#12-parser)
-      - [**1.2.1 Excel Parser**](#121-excel-parser)
-      - [**1.2.2 SystemRDL Parser/Compiler**](#122-systemrdl-parsercompiler)
-      - [**1.2.3 IP-XACT Importer**](#123-ip-xact-importer)
-    - [**1.3 Generator**](#13-generator)
-      - [**1.3.1 Model Preprocessor**](#131-model-preprocessor)
-      - [**1.3.2 RTL Generator**](#132-rtl-generator)
-      - [**1.3.3 HTML Generator**](#133-html-generator)
-      - [**1.3.4 PDF Generator**](#134-pdf-generator)
-      - [**1.3.5 UVM RAL Generator**](#135-uvm-ral-generator)
-      - [**1.3.6 C Header Generator**](#136-c-header-generator)
-  - [**2. RTL Architecture**](#2-rtl-architecture)
-    - [**2.1 Register Network**](#21-register-network)
-    - [**2.2 Register Native Access Interface (reg_native_if)**](#22-register-native-access-interface-reg_native_if)
-      - [**2.2.1 Write Transaction**](#221-write-transaction)
-      - [**2.2.2 Read Transaction**](#222-read-transaction)
-    - [**2.3 Register Access Master (regmst)**](#23-register-access-master-regmst)
-    - [**2.4 Register Dispatcher (regdisp)**](#24-register-dispatcher-regdisp)
-    - [**2.5 Register Access Slave (regslv)**](#25-register-access-slave-regslv)
-      - [**2.5.1 slv_fsm**](#251-slv_fsm)
-      - [**2.5.2 addr_decoder**](#252-addr_decoder)
-      - [**2.5.4 split_mux**](#254-split_mux)
-      - [**2.5.5 snapshot module**](#255-snapshot-module)
-      - [**2.5.6 value_deliver**](#256-value_deliver)
-    - [**2.6 Register and Field**](#26-register-and-field)
-  - [**3. SystemRDL Coding Guideline**](#3-systemrdl-coding-guideline)
-    - [**3.1 General Concepts, Rules, and Properties**](#31-general-concepts-rules-and-properties)
-      - [**3.1.1 Component Definition**](#311-component-definition)
-      - [**3.1.2 Component Instantiation and Parameterization**](#312-component-instantiation-and-parameterization)
-      - [**3.1.3 Component Property**](#313-component-property)
-        - [**3.1.3.1 Property Assignment**](#3131-property-assignment)
-        - [**3.1.3.2 Property Default Value**](#3132-property-default-value)
-        - [**3.1.3.3 Dynamic Assignment**](#3133-dynamic-assignment)
-        - [**3.1.3.4 Supported General Properties**](#3134-supported-general-properties)
-      - [**3.1.4 Instance Address Allocation**](#314-instance-address-allocation)
-        - [**3.1.4.1 Alignment**](#3141-alignment)
-        - [**3.1.4.2 Addressing Mode**](#3142-addressing-mode)
-        - [**3.1.4.3 Address Allocation Operator**](#3143-address-allocation-operator)
-    - [**3.1.6 Field Component**](#316-field-component)
-      - [**3.1.6.1 RTL Naming Convention**](#3161-rtl-naming-convention)
-      - [**3.1.6.2 Description Guideline**](#3162-description-guideline)
-      - [**3.1.6.3 Examples**](#3163-examples)
-    - [**3.1.7 Register Component**](#317-register-component)
-      - [**3.1.7.1 RTL Naming Convention**](#3171-rtl-naming-convention)
-      - [**3.1.7.2 Description Guideline**](#3172-description-guideline)
-      - [**3.1.7.3 Example**](#3173-example)
-    - [**3.1.8 Regfile Component**](#318-regfile-component)
-      - [**3.1.8.1 Description Guideline**](#3181-description-guideline)
-      - [**3.1.8.2 Example**](#3182-example)
-    - [**3.1.9 Memory Description**](#319-memory-description)
-      - [**3.1.9.1 Descriptions Guideline**](#3191-descriptions-guideline)
-      - [**3.1.9.2 Example**](#3192-example)
-    - [**3.1.10 Addrmap Component**](#3110-addrmap-component)
-      - [**3.1.10.1 RTL Naming Convention**](#31101-rtl-naming-convention)
-      - [**3.1.10.2 Description Guideline**](#31102-description-guideline)
-      - [**3.1.10.3 Example**](#31103-example)
-    - [**3.1.11 Other User-defined Property (Experimental)**](#3111-other-user-defined-property-experimental)
-      - [**hj_skip_reg_mux_dff_0**](#hj_skip_reg_mux_dff_0)
-      - [**hj_skip_reg_mux_dff_1**](#hj_skip_reg_mux_dff_1)
-      - [**hj_skip_ext_mux_dff_0**](#hj_skip_ext_mux_dff_0)
-      - [**hj_skip_ext_mux_dff_1**](#hj_skip_ext_mux_dff_1)
-      - [**hj_reg_mux_size**](#hj_reg_mux_size)
-      - [**hj_ext_mux_size**](#hj_ext_mux_size)
-  - [**3.2 Overall Example**](#32-overall-example)
-  - [**4. Excel Worksheet Guideline**](#4-excel-worksheet-guideline)
-    - [**4.1 Table Format**](#41-table-format)
-    - [**4.2 Rules**](#42-rules)
-  - [**5. Tool Flow Guideline**](#5-tool-flow-guideline)
-    - [**5.1 Environment and Dependencies**](#51-environment-and-dependencies)
-    - [**5.2 Command Options and Arguments**](#52-command-options-and-arguments)
-      - [**5.2.1 General Options and Arguments**](#521-general-options-and-arguments)
-      - [**5.2.2 Template Generator Options and Arguments**](#522-template-generator-options-and-arguments)
-      - [**5.2.3 Paser Options and Arguments**](#523-paser-options-and-arguments)
-      - [**5.2.4 Generator Options and Arguments**](#524-generator-options-and-arguments)
-    - [**5.3 Tool Configuration and Usage Examples**](#53-tool-configuration-and-usage-examples)
-  - [**6. Miscellaneous**](#6-miscellaneous)
-  - [**7. Errata**](#7-errata)
-  - [**8. Bibliography**](#8-bibliography)
+- [**Revision History**](#revision-history)
+- [**0. HOW TO USE THIS MANUAL**](#0-how-to-use-this-manual)
+- [**1. Introduction**](#1-introduction)
+  - [**1.1 Template Generator**](#11-template-generator)
+  - [**1.2 Parser**](#12-parser)
+    - [**1.2.1 Excel Parser**](#121-excel-parser)
+    - [**1.2.2 SystemRDL Parser/Compiler**](#122-systemrdl-parsercompiler)
+    - [**1.2.3 IP-XACT Importer**](#123-ip-xact-importer)
+  - [**1.3 Generator**](#13-generator)
+    - [**1.3.1 Model Preprocessor**](#131-model-preprocessor)
+    - [**1.3.2 RTL Generator**](#132-rtl-generator)
+    - [**1.3.3 HTML Generator**](#133-html-generator)
+    - [**1.3.4 PDF Generator**](#134-pdf-generator)
+    - [**1.3.5 UVM RAL Generator**](#135-uvm-ral-generator)
+    - [**1.3.6 C Header Generator**](#136-c-header-generator)
+- [**2. RTL Architecture**](#2-rtl-architecture)
+  - [**2.1 Register Network**](#21-register-network)
+  - [**2.2 Register Native Access Interface (reg_native_if)**](#22-register-native-access-interface-reg_native_if)
+    - [**2.2.1 Write Transaction**](#221-write-transaction)
+    - [**2.2.2 Read Transaction**](#222-read-transaction)
+  - [**2.3 Register Access Master (regmst)**](#23-register-access-master-regmst)
+  - [**2.4 Register Dispatcher (regdisp)**](#24-register-dispatcher-regdisp)
+  - [**2.5 Register Access Slave (regslv)**](#25-register-access-slave-regslv)
+  - [**2.6 Register and Field**](#26-register-and-field)
+- [**3. SystemRDL Coding Guideline**](#3-systemrdl-coding-guideline)
+  - [**3.1 General Concepts, Rules, and Properties**](#31-general-concepts-rules-and-properties)
+    - [**3.1.1 Component Definition**](#311-component-definition)
+    - [**3.1.2 Component Instantiation and Parameterization**](#312-component-instantiation-and-parameterization)
+    - [**3.1.3 Component Property**](#313-component-property)
+      - [**3.1.3.1 Property Assignment**](#3131-property-assignment)
+      - [**3.1.3.2 Property Default Value**](#3132-property-default-value)
+      - [**3.1.3.3 Dynamic Assignment**](#3133-dynamic-assignment)
+      - [**3.1.3.4 Supported General Properties**](#3134-supported-general-properties)
+    - [**3.1.4 Instance Address Allocation**](#314-instance-address-allocation)
+      - [**3.1.4.1 Alignment**](#3141-alignment)
+      - [**3.1.4.2 Addressing Mode**](#3142-addressing-mode)
+      - [**3.1.4.3 Address Allocation Operator**](#3143-address-allocation-operator)
+  - [**3.1.5 Signal Component**](#315-signal-component)
+  - [**3.1.6 Field Component**](#316-field-component)
+    - [**3.1.6.1 RTL Naming Convention**](#3161-rtl-naming-convention)
+    - [**3.1.6.2 Description Guideline**](#3162-description-guideline)
+    - [**3.1.6.3 Examples**](#3163-examples)
+  - [**3.1.7 Register Component**](#317-register-component)
+    - [**3.1.7.1 RTL Naming Convention**](#3171-rtl-naming-convention)
+    - [**3.1.7.2 Description Guideline**](#3172-description-guideline)
+    - [**3.1.7.3 Example**](#3173-example)
+  - [**3.1.8 Regfile Component**](#318-regfile-component)
+    - [**3.1.8.1 Description Guideline**](#3181-description-guideline)
+    - [**3.1.8.2 Example**](#3182-example)
+  - [**3.1.9 Memory Description**](#319-memory-description)
+    - [**3.1.9.1 Descriptions Guideline**](#3191-descriptions-guideline)
+    - [**3.1.9.2 Example**](#3192-example)
+  - [**3.1.10 Addrmap Component**](#3110-addrmap-component)
+    - [**3.1.10.1 RTL Naming Convention**](#31101-rtl-naming-convention)
+    - [**3.1.10.2 Description Guideline**](#31102-description-guideline)
+    - [**3.1.10.3 Example**](#31103-example)
+  - [**3.1.11 Other User-defined Property (Experimental)**](#3111-other-user-defined-property-experimental)
+- [**3.2 Overall Example**](#32-overall-example)
+- [**4. Excel Worksheet Guideline**](#4-excel-worksheet-guideline)
+  - [**4.1 Table Format**](#41-table-format)
+  - [**4.2 Rules**](#42-rules)
+- [**5. Tool Flow Guideline**](#5-tool-flow-guideline)
+  - [**5.1 Environment and Dependencies**](#51-environment-and-dependencies)
+  - [**5.2 Command Options and Arguments**](#52-command-options-and-arguments)
+    - [**5.2.1 General Options and Arguments**](#521-general-options-and-arguments)
+    - [**5.2.2 Template Generator Options and Arguments**](#522-template-generator-options-and-arguments)
+    - [**5.2.3 Paser Options and Arguments**](#523-paser-options-and-arguments)
+    - [**5.2.4 Generator Options and Arguments**](#524-generator-options-and-arguments)
+  - [**5.3 Tool Configuration and Usage Examples**](#53-tool-configuration-and-usage-examples)
+- [**6. Miscellaneous**](#6-miscellaneous)
+- [**7. Errata**](#7-errata)
+- [**8. Bibliography**](#8-bibliography)
 
 <!-- /code_chunk_output -->
 
@@ -132,9 +121,9 @@ For generating RTL modules with a few number of registers and simple address map
 The overall HRDA tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
 <center>
-    <img id="pics_tool_flow" src="docs/pics/tool_flow.drawio.svg" width="80%"><br>
+    <img id="pics_tool_flow" src="docs/pics/tool_flow.drawio.svg" width="60%"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 1.1 HRDA tool flow
     </div>
 </center>
@@ -162,7 +151,7 @@ SystemRDL parser relies on an open-source project [SystemRDL Compiler](https://g
 <center>
     <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler/flow.svg" width="60%"><br>
     <div style="display: inline-block;
-    color: #999;
+    color: #708090;
     padding: 5px;">Figure 1.2 SystemRDL Compiler workflow </div>
 </center>
 
@@ -183,9 +172,9 @@ addrmap top {
 Once compiled, the register model can be described like this:
 
 <center>
-    <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler/ex1.svg" width="80%"><br>
+    <img id="pics_systemrdl_compiler" src="docs/pics/systemrdl_compiler/ex1.svg" width="60%"><br>
     <div style="display: inline-block;
-    color: #999;
+    color: #708090;
     padding: 5px;">Figure 1.3 hierarchical register model</div>
 </center>
 
@@ -230,7 +219,7 @@ Addtionally:
 
 #### **1.3.2 RTL Generator**
 
-RTL Generator is the core functionality of HRDA. It traverses the preprocessed register model and generate RTL code in Verilog/SystemVerilog format.
+RTL Generator is the core functionality of HRDA. It traverses the preprocessed register model and generates Verilog RTL.
 
 For the detailed architecture, see [2. RTL Architecture](#2-rtl-architecture).
 
@@ -239,9 +228,9 @@ For the detailed architecture, see [2. RTL Architecture](#2-rtl-architecture).
 HTML Generator relies on an open-source project [PeakRDL-html](https://github.com/SystemRDL/peakrdl-html). It is able to generate address space documentation HTML file from the preprocessed register model. A simple example of exported HTML is shown in [Figure 1.4](#pics_html_ex).
 
 <center>
-    <img id="pics_html_ex" src="docs/pics/html_ex.png" width="80%"><br>
+    <img id="pics_html_ex" src="docs/pics/html_ex.png" width="60%"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 1.4 HTML document example
     </div>
 </center>
@@ -275,7 +264,7 @@ Register Network, or `reg_network`, is a multi-root hierarchical network. The ov
 <center>
     <img id="pics_reg_network" src="docs/pics/rtl/reg_network.drawio.svg"><br>
     <div style="display: inline-block;
-    color: #999;
+    color: #708090;
     padding: 5px;">Figure 2.1 register network architecture</div>
 </center>
 
@@ -307,13 +296,13 @@ All modules above are corresponding to some components defined in the SystemRDL 
 
 ------------------------------
 
-**Note:** `reg_network` and `reg_tree` are not the RTL code generation boundry. In other words, there is not a wrapper of `reg_network` and `reg_tree` (but maybe HDRA will implement `reg_tree` wrapper generation in a future release). For now, only separate `regmst`, `regdisp`, `regslv` and bridge components will be generated, so it all depends on designers how to connect `reg_tree` (`regmst` and `regslv`) to the upstream interconnect unit such as NIC-450.
+**Note:** `reg_network` and `reg_tree` are not the RTL code generation boundry. In other words, there is not a RTL module named `reg_network` or `reg_tree`. Only separate `regdisp` and `regslv` RTL modules at subsystem level, and `regmst` modules at SoC level are generated.
 
 ------------------------------
 
 ### **2.2 Register Native Access Interface (reg_native_if)**
 
-Typically, except that the upstream interface of `regmst` is `APB`, every module is connected into the register network as a child node in `reg_tree` via Register Native Access Interface (`reg_native_if`). `reg_natvie_if` is used under following circumstances in `reg_network`:
+Typically, except that the upstream interface of `regmst` is `APB`, every module is connected to another one as a child node in `reg_tree` via Register Native Access Interface (`reg_native_if`). `reg_natvie_if` is used under following circumstances in `reg_network`:
 
 - `regmst <-> regdisp`
 
@@ -327,18 +316,20 @@ Typically, except that the upstream interface of `regmst` is `APB`, every module
 
 All signals are listed in [Table 2.2](#table_rni_def):
 
-| Signal Name | Direction | Width | Description |
-| ----------- | --------- | ----- | ----------- |
-| req_vld | input from upstream, output to downsream | 1 | request valid |
-| ack_vld | output to upstream, input from downsream | 1 | acknowledgement valid |
-| addr | input from upstream, output to downsream | BUS_ADDR_WIDTH | address |
-| wr_en | input from upstream, output to downsream | 1 | write enable |
-| rd_en | input from upstream, output to downsream | 1 | read enable |
-| wr_data | input from upstream, output to downsream | BUS_DATA_WIDTH | write data |
-| rd_data | output to upstream, input from downsream | BUS_DATA_WIDTH | read data |
+| Signal Name | Direction | Width | Description | Comments |
+| ----------- | --------- | ----- | ----------- | -------- |
+| req_vld     | input from upstream, output to downstream | 1 | request valid |
+| ack_vld     | output to upstream, input from downstream | 1 | acknowledgement valid |
+| addr        | input from upstream, output to downstream | *BUS_ADDR_WIDTH* | address |
+| wr_en       | input from upstream, output to downstream | 1 | write enable |
+| rd_en       | input from upstream, output to downstream | 1 | read enable |
+| wr_data     | input from upstream, output to downstream | *BUS_DATA_WIDTH* | write data |
+| rd_data     | output to upstream, input from downstream | *BUS_DATA_WIDTH* | read data |
+| err         | output to upstream, input from downstream | 1 | error report signal | optional
+| soft_rst    | input from upstream, output to downstream | 1 | soft reset all components but not register value | optional
 <center>
     <div id="table_rni_def" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 2.2 reg_native_if definition
     </div>
 </center>
@@ -356,15 +347,16 @@ There are two methods for write transactions. One is with no wait state: `ack_vl
 <center>
     <img id="pics_rni_write_trans_1" src="docs/pics/reg_native_if/write_trans_1.svg"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.3 write transaction without wait state
-    </div>
+    </div><br>
+    <br>
 </center>
 
 <center>
     <img id="pics_rni_write_trans_2" src="docs/pics/reg_native_if/write_trans_2.svg"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.4 write transaction with one or more wait states
     </div>
 </center>
@@ -376,17 +368,19 @@ There are two methods for read transactions. One is with no wait state: `ack_vld
 <center>
     <img id="pics_rni_read_trans_1" src="docs/pics/reg_native_if/read_trans_1.svg"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.5 read transaction with no wait state
-    </div>
+    </div><br>
+    <br>
 </center>
 
 <center>
     <img id="pics_rni_read_trans_2" src="docs/pics/reg_native_if/read_trans_2.svg"><br>
     <div style="display: inline-block;
-    color: #999;
-    padding: 5px;">Figure 2.6 read transaction with one or more wait states
-</div>
+        color: #708090;
+        padding: 5px;">Figure 2.6 read transaction with one or more wait states
+    </div><br>
+    <br>
 </center>
 
 ### **2.3 Register Access Master (regmst)**
@@ -400,7 +394,7 @@ If input files are Excel worksheets only, all of them will be converted to Syste
 <center>
     <img id="pics_regmst_rtl_infra" src="docs/pics/rtl/regmst_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.7 regmst architecture
     </div>
 </center>
@@ -430,7 +424,7 @@ With regard to clock domain, `regmst` runs on the register native domain (typica
 | ----------- | --------- | ----- | ----------- |
 <center>
     <div id="table_regmst_ports" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 2.8 regmst port definition
     </div>
 </center>
@@ -444,7 +438,7 @@ The immediate sub-addrmap instance of root `addrmap` or any `addrmap` instance w
 <center>
     <img id="pics_regdisp_rtl_infra" src="docs/pics/rtl/regdisp_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.9 regdisp architecture
     </div>
 </center>
@@ -475,6 +469,7 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 
 [Table 2.10](#table_regdisp_ports) shows port definitions of `regdisp`.
 
+// TODO
 |    Port             | Direction | Width | Description |
 | ------------------  | --------- | ----- | ----------- |
 | upstream__req_vld   | input     | 1 |
@@ -493,7 +488,7 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 | downstream__rd_data | input     | BUS_DATA_WIDTH |
 <center>
     <div id="table_regdisp_ports" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 2.10 regdisp port definition
     </div>
 </center>
@@ -507,7 +502,7 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 <center>
     <img id="pics_regslv_rtl_infra" src="docs/pics/rtl/regslv_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.11 regslv architecture
     </div>
 </center>
@@ -521,115 +516,77 @@ With regard to clock domain, `regdisp` runs on the register native domain (typic
 | ----------- | --------- | ----- | ----------- |
 <center>
     <div id="table_regslv_ports" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 2.12 regslv port definition
     </div>
 </center>
 
-#### **2.5.1 slv_fsm**
-
-`slv_fsm` is a finite state machine (FSM) that copes with transactions dispatched from the upstream `regdisp` module and controls read and write access to internal registers. Its operating states are shown in [Figure 2.13](#pics_slv_state).
-
-// FIXME
-<center>
-    <img id="pics_slv_state" src="docs/pics/rtl/slv_fsm.drawio.svg"><br>
-    <div style="display: inline-block;
-        color: #999;
-        padding: 5px;">Figure 2.13 transition diagram of slv_fsm
-    </div>
-</center>
-
-#### **2.5.2 addr_decoder**
-
-// FIXME
-
-```verilog
-always_comb begin
-    reg_sel = {REG_NUM{1'b0}};
-    dummy_reg = 1'b0;
-    unique casez (regfile_addr)
-        64'h0:reg_sel[0] = 1'b1;
-        64'h4:reg_sel[1] = 1'b1;
-        default: dummy_reg = 1'b1;
-    endcase
-end
-```
-
-#### **2.5.4 split_mux**
-
-// FIXME
-
-`split_mux` is a one-hot multiplexor with a parameter to specify `group_size`. When number of input candidcates exceed `group_size`, a two-level multiplexor network is constructed and DFFs are inserted between two levels to improve timing performance.
-
-#### **2.5.5 snapshot module**
-
-// FIXME
-
-#### **2.5.6 value_deliver**
-
-// FIXME
-
 ### **2.6 Register and Field**
 
-// FIXME
-
-`field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.14](#pics_field_rtl_infra).
+`field` is the structural component at the lowest level. The `field` architecture is shown in [Figure 2.13](#pics_field_rtl_infra).
 
 <center>
     <img id="pics_field_rtl_infra" src="docs/pics/rtl/field_rtl_infra.drawio.svg"><br>
     <div style="display: inline-block;
-        color: #999;
-        padding: 5px;">Figure 2.14 field architecture
+        color: #708090;
+        padding: 5px;">Figure 2.13 field architecture
     </div>
 </center>
 
-The `field` module implements hardware and software access types defined in Excel worksheets and SystemRDL.
+The `field` module implements hardware and software access types defined in Excel worksheets, SystemRDL and IP-XACT files.
 
-`sw_ctrl` unit corresponds to software access (read and write) types in Excel worksheets and SystemRDL. It uses software access signals from `slv_fsm` in `regslv`, which are initially forwarded by `reg_native_if` from upstream modules.
+`sw_ctrl` unit corresponds to software access (read and write) types of registers. It uses software access signals from `slv_fsm` in `regslv`, which are initially forwarded by `reg_native_if` from upstream modules.
 
-All supported software access types are listed in [Table 2.15](#table_sw_acc_prop). `field` can be readable and writeable, write only once, and has some read or write side-effects on software behavior. Additionally, *alias* and *shared* property in SystemRDL can be used to describe `reg` if designers wants to generate registers with more than one software address locations and access types but only one physical implementation. If *alias* or *shared* property is assigned in SystemRDL, a corresponding number of software control (`sw_ctrl`) units will be generated. So for simple register description without *alias* or *shared* property, there is only one `sw_ctrl` unit.
+All supported software access types are listed in [Table 2.14](#table_sw_rd_prop) and [Table 2.15](#table_sw_wr_prop). `field` can be readable and writeable, write only once, and has some read or write side-effects on software behavior. Additionally, *alias* and *shared* property in SystemRDL can be used to describe `reg` if designers wants to generate registers with more than one software address locations and access types but only one physical implementation. If *alias* or *shared* property is assigned in SystemRDL, a corresponding number of software control (`sw_ctrl`) units will be generated. For simple register description without *alias* or *shared* property, there is only one `sw_ctrl` instance in `field` RTL.
 
-| Software Access Type | Description                     |
-| -------------------- | ------------------------------- |
-| RO                   | read only                       |
-| RW                   | read and write                  |
-| RW1                  | read and write once after reset |
-| WO                   | write only                      |
-| W1                   | write once after reset          |
-| RCLR                 | clear on read                   |
-| RSET                 | set on read                     |
-| WOCLR                | write 1 to clear                |
-| WOSET                | write 1 to set                  |
-| WOT                  | write 1 to toggle               |
-| WZS                  | write 0 to set                  |
-| WZC                  | write 0 to clear                |
-| WZT                  | write 0 to toggle               |
+| Software Read Type | Description                                          |
+| ------------------ | ---------------------------------------------------- |
+| NA                 | not allowed to read (if read, read data are all 0's) |
+| R                  | able to read, no side effect                         |
+| RCLR               | all bits of the field are cleared to 0 after read    |
+| RSET               | all bits of the field are set to 1 after read        |
 <center>
-    <div id="table_sw_acc_prop" style="display: inline-block;
-        color: #999;
-        padding: 5px;">Table 2.15 supported software access (read and write) types
+    <div id="table_sw_rd_prop" style="display: inline-block;
+        color: #708090;
+        padding: 5px;">Table 2.14 supported software read types
     </div>
 </center>
 
-`hw_ctrl` unit corresponds to hardware access types in Excel worksheets and SystemRDL. It simply uses `hw_pulse` and `hw_value` for hardware access, and these two signals also appear in `regslv` module port declaration if the `field` instance they belong to are writeable on hardware behavior.
+| Software Write Type | Description                                                |
+| ------------------- | ---------------------------------------------------------- |
+| W1                  | write once (only first write after reset is valid)         |
+| WOCLR               | bitwise write 1 to clear (`field = field & ~write_data`)   |
+| WOSET               | bitwise write 1 to set (`field = field | write_data`)      |
+| WOT                 | bitwise write 1 to toggle (`field = field ^ write_data`)   |
+| WZS                 | bitwise write 0 to set (`field = field | ~write_data`)     |
+| WZC                 | bitwise write 0 to clear (`field = field & write_data`)    |
+| WZT                 | bitwise write 0 to toggle (`field = field ~^ write_data`)  |
+<center>
+    <div id="table_sw_wr_prop" style="display: inline-block;
+        color: #708090;
+        padding: 5px;">Table 2.15 supported software write types
+    </div>
+</center>
+
+`hw_ctrl` unit corresponds to hardware access types of registers. It simply uses `hw_pulse` and `hw_value` for hardware access, and these two signals also appear in `regslv` module port declaration if the `field` instance they belong to are writeable on hardware behavior.
 
 All supported hardware access types are listed in [Table 2.16](#table_hw_acc_prop).
 
 | Hardware Access Type | Description                                 |
 | -------------------- | ------------------------------------------- |
-| RO | read only, thus `<field_name>__pulse` and `<field_name>__next_value` are not generated as `regslv` ports |
-| WO | write only, thus `<field_name>__curr_value` are not generated as `regslv` ports |
-| RW | read, and write when `hw_pulse` is asserted |
-| CLR | bitwise clear, and `hw_pulse` input is ignored |
-| SET | bitwise set, and `hw_pulse` input is ignored |
+| R   | read only, thus `<field_name>__pulse` and `<field_name>__next_value` are not generated as `regslv` ports |
+| W   | write only, thus `<field_name>__curr_value` are not generated as `regslv` ports |
+| RW  | able to read and write when `hw_pulse` is asserted |
+| CLR | bitwise write to clear, and `hw_pulse` input is ignored |
+| SET | bitwise write to set, and `hw_pulse` input is ignored |
 <center>
     <div id="table_hw_acc_prop" style="display: inline-block;
-        color: #999;
-        padding: 5px;">Table 2.16 supported software access (read and write) types
+        color: #708090;
+        padding: 5px;">Table 2.16 supported hardware access types
     </div>
 </center>
 
-All supported sodtware and hardware access types also can be found in a generated verilog header file `field_attr.vh`.
+All supported sodtware and hardware access types also can be found in the verilog header file `field_attr.vh`.
 
 ------------------------------
 
@@ -644,7 +601,7 @@ Additionally, there are some other advanced features in SystemRDL that can be im
 <center>
     <img id="pics_field_concat_reg" src="docs/pics/rtl/field_concat_reg.drawio.svg" width="80%"><br>
     <div style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Figure 2.17 fields are concatenated to form registers (software view)
     </div>
 </center>
@@ -689,7 +646,7 @@ A component in SystemRDL is the basic building block or a container which contai
 
 - `regfile` is used to pack the same sort of registers together to make it easier to orgnize them and understand their meaning. `regfile` is also used to allocate an base address.
 
-- `addrmap`: similar to `regfile` on packing register and allocating addresses. What's different and more important, `addrmap` defines the **RTL code generation boundary**. There are five types of `addrmap` which corresponds to `regmst`, `regdisp`, `regslv`, `3rd party IP` and no module in RTL architecture respectively, and they are distinguished by user-defined properties in HRDA (see [3.1.10 Addrmap Component](#3110-addrmap-component)).
+- `addrmap`: similar to `regfile` on packing register and allocating addresses. What's different and more important, some types of `addrmap` defines the **RTL code generation boundary**. There are six types of `addrmap` which corresponds to the entire `reg_network`, `regmst`, `regdisp`, `regslv`, `3rd party IP` and flattened address map respectively, and they are distinguished by user-defined properties in HRDA (see [3.1.10 Addrmap Component](#3110-addrmap-component)).
 
 Additionally, HRDA supports a non-structural component, `signal`. Signals are used to describe synchronous resets of `field`. But SystemRDL specification does not seem to allow direct reference to `signal` components in property assignment by their names, so HRDA implements it by assigning a string to a user-defined property named `hj_syncresetsignal`, see [3.1.5 Signal Component](#315-signal-component)) and [3.1.6 Field Component](#316-field-component).
 
@@ -870,18 +827,18 @@ All general component properties supported by HRDA are described in [Table 3.1](
 
 | Property | Description                                                    | Type       | Dynamic Assignment |
 | -------- | -------------------------------------------------------------- | ---------- | ------------------ |
-| name     | Specifies a more descriptivename (for documentation purposes). | *string*   | Support            |
-| desc     | Describes the component’s purpose.                             | *string*   | Support            |
+| name     | Specifies a more descriptivename (for documentation purposes). | *string*   | Supported          |
+| desc     | Describes the component’s purpose.                             | *string*   | Supported          |
 <center>
     <div id="table_general_prop" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.1 all supported general component properties
     </div>
 </center>
 
 #### **3.1.4 Instance Address Allocation**
 
-The offset of an component instance is relative to its parent component instance. If an instance is not explicitly assigned an address using address allocation operators (see [Address Allocation Operator](#3143-address-allocation-operator)), HRDA assigns the address according to the alignment and addressing mode. The address of an instance from the top-level `addrmap` is calculated by adding the instance offset and the offset of all its parent instances.
+The offset of an component instance is relative to its parent component instance. If an instance is not explicitly assigned an address using address allocation operators (see [Address Allocation Operator](#3143-address-allocation-operator)), HRDA assigns addresses according to the alignment and addressing mode. The address of an instance from the top-level `addrmap` is calculated by adding the instance offset and the offset of all its parent instances.
 
 ##### **3.1.4.1 Alignment**
 
@@ -1052,26 +1009,26 @@ For example, register instance name is `ring_cfg`, field instance name is `rd_pt
 
 All specific properties supported in `field` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.2](#table_field_prop)
 
-| Property | Notes | Type | Default | Dynamic Assignment |
-|----------|-------|------|---------|--------------------|
-| `fieldwidth`      | Width of field.                                                                                                                   | *longint unsigned* | 1       | Not Support  |
-| `reset`           | Reset value of field.                                                                                                             | *bit*              | 0       | Support |
-| `hj_syncresetsignal` | Signal names used as *synchronous reset* of the field.                                                                  | *reference*        |         | Support |
-| `name`            | Specifies a more descriptive name (for documentation purposes).                                                                   | *string*           | ""      | Support |
-| `desc`            | Describes the component's purpose.  MarkDown syntax is allowed                                                                    | *string*           | ""      | Support |
-| `sw`              | Software access type, one of `rw`, `r`, `w`, `rw1`, `w1`, or `na`.                                                                | *access type*      | `rw`    | Support |
-| `onread`          | Software read side effect, one of `rclr`, `rset`, or `na`.                                                                        | *onreadtype*       | `na`    | Support |
-| `onwrite`         | Software write side effect, one of `woset`, `woclr`, `wot`, `wzs`, `wzc`, `wzt`, or `na`.                                         | *onwritetype*      | `na`    | Support |
-| `swmod`           | Populate an output signal which is asserted when field is modified by software (written or read with a set or clear side effect). | *boolean*          | false   | Support |
-| `swacc`           | Populate an output signal which is asserted when field is read.                                                                   | *boolean*          | false   | Support |
-| `singlepulse`     | Populate an output signal which is asserted for one cycle when field is written 1.                                                | *boolean*          | false   | Support |
-| `hw`              | Hardware access type, one of `rw`, or `r`                                                                                         | *access type*      | `r`     | Not Support  |
-| `hwclr`           | Hardware clear.  field is cleared upon assertion on hardware signal in bitwise mode.                                              | *boolean*          | false   | Support |
-| `hwset`           | Hardware set.  field is set upon assertion on hardware signal in bitwise mode.                                                    | *boolean*          | false   | Support |
-| `precedence`      | One of `hw` or `sw`, controls whether precedence is granted to hardware (`hw`) or software (`sw`) when contention occurs.         | *precedencetype*   | `sw`    | Support |
+| Property | Description | Type | Default | Dynamic Assignment |
+|----------|-------------|------|---------|--------------------|
+| `fieldwidth` | Width of field. | *longint unsigned* | 1 | Not Supported |
+| `reset` | Reset value of field. | *bit* | 0 | Supported |
+| `hj_syncresetsignal` | Signal names used as *synchronous reset* of the field.                                                                  | *reference*        |         | Supported |
+| `name`            | Specifies a more descriptive name (for documentation purposes).                                                                   | *string*           | ""      | Supported |
+| `desc`            | Describes the component's purpose.  MarkDown syntax is allowed                                                                    | *string*           | ""      | Supported |
+| `sw`              | Software access type, one of `rw`, `r`, `w`, `rw1`, `w1`, or `na`.                                                                | *access type*      | `rw`    | Supported |
+| `onread`          | Software read side effect, one of `rclr`, `rset`.                                                                        | *onreadtype*       | `na`    | Supported |
+| `onwrite`         | Software write side effect, one of `woset`, `woclr`, `wot`, `wzs`, `wzc`, `wzt`, or `na`.                                         | *onwritetype*      | `na`    | Supported |
+| `swmod`           | Populate an output signal which is asserted when field is modified by software (written or read with a set or clear side effect). | *boolean*          | false   | Supported |
+| `swacc`           | Populate an output signal which is asserted when field is read.                                                                   | *boolean*          | false   | Supported |
+| `singlepulse`     | Populate an output signal which is asserted for one cycle when field is written 1.                                                | *boolean*          | false   | Supported |
+| `hw`              | Hardware access type, one of `rw`, or `r`                                                                                         | *access type*      | `r`     | Not Supported|
+| `hwclr`           | Hardware clear.  field is cleared upon assertion on hardware signal in bitwise mode.                                              | *boolean*          | false   | Supported |
+| `hwset`           | Hardware set.  field is set upon assertion on hardware signal in bitwise mode.                                                    | *boolean*          | false   | Supported |
+| `precedence`      | One of `hw` or `sw`, controls whether precedence is granted to hardware (`hw`) or software (`sw`) when contention occurs.         | *precedencetype*   | `sw`    | Supported |
 <center>
     <div id="table_field_prop" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.2 supported field component properties
     </div>
 </center>
@@ -1164,16 +1121,16 @@ Another similar property, *shared*, allows the same physical register to be mapp
 
 Registers which *share* or *alias* the same `reg` type are all generated in the same `regslv`. *alias* registers only can be used in one `addrmap`. *shared* registers can be used across different `addrmap` instances whose `hj_flatten_addrmap` is assigned to *true* to make them integrated in the same `regslv` RTL module.
 
-All supported properties are listed in [Table 3.3](#table_reg_prop).
+All specific properties supported in `reg` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.3](#table_reg_prop).
 
 | Property      | Notes                                                              | Type               | Default | Dynamic Assignment |
 |---------------|--------------------------------------------------------------------|--------------------|---------|--------------------|
-| `regwidth`    | Width of Register.                                                 | *longint unsigned* | 32      | Not Support        |
-| `accesswidth` | Minimum software access width operation performed on the register. | *longint unsigned* | 32      | Not Support        |
-| `shared`      | Defines a register as being shared in different address maps.      | *boolean*          | false   | Not Support        |
+| `regwidth`    | Width of Register.                                                 | *longint unsigned* | 32      | Not Supported      |
+| `accesswidth` | Minimum software access width operation performed on the register. | *longint unsigned* | 32      | Not Supported      |
+| `shared`      | Defines a register as being shared in different address maps.      | *boolean*          | false   | Not Supported      |
 <center>
     <div id="table_reg_prop" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.3 supported register component properties</div>
 </center>
 
@@ -1195,20 +1152,20 @@ reg my32bitReg { regwidth = 32;
 
 #### **3.1.8.1 Description Guideline**
 
-A `regfile` is as a logical grouping of one or more registers and `regfile` instances. It packs registers together and provides address allocation support, which is useful for introducing an address gap between registers. The only difference between the `regfile` and the address map (`addrmap`) is an `addrmap` defines an RTL implementation boundary where the `regfile` does not. Since `addrmap` define a implementation block boundary, there are some specific properties that are only specified for address maps and not specified for `regfile`.
+A `regfile` is a logical group of registers and subordinate `regfile` instances. It packs registers together and provides address allocation support, which is useful for introducing **address gap between registers**. The only difference between the `regfile` and the address map (`addrmap`) is that an `addrmap` instance defines an RTL implementation boundary while a `regfile` instance does not.
 
 When `regfile` is instantiated within another `regfile`, HRDA considers inner `regfile` instances are flattened and concatenated to form a larger `regfile`. So `regfile` nesting is just a technique to organize register descriptions.
 
-SystemRDL Specification allows *external* to be applied on `regfile` instances, but HRDA tool ignores *external* declaration on `regfile` instances. `regfile` instances are always considered as a pack of registers.
+SystemRDL allows *external* to be applied on `regfile` instances, but HRDA tool ignores *external* declaration on `regfile` instances. `regfile` instances are always considered as a pack of registers.
 
-All supported properties are listed in [Table 3.4](#table_regfile_prop).
+All specific properties supported in `regfile` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.4](#table_regfile_prop).
 
 | Property    | Notes                                                                               | Type               | Default | Dynamic Assignment |
-|-------------|-------------------------------------------------------------------------------------|--------------------|---------|---------|
-| `alignment` | Specifies alignment of all instantiated components in the associated register file. | *longint unsigned* |         | Not Support |
+|-------------|-------------------------------------------------------------------------------------|--------------------|---------|--------------------|
+| `alignment` | Specifies alignment of all instantiated components in the associated register file. | *longint unsigned* |         | Not Supported      |
 <center>
     <div id="table_regfile_prop" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.4 supported regfile component properties
     </div>
 </center>
@@ -1226,19 +1183,19 @@ regfile myregfile #(.A (32)) {
 
 #### **3.1.9.1 Descriptions Guideline**
 
-Memory (`mem`) instances **should always be declared as *external* during instantiation**. As [Figure 2.1](#pics_reg_network) shows, external memories can only be forwarded by `regdisp` modules, so the parent of `mem` instances in SystemRDL should be Type 2 `addrmap` (see [3.1.10 Addressmap Component](#3110-addrmap-component)).
+Memory (`mem`) instances **should always be declared as *external* during instantiation**. As [Figure 2.1](#pics_reg_network) shows, external memories can only be forwarded by `regdisp` modules, so the parent of `mem` instances in SystemRDL should be Type 3 `addrmap` (see [3.1.10 Addressmap Component](#3110-addrmap-component)).
 
-Other supported properties besides general properties for `mem` are listed in [Table 3.5](#table_mem_prop).
+All specific properties supported in `mem` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.5](#table_mem_prop).
 
 | Property     | Notes                                             | Type                | Default | Dynamic Assignment |
 |--------------|---------------------------------------------------|---------------------|---------|--------------------|
-| *mementries* | The number of memory entries, a.k.a memory depth. | *longint unsigned*  |         | Not Support        |
-| *memwidth*   | The memory entry bit width, a.k.a memory width.   | *longint unsigned*  |         | Not Support        |
-| *hj_cdc*     | Whether to generate a clock domain crossing (CDC) module from register native domain to target domain. | *boolean* | false | Support |
-| *hj_use_upstream_ff* | Whether to insert flip-flops for `reg_native_if` from upstream `regdisp`.                      | *boolean* | false | Support |
+| *mementries* | The number of memory entries, a.k.a memory depth. | *longint unsigned*  |         | Not Supported      |
+| *memwidth*   | The memory entry bit width, a.k.a memory width.   | *longint unsigned*  |         | Not Supported      |
+| *hj_cdc*     | Whether to generate a clock domain crossing (CDC) module from register native domain to target domain. | *boolean* | false | Supported |
+| *hj_use_upstream_ff* | Whether to insert flip-flops for `reg_native_if` from upstream `regdisp`.                      | *boolean* | false | Supported |
 <center>
     <div id="table_mem_prop" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.5 supported memory component properties
     </div>
 </center>
@@ -1260,30 +1217,35 @@ mem fifo_mem {
 
 ### **3.1.10 Addrmap Component**
 
-An address map component (`addrmap`) contains registers (`reg`), register files (`regfile`), memories (`mem`), and other address maps and assigns address to each structural component instance. Non-structural `signal` components also can be defined and instantiated inside `addrmap`. **`addrmap` defines the boundry of RTL implementations**, and there are five types of `addrmap` instances:
+An address map component (`addrmap`) is able to contain registers (`reg`), register files (`regfile`), memories (`mem`), and other address maps and assigns address to each structural component instance. Non-structural `signal` components also can be defined and instantiated inside `addrmap`. **An `addrmap` instance defines the boundry of RTL implementations**, and there are six types of `addrmap` instances:
 
-- Type 1: treated as `regmst` module (see [2.3 Register Access Master (regmst)](#23-register-access-master-regmst)). It only can and should be defined in top level (root).
+- Type 1: represents for the entire register network (`reg_network`). It only can and should be defined as the root `addrmap` at SoC level.
 
-- Type 2: treated as `regdisp` module (see [2.4 Register Dispatcher (regdisp)](#24-register-dispatcher-regdisp)). It can be instantiated inside Type 1 `addrmap`, and nested Type 1 `addrmap` instantiation (another `regdisp` under current `regdisp`) is supported. Additionally, the second level `addrmap` must be Type 2.
+- Type 2: represents for `regmst` module (see [2.3 Register Access Master (regmst)](#23-register-access-master-regmst)). It only can and should be defined as the immediate child of Type 1 `addrmap` at SoC level, and serves as **a root node of SoC-level `reg_tree`**.
 
-- Type 3: treated as `regslv` module (see [2.5 Register Access Slave (regslv)](#25-register-access-slave-regslv)). Its parent `addrmap` must be Type 2.
+- Type 3: represents for `regdisp` module (see [2.4 Register Dispatcher (regdisp)](#24-register-dispatcher-regdisp)). It can be instantiated as the immediate child of Type 2 `addrmap` to forward transactions from `regmst` to many other modules, or serves as **a root node of subsystem-level `reg_tree`** which receives transactions from SoC-level `regdisp`. Additionally, nested Type 3 `addrmap` instantiation (another `regdisp` under current `regdisp`) is supported.
 
-- Type 4: treated as 3rd party IP, so no RTL module is generated. Its parent `addrmap` must be Type 2. **Imported IP-XACT (.xml) files will be automatically treated as Type 4 `addrmap` definitions, and designers can just instantiate them without any other user-defined properties assigned.**
+- Type 4: represents for `regslv` module (see [2.5 Register Access Slave (regslv)](#25-register-access-slave-regslv)).
 
-- Type 5: like `regfile`, there is no RTL module and it is flatten in its parent `addrmap` instance. Its parent `addrmap` must be Type 2.
+- Type 5: represents for 3rd party IP so no RTL module is generated by HRDA. According to the design principle that 3rd party IP access interface can only be forwarded by `regdisp`, its parent `addrmap` instance must be Type 3. **Imported IP-XACT (.xml) files will be automatically treated as a Type 5 `addrmap` definition, and designers can just instantiate them without any other user-defined properties assigned.**
 
-Different types of `addrmap` are distinguished by following user-defined properties: `hj_genmst`, `hj_gendisp`, `hj_genslv` and `hj_flatten_addrmap`, as listed in [Table 3.6](#table_addrmap_recog).
+- Type 6: like `regfile`, it is flattened in its parent `addrmap` instance which must be Type 4.
 
-| hj_genmst | hj_gendisp   | hj_genslv    | hj_flatten_addrmap | `addrmap` type | RTL module   | usage |
-|-----------|--------------|--------------|--------------------|----------------|--------------|-------|
-| true      | *don't care* | *don't care* | *don't care*       | Type 1         | `regmst`     | Generate a `regmst` module as the root node of `reg_tree`. |
-| false     | true         | *don't care* | *don't care*       | Type 2         | `regdisp`    | Generate a `regdisp` module to handle one-to-many transaction dispatch. |
-| false     | false        | true         | *don't care*       | Type 3         | `regslv`     | Generate a `regslv` module to implement registers. |
-| false     | false        | false        | false              | Type 4         | 3rd party IP | Forward a `reg_native_if` to this IP from `regdisp`. |
-| false     | false        | false        | true               | Type 5         | All contents in the `addrmap` is flattened in its parent scope. | Use *shared* property to map same register into different address spaces |
+Only Type 1, Type 3 and Type 4 and Type 5 `addrmap` can be the root `addrmap` in SystemRDL.
+
+Different types of `addrmap` are distinguished by following user-defined properties: `hj_gennetwork`, `hj_genmst`, `hj_gendisp`, `hj_genslv`, `hj_3rd_party_ip` and `hj_flatten_addrmap`, as listed in [Table 3.6](#table_addrmap_recog). **All of these properties are mutually exclusive.**
+
+| hj_gennetwork | hj_genmst | hj_gendisp   | hj_genslv    | hj_3rd_party_ip | hj_flatten_addrmap | `addrmap` type | module | usage |
+|---------------|-----------|--------------|--------------|-----------------|--------------------|----------------|--------|-------|
+| true          | false     | false        | false        | false           | false              | Type 1         | `reg_network` | Represent for the whole register network. |
+| false         | true      | false        | false        | false           | false              | Type 2         | `regmst`      | Generate a `regmst` module as the root node of SoC-level `reg_tree`. |
+| false         | false     | true         | false        | false           | false              | Type 3         | `regdisp`     | Generate a `regdisp` module to handle one-to-many transaction dispatch. |
+| false         | false     | false        | true         | false           | false              | Type 4         | `regslv`      | Generate a `regslv` module to implement internal registers. |
+| false         | false     | false        | false        | true            | false              | Type 5         | 3rd party IP  | Forward a `reg_native_if` to this IP from `regdisp`. |
+| false         | false     | false        | false        | false           | true               | Type 6         | no module     | All contents in the `addrmap` is flattened in its parent Type 4 `addrmap`. *shared* property to map same register into different address spaces |
 <center>
     <div id="table_addrmap_recog" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.6 user-defined properties to recognize different types of addrmap
     </div>
 </center>
@@ -1298,109 +1260,115 @@ With regard to address allocation, each structural component might have already 
 
 #### **3.1.10.1 RTL Naming Convention**
 
-Naming conventions of RTL module name (also file name) for five types of `addrmap` are as follows.
+Naming conventions of RTL module name (also file name) for six types of `addrmap` are as follows.
 
-- Type 1: `regmst_<suffix>`, where `<suffix>` is the **definition name** of top-level `addrmap`.
-- Type 2: `regdisp_<suffix>`, where `<suffix>` is the hierarchical instance name of `addrmap`.
-- Type 3: `regslv_<suffix>`, where `<suffix>` is the hierarchical instance name of `addrmap`.
-- Type 4: no RTL module (only forward interface).
-- Type 5: no RTL module (already flatten).
+- Type 1: no RTL module.
+- Type 2: `regmst_<suffix>`, where `<suffix>` is the **definition name** of top-level `addrmap`.
+- Type 3: `regdisp_<suffix>`, where `<suffix>` is the instance name of `addrmap`.
+- Type 4: `regslv_<suffix>`, where `<suffix>` is the instance name of `addrmap`, or the file name of Excel worksheet.
+- Type 5: no RTL module (only forward interface).
+- Type 6: no RTL module (already flattened).
 
 #### **3.1.10.2 Description Guideline**
 
-Other suppored properties besides general component properties for `addrmap` is listed in [Table 3.7](#table_addrmap_prop).
+All specific properties supported in `addrmap` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.7](#table_addrmap_prop).
 
 | Property       | Notes                                                                                                            | Type               | Default | Dynamic Assignment |
 |----------------|------------------------------------------------------------------------------------------------------------------|--------------------|---------|--------------------|
-| *hj_genmst*    | Whether to generate a `regmst` for this `addrmap`.                                                               | *longint unsigned* |         | Support            |
-| *hj_gendisp*   | Whether to generate a `regdisp` for this `addrmap`.                                                              | *longint unsigned* |         | Support            |
-| *hj_genslv*    | Whether to generate a `regslv` for this `addrmap`.                                                               | *longint unsigned* |         | Support            |
-| *hj_flatten_addrmap* | Whether current `addrmap` is flatten in its parent `addrmap` so no RTL module will be generated.           | *longint unsigned* |         | Support            |
-| *hj_cdc*       | Whether to generate a clock domain crossing (CDC) module from register native domain to target domain.           | *boolean*          | false   | Support            |
-| *hj_use_abs_addr* | Whether to use absolute address as input in current module.                                                   | *boolean*          |         | Support            |
-| *hj_use_upstream_ff* | Whether to insert flip-flops for `reg_native_if` from upstream `regdisp`.                                  | *boolean*          | false   | Support            |
-| *hj_use_backward_ff* | Whether to insert flip-flops for `reg_native_if` from downstream modules.                                  | *boolean*          | false   | Support            |
-| *alignment*    | Specifies alignment of all instantiated components in the address map.                                           | *longint unsigned* |         | Not Support        |
-| *addressing*   | Controls how addresses are computed in an address map.                                                           | *addressingtype*   |         | Not Support        |
-| *rsvdset*      | The read value of all fields not explicitly defined is set to 1 if rsvdset is `true`; otherwise, it is set to 0. | *boolean*          | true    | Not Support        |
+| *hj_gennetwork*| Whether current `addrmap` represents for the whole register network at SoC level.                                | *boolean*          | false   | Supported |
+| *hj_genmst*    | Whether to generate a `regmst` for this `addrmap`.                                                               | *longint unsigned* | false   | Supported |
+| *hj_gendisp*   | Whether to generate a `regdisp` for this `addrmap`.                                                              | *longint unsigned* | false   | Supported |
+| *hj_genslv*    | Whether to generate a `regslv` for this `addrmap`.                                                               | *longint unsigned* | false   | Supported |
+| *hj_flatten_addrmap* | Whether current `addrmap` is flattened in its parent `addrmap` so no RTL module will be generated.         | *longint unsigned* | false   | Supported |
+| *hj_3rd_party_ip*    | Whether current `addrmap` represents for 3rd party IP.                                                     | *longint unsigned* | false   | Supported |
+| *hj_cdc*       | Whether to generate a clock domain crossing (CDC) module from register native domain to target domain.           | *boolean*          | false   | Supported |
+| *hj_use_abs_addr* | Whether to use absolute address as input in current module.                                                   | *boolean*          |         | Supported |
+| *hj_use_upstream_ff* | Whether to insert flip-flops for `reg_native_if` from upstream `regdisp` to current module.                | *boolean*          | false   | Supported |
+| *hj_use_backward_ff* | Whether to insert flip-flops for `reg_native_if` from current `regdisp` to upstream `regdisp` or `regmst`. | *boolean*          | false   | Supported |
+| *alignment*    | Specifies alignment of all instantiated components in the address map.                                           | *longint unsigned* |         | Not Supported |
+| *addressing*   | Controls how addresses are computed in an address map.                                                           | *addressingtype*   |         | Not Supported |
+| *rsvdset*      | The read value of all fields not explicitly defined is set to 1 if rsvdset is `true`; otherwise, it is set to 0. | *boolean*          | true    | Not Supported |
+| *msb0*         | Spcifies register bit-fields in current `addrmap` are defined as 0:N versus N:0. This property affects all fields in current `addrmap`. | *boolean* | false | Not Supported |
+| *lsb0*         | Spcifies register bit-fields in current `addrmap` are defined as N:0 versus 0:N. This property affects all fields in current `addrmap`. | *boolean* | true | Not Supported |
 <center>
     <div id="table_addrmap_prop" style="display: inline-block;
-        color: #999;
+        color: #708090;
         padding: 5px;">Table 3.7 other supported addrmap component properties
     </div>
 </center>
 
 More explanations:
 
-- *hj_cdc* is allowed to be assigned in Type 3 and Type 4 `addrmap` instances. RTL modules corresponding to these `addrmap` instances are connected to a `regdisp` module. If it is assigned to *true*, `reg_native_if` from upstream `regdisp` to current module is at the target clock domain after clock domain crossing (CDC).
-
-- *hj_use_abs_addr* defaults to *false* in Type 3 `addrmap` because the address decoder inside `regslv` module uses **address offset** to access internal registers, and defaults to *true* in Type 1 and Type 2 `addrmap` because `regmst` and `regdisp` modules use **absolute address** to receive, monitor and forward transactions.
-
-- *hj_use_upstream_ff* is used in Type 2, Type 3 and Type 4 `addrmap`. If it is assigned to *true*, flip-flops will be inserted to `reg_native_if` from upstream `regdisp` to current module to improve timing performance (implemented in upstream `regdisp`, see[Figure 2.9](#pics_regdisp_rtl_infra)).
-
-- *hj_use_backward_ff* is used in Type 2 `addrmap` treated as `regdisp`. If it is assigned to *true*, flip-flops will be inserted to `reg_native_if` after many-to-one multiplexor from downstream modules in current `regdisp`, see [Figure 2.9](#pics_regdisp_rtl_infra).
+- The default for the *alignment* shall be the address is aligned to the width of the component being instantiated (e.g., the address of a 64-bit register is aligned to the next 8-byte boundary).
+- All *alignment* values shall be a power of 2 (1, 2, 4, etc.) and shall be in units of bytes.
+- *hj_cdc* is allowed to be assigned in Type 4 and Type 5 `addrmap` instances. RTL modules corresponding to these `addrmap` instances are connected to a `regdisp` module. If it is assigned to *true*, `reg_native_if` from upstream `regdisp` to current module is at the target clock domain after clock domain crossing (CDC).
+- *hj_use_abs_addr* defaults to and must be *false* in Type 4 `addrmap` because the address decoder inside `regslv` module uses **address offset** to access internal registers, and defaults to *true* in Type 2 and Type 3 `addrmap` because `regmst` and `regdisp` modules use **absolute address** to receive, monitor and forward transactions.
+- *hj_use_upstream_ff* is used in Type 3, Type 4 and Type 5 `addrmap`. If it is assigned to *true*, flip-flops will be inserted to `reg_native_if` from upstream `regdisp` to current module to improve timing performance (implemented in upstream `regdisp`, see[Figure 2.9](#pics_regdisp_rtl_infra)).
+- *hj_use_backward_ff* is used only in Type 3 `addrmap` representing for `regdisp`. If it is assigned to *true*, flip-flops will be inserted to `reg_native_if` after many-to-one multiplexor from downstream modules in current `regdisp`, see [Figure 2.9](#pics_regdisp_rtl_infra).
+- *msb0* and *lsb0* are mutually exclusive.
 
 #### **3.1.10.3 Example**
 
 ```systemrdl
 addrmap some_map {
-  desc="xxx";
-  reg status {
-    // Shared property tells compiler this register
-    // will be shared by multiple addrmaps
-    shared;
+    desc="xxx";
+    reg status {
+        // Shared property tells compiler this register
+        // will be shared by multiple addrmaps
+        shared;
 
-    field {
-      hw=rw;
-      sw=r;
-    } stat1 = 1'b0;
-  };
+        field {
+          hw=rw;
+          sw=r;
+        } stat1 = 1'b0;
+    };
 
+    reg some_axi_reg {
+      field {
+          desc="credits on the AXI interface";
+          } credits[4] = 4'h7;   // End of field: {}
+    };  // End of Reg: some_axi_reg
 
-  reg some_axi_reg {
-    field {
-      desc="credits on the AXI interface";
-      } credits[4] = 4'h7;   // End of field: {}
+    reg some_ahb_reg {
+        field {
+          desc="credits on the AHB Interface";
+          } credits[8] = 8'b00000011;
+    }; // End of Reg: some_ahb_reg
 
-  };  // End of Reg: some_axi_reg
+    addrmap {
+        littleendian;
 
+        some_ahb_reg ahb_credits; // Implies addr = 0
+        status ahb_stat @0x20;    // explicitly at address=20
+        ahb_stat.stat1->desc = "bar"; // Overload the registers property in this instance
+    } ahb;
 
-  reg some_ahb_reg {
-    field {
-      desc="credits on the AHB Interface";
-      } credits[8] = 8'b00000011 ;
-  };
-
-  addrmap {
-    littleendian;
-
-    some_ahb_reg ahb_credits; // Implies addr = 0
-    status ahb_stat @0x20;    // explicitly at address=20
-    ahb_stat.stat1->desc = "bar"; // Overload the registers property in this instance
-  } ahb;
-
-  addrmap { // Define the Map for the AXI Side of the bridge
-    bigendian; // This map is big endian
-    some_axi_reg axi_credits;   // Implies addr = 0
-    status axi_stat @0x40;      // explicitly at address=40
-    axi_stat.stat1->desc = "foo"; // Overload the registers property in this instance
-  } axi;
+    addrmap { // Define the Map for the AXI Side of the bridge
+        bigendian; // This map is big endian
+        some_axi_reg axi_credits;   // Implies addr = 0
+        status axi_stat @0x40;      // explicitly at address=40
+        axi_stat.stat1->desc = "foo"; // Overload the registers property in this instance
+    } axi;
 } some_map;
 ```
 
 ### **3.1.11 Other User-defined Property (Experimental)**
 
-#### **hj_skip_reg_mux_dff_0**
+// TODO
 
-#### **hj_skip_reg_mux_dff_1**
+hj_skip_reg_mux_dff_0
 
-#### **hj_skip_ext_mux_dff_0**
+hj_skip_reg_mux_dff_1
 
-#### **hj_skip_ext_mux_dff_1**
+hj_skip_ext_mux_dff_0
 
-#### **hj_reg_mux_size**
+hj_skip_ext_mux_dff_1
 
-#### **hj_ext_mux_size**
+hj_reg_mux_size
+
+hj_ext_mux_size
+
+<div style="page-break-after: always;"></div>
 
 ## **3.2 Overall Example**
 
@@ -1484,7 +1452,7 @@ An Excel worksheet example that describes one register is shown in [Figure 4.1](
 <center>
   <img id="pics_excel_temp_cn" src="docs/pics/template/excel_cn.png" width="80%"><br>
   <div style="display: inline-block;
-    color: #999;
+    color: #708090;
     padding: 5px;">Figure 4.1 Excel worksheet template (Chinese version)
   </div>
 </center>
@@ -1492,7 +1460,7 @@ An Excel worksheet example that describes one register is shown in [Figure 4.1](
 <center>
   <img id="pics_excel_temp_en" src="docs/pics/template/excel_en.png" width="80%"><br>
   <div style="display: inline-block;
-    color: #999;
+    color: #708090;
     padding: 5px;">Table 4.2 Excel worksheet template (English version)</div>
 </center>
 
@@ -1522,7 +1490,7 @@ Register elements are as follows.
 
   - Software Write property (SW Write Type): consistent with the `onwrite` property in SystemRDL. `W`, `W1`,`WOC`, `WOS`, `WOT`, `WZC`, `WZS`, `WZT` are supported (see [Table 2.15](#table_sw_acc_prop)).
 
-  - Hardware Type (HW Access Type): consistent with the `hw` property in SystemRDL. `RO`, `WO`, `RW`, `CLR`, `SET` are supported (see [Table 2.16](#table_hw_acc_prop)).
+  - Hardware Type (HW Access Type): consistent with the `hw` property in SystemRDL. `R`, `W`, `RW`, `CLR`, `SET` are supported (see [Table 2.16](#table_hw_acc_prop)).
 
   - Reset value: field reset value for synchronous and generic asynchronous reset signals.
 
@@ -1577,6 +1545,8 @@ Follows are rules that designers should not violate when editing Excel worksheet
 <div style="page-break-after: always;"></div>
 
 ## **5. Tool Flow Guideline**
+
+This chapter helps designers to understand how to use HRDA.
 
 <div style="page-break-after: always;"></div>
 

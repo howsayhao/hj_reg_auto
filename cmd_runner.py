@@ -14,7 +14,7 @@ from parsers.parse import Parser
 from templates.gen_temp import gen_excel_template, gen_rdl_template
 
 __version__ = "0.4.0"
-__man_file__ = "hrda_reference_manual_v{}.pdf".format(__version__)
+__man_file__ = "hrda_reference_manual_v0.4.0_Rev.A.pdf"
 
 
 class CommandRunner:
