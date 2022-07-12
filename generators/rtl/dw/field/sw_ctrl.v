@@ -147,15 +147,7 @@ module sw_ctrl (field_value,
                 .dout (sw_mux_value));
             assign sw_onwrite_value = field_value ^ (~sw_mux_value);
          end
-         else if(SW_ONWRITE_TYPE == `NA) begin: g_ONWRITE_NA
-            assign onwrite_modify = |sw_wr;
-            priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux
-            (.din (sw_wr_data),
-                .sel (sw_wr),
-                .dout (sw_mux_value));
-            assign sw_onwrite_value = sw_mux_value;
-         end
-         else if(PULSE)begin:g_PULSE
+         else if(PULSE) begin:g_PULSE
             // when a operation is requested or one of the the last field_value is asserted, the pulse will be generated
             assign onwrite_modify = (|sw_wr) | (|field_value);
             priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux
@@ -164,6 +156,14 @@ module sw_ctrl (field_value,
                 .dout (sw_mux_value));
             // ~field value to let previous asserted bit turn zero
             assign sw_onwrite_value = sw_mux_value & ~(field_value);
+         end
+         else if(SW_ONWRITE_TYPE == `NA) begin: g_ONWRITE_NA
+            assign onwrite_modify = |sw_wr;
+            priority_mux #(.WIDTH(F_WIDTH), .CNT (SW_CNT)) sw_mux
+            (.din (sw_wr_data),
+                .sel (sw_wr),
+                .dout (sw_mux_value));
+            assign sw_onwrite_value = sw_mux_value;
          end
          else begin:g_SW_ONWRITE_unknown
 // synopsys translate_off
