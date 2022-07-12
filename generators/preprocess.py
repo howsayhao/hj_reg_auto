@@ -60,13 +60,13 @@ class PreprocessListener(RDLListener):
         self.all_rtl_mod = []
         self.field_hdl_path = []
         self.reg_name = []
+        self.is_in_3rd_party_ip = False
         self.runtime_stack = []
 
         self.total_reg_num = 0
         self.filter_reg_num = 0
         self.total_size = 0
         self.start_time = time()
-
 
         self.user_def_base_addr = 0
 
@@ -230,8 +230,8 @@ class PreprocessListener(RDLListener):
                 # check whether second child of regmst is debug regfile
                 rf_node = next(iter)
                 if not (isinstance(rf_node, RegfileNode) and
-                    node.type_name == "db_regs" and
-                    node.inst_name == "db_regs"):
+                    rf_node.type_name == "db_regs" and
+                    rf_node.inst_name == "db_regs"):
                     message.error(
                         "%s, %d: %d:\n%s\n"
                         "second instance under regmst addrmap %s is not debug regfile" % (
@@ -430,6 +430,8 @@ class PreprocessListener(RDLListener):
             if not self.keep_quiet:
                 message.debug("Recognized as 3rd party IP", self.indent)
 
+            self.is_in_3rd_party_ip = True
+
             # check whether 3rd party IP are forwarded by regdisp,
             # or at the top level of the design
             if not isinstance(node.parent, RootNode) and \
@@ -480,6 +482,9 @@ class PreprocessListener(RDLListener):
 
         if node.get_property("hj_flatten_addrmap"):
             self.reg_name.pop()
+
+        if node.get_property("hj_3rd_party_ip"):
+            self.is_in_3rd_party_ip = False
 
         self.is_filtered = self.runtime_stack.pop()
 
@@ -554,40 +559,41 @@ class PreprocessListener(RDLListener):
                 ), self.indent
             )
 
+        if not self.is_filtered:
+            self.reg_name.append(node.inst_name)
+
         # regfile can only be instantiated:
         #   - under regmst as debug registers (db_regs)
         #   - under regslv
         #   - under regfile (nested)
-        if node.parent.get_property("hj_genmst") and not (
-                node.type_name == "db_regs" and
-                node.inst_name == "db_regs"
-            ):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "illegal to instantiate regfile %s under %s which represents for regmst" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                        node.parent.get_path_segment(array_suffix="_{index:d}")
+        #   - inside 3rd party IPs
+        if not self.is_in_3rd_party_ip:
+            if node.parent.get_property("hj_genmst"):
+                if not (node.type_name == "db_regs" and node.inst_name == "db_regs"):
+                    message.error(
+                        "%s, %d: %d:\n%s\n"
+                        "illegal to instantiate regfile %s under %s which represents for regmst" % (
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
+                            node.get_path_segment(array_suffix="_{index:d}"),
+                            node.parent.get_path_segment(array_suffix="_{index:d}")
+                        )
                     )
-                )
-        elif not node.parent.get_property("hj_genslv") and \
-            not isinstance(node.parent, RegfileNode):
-            message.error(
-                "%s, %d: %d:\n%s\n"
-                "illegal to instantiate regfile %s under %s which is neither regslv nor regfile" % (
-                    self.ref.filename,
-                    self.ref.line,
-                    self.ref.line_selection[0],
-                    self.ref.line_text,
-                    node.get_path_segment(array_suffix="_{index:d}"),
-                    node.parent.get_path_segment(array_suffix="_{index:d}")
-                )
-            )
-        if not self.is_filtered:
-            self.reg_name.append(node.inst_name)
+            else:
+                if not (node.parent.get_property("hj_genslv") or isinstance(node.parent, RegfileNode)):
+                    message.error(
+                        "%s, %d: %d:\n%s\n"
+                        "illegal to instantiate regfile %s under %s which is neither regslv nor regfile" % (
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
+                            node.get_path_segment(array_suffix="_{index:d}"),
+                            node.parent.get_path_segment(array_suffix="_{index:d}")
+                        )
+                    )
 
     def exit_Regfile(self, node):
         if not self.is_filtered:

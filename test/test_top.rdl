@@ -1,19 +1,20 @@
-// separate top-level addrmap of the whole register network
-addrmap reg_network {
-    // register tree: root node regmst_1 contains ddrc and pcie registers
-    regmst_1 regmst_1 @0x20000000;
-    // register tree: root node regmst_2 contains security registers
-    regmst_2 regmst_2 @0x30000000;
+addrmap ddrc {
+    hj_genmst = true;
+    addrmap {
+        hj_gendisp = true;
+        addrmap {
+            hj_genslv = true;
+            reg {
+                field {sw=rw;} rsvd = 0x0;
+            } test[100];
+        } ddrc;
+    } ddrc;
+    db_regs db_regs %= 0x1000;
 };
 
-// separate addrmap of regmst_1
-addrmap regmst_1 {
-    addrmap {
-        // regdisp_ddrc contains all regslv and other forwarding interface
-        // corresponding to ddrc
-        regdisp_ddrc regdisp_ddrc @0x00000000;
-        // regdisp_pcie contains all regslv and other forwarding interface
-        // corresponding to pcie
-        regdisp_pcie regdisp_pcie @0x00010000;
-    } regdisp_1;
+// separate top-level addrmap of the whole register network
+addrmap reg_network {
+    hj_gennetwork = true;
+    // register tree: root node ddrc contains ddrc and pcie registers
+    ddrc ddrc @0x20000000;
 };

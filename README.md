@@ -41,27 +41,27 @@
       - [**3.1.4.1 Alignment**](#3141-alignment)
       - [**3.1.4.2 Addressing Mode**](#3142-addressing-mode)
       - [**3.1.4.3 Address Allocation Operator**](#3143-address-allocation-operator)
-  - [**3.1.5 Signal Component**](#315-signal-component)
-  - [**3.1.6 Field Component**](#316-field-component)
-    - [**3.1.6.1 RTL Naming Convention**](#3161-rtl-naming-convention)
-    - [**3.1.6.2 Description Guideline**](#3162-description-guideline)
-    - [**3.1.6.3 Examples**](#3163-examples)
-  - [**3.1.7 Register Component**](#317-register-component)
-    - [**3.1.7.1 RTL Naming Convention**](#3171-rtl-naming-convention)
-    - [**3.1.7.2 Description Guideline**](#3172-description-guideline)
-    - [**3.1.7.3 Example**](#3173-example)
-  - [**3.1.8 Regfile Component**](#318-regfile-component)
-    - [**3.1.8.1 Description Guideline**](#3181-description-guideline)
-    - [**3.1.8.2 Example**](#3182-example)
-  - [**3.1.9 Memory Description**](#319-memory-description)
-    - [**3.1.9.1 Descriptions Guideline**](#3191-descriptions-guideline)
-    - [**3.1.9.2 Example**](#3192-example)
-  - [**3.1.10 Addrmap Component**](#3110-addrmap-component)
-    - [**3.1.10.1 RTL Naming Convention**](#31101-rtl-naming-convention)
-    - [**3.1.10.2 Description Guideline**](#31102-description-guideline)
-    - [**3.1.10.3 Example**](#31103-example)
-  - [**3.1.11 Other User-defined Property (Experimental)**](#3111-other-user-defined-property-experimental)
-- [**3.2 Overall Example**](#32-overall-example)
+  - [**3.2 Signal Component**](#32-signal-component)
+  - [**3.3 Field Component**](#33-field-component)
+    - [**3.3.1 RTL Naming Convention**](#331-rtl-naming-convention)
+    - [**3.3.2 Description Guideline**](#332-description-guideline)
+    - [**3.3.3 Examples**](#333-examples)
+  - [**3.4 Register Component**](#34-register-component)
+    - [**3.4.1 RTL Naming Convention**](#341-rtl-naming-convention)
+    - [**3.4.2 Description Guideline**](#342-description-guideline)
+    - [**3.4.3 Example**](#343-example)
+  - [**3.5 Regfile Component**](#35-regfile-component)
+    - [**3.5.1 Description Guideline**](#351-description-guideline)
+    - [**3.5.2 Example**](#352-example)
+  - [**3.6 Memory Description**](#36-memory-description)
+    - [**3.6.1 Descriptions Guideline**](#361-descriptions-guideline)
+    - [**3.6.2 Example**](#362-example)
+  - [**3.7 Addrmap Component**](#37-addrmap-component)
+    - [**3.7.1 RTL Naming Convention**](#371-rtl-naming-convention)
+    - [**3.7.2 Description Guideline**](#372-description-guideline)
+    - [**3.7.3 Example**](#373-example)
+  - [**3.8 Other User-defined Property (Experimental)**](#38-other-user-defined-property-experimental)
+  - [**3.9 Overall Example**](#39-overall-example)
 - [**4. Excel Worksheet Guideline**](#4-excel-worksheet-guideline)
   - [**4.1 Table Format**](#41-table-format)
   - [**4.2 Rules**](#42-rules)
@@ -100,7 +100,7 @@ This reference manual focuses on following topics:
 
 - learn how to write SystemRDL to describe complicated registers and address space mappings. ([3. SystemRDL Coding Guideline](#3-systemrdl-coding-guideline))
 
-  - the quickest way to write SystemRDL code: see [3.2 Overall Example](#32-overall-example)
+  - the quickest way to write SystemRDL code: see [3.9 Overall Example](#39-overall-example)
 
 - learn how to write Excel worksheets to describe simple registers. ([4. Excel Worksheet Guideline](#4-excel-worksheet-guideline))
 
@@ -134,7 +134,7 @@ The overall HRDA tool flow is shown in [Figure 1.1](#pics_tool_flow).
 
 Template Generator provides convenience for designers working with Excel worksheets or not familiar with SystemRDL. For Excel worksheets, it generates several template tables including basic register definitions such as name, width, address offset, field definitions, etc., in one worksheet. For SystemRDL, it provides example code. Designers can refer to these templates and modify them to meet their own requirements.
 
-See Excel worksheet template format in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), SystemRDL template format in [3.2 Overall Example](#32-overall-example), and command options in [5.2.2 Template Generator Command Options and Arguments](#522-template-generator-options-and-arguments).
+See Excel worksheet template format in [Figure 4.1](#pics_excel_temp_cn), [Figure 4.2](#pics_excel_temp_en), SystemRDL template format in [3.9 Overall Example](#39-overall-example), and command options in [5.2.2 Template Generator Command Options and Arguments](#522-template-generator-options-and-arguments).
 
 ### **1.2 Parser**
 
@@ -443,7 +443,7 @@ The immediate sub-addrmap instance of root `addrmap` or any `addrmap` instance w
     </div>
 </center>
 
-As [Figure 2.9](#pics_regdisp_rtl_infra) shows, `regdisp` has additional optional functionalities based on design requirements described in SystemRDL by explicitly assigning user-defined properties such as *hj_use_abs_addr*, *hj_use_upstream_ff*, *hj_use_backward_ff* in `addrmap` components (see [3.1.10 Addrmap Component](#3110-addrmap-component)):
+As [Figure 2.9](#pics_regdisp_rtl_infra) shows, `regdisp` has additional optional functionalities based on design requirements described in SystemRDL by explicitly assigning user-defined properties such as *hj_use_abs_addr*, *hj_use_upstream_ff*, *hj_use_backward_ff* in `addrmap` components (see [3.7 Addrmap Component](#37-addrmap-component)):
 
 - Convert absolute address to base offset in `reg_native_if::addr` (assign *hj_use_abs_addr = false* in current `addrmap` representing for `regdisp`)
 
@@ -646,9 +646,9 @@ A component in SystemRDL is the basic building block or a container which contai
 
 - `regfile` is used to pack the same sort of registers together to make it easier to orgnize them and understand their meaning. `regfile` is also used to allocate an base address.
 
-- `addrmap`: similar to `regfile` on packing register and allocating addresses. What's different and more important, some types of `addrmap` defines the **RTL code generation boundary**. There are six types of `addrmap` which corresponds to the entire `reg_network`, `regmst`, `regdisp`, `regslv`, `3rd party IP` and flattened address map respectively, and they are distinguished by user-defined properties in HRDA (see [3.1.10 Addrmap Component](#3110-addrmap-component)).
+- `addrmap`: similar to `regfile` on packing register and allocating addresses. What's different and more important, some types of `addrmap` defines the **RTL code generation boundary**. There are six types of `addrmap` which corresponds to the entire `reg_network`, `regmst`, `regdisp`, `regslv`, `3rd party IP` and flattened address map respectively, and they are distinguished by user-defined properties in HRDA (see [3.7 Addrmap Component](#37-addrmap-component)).
 
-Additionally, HRDA supports a non-structural component, `signal`. Signals are used to describe synchronous resets of `field`. But SystemRDL specification does not seem to allow direct reference to `signal` components in property assignment by their names, so HRDA implements it by assigning a string to a user-defined property named `hj_syncresetsignal`, see [3.1.5 Signal Component](#315-signal-component)) and [3.1.6 Field Component](#316-field-component).
+Additionally, HRDA supports a non-structural component, `signal`. Signals are used to describe synchronous resets of `field`. But SystemRDL specification does not seem to allow direct reference to `signal` components in property assignment by their names, so HRDA implements it by assigning a string to a user-defined property named `hj_syncresetsignal`, see [3.2 Signal Component](#32-signal-component)) and [3.3 Field Component](#33-field-component).
 
 SystemRDL components can be defined in two ways: *definitively* or *anonymously*.
 
@@ -977,7 +977,7 @@ may be assigned using one of following address allocation operators.
     };
     ```
 
-### **3.1.5 Signal Component**
+### **3.2 Signal Component**
 
 The `signal` component does not support any property other than general properties in [Table 3.1](#table_general_prop), and all signals are treated and used as synchronous reset of `field` components, thus the user-defined property `hj_syncresetsignal` can be only assigned in `field` components.
 
@@ -989,9 +989,9 @@ addrmap foo {
 };
 ```
 
-### **3.1.6 Field Component**
+### **3.3 Field Component**
 
-#### **3.1.6.1 RTL Naming Convention**
+#### **3.3.1 RTL Naming Convention**
 
 Each `field` instance in SystemRDL will be generated to a `field` module instance in `regslv` RTL module. In generated RTL code, stem name of field is `<reg_inst_name>__<field_inst_name>`. Other signals belong to the field are named by prefixing/suffixing elements.
 
@@ -1005,7 +1005,7 @@ For example, register instance name is `ring_cfg`, field instance name is `rd_pt
 
 4. input port for qualifying the input update value is `<stem>__pulse`: `ring_cfg__rd_ptr__pulse`
 
-#### **3.1.6.2 Description Guideline**
+#### **3.3.2 Description Guideline**
 
 All specific properties supported in `field` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.2](#table_field_prop)
 
@@ -1056,7 +1056,7 @@ When `singlepulse` is `true`, `onwrite` property is ignored.
 
 Current value of field (`<stem>__curr_value`) always exists as an output port in `regslv`. If `hw = rw`, two more inputs are populated (`<stem>__next_value` and `<stem>__pulse`) for updating field value from user logic. If value from hardware is expected to be continously updated into field, user should tie `<stem>__pulse` to `1'b1`. If either `hwclr` or `hwset` is `true` (they are mutually exclusive), `field` module use `<stem>__next_value` in bitwide mode and ignores `<stem>__pulse`. Each pulse in `<stem>__next_value` will clear or set corresponding bit on `field`.
 
-#### **3.1.6.3 Examples**
+#### **3.3.3 Examples**
 
 ```systemrdl
 field {sw=rw; hw=r;} f1[15:0] = 1234;
@@ -1076,9 +1076,9 @@ field {
 } f5[29:28] = 0;
 ```
 
-### **3.1.7 Register Component**
+### **3.4 Register Component**
 
-#### **3.1.7.1 RTL Naming Convention**
+#### **3.4.1 RTL Naming Convention**
 
 Each `reg` instance is a concatenation of `field` instance. In RTL code, no module is implemented for Register. Instead, an `always_comb` block is used to concatenate `curr_value` of `field`. For example:
 
@@ -1093,7 +1093,7 @@ end
 
 All `field` components in a `reg` share same register `rd_en`, `wr_en`, and `wr_data`.  HRDA tool will connect the correct signal from address decoder to field instances.
 
-#### **3.1.7.2 Description Guideline**
+#### **3.4.2 Description Guideline**
 
 Register definitions are all considered to be *internal*.  *external* is only applied on `regfile` instances.
 
@@ -1134,7 +1134,7 @@ All specific properties supported in `reg` component besides general component p
         padding: 5px;">Table 3.3 supported register component properties</div>
 </center>
 
-#### **3.1.7.3 Example**
+#### **3.4.3 Example**
 
 ```systemrdl
 reg my64bitReg {
@@ -1148,9 +1148,9 @@ reg my32bitReg { regwidth = 32;
 };
 ```
 
-### **3.1.8 Regfile Component**
+### **3.5 Regfile Component**
 
-#### **3.1.8.1 Description Guideline**
+#### **3.5.1 Description Guideline**
 
 A `regfile` is a logical group of registers and subordinate `regfile` instances. It packs registers together and provides address allocation support, which is useful for introducing **address gap between registers**. The only difference between the `regfile` and the address map (`addrmap`) is that an `addrmap` instance defines an RTL implementation boundary while a `regfile` instance does not.
 
@@ -1170,7 +1170,7 @@ All specific properties supported in `regfile` component besides general compone
     </div>
 </center>
 
-#### **3.1.8.2 Example**
+#### **3.5.2 Example**
 
 ```systemrdl
 regfile myregfile #(.A (32)) {
@@ -1179,11 +1179,11 @@ regfile myregfile #(.A (32)) {
 }
 ```
 
-### **3.1.9 Memory Description**
+### **3.6 Memory Description**
 
-#### **3.1.9.1 Descriptions Guideline**
+#### **3.6.1 Descriptions Guideline**
 
-Memory (`mem`) instances **should always be declared as *external* during instantiation**. As [Figure 2.1](#pics_reg_network) shows, external memories can only be forwarded by `regdisp` modules, so the parent of `mem` instances in SystemRDL should be Type 3 `addrmap` (see [3.1.10 Addressmap Component](#3110-addrmap-component)).
+Memory (`mem`) instances **should always be declared as *external* during instantiation**. As [Figure 2.1](#pics_reg_network) shows, external memories can only be forwarded by `regdisp` modules, so the parent of `mem` instances in SystemRDL should be Type 3 `addrmap` (see [3.7 Addressmap Component](#37-addrmap-component)).
 
 All specific properties supported in `mem` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.5](#table_mem_prop).
 
@@ -1206,7 +1206,7 @@ If *hj_cdc* is assigned to *true*, `reg_native_if` from upstream `regdisp` to me
 
 If *hj_use_upstream_ff* is assigned to *true*, flip-flops will be inserted to `reg_native_if` from upstream `regdisp` to this memory to improve timing performance.
 
-#### **3.1.9.2 Example**
+#### **3.6.2 Example**
 
 ```systemrdl
 mem fifo_mem {
@@ -1215,7 +1215,7 @@ mem fifo_mem {
 };
 ```
 
-### **3.1.10 Addrmap Component**
+### **3.7 Addrmap Component**
 
 An address map component (`addrmap`) is able to contain registers (`reg`), register files (`regfile`), memories (`mem`), and other address maps and assigns address to each structural component instance. Non-structural `signal` components also can be defined and instantiated inside `addrmap`. **An `addrmap` instance defines the boundry of RTL implementations**, and there are six types of `addrmap` instances:
 
@@ -1258,7 +1258,7 @@ With regard to address allocation, each structural component might have already 
 
 ------------------------------
 
-#### **3.1.10.1 RTL Naming Convention**
+#### **3.7.1 RTL Naming Convention**
 
 Naming conventions of RTL module name (also file name) for six types of `addrmap` are as follows.
 
@@ -1269,7 +1269,7 @@ Naming conventions of RTL module name (also file name) for six types of `addrmap
 - Type 5: no RTL module (only forward interface).
 - Type 6: no RTL module (already flattened).
 
-#### **3.1.10.2 Description Guideline**
+#### **3.7.2 Description Guideline**
 
 All specific properties supported in `addrmap` component besides general component properties in [Table 3.1](#table_general_prop) are listed in [Table 3.7](#table_addrmap_prop).
 
@@ -1307,7 +1307,7 @@ More explanations:
 - *hj_use_backward_ff* is used only in Type 3 `addrmap` representing for `regdisp`. If it is assigned to *true*, flip-flops will be inserted to `reg_native_if` after many-to-one multiplexor from downstream modules in current `regdisp`, see [Figure 2.9](#pics_regdisp_rtl_infra).
 - *msb0* and *lsb0* are mutually exclusive.
 
-#### **3.1.10.3 Example**
+#### **3.7.3 Example**
 
 ```systemrdl
 addrmap some_map {
@@ -1352,7 +1352,7 @@ addrmap some_map {
 } some_map;
 ```
 
-### **3.1.11 Other User-defined Property (Experimental)**
+### **3.8 Other User-defined Property (Experimental)**
 
 // TODO
 
@@ -1370,7 +1370,7 @@ hj_ext_mux_size
 
 <div style="page-break-after: always;"></div>
 
-## **3.2 Overall Example**
+### **3.9 Overall Example**
 
 Overall example also can be generated by command `hrda template -rdl` (see [5.2 Command Options and Arguments](#52-command-options-and-arguments)).
 

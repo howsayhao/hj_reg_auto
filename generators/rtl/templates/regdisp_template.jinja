@@ -1,6 +1,7 @@
 {%- set disp_name = get_rtl_name(disp_node) -%}
 {%- set up_prefix_i = "upstream" + "__" + disp_name -%}
 {%- set up_prefix_o = disp_name + "__" + "upstream" -%}
+`default_nettype none
 module {{disp_name}} (
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
     {%- set child_name = get_rtl_name(child) -%}
@@ -75,7 +76,7 @@ module {{disp_name}} (
     output  logic                                       {{down_prefix_o}}__rd_en;
     output  logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{down_prefix_o}}__wr_data;
     input   logic   [{{"%-2d"|format(child_data_width-1)}}:0]                              {{down_prefix_i}}__rd_data;
-    {% if is_regslv(child) -%}
+    {%- if is_regslv(child) %}
     output  logic                                       {{down_prefix_o}}__soft_rst;
     {% endif %}
     {% endfor -%}
@@ -110,7 +111,6 @@ module {{disp_name}} (
     logic   [FORWARD_NUM-1:0]                           dec_if_sel;
     logic                                               dec_dummy_reg_sel;
     logic                                               dummy_reg_ack_vld;
-    logic                                               err_acc_dummy;
 
 //**************************************FORWARD DATAPATH***********************************************//
     // decode upstream absolute address
@@ -124,8 +124,6 @@ module {{disp_name}} (
             default: dec_dummy_reg_sel  = 1'b1;
         endcase
     end
-
-    assign  err_acc_dummy   = dec_dummy_reg_sel & {{up_prefix_i}}__req_vld;
 
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data
     always_comb begin
@@ -274,8 +272,9 @@ module {{disp_name}} (
     assign  {{down_prefix_o}}__wr_en                = downstream_wr_en_ff[{{loop.index0}}];
     assign  {{down_prefix_o}}__rd_en                = downstream_rd_en_ff[{{loop.index0}}];
     assign  {{down_prefix_o}}__wr_data              = downstream_wr_data_ff[{{loop.index0}}];
+    {% if is_regslv(child) -%}
     assign  {{down_prefix_o}}__soft_rst             = downstream_soft_rst[{{loop.index0}}];
-
+    {%- endif %}
     assign  downstream_ack_vld[{{loop.index0}}]     = {{down_prefix_i}}__ack_vld;
     assign  downstream_err[{{loop.index0}}]         = {{down_prefix_i}}__err;
     assign  downstream_rd_data[{{loop.index0}}]     = {{down_prefix_i}}__rd_data;
@@ -288,7 +287,7 @@ module {{disp_name}} (
     // backward multiplexor for rd_data, ack_vld and err
     assign  dummy_reg_ack_vld               = dec_dummy_reg_sel & {{up_prefix_i}}__req_vld;
     assign  {{up_prefix_o}}__ack_vld_mux    = (| downstream_ack_vld) | dummy_reg_ack_vld;
-    assign  {{up_prefix_o}}__err_mux        = (| downstream_err) | err_acc_dummy;
+    assign  {{up_prefix_o}}__err_mux        = | downstream_err;
 
     always_comb begin
         {{up_prefix_o}}__rd_data_mux = {DATA_WIDTH{1'b0}};
@@ -324,3 +323,4 @@ module {{disp_name}} (
         end
     endgenerate
 endmodule
+`default_nettype wire

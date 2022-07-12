@@ -90,7 +90,9 @@ module reg_native_if2mem (
 
             // forward cdc
             always_ff @(posedge native_clk or negedge native_rst_n) begin
-                if (!native_rst_n || soft_rst)
+                if (!native_rst_n)
+                    mem_req_vld_snapshot_ff     <= 1'b0;
+                else if (soft_rst)
                     mem_req_vld_snapshot_ff     <= 1'b0;
                 else
                     mem_req_vld_snapshot_ff     <= mem_req_vld_snapshot;
@@ -117,8 +119,10 @@ module reg_native_if2mem (
                 .pulse_out                  (reg_native_if__mem__value_deliver_pulse_out),
                 .value_out                  (reg_native_if__mem__value_deliver_value_out)
             );
-            always_ff @(posedge mem_clk or mem_rst_n) begin
-                if (!mem_rst_n || mem_ack_vld)
+            always_ff @(posedge mem_clk or negedge mem_rst_n) begin
+                if (!mem_rst_n)
+                    {mem_req_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data}  <= {FORWARD_DELIVER_NUM{1'b0}};
+                else if (mem_ack_vld)
                     {mem_req_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data}  <= {FORWARD_DELIVER_NUM{1'b0}};
                 else if (reg_native_if__mem__value_deliver_pulse_out)
                     {mem_req_vld, mem_addr, mem_wr_en, mem_rd_en, mem_wr_data}  <= reg_native_if__mem__value_deliver_value_out;

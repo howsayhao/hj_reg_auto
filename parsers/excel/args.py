@@ -120,7 +120,7 @@ EXCEL_REG_FIELD = {
         "Content": {
             "StartLoc": (9,6),
             "Format": "str",
-            "Pattern": "^((NA)|(R)|(W)|(RW)|(CLR)|(SET))$"
+            "Pattern": "^((R)|(W)|(RW)|(CLR)|(SET))$"
         }
     },
     "FieldRstVal": {

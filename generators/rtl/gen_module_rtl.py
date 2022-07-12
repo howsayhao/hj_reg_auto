@@ -60,14 +60,14 @@ def get_regslv_port(master,cdc):
         regslv_port_rtl += '\taddr,\n'
         regslv_port_rtl += '\twr_data,\n'
         regslv_port_rtl += '\trd_data,\n'
-        regslv_port_rtl += '\tsoft_rst\n'
+        regslv_port_rtl += '\tsoft_rst,\n'
+        regslv_port_rtl += '\terr_en\n'
     return regslv_port_rtl
 
 
 # get port define rtl
 def get_regslv_define(master,cdc):
     regslv_define_rtl = ''
-    regslv_define_rtl += '\t// dispatch domain @clk\n'
 
     if not master:
         regslv_define_rtl += '\tinput                         clk;\n'
@@ -81,9 +81,10 @@ def get_regslv_define(master,cdc):
         regslv_define_rtl += '\tinput     [DATA_WIDTH-1:0]    wr_data;\n'
         regslv_define_rtl += '\toutput    [DATA_WIDTH-1:0]    rd_data;\n'
         regslv_define_rtl += '\tinput                         soft_rst;\n'
+        regslv_define_rtl += '\tinput                         err_en;\n'
 
         if(cdc):
-            regslv_define_rtl += '\t// regslv target clock domain\n'
+            regslv_define_rtl += '\n'
             regslv_define_rtl += '\tinput                         regslv_clk;\n'
             regslv_define_rtl += '\tinput                         regslv_rst_n;\n'
         else:
@@ -338,7 +339,7 @@ def get_decoder(int_addr_list):
 
     if(len(int_addr_list) > 0):
         decoder_rtl += '\t// internal regfile decoder @regfile domain\n'
-        decoder_rtl += '\tassign err = dummy_reg;\n'
+        decoder_rtl += '\tassign err = dummy_reg & err_en;\n'
         decoder_rtl += '\talways_comb begin\n'
         decoder_rtl += '\t\t\treg_sel = {REG_NUM{1\'b0}};\n'
         decoder_rtl += '\t\t\tdummy_reg = 1\'b0;\n'
@@ -400,20 +401,6 @@ def get_split_mux_ins(M,N,reg_mux_size,skip_reg_mux_dff_0,skip_reg_mux_dff_1):
         split_mux_rtl += '\t);\n'
 
     return split_mux_rtl
-
-def get_ultimate_mux(master,M,N):
-    ultimate_mux_rtl = ''
-    # get output select
-    ultimate_mux_rtl += '\t// select which to read out and transfer the corresponding vld signal @regslv domain\n'
-
-    if not master:
-        if(N > 0):
-            ultimate_mux_rtl += '\tassign slv__fsm__rd_data = regfile_ack_vld ? regfile_rd_data : 0;\n'
-        else:
-            message.error('No internal regs found!')
-
-    return ultimate_mux_rtl
-
 
 # get cdc handling logic rtl
 def get_regslv_cdc(cdc):

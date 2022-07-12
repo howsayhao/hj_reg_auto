@@ -13,7 +13,7 @@
             "justMyCode": false,
             "args": [
                 "generate", "-grtl", "-f",
-                "./test/test_alias.rdl", "-gdir", "./test"
+                "./test/test_top.rdl", "-gdir", "./test"
             ],
             "subProcess": true
         }

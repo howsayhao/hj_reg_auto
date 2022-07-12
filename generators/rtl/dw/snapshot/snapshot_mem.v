@@ -85,10 +85,12 @@ module snapshot_mem (
 
     // state register
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n | soft_rst)
-            state <= S_IDLE;
+        if (!rst_n)
+            state   <= S_IDLE;
+        else if (soft_rst)
+            state   <= S_IDLE;
         else
-            state <= next_state;
+            state   <= next_state;
     end
 
     // state transition logic
@@ -135,7 +137,12 @@ module snapshot_mem (
 
     // convert reg_native_if to memory interface: write and read memory
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n | soft_rst) begin
+        if (!rst_n) begin
+            mem_req_vld             <= 1'b0;
+            mem_wr_en               <= 1'b0;
+            mem_rd_en               <= 1'b0;
+            mem_addr                <= {MEM_ADDR_WIDTH{1'b0}};
+        end else if (soft_rst) begin
             mem_req_vld             <= 1'b0;
             mem_wr_en               <= 1'b0;
             mem_rd_en               <= 1'b0;
@@ -157,7 +164,9 @@ module snapshot_mem (
     assign  mem_wr_data             = (state == S_ACC_MEM) ? ss_reg : {MEM_DATA_WIDTH{1'b0}};
 
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n | soft_rst)
+        if (!rst_n)
+            ss_rd_en_ff <= {PARTITION_CNT{1'b0}};
+        else if (soft_rst)
             ss_rd_en_ff <= {PARTITION_CNT{1'b0}};
         else
             ss_rd_en_ff <= ss_rd_en;

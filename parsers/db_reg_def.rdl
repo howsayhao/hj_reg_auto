@@ -1,10 +1,13 @@
 // debug registers added in
 regfile db_regs {
-    reg { regwidth = 64; field {sw=r;} ADDR[63:0] = 0x0;} err_addr;
-    reg { field {} CNT[31:0] = 0x63;} tmr_thr;
+    reg { regwidth = 64; field {sw=r;} val[63:0] = 0x0;} acc_addr;
+    reg { field {} cnt[31:0] = 0x63;} tmr_thr;
     reg {
-        field { sw=r; } ERR_TYPE[3:2]       = 0x0;
-        field { sw=rw; } ERR_OCCUR[1:1]     = 0x0;
-        field { sw=rw; } SOFT_RST[0:0]      = 0x0;
-    } err_stat;
+        field { sw=rw; } intr[7:7] = 0x0;
+        field { sw=rw; hw=r; } intr_mask[6:5] = 0x0;
+        field { sw=r; } acc_type[4:4] = 0x0;
+        field { sw=r; } err_type[3:2] = 0x0;
+        field { sw=r; } err_occur[1:1] = 0x0;
+        field { sw=rw; singlepulse;} soft_rst[0:0] = 0x0;
+    } stat;
 };

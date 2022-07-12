@@ -2,12 +2,14 @@ module mst_fsm (
     pclk, presetn,
     // APB interface
     psel, penable, pready, pslverr, paddr, pwrite, pwdata, prdata,
+    // pslverr assertion enable
+    pslverr_en,
     // reg_native_if
     fsm_req_vld, fsm_ack_vld, fsm_addr, fsm_wr_en, fsm_rd_en, fsm_wr_data, fsm_rd_data,
     // timer
     tmr_tmout, tmr_rst,
-    // dummy reg access assertion
-    err_acc_dummy
+    // downstream error signal
+    downstream_err
 );
 
     parameter       ADDR_WIDTH          = 64;
@@ -26,7 +28,7 @@ module mst_fsm (
     input   logic                       pwrite;
     input   logic   [DATA_WIDTH-1:0]    pwdata;
     output  logic   [DATA_WIDTH-1:0]    prdata;
-
+    input   logic                       pslverr_en;
     output  logic                       fsm_req_vld;
     input   logic                       fsm_ack_vld;
     output  logic   [ADDR_WIDTH-1:0]    fsm_addr;
@@ -37,7 +39,7 @@ module mst_fsm (
 
     input   logic                       tmr_tmout;
     output  logic                       tmr_rst;
-    input   logic                       err_acc_dummy;
+    input   logic                       downstream_err;
 
     logic           [DATA_WIDTH-1:0]    fsm_rd_data_ff;
     logic   [1:0]   state;
@@ -105,6 +107,6 @@ module mst_fsm (
     end
 
     assign  pready          = (state == S_ACK) || ((state == S_WAIT) && (next_state == S_IDLE));
-    assign  pslverr         = tmr_tmout | err_acc_dummy;
+    assign  pslverr         = pslverr_en & (tmr_tmout | downstream_err);
     assign  tmr_rst         = (next_state == S_IDLE);
 endmodule
