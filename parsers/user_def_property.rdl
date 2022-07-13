@@ -106,3 +106,13 @@ property hj_ext_mux_size{
     component = addrmap;
     type = longint;
 };
+
+property enable_dummy_err {
+    component = addrmap;
+    type = boolean;
+};
+
+property enable_pslverr {
+    component = addrmap;
+    type = boolean;
+};

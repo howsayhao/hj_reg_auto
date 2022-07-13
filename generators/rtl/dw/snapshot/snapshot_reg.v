@@ -1,5 +1,3 @@
-`include "field_attr.vh"
-
 module snapshot_reg         (// upstream control signal
                              snap_wr_en, snap_rd_data,
                              snap_rd_en, snap_wr_data,
@@ -49,7 +47,9 @@ module snapshot_reg         (// upstream control signal
       for (i=0; i<PARTITION_CNT; i=i+1)
         if ((i == PARTITION_CNT-1) && (REM_WIDTH != 0))
           always @(posedge clk or negedge rst_n)
-            if (!rst_n | soft_rst)
+            if (!rst_n)
+              snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= {REM_WIDTH{1'b0}};
+            else if (soft_rst)
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= {REM_WIDTH{1'b0}};
             else if (snap_rd_en[0])
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= reg_rd_data[i*DATA_WIDTH +: REM_WIDTH];
@@ -59,7 +59,9 @@ module snapshot_reg         (// upstream control signal
               snapshot_ff[i*DATA_WIDTH +: REM_WIDTH] <= snapshot_ff[i*DATA_WIDTH +: REM_WIDTH];
         else
           always @(posedge clk or negedge rst_n)
-            if (!rst_n | soft_rst)
+            if (!rst_n)
+              snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= {DATA_WIDTH{1'b0}};
+            else if (soft_rst)
               snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= {DATA_WIDTH{1'b0}};
 	          else if (snap_rd_en[0])
 	            snapshot_ff[i*DATA_WIDTH +: DATA_WIDTH] <= reg_rd_data[i*DATA_WIDTH +: DATA_WIDTH];

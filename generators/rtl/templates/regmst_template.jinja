@@ -216,10 +216,14 @@ module {{mst_name}} (
         .hw_pulse               (db_regs_acc_addr__val__pulse),
         .field_value            (db_regs_acc_addr__val__curr_value)
     );
+    assign  db_regs_acc_addr__val__pulse            = fsm_req_vld;
+    assign  db_regs_acc_addr__val__next_value       = fsm_addr;
+
     always_comb begin
         db_regs_acc_addr_o[63:0]     = 64'h0;
         db_regs_acc_addr_o[63:0]     = db_regs_acc_addr__val__curr_value;
     end
+
     assign  db_regs_acc_addr_snapshot_reg_rd_data    = db_regs_acc_addr_o;
 
     assign  db_regs_acc_addr_snapshot_snap_wr_en     = {db_regs_acc_addr__snap_1_wr_en, db_regs_acc_addr__snap_0_wr_en};
