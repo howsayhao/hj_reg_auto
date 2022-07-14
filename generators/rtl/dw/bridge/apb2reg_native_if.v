@@ -27,15 +27,15 @@ module apb2reg_native_if (
     output  logic   [DATA_WIDTH-1:0]    prdata;
     output  logic                       pslverr;
 
-    logic   [ADDR_WIDTH-1:0]            rd_data_ff;
+    logic   [DATA_WIDTH-1:0]            rd_data_ff;
     logic                               err_ff;
 
     logic   [1:0]                       state;
     logic   [1:0]                       next_state;
 
-    localparam      S_IDLE              = 0;
-    localparam      S_WAIT              = 1;
-    localparam      S_ACK               = 2;
+    localparam      S_IDLE              = 2'd0,
+                    S_WAIT              = 2'd1,
+                    S_ACK               = 2'd2;
 
     // state register
     always_ff @(posedge clk or negedge rst_n) begin

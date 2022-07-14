@@ -1,5 +1,6 @@
 $(call declare-mod,hrda)
-$(call add,mod,hrda,hrda_field hrda_bridge hrda_cdc hrda_fsm hrda_sim hrda_snapshot)
+$(call add,mod,hrda,hrda_field hrda_bridge hrda_cdc hrda_fsm hrda_snapshot)
+$(call add,mod,hrda,split_mux_2d)
 $(call add,core_name,hrda,hj:naqu:hrda:0.0.0)
 $(call add,core_file,hrda,$(sop_base)/hrda.core)
 
@@ -20,10 +21,10 @@ $(call add,mod,hw_ctrl,field_attr)
 
 $(call declare-mod,field)
 $(call add,rtl,field,$(sop_base)/rtl/hrda/field/field.v)
-$(call add,mod,field,field_attr priority_mux)
+$(call add,mod,field,field_attr sw_ctrl hw_ctrl priority_mux)
 
 $(call declare-mod,hrda_field)
-$(call add,mod,hrda_field,sw_ctrl hw_ctrl field)
+$(call add,mod,hrda_field,field)
 
 # --------------------------------------------------------------------------------------
 # bridge components
@@ -40,7 +41,7 @@ $(call add,mod,reg_native_if2mem,value_deliver pulse_deliver snapshot_mem)
 
 $(call declare-mod,reg_native_if2third_party_ip)
 $(call add,rtl,reg_native_if2third_party_ip,$(sop_base)/rtl/hrda/bridge/reg_native_if2third_party_ip.v)
-$(call add,mod,reg_native_if2third_party_ip,value_deliver pulse_deliver)
+$(call add,mod,reg_native_if2third_party_ip,pulse_deliver)
 
 $(call declare-mod,hrda_bridge)
 $(call add,mod,hrda_bridge,apb2reg_native_if reg_native_if2apb reg_native_if2mem reg_native_if2third_party_ip)
@@ -66,12 +67,6 @@ $(call add,rtl,slv_fsm,$(sop_base)/rtl/hrda/fsm/slv_fsm.v)
 
 $(call declare-mod,hrda_fsm)
 $(call add,mod,hrda_fsm,mst_fsm slv_fsm)
-
-# --------------------------------------------------------------------------------------
-# simulation components
-# --------------------------------------------------------------------------------------
-$(call declare-mod,hrda_sim)
-$(call add,rtl,hrda_sim,$(sop_base)/rtl/hrda/sim/ext_mem.v)
 
 # --------------------------------------------------------------------------------------
 # snapshot components
