@@ -49,7 +49,7 @@ class root_str(object):
         if not (os.path.exists(self.folder_name)):
             os.mkdir(self.folder_name)
 
-        Top_Map = addrmap_str(Top_Addrmap, master = True, Root = self, hierarchy = [], base_addr = base_addr)
+        Top_Map = addrmap_str(Top_Addrmap, master = not Top_Addrmap.get_property("hj_genslv"), Root = self, hierarchy = [], base_addr = base_addr)
 
         # create reg_mst's reg_slv_if
         Top_Map.reg_slv_if.global_sync = 'fsm_sync_reset'
@@ -64,4 +64,3 @@ class root_str(object):
         Top_Map.reg_slv_if.addr = 'addr'
         # start write addrmap regmst and regslv rtl file
         Top_Map.write()
-        self.children.append(Top_Map)
