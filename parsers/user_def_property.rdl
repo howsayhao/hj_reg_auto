@@ -66,7 +66,7 @@ property hj_use_abs_addr {
 };
 
 // whether to skip the 1st DFF in regslv for internal regfile,
-// the property is not permitted to use in internal addrmap, default false
+// the property is not permitted to use in internal addrmap, default true
 property hj_skip_reg_mux_dff_0{
     component = addrmap;
     type = boolean;
@@ -79,37 +79,11 @@ property hj_skip_reg_mux_dff_1{
     type = boolean;
 };
 
-// whether to skip the 1st DFF in regslv for external module,
-// the property is not permitted to use in internal addrmap, default false
-property hj_skip_ext_mux_dff_0{
-    component = addrmap;
-    type = boolean;
-};
-
-// whether to skip the wnd DFF in regslv for external module,
-// the property is not permitted to use in internal addrmap, default true
-property hj_skip_ext_mux_dff_1{
-    component = addrmap;
-    type = boolean;
-};
-
 // maximum input number of mux can handle for internal regfile,
 // two-level split_mux will be generated if input number exceeds this value, default 128
 property hj_reg_mux_size{
     component = addrmap;
     type = longint;
-};
-
-// maximum input number of mux can handle for external module,
-// two-level split_mux will be generated if input number exceeds this value, default 128
-property hj_ext_mux_size{
-    component = addrmap;
-    type = longint;
-};
-
-property enable_dummy_err {
-    component = addrmap;
-    type = boolean;
 };
 
 property enable_pslverr {

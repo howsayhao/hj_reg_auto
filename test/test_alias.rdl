@@ -2,9 +2,10 @@ addrmap root_map {
     base_addr = 0x20000000;
 	hj_gendisp = true;
     reg tem_alias_1{
+        regwidth = 64;
         field {} FIELD_1[17:17] = 0x0;
         field {} FIELD_2[16:14] = 0x0;
-        field {} FIELD_3[13:13] = 0x1;
+        field {swacc;swmod;} FIELD_3[13:13] = 0x1;
     };
     reg tem_alias_2{
         field {} FIELD_1[17:17] = 0x0;
@@ -14,11 +15,11 @@ addrmap root_map {
     addrmap flatten_map {
         hj_flatten_addrmap = true;
 
-        tem_alias_1 TEM21 @0xc;
-        alias TEM21 tem_alias_1 TEM21_alias @0X10c;
+        tem_alias_1 TEM21;
+        alias TEM21 tem_alias_1 TEM21_alias;
 
-        tem_alias_2 TEM22 @0x10;
-        alias TEM22 tem_alias_2 TEM22_alias @0X110;
+        tem_alias_2 TEM22;
+        alias TEM22 tem_alias_2 TEM22_alias;
     };
 	addrmap {
 		hj_gendisp = true;

@@ -1,0 +1,11 @@
+/home/sam.ge/project/NI700/ni700_pcie/logical/ni700_pcie/ipxact/ni700_pcie.xml
+/home/sam.ge/project/smmu/smmu_pe/logical/mmu_700/logical/mmu_700_tbu_lti_pe/ipxact/mmu_700_tbu_lti_pe.xml
+/home/sam.ge/project/smmu/smmu_pe/logical/mmu_700/logical/mmu_700_tcu_pe/ipxact/mmu_700_tcu_pe.xml
+/home/sam.ge/project/PCIE_X16/i_DWC_pcie_ctl_X16/export/DWC_pcie_dbi_cpcie_dsp.xml
+/home/sam.ge/project/PCIE_X8/i_DWC_pcie_ctl_X8/export/DWC_pcie_dbi_cpcie_dsp.xml
+/home/sam.ge/project/PCIE_X4/i_DWC_pcie_ctl_X4/export/DWC_pcie_dbi_cpcie_dsp.xml
+/home/sam.ge/project/pipe_x16_top/rtl/phy/phy/ipxact/dwc_pcie5_phy_x4_ns.xml
+/home/sam.ge/project/GIC/design/rtl/gic_db/gic700_ppi_wrap_0_1/gic700_1/logical/gic700_1/ipxact/gic700_its_wrap_0_1.xml
+/home/sam.ge/project/CoreSight/rtl/cse600_ela/logical/forester/ipxact/cse600_ela.xml
+/home/sam.ge/project/smmu/adb/adb400_r3_ace_lite_dvm_1/ipxact/adb400_r3_ace_lite_dvm_1.xml
+/home/sam.ge/projetc/smmu/adb/adb400_r3_axi4_stream_1/ipxact/adb400_r3_axi4_stream_1.xml

@@ -1,0 +1,341 @@
+{%- set slv_name = get_rtl_name(slv_node) -%}
+{%- set reg_list = get_all_regs(slv_node) -%}
+{%- set addr_list = get_addr_list(slv_node) -%}
+{%- set addr_loc_num = get_addr_loc_num(slv_node) -%}
+`include "field_attr.vh"
+`default_nettype none
+
+module {{slv_name}} (
+{% for reg in reg_list -%}
+    {% set reg_name = get_rtl_name(reg) %}
+    {% for field in reg.fields(skip_not_present=False) %}
+    {% if not field.is_alias %}
+    {% if field.is_hw_readable %}
+    {{reg_name}}__{{field.inst_name}}__curr_value,
+    {% endif %}
+    {% if field.is_hw_writable %}
+    {{reg_name}}__{{field.inst_name}}__pulse,
+    {{reg_name}}__{{field.inst_name}}__next_value,
+    {% endif %}
+    {% if get_property(field, "swacc") %}
+    {{reg_name}}__{{field.inst_name}}__swacc,
+    {% endif %}
+    {% if get_property(field, "swmod") %}
+    {{reg_name}}__{{field.inst_name}}__swmod,
+    {% endif %}
+    {% endif %}
+    {%- endfor -%}
+{%- endfor -%}
+    // software access ports: reg_native_if
+    clk,
+    rst_n,
+    req_vld,
+    wr_en,
+    rd_en,
+    wr_data,
+    soft_rst,
+    rd_data,
+    ack_vld,
+    err,
+{% if has_cdc(slv_node) -%}
+    regslv_clk,
+    regslv_rst_n,
+{%- endif -%}
+    err_en
+);
+    parameter       ADDR_WIDTH                  = {{get_addr_width(slv_node)}};
+    parameter       DATA_WIDTH                  = {{get_data_width(slv_node)}};
+    parameter       INSERT_REG_FF               = 1;
+
+    localparam      REG_NUM                     = {{addr_loc_num}};
+    {% for reg in reg_list -%}
+    {%- set reg_name = get_rtl_name(reg) -%}
+    {% for field in reg.fields(skip_not_present=False) %}
+    {% if not field.is_alias %}
+    {% if field.is_hw_readable %}
+    output  logic   [{{field.width-1}}:0]       {{reg_name}}__{{field.inst_name}}__curr_value;
+    {% endif %}
+    {% if field.is_hw_writable %}
+    input   logic   [{{field.width-1}}:0]       {{reg_name}}__{{field.inst_name}}__pulse;
+    input   logic   [{{field.width-1}}:0]       {{reg_name}}__{{field.inst_name}}__next_value;
+    {% endif %}
+    {% if get_property(field, "swacc") %}
+    output  logic   [1:0]                       {{reg_name}}__{{field.inst_name}}__swacc;
+    {% endif %}
+    {% if get_property(field, "swmod") %}
+    output  logic                               {{reg_name}}__{{field.inst_name}}__swmod;
+    {% endif %}
+    {% endif %}
+    {%- endfor -%}
+    {%- endfor -%}
+    input   logic                               clk;
+    input   logic                               rst_n;
+
+    input   logic                               req_vld;
+    input   logic                               wr_en;
+    input   logic                               rd_en;
+    input   logic   [ADDR_WIDTH-1:0]            addr;
+    input   logic   [DATA_WIDTH-1:0]            wr_data;
+    input   logic                               soft_rst;
+    output  logic   [DATA_WIDTH-1:0]            rd_data;
+    output  logic                               ack_vld;
+    output  logic                               err;
+{% if has_cdc(slv_node) -%}
+    // at internal register clock domain
+    input   logic                               regslv_clk;
+    input   logic                               regslv_rst_n;
+{%- endif -%}
+    input   logic                               err_en;
+
+    logic                                       int_req_vld;
+    logic                                       int_wr_en;
+    logic                                       int_rd_en;
+    logic   [ADDR_WIDTH-1:0]                    int_addr;
+    logic   [DATA_WIDTH-1:0]                    int_wr_data;
+    logic                                       int_soft_rst;
+    logic   [DATA_WIDTH-1:0]                    int_rd_data;
+    logic                                       int_ack_vld;
+    logic                                       int_err;
+
+{% if has_cdc(slv_node) -%}
+//***********************************CLOCK DOMAIN CROSSING********************************************//
+    localparam      FORWARD_DELIVER_NUM         = ADDR_WIDTH + DATA_WIDTH + 4;
+    localparam      BACKWARD_DELIVER_NUM        = DATA_WIDTH + 2;
+    logic   [FORWARD_DELIVER_NUM-1:0]           pulse_deliver_forward_pulse_in;
+    logic   [FORWARD_DELIVER_NUM-1:0]           pulse_deliver_forward_pulse_out;
+    logic   [BACKWARD_DELIVER_NUM-1:0]          pulse_deliver_backward_pulse_in;
+    logic   [BACKWARD_DELIVER_NUM-1:0]          pulse_deliver_backward_pulse_out;
+
+    // deliver reg_native_if pulse from native to 3rd party IP clock domain
+    assign  pulse_deliver_forward_pulse_in      = {req_vld, addr, wr_en, rd_en, wr_data, soft_rst};
+    pulse_deliver #(.WIDTH (FORWARD_DELIVER_NUM))
+    pulse_deliver_forward (
+        .scan_enable                            (1'b0),
+        .clk_a                                  (clk),
+        .rst_a_n                                (rst_n),
+        .pulse_in                               (pulse_deliver_forward_pulse_in),
+        .clk_b                                  (regslv_clk),
+        .rst_b_n                                (regslv_rst_n),
+        .pulse_out                              (pulse_deliver_forward_pulse_out));
+    assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data}  = pulse_deliver_forward_pulse_out;
+
+    // deliver reg_native_if pulse from 3rd party IP to native clock domain
+    assign  pulse_deliver_backward_pulse_in     = {int_ack_vld, int_err, int_rd_data};
+    pulse_deliver #(.WIDTH (BACKWARD_DELIVER_NUM))
+    pulse_deliver_backward (
+        .scan_enable                            (1'b0),
+        .clk_a                                  (regslv_clk),
+        .rst_a_n                                (regslv_rst_n),
+        .pulse_in                               (pulse_deliver_backward_pulse_in),
+        .clk_b                                  (clk),
+        .rst_b_n                                (rst_n),
+        .pulse_out                              (pulse_deliver_backward_pulse_out));
+    assign  {ack_vld, err, rd_data}             = pulse_deliver_backward_pulse_out;
+{% else %}
+    assign  int_req_vld                         = req_vld;
+    assign  int_wr_en                           = wr_en;
+    assign  int_rd_en                           = rd_en;
+    assign  int_addr                            = addr;
+    assign  int_wr_data                         = wr_data;
+    assign  int_soft_rst                        = soft_rst;
+    assign  rd_data                             = int_rd_data;
+    assign  ack_vld                             = int_ack_vld;
+    assign  err                                 = int_err;
+{%- endif -%}
+
+{%- if has_cdc(slv_node) -%}
+{%- set curr_clk = "regslv_clk" -%}
+{%- set curr_async_rst_n = "regslv_rst_n" -%}
+{% else %}
+{%- set curr_clk = "clk" -%}
+{%- set curr_async_rst_n = "rst_n" -%}
+{%- endif -%}
+
+//**************************************ADDRESS DECODER***********************************************//
+    logic   [REG_NUM-1:0]                       dec_reg_sel;
+    logic                                       dec_dummy_sel;
+    logic                                       dummy_acc;
+    logic   [REG_NUM-1:0]                       reg_sw_wr_sel;
+    logic   [REG_NUM-1:0]                       reg_sw_rd_sel;
+
+    always_comb begin
+        if (int_req_vld) begin
+            dec_reg_sel = {REG_NUM{1'b0}};
+            dec_dummy_sel = 1'b0;
+
+            unique casez (int_addr)
+                {%- for addr in addr_list %}
+                {{format_addr(addr)}}: dec_reg_sel[{{loop.index0}}] = 1'b1;
+                {% endfor -%}
+                default: dec_dummy_sel = 1'b1;
+            endcase
+        end
+        else begin
+            dec_reg_sel = {REG_NUM{1'b0}};
+            dec_dummy_sel = 1'b0;
+        end
+    end
+
+    generate
+        if (INSERT_REG_FF) begin: g_reg_ff
+            always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
+                if (!{{curr_async_rst_n}}) begin
+                    reg_sw_wr_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_rd_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_wr_data                      <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
+                    dummy_acc                           <= 1'b0;
+                end
+                else if (int_soft_rst) begin
+                    reg_sw_wr_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_rd_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_wr_data                      <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
+                    dummy_acc                           <= 1'b0;
+                end
+                else begin
+                    reg_sw_wr_sel                       <= {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
+                    reg_sw_rd_sel                       <= {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
+                    reg_sw_wr_data                      <= int_wr_data;
+                    dummy_acc                           <= dec_dummy_sel;
+                end
+            end
+        else begin: g_no_reg_ff
+            assign  reg_sw_wr_sel                       = {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
+            assign  reg_sw_rd_sel                       = {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
+            assign  reg_sw_wr_data                      = int_wr_data;
+            assign  dummy_acc                           = dec_dummy_sel;
+    endgenerate
+
+    assign  reg_acc                             = reg_sw_wr_sel | reg_sw_rd_sel;
+
+//*******************************************FSM******************************************************//
+    slv_fsm #(.DATA_WIDTH (DATA_WIDTH))
+    slv_fsm (
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
+        .if_soft_rst                            (int_soft_rst),
+        .if_req_vld                             (int_req_vld),
+        .if_ack_vld                             (int_ack_vld),
+        .if_rd_data                             (int_rd_data),
+        .if_err                                 (int_err),
+        .if_err_en                              (err_en),
+        .if_wr_en                               (int_wr_en),
+        .if_rd_en                               (int_rd_en),
+        .dummy_acc                              (dummy_acc),
+        .reg_acc                                (reg_acc),
+        .reg_rd_data                            (reg_rd_data),
+        .reg_rd_data_vld                        (reg_rd_data_vld));
+
+//***********************************FIELDS AND REGISTERS*********************************************//
+{% for reg in reg_list %}
+    {% set reg_name = get_rtl_name(reg) %}
+    {%- set addr_range = get_property(reg, "addr_loc_range") -%}
+    // snapshot register
+    {% if need_snapshot(reg) %}
+    snapshot_reg #(.DATA_WIDTH(DATA_WIDTH), .REG_WIDTH({{reg.size * 8}}))
+    {{reg_name}}_snapshot_reg (
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
+        .soft_rst                               (int_soft_rst),
+        .snap_wr_en                             (reg_sw_wr_sel[{{addr_range[-1]}}:{{addr_range[0]}}]),
+        .snap_rd_en                             (reg_sw_rd_sel[{{addr_range[-1]}}:{{addr_range[0]}}]),
+        .snap_wr_data                           ({{"{"}}{{addr_range|length}}{{"{"}}reg_sw_wr_data{{"}}"}}),
+        .snap_rd_data                           (reg_sw_rd_data[{{addr_range[-1]}}:{{addr_range[0]}}]),
+        .reg_wr_en                              ({{reg_name}}__sw_wr_en),
+        .reg_rd_en                              ({{reg_name}}__sw_rd_en),
+        .reg_wr_data                            ({{reg_name}}__sw_wr_data),
+        .reg_rd_data                            ({{reg_name}}__sw_rd_data)
+    );
+    {% else %}
+    assign  {{reg_name}}__sw_wr_en              = reg_sw_wr_sel[{{addr_range[0]}}];
+    assign  {{reg_name}}__sw_rd_en              = reg_sw_rd_sel[{{addr_range[0]}}];
+    assign  {{reg_name}}__sw_wr_data            = reg_sw_wr_data;
+
+    assign  reg_sw_rd_data[{{addr_range[0]}}]   = {{reg_name}}__sw_rd_data;
+    {% endif %}
+
+    // field instantiation
+    {% for field in reg.fields(skip_not_present=False) %}
+    {%- if not field.is_alias -%}
+    field #(
+        .F_WIDTH                                ({{field.width}}),
+        .ARST_VALUE                             ({{"%d'h%x"|format(field.width, field.reset)}}),
+        .ALIAS_NUM                              ({{get_alias_num(field)}}),
+        .SRST_CNT                               ({{get_sync_rst(field)|length}})
+        .SW_TYPE                                ({{"{"~format_sw_type(field)~"}"}}),
+        .SW_ONREAD_TYPE                         ({{"{"~format_onread_type(field)~"}"}}),
+        .SW_ONWRITE_TYPE                        ({{"{"~format_onwrite_type(field)~"}"}}),
+        .HW_TYPE                                ({{format_hw_type(field)}}),
+        .PRECEDENCE                             ({{format_precedence_type(field)}}))
+    x__{{reg_name}}__{{field.inst_name}} (
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
+        .sync_rst                               ({%- if get_sync_rst(field) -%}
+                                                {{"{"}}{{get_sync_rst(field)|join(", ")}}{{"}"}}
+                                                {%- else %}1'b0{% endif -%}),
+        .sw_wr_data                             ({{"{"}}{{reg_name}}__sw_wr_data[{{field.high}}:{{field.low}}]
+                                                {%- if field.has_aliases -%}
+                                                {%- for alias_field in field.aliases -%}
+                                                , {{get_rtl_name(alias_field.parent)}}__sw_wr_data[{{field.high}}:{{field.low}}]
+                                                {%- endfor -%}{%- endif %}{{"}"}}),
+        .sw_rd                                  ({{"{"}}{{reg_name}}__sw_rd_en
+                                                {%- if field.has_aliases -%}
+                                                {%- for alias_field in field.aliases -%}
+                                                , {{get_rtl_name(alias_field.parent)}}__sw_rd_en
+                                                {%- endfor -%}{%- endif %}{{"}"}}),
+        .sw_wr                                  ({{"{"}}{{reg_name}}__sw_wr_en
+                                                {%- if field.has_aliases -%}
+                                                {%- for alias_field in field.aliases -%}
+                                                , {{get_rtl_name(alias_field.parent)}}__sw_wr_en
+                                                {%- endfor -%}{%- endif %}{{"}"}}),
+        .swmod_out                              ({%- if get_property(field, "swmod") -%}
+                                                {{reg_name}}__{{field.inst_name}}__swmod{%- endif -%}),
+        .swacc_out                              ({%- if get_property(field, "swacc") -%}
+                                                {{reg_name}}__{{field.inst_name}}__swacc{%- endif -%}),
+        .hw_value                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__next_value
+                                                {%- else %}{{field.width}}'b0{% endif %}),
+        .hw_pulse                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__pulse
+                                                {%- else %}1'b0{% endif %}),
+        .field_value                            ({% if field.is_hw_readable or field.is_sw_readable -%}
+                                                {{reg_name}}__{{field.inst_name}}__curr_value{% endif %}));
+    {% endif %}
+    {% endfor %}
+    // concat
+    always_comb begin
+        {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
+        {%- for field in reg.fields %}
+        {%- if field.is_sw_readable %}
+        {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{reg_name}}__{{field.inst_name}}__curr_value;
+        {%- endif %}
+        {%- endfor %}
+    end
+{% endfor %}
+
+//*************************************READ DATA MUX**************************************************//
+    logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
+    logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
+    logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
+    logic   [DATA_WIDTH-1:0]                    reg_rd_data_mux_dout;
+    logic                                       reg_rd_data_mux_dout_vld;
+    logic                                       reg_rd_data_vld;
+    logic   [DATA_WIDTH-1:0]                    reg_rd_data;
+
+    assign  reg_rd_data_mux_din                 = reg_sw_rd_data;
+    assign  reg_rd_data_mux_sel                 = reg_sw_rd_sel;
+    assign  reg_rd_data_vld                     = reg_rd_data_mux_dout_vld;
+    assign  reg_rd_data                         = reg_rd_data_mux_dout;
+
+    split_mux_2d #(
+        .WIDTH                                  (DATA_WIDTH),
+        .CNT                                    (REG_NUM),
+        .GROUP_SIZE                             ({{reg_mux_size(slv_node)}}),
+        .SKIP_DFF_0                             ({{skip_reg_mux_dff_0(slv_node)}}),
+        .SKIP_DFF_1                             ({{skip_reg_mux_dff_1(slv_node)}}))
+    reg_rd_data_mux (
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
+        .din                                    (reg_rd_data_mux_din),
+        .sel                                    (reg_rd_data_mux_sel),
+        .dout                                   (reg_rd_data_mux_dout),
+        .dout_vld                               (reg_rd_data_mux_dout_vld));
+endmodule
+`default_nettype wire

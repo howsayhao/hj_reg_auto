@@ -52,11 +52,8 @@ class addrmap_str(object):
         self.cdc = node.get_property('hj_cdc') if('hj_cdc' in node.inst.properties) else False
         # split_mux property
         self.reg_mux_size = node.get_property('hj_reg_mux_size') if('hj_reg_mux_size' in node.inst.properties) else 128
-        self.ext_mux_size = node.get_property('hj_ext_mux_size') if('hj_ext_mux_size' in node.inst.properties) else 128
         self.skip_reg_mux_dff_0 = node.get_property('hj_skip_reg_mux_dff_0') if('hj_skip_reg_mux_dff_0' in node.inst.properties) else True
         self.skip_reg_mux_dff_1 = node.get_property('hj_skip_reg_mux_dff_1') if('hj_skip_reg_mux_dff_1' in node.inst.properties) else True
-        self.skip_ext_mux_dff_0 = node.get_property('hj_skip_ext_mux_dff_0') if('hj_skip_ext_mux_dff_0' in node.inst.properties) else False
-        self.skip_ext_mux_dff_1 = node.get_property('hj_skip_ext_mux_dff_1') if('hj_skip_ext_mux_dff_1' in node.inst.properties) else False
         # access width
         self.DATA_WIDTH = 32
         self.ADDR_WIDTH = 64
@@ -475,7 +472,6 @@ class addrmap_str(object):
     def get_module_rtl(self) -> None:
         # collect all parts of rtl together into whole .v file
         self.rtl += '`include "field_attr.vh"\n'
-        self.rtl += '`default_nettype none\n'
         if(self.master):
             self.rtl += 'module ' + 'regmst_' + self.module_name + '(\n'
         else:
@@ -566,7 +562,6 @@ class addrmap_str(object):
         self.rtl += '\n\n'
 
         self.rtl += 'endmodule\n'
-        self.rtl += '`default_nettype wire'
     # convert addr or reset value from int(decimal) to str(hex)
     def get_hex(self,dec_d:int) -> str:
         if(dec_d is None):

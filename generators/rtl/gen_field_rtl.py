@@ -35,11 +35,11 @@ def gen_field_rtl(register):
             sw_onwrite_type = []
             sw_onwrite_type.append(f_obj.onwrite)
             swmod = []
-            swmod.append(int(f_obj.swmod))
+            swmod.append("1'b" + str(int(f_obj.swmod)))
             swacc = []
-            swacc.append(int(f_obj.swacc))
+            swacc.append("1'b" + str(int(f_obj.swacc)))
             pulse = []
-            pulse.append(int(f_obj.singlepulse))
+            pulse.append("1'b" + str(int(f_obj.singlepulse)))
             sync_reset = []
             sync_reset += f_obj.syncresetsignal
 
@@ -52,9 +52,9 @@ def gen_field_rtl(register):
                 sw_type.append(alias.children[i].sw)
                 sw_onread_type.append(alias.children[i].onread)
                 sw_onwrite_type.append(alias.children[i].onwrite)
-                swmod.append(int(alias.children[i].swmod))
-                swacc.append(int(alias.children[i].swacc))
-                pulse.append(int(alias.children[i].singlepulse))
+                swmod.append("1'b" + str(int(alias.children[i].swmod)))
+                swacc.append("1'b" + str(int(alias.children[i].swacc)))
+                pulse.append("1'b" + str(int(alias.children[i].singlepulse)))
                 sync_reset += alias.children[i].syncresetsignal
             # after collecting the information starting instantiate
             fstr += '\tfield\n'
@@ -67,9 +67,9 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.SW_TYPE               ({%s}),'%(','.join(sw_type))
             fstr += '\n\t\t.SW_ONREAD_TYPE        ({%s}),'%(','.join(sw_onread_type))
             fstr += '\n\t\t.SW_ONWRITE_TYPE       ({%s}),'%(','.join(sw_onwrite_type))
-            fstr += '\n\t\t.SWMOD                 ({%s}),'%(''.join(str(swmod)).replace('[','').replace(']','')) if f_obj.swmod else ''
-            fstr += '\n\t\t.SWACC                 ({%s}),'%(''.join(str(swacc)).replace('[','').replace(']','')) if f_obj.swacc else ''
-            fstr += '\n\t\t.PULSE                 ({%s}),'%(''.join(str(pulse)).replace('[','').replace(']','')) if f_obj.singlepulse else ''
+            fstr += '\n\t\t.SWMOD                 ({%s}),'%(','.join(swmod)) if f_obj.swmod else ''
+            fstr += '\n\t\t.SWACC                 ({%s}),'%(','.join(swacc)) if f_obj.swacc else ''
+            fstr += '\n\t\t.PULSE                 ({%s}),'%(','.join(pulse)) if f_obj.singlepulse else ''
             fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw) if (f_obj.hw != "w") else ''
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
@@ -89,8 +89,6 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.sw_wr_data            ({%s}),'%(sw_wr_data_str)
             fstr += '\n\t\t.sw_rd                 ({%s}),'%(sw_rd_str)
             fstr += '\n\t\t.sw_wr                 ({%s}),'%(sw_wr_str)
-            fstr += '\n\t\t.write_protect_en      (1\'b0),'
-            fstr += '\n\t\t.sw_type_alter_signal  (1\'b0),'
             fstr += '\n\t\t.swmod_out             (%s__swmod_out),'%(f_obj_name) if f_obj.swmod else '\n\t\t.swmod_out(),'
             fstr += '\n\t\t.swacc_out             (%s__swacc_out)'%(f_obj_name) if f_obj.swacc else '\n\t\t.swacc_out(),'
             fstr += '\n\t\t.hw_value              (%s__next_value),'%(f_obj_name) if(f_obj.hw != "`HW_RO") else '\n\t\t.hw_value(%s\'b0),'%(f_obj.fieldwidth)
@@ -111,9 +109,9 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.SW_TYPE               ({%s}),'%(f_obj.sw)
             fstr += '\n\t\t.SW_ONREAD_TYPE        ({%s}),'%(f_obj.onread)
             fstr += '\n\t\t.SW_ONWRITE_TYPE       ({%s}),'%(f_obj.onwrite)
-            fstr += '\n\t\t.SWMOD                 ({%s}),'%(int(f_obj.swmod)) if f_obj.swmod else ''
-            fstr += '\n\t\t.SWACC                 ({%s}),'%(int(f_obj.swacc)) if f_obj.swacc else ''
-            fstr += '\n\t\t.PULSE                 ({%s}),'%(int(f_obj.singlepulse)) if f_obj.singlepulse else ''
+            fstr += '\n\t\t.SWMOD                 ({1\'b1}),' if f_obj.swmod else ''
+            fstr += '\n\t\t.SWACC                 ({1\'b1}),' if f_obj.swacc else ''
+            fstr += '\n\t\t.PULSE                 ({1\'b1}),' if f_obj.singlepulse else ''
             fstr += '\n\t\t.HW_TYPE               (%s),'%(f_obj.hw) if (f_obj.hw != "w") else ''
             fstr += '\n\t\t.PRECEDENCE            (%s)'%('`' + f_obj.precedence.upper())
             fstr += '\n\t\t)\n'
@@ -130,8 +128,6 @@ def gen_field_rtl(register):
             fstr += '\n\t\t.sw_wr_data            (%s_wr_data[%d:%d]),'%(r_obj_name,f_obj.msb,f_obj.lsb)
             fstr += '\n\t\t.sw_rd                 (%s_rd_en),'%(r_obj_name)
             fstr += '\n\t\t.sw_wr                 (%s_wr_en),'%(r_obj_name)
-            fstr += '\n\t\t.write_protect_en      (1\'b0),'
-            fstr += '\n\t\t.sw_type_alter_signal  (1\'b0),'
             fstr += '\n\t\t.swmod_out             (%s__swmod_out),'%(f_obj_name) if f_obj.swmod else '\n\t\t.swmod_out(),'
             fstr += '\n\t\t.swacc_out             (%s__swacc_out),'%(f_obj_name) if f_obj.swacc else '\n\t\t.swacc_out(),'
             fstr += '\n\t\t.hw_value              (%s__next_value),'%(f_obj_name) if(f_obj.hw != "`HW_RO") else '\n\t\t.hw_value(%s\'b0),'%(f_obj.fieldwidth)

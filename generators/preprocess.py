@@ -5,8 +5,10 @@ from time import time
 import utils.message as message
 from utils.misc import convert_size
 from systemrdl import RDLListener, RDLWalker
+from systemrdl.rdltypes import AccessType
 from systemrdl.node import AddrmapNode, RegfileNode, RootNode
 
+# FIXME: array suffix
 
 class PreprocessAddressHandler:
     """
@@ -22,6 +24,9 @@ class PreprocessAddressHandler:
         # only in addrmap which represents for regdisp and is at top level
         if root.top.get_property("base_addr") and root.top.get_property("hj_gendisp"):
             root.top.inst.addr_offset = root.top.get_property("base_addr")
+
+class PrecheckListener(RDLListener):
+    pass
 
 class PreprocessListener(RDLListener):
     """
@@ -61,6 +66,8 @@ class PreprocessListener(RDLListener):
         self.field_hdl_path = []
         self.reg_name = []
         self.is_in_3rd_party_ip = False
+        self.int_reg_addr_loc_num = 0   # only used in regslv
+        self.addr_list = []
         self.runtime_stack = []
 
         self.total_reg_num = 0
@@ -296,7 +303,7 @@ class PreprocessListener(RDLListener):
 
             # update rtl module names
             self.all_rtl_mod.append("regmst_{}".format(node.inst_name))
-            node.inst.properties["rtl_mod_name"] = "regmst_{}".format(node.inst_name)
+            node.inst.properties["rtl_name"] = "regmst_{}".format(node.inst_name)
 
             # push field hdl path to stack and update it with current addrmap instance
             self.runtime_stack.append(self.field_hdl_path)
@@ -344,7 +351,7 @@ class PreprocessListener(RDLListener):
 
             # update rtl module names
             self.all_rtl_mod.append("regdisp_{}".format(node.inst_name))
-            node.inst.properties["rtl_mod_name"] = "regdisp_{}".format(node.inst_name)
+            node.inst.properties["rtl_name"] = "regdisp_{}".format(node.inst_name)
 
             node.inst.properties["forward_num"] = len(list(node.children(unroll=True, skip_not_present=False)))
 
@@ -356,6 +363,9 @@ class PreprocessListener(RDLListener):
                     "generate regslv_{}".format(node.get_path_segment(array_suffix="_{index:d}")),
                     self.indent
                 )
+
+            self.int_reg_addr_loc_num = 0
+            self.addr_list = []
 
             if not isinstance(node.parent, RootNode) and \
                 not node.parent.get_property("hj_gendisp"):
@@ -388,7 +398,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_use_abs_addr"] = False
 
             # SystemRDL instance properties do not need array suffix
-            node.inst.properties["rtl_mod_name"] = "regslv_{}".format(node.inst_name)
+            node.inst.properties["rtl_name"] = "regslv_{}".format(node.inst_name)
 
             # array instance in SystemRDL needs index suffix of corresponding RTL module names
             self.all_rtl_mod.append("regslv_{}".format(node.get_path_segment(array_suffix="_{index:d}")))
@@ -469,7 +479,7 @@ class PreprocessListener(RDLListener):
             node.inst.properties["hj_3rd_party_ip"] = True
             node.inst.properties["ispresent"] = False
 
-            node.inst.properties["rtl_mod_name"] = node.inst_name
+            node.inst.properties["rtl_name"] = node.inst_name
 
             self.is_filtered = True
 
@@ -479,6 +489,13 @@ class PreprocessListener(RDLListener):
         if node.get_property("hj_genmst") or \
             node.get_property("hj_genslv"):
             self.field_hdl_path = self.runtime_stack.pop()
+
+        if node.get_property("hj_genslv"):
+            node.inst.properties["int_reg_addr_loc_num"] = self.int_reg_addr_loc_num
+            node.inst.properties["addr_list"] = self.addr_list
+
+            self.int_reg_addr_loc_num = 0
+            self.addr_list = []
 
         if node.get_property("hj_flatten_addrmap"):
             self.reg_name.pop()
@@ -528,21 +545,8 @@ class PreprocessListener(RDLListener):
                 )
             )
 
-        # explicitly assign hj_use_abs_addr to false in a mem instance will be ignored and raise a warning
-        if node.get_property("hj_use_abs_addr") is False:
-            message.warning(
-                "%s, %d: %d:\n%s\n"
-                "current addrmap %s represents for regmst, so hj_use_abs_addr must be true" % (
-                    self.ref.filename,
-                    self.ref.line,
-                    self.ref.line_selection[0],
-                    self.ref.line_text,
-                    node.get_path_segment(array_suffix="_{index:d}")
-                )
-            )
-
         node.inst.properties["hj_use_abs_addr"] = False
-        node.inst.properties["rtl_mod_name"] = "mem_{}".format(node.inst_name)
+        node.inst.properties["rtl_name"] = "mem_{}".format(node.inst_name)
 
     def exit_Mem(self, node):
         pass
@@ -559,8 +563,7 @@ class PreprocessListener(RDLListener):
                 ), self.indent
             )
 
-        if not self.is_filtered:
-            self.reg_name.append(node.inst_name)
+        self.reg_name.append(node.inst_name)
 
         # regfile can only be instantiated:
         #   - under regmst as debug registers (db_regs)
@@ -596,24 +599,58 @@ class PreprocessListener(RDLListener):
                     )
 
     def exit_Regfile(self, node):
-        if not self.is_filtered:
-            self.reg_name.pop()
+        self.reg_name.pop()
 
     def enter_Reg(self, node):
         self.total_reg_num += 1
 
-        if not self.is_filtered:
-            # physical implementation of alias registers is the same as the original register
-            self.reg_name.append(node.alias_primary.inst_name if node.is_alias else node.inst_name)
-
+        if node.size < 4:
+            message.error(
+                "%s, %d: %d:\n%s\n"
+                "HRDA doesn't support registers with a size of less than 32 bit (4 byte), but "
+                "register %s has a size of %d byte, " % (
+                    self.ref.filename,
+                    self.ref.line,
+                    self.ref.line_selection[0],
+                    self.ref.line_text,
+                    node.get_path_segment(array_suffix="_{index:d}"),
+                    node.size
+                )
+            )
         else:
+            node.inst.properties["need_snapshot"] = (node.size > 4)
+            node.inst.properties["addr_loc_range"] = list(range(
+                self.int_reg_addr_loc_num,
+                self.int_reg_addr_loc_num + node.size // 4
+            ))
+
+            self.addr_list.extend([
+                    node.address_offset + i * 4 for i in range(node.size // 4)
+                ])
+            self.int_reg_addr_loc_num += node.size // 4
+
+        # physical implementation of alias registers is the same as the original register
+        self.reg_name.append(node.alias_primary.inst_name if node.is_alias else node.inst_name)
+
+        if self.is_filtered:
             self.filter_reg_num += 1
 
     def exit_Reg(self, node):
-        if not self.is_filtered:
-            self.reg_name.pop()
+        self.reg_name.pop()
 
     def enter_Field(self, node):
+        if node.is_hw_writable and node.get_property("singlepulse"):
+            message.warning(
+                "%s, %d: %d:\n%s\n"
+                "field %s is both hardware writable and software single pulse" % (
+                    self.ref.filename,
+                    self.ref.line,
+                    self.ref.line_selection[0],
+                    self.ref.line_text,
+                    node.get_path_segment(array_suffix="_{index:d}")
+                )
+            )
+
         # hdl_path_slice of filtered fields will be ignored in generated uvm ral model
         if not self.is_filtered:
             field_rtl_inst_name = "x__{reg_name}__{field_name}".format(
@@ -678,7 +715,7 @@ class PreprocessListener(RDLListener):
         """
         """
         if len(self.all_rtl_mod) != len(set(self.all_rtl_mod)):
-            message.error(
+            message.warning(
                 "duplicate RTL module names found, please check your addrmap instance names that "
                 "represent for regmst, regdisp or regslv modules"
             )
@@ -704,7 +741,7 @@ def preprocess(root:RootNode, **user_ops):
     """
     PreprocessAddressHandler.remap_top_addrmap(root)
 
-    preprocess_walker = RDLWalker(unroll=True)
+    preprocess_walker = RDLWalker(unroll=True, skip_not_present=False)
     preprocess_listener = PreprocessListener(user_ops)
 
     preprocess_walker.walk(root, preprocess_listener)

@@ -1,0 +1,14 @@
+addrmap reg_network {
+    hj_gennetwork = true;
+    addrmap {
+        hj_genmst = true;
+        addrmap {
+            hj_gendisp = true;
+            // ddr
+            phy_misc_disp phy_misc_disp[8];
+            // security
+            // pcie
+        } sys_periph;
+        db_regs db_regs %= 0x1000;
+    } sys_periph @0x180000000;
+};

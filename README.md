@@ -1360,13 +1360,7 @@ hj_skip_reg_mux_dff_0
 
 hj_skip_reg_mux_dff_1
 
-hj_skip_ext_mux_dff_0
-
-hj_skip_ext_mux_dff_1
-
 hj_reg_mux_size
-
-hj_ext_mux_size
 
 <div style="page-break-after: always;"></div>
 

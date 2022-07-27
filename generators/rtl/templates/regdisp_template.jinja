@@ -117,6 +117,7 @@ module {{disp_name}} (
     always_comb begin
         dec_if_sel          = {FORWARD_NUM{1'b0}};
         dec_dummy_reg_sel   = 1'b0;
+
         unique casez ({{up_prefix_i}}__addr[{{dec_addr_bit()|join(":")}}])
         {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
             {{get_comp_addr(child)|join(",")|indent}}: dec_if_sel[{{loop.index0}}] = 1'b1;
