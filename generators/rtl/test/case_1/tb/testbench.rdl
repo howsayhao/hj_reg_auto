@@ -19,35 +19,35 @@ mem ext_mem_def {
     memwidth = 32;
 };
 
-addrmap reg_top {
-    hj_genmst = true;
-    hj_flatten_addrmap = false;
+addrmap reg_network {
+    hj_gennetwork = true;
     addrmap {
-        hj_gendisp = true;
-        hj_flatten_addrmap = false;
+        hj_genmst = true;
         addrmap {
             hj_gendisp = true;
-            hj_flatten_addrmap = false;
+            addrmap {
+                hj_gendisp = true;
+                // implement downstream regslv
+                test_1 test_11;
+                test_11 -> 	hj_cdc = true;
+                test_1 test_12;
+                test_1 test_13;
+                // implement external memory
+                external ext_mem_def ext_mem_11;
+            } reg_block_1;
 
-            // implement downstream regslv
-            test_1 test_11;
-            test_11 -> 	hj_cdc = true;
-            test_1 test_12;
-            test_1 test_13;
-            // implement external memory
-            external ext_mem_def ext_mem_11;
-        } reg_block_1;
+            addrmap {
+                hj_gendisp = true;
+                hj_flatten_addrmap = false;
 
-        addrmap {
-            hj_gendisp = true;
-            hj_flatten_addrmap = false;
+                // implement downstream regslv
+                test_1 test_21;
+                // implement external memories
+                external ext_mem_def ext_mem_21, ext_mem_22, ext_mem_23;
+            } reg_block_2;
 
-            // implement downstream regslv
-            test_1 test_21;
-            // implement external memories
-            external ext_mem_def ext_mem_21, ext_mem_22, ext_mem_23;
-        } reg_block_2;
-
-        external ext_mem_def ext_mem_in_top;
-    } disp_top;
+            external ext_mem_def ext_mem_in_top;
+        } top;
+        db_regs db_regs %=0x1000;
+    } top;
 };

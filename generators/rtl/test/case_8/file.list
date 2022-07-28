@@ -10,7 +10,6 @@
 ../dw/pulse_deliver.v
 ../dw/pulse_deliver_1bit.v
 ../dw/cdc_synczr_rst_1bit.v
-../value_transmitter.v
 ../field.v
 ../sw_ctrl.v
 ../hw_ctrl.v
