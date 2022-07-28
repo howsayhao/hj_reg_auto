@@ -3,7 +3,7 @@ addrmap root_map {
 	hj_gendisp = true;
     reg tem_alias_1{
         regwidth = 64;
-        field {} FIELD_1[17:17] = 0x0;
+        field {} FIELD_1[17:17];
         field {} FIELD_2[16:14] = 0x0;
         field {swacc;swmod;} FIELD_3[13:13] = 0x1;
     };

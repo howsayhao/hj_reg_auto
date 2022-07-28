@@ -63,7 +63,11 @@ class RTLExporter:
             'format_hw_type': self._format_hw_type,
             'format_precedence_type': self._format_precedence_type,
             'get_alias_num': self._get_alias_num,
-            'get_sync_rst': self._get_sync_rst
+            'get_sync_rst': self._get_sync_rst,
+            'get_reset_val': self._get_reset_val,
+            'is_singlepulse': self._is_singlepulse,
+            'has_swmod': self._has_swmod,
+            'has_swacc': self._has_swacc
         }
 
     def export(self, root:RootNode, rtl_dir:str):
@@ -118,7 +122,7 @@ class RTLExporter:
                         'slv_node': node
                     }
 
-                    template = None
+                    template = self.jj_env.get_template("regslv_template.jinja")
 
                     filename = "{}.v".format(self._get_rtl_name(node))
                     dump_file = os.path.join(rtl_dir, filename)
@@ -128,12 +132,8 @@ class RTLExporter:
                 else:
                     template = None
 
-            # dump generated RTL module files
-            # TODO: regslv rtl generation now uses legacy method without Jinja2
-            # need to refactor regslv generation code
             if template:
                 self.context.update(update_context)
-
                 stream = template.stream(self.context)
 
                 stream.dump(dump_file)
@@ -318,7 +318,7 @@ class RTLExporter:
         return node.get_property("need_snapshot", default=False)
 
     def _get_alias_num(self, node:RegNode|FieldNode):
-        return len(list(node.aliases(skip_not_present=False))) if node.has_aliases else 1
+        return len(list(node.aliases(skip_not_present=False)))+1 if node.has_aliases else 1
 
     def _format_sw_type(self, node:FieldNode):
         sw_type_expr = []
@@ -415,3 +415,15 @@ class RTLExporter:
             return node.get_property("hj_syncresetsignal").split(",")
         else:
             return []
+
+    def _get_reset_val(self, node:FieldNode) -> int:
+        return node.get_property("reset", default=0)
+
+    def _is_singlepulse(self, node:FieldNode):
+        return int(node.get_property("singlepulse", default=False))
+
+    def _has_swmod(self, node:FieldNode):
+        return int(node.get_property("swmod", default=False))
+
+    def _has_swacc(self, node:FieldNode):
+        return int(node.get_property("swacc", default=False))

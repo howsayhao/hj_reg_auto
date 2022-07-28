@@ -65,9 +65,12 @@ class PreprocessListener(RDLListener):
         self.all_rtl_mod = []
         self.field_hdl_path = []
         self.reg_name = []
+        self.is_in_regslv = False
         self.is_in_3rd_party_ip = False
         self.int_reg_addr_loc_num = 0   # only used in regslv
+        self.int_reg_idx = []        # only used in regslv
         self.addr_list = []
+        self.regslv_base_addr = 0
         self.runtime_stack = []
 
         self.total_reg_num = 0
@@ -364,8 +367,11 @@ class PreprocessListener(RDLListener):
                     self.indent
                 )
 
+            self.is_in_regslv = True
             self.int_reg_addr_loc_num = 0
+            self.int_reg_idx = []
             self.addr_list = []
+            self.regslv_base_addr = node.absolute_address
 
             if not isinstance(node.parent, RootNode) and \
                 not node.parent.get_property("hj_gendisp"):
@@ -492,10 +498,13 @@ class PreprocessListener(RDLListener):
 
         if node.get_property("hj_genslv"):
             node.inst.properties["int_reg_addr_loc_num"] = self.int_reg_addr_loc_num
+            node.inst.properties["int_reg_idx"] = self.int_reg_idx
             node.inst.properties["addr_list"] = self.addr_list
 
             self.int_reg_addr_loc_num = 0
+            self.int_reg_idx = []
             self.addr_list = []
+            self.is_in_regslv = False
 
         if node.get_property("hj_flatten_addrmap"):
             self.reg_name.pop()
@@ -604,30 +613,32 @@ class PreprocessListener(RDLListener):
     def enter_Reg(self, node):
         self.total_reg_num += 1
 
-        if node.size < 4:
-            message.error(
-                "%s, %d: %d:\n%s\n"
-                "HRDA doesn't support registers with a size of less than 32 bit (4 byte), but "
-                "register %s has a size of %d byte, " % (
-                    self.ref.filename,
-                    self.ref.line,
-                    self.ref.line_selection[0],
-                    self.ref.line_text,
-                    node.get_path_segment(array_suffix="_{index:d}"),
-                    node.size
+        if self.is_in_regslv:
+            if node.size < 4:
+                message.error(
+                    "%s, %d: %d:\n%s\n"
+                    "HRDA doesn't support internal registers with a size of less than 32 bit (4 byte), "
+                    "but register %s has a size of %d byte, " % (
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
+                        node.get_path_segment(array_suffix="_{index:d}"),
+                        node.size
+                    )
                 )
-            )
-        else:
-            node.inst.properties["need_snapshot"] = (node.size > 4)
-            node.inst.properties["addr_loc_range"] = list(range(
-                self.int_reg_addr_loc_num,
-                self.int_reg_addr_loc_num + node.size // 4
-            ))
+            else:
+                node.inst.properties["need_snapshot"] = (node.size > 4)
 
-            self.addr_list.extend([
-                    node.address_offset + i * 4 for i in range(node.size // 4)
-                ])
-            self.int_reg_addr_loc_num += node.size // 4
+                self.int_reg_idx.append((
+                    self.int_reg_addr_loc_num,
+                    self.int_reg_addr_loc_num + node.size // 4 - 1
+                ))
+
+                self.addr_list.extend([
+                        node.absolute_address - self.regslv_base_addr + i * 4 for i in range(node.size // 4)
+                    ])
+                self.int_reg_addr_loc_num += node.size // 4
 
         # physical implementation of alias registers is the same as the original register
         self.reg_name.append(node.alias_primary.inst_name if node.is_alias else node.inst_name)

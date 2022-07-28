@@ -1,140 +1,144 @@
 module slv_fsm
-    #(
-        parameter   ADDR_WIDTH = 64,
-        parameter   DATA_WIDTH = 32
-    )
-    (
-        clk,
-        rst_n,
-        //  upstream control signal
-        mst__fsm__req_vld,
-        fsm__mst__ack_vld,
-        mst__fsm__addr,
-        mst__fsm__wr_en,
-        mst__fsm__rd_en,
-        fsm__mst__rd_data,
-        mst__fsm__wr_data,
-        //  downstream control signal
-        fsm__slv__req_vld,
-        slv__fsm__ack_vld,
-        fsm__slv__addr,
-        fsm__slv__wr_en,
-        fsm__slv__wr_data,
-        fsm__slv__rd_en,
-        slv__fsm__rd_data,
-        //  sync signal
-        soft_rst,
-        fsm__slv__sync_reset
-    );
+(
+    clk,
+    rst_n,
+    if_soft_rst,
+    if_req_vld,
+    if_ack_vld,
+    if_rd_data,
+    if_err,
+    if_err_en,
+    if_wr_en,
+    if_rd_en,
+    dummy_acc,
+    reg_acc,
+    reg_rd_data,
+    reg_rd_data_vld
+);
+    parameter   DATA_WIDTH              = 32;
 
+    localparam  S_IDLE                  = 3'd0;
+    localparam  S_DUMMY_ACK             = 3'd1;
+    localparam  S_REG_WRITE_ACK         = 3'd2;
+    localparam  S_REG_READ_ACK          = 3'd3;
+    localparam  S_WRITE_ACCESS          = 3'd4;
+    localparam  S_READ_ACCESS           = 3'd5;
 
-// state decode
-localparam   S_IDLE         =   1'd0; // no operation
-localparam   S_WAIT_SLV_ACK =   1'd1; // wait for slave fsm__mst__ack_vld
+    input   logic                       clk;
+    input   logic                       rst_n;
+    input   logic                       if_soft_rst;
+    input   logic                       if_req_vld;
+    output  logic                       if_ack_vld;
+    output  logic   [DATA_WIDTH-1:0]    if_rd_data;
+    output  logic                       if_err;
+    input   logic                       if_err_en;
+    input   logic                       if_wr_en;
+    input   logic                       if_rd_en;
+    input   logic                       dummy_acc;
+    input   logic                       reg_acc;
+    input   logic   [DATA_WIDTH-1:0]    reg_rd_data;
+    input   logic                       reg_rd_data_vld;
 
-input                           clk                     ;
-input                           rst_n                    ;
-// upstream reg_native_if
-input                           mst__fsm__req_vld       ;
-output                          fsm__mst__ack_vld       ;
-input   [ADDR_WIDTH-1:0]        mst__fsm__addr          ;
-input                           mst__fsm__wr_en         ;
-input                           mst__fsm__rd_en         ;
-input   [DATA_WIDTH-1:0]        mst__fsm__wr_data       ;
-input   [DATA_WIDTH-1:0]        slv__fsm__rd_data       ;
-// downstream reg_native_if
-output                          fsm__slv__req_vld       ;
-input                           slv__fsm__ack_vld       ;
-output  [ADDR_WIDTH-1:0]        fsm__slv__addr          ;
-output                          fsm__slv__wr_en         ;
-output                          fsm__slv__rd_en         ;
-output  [DATA_WIDTH-1:0]        fsm__slv__wr_data       ;
-output  [DATA_WIDTH-1:0]        fsm__mst__rd_data       ;
+    logic   [2:0]                       state;
+    logic   [2:0]                       next_state;
 
-input                           soft_rst                ;
-output  reg                     fsm__slv__sync_reset    ;
-// machine state value
-reg                             next_state              ;
-reg                             state                   ;
-
-//define reg for latching output to slave
-reg     [ADDR_WIDTH-1:0]        mst__fsm__addr_ff       ;
-reg     [DATA_WIDTH-1:0]        mst__fsm__wr_data_ff    ;
-reg                             mst__fsm__wr_en_ff      ;
-reg                             mst__fsm__rd_en_ff      ;
-reg                             fsm__slv__req_vld_ff    ;
-// to see if the module selected is accessable
-
-// state transfer
-always_ff@(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin
-        state <= 1'b0       ;
+    // state register
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            state   <= S_IDLE;
+        else if (if_soft_rst)
+            state   <= S_IDLE;
+        else
+            state   <= next_state;
     end
-    else begin
-        state <= next_state ;
-    end
-end
 
-// state transfer flow
-always_comb begin
-    case(state)
-        // if soft_rst, next_state back to IDLE, else check req_vld from the master as well as req_rdy and ack_vld from the slave
-        S_IDLE:begin
-            next_state = soft_rst ? S_IDLE :
-                                                !mst__fsm__req_vld ? S_IDLE :
-                                                                     slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK    ;
-        end
-        S_WAIT_SLV_ACK:begin
-            next_state = soft_rst ? S_IDLE :
-                                                slv__fsm__ack_vld ? S_IDLE : S_WAIT_SLV_ACK                         ;
-        end
-        default: next_state = S_IDLE                                                                                ;
-    endcase
-end
-// for output control signal latch
-always_ff@(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin
-        mst__fsm__addr_ff           <= 0;
-        mst__fsm__wr_data_ff        <= 0;
-        mst__fsm__wr_en_ff          <= 0;
-        mst__fsm__rd_en_ff          <= 0;
+    // state transition logic
+    always_comb begin
+        if (if_soft_rst)
+            next_state = S_IDLE;
+        else
+            case (state)
+                S_IDLE: begin
+                    if (if_req_vld)
+                        if (if_wr_en)
+                            if (dummy_acc)
+                                next_state = S_DUMMY_ACK;
+                            else if (reg_acc)
+                                next_state = S_REG_WRITE_ACK;
+                            else
+                                next_state = S_WRITE_ACCESS;
+                        else if (if_rd_en)
+                            if (dummy_acc)
+                                next_state = S_DUMMY_ACK;
+                            else if (reg_rd_data_vld)
+                                next_state = S_REG_READ_ACK;
+                            else
+                                next_state = S_READ_ACCESS;
+                        else
+                            next_state = S_IDLE;
+                    else
+                        next_state = S_IDLE;
+                end
+                S_DUMMY_ACK: next_state = S_IDLE;
+                S_REG_WRITE_ACK: next_state = S_IDLE;
+                S_REG_READ_ACK: next_state = S_IDLE;
+                S_WRITE_ACCESS: begin
+                    if (dummy_acc | reg_acc)
+                        next_state = S_IDLE;
+                    else
+                        next_state = S_WRITE_ACCESS;
+                end
+                S_READ_ACCESS: begin
+                    if (dummy_acc | reg_rd_data_vld)
+                        next_state = S_IDLE;
+                    else
+                        next_state = S_READ_ACCESS;
+                end
+                default: next_state = S_IDLE;
+            endcase
     end
-    else begin
-        mst__fsm__addr_ff           <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__addr       : mst__fsm__addr_ff ;
-        mst__fsm__wr_data_ff        <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__wr_data    : fsm__slv__wr_data ;
-        // internal operation signal (wr_en/rd_en) only need latch for 1 cycle
-        mst__fsm__wr_en_ff          <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__wr_en      : 1'b0              ;
-        mst__fsm__rd_en_ff          <= (state == S_IDLE && next_state != S_IDLE) ? mst__fsm__rd_en      : 1'b0              ;
-    end
-end
 
-// for output handshake signal
-always_ff@(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin
-        fsm__slv__req_vld_ff <= 0;
-    end
-    else begin
-        if(state == S_IDLE && next_state == S_WAIT_SLV_ACK) fsm__slv__req_vld_ff <= 1'b1;
-        else fsm__slv__req_vld_ff <= 1'b0;
-    end
-end
+    // output logic
+    always_comb begin
+        if_ack_vld  = 1'b0;
+        if_rd_data  = {DATA_WIDTH{1'b0}};
+        if_err      = 1'b0;
 
-always_ff@(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin
-        fsm__slv__sync_reset <= 1'b0;
+        case (state)
+            S_DUMMY_ACK: begin
+                if_ack_vld  = 1'b1;
+                if (if_err_en)
+                    if_err  = 1'b1;
+            end
+            S_REG_WRITE_ACK: begin
+                if_ack_vld  = 1'b1;
+            end
+            S_REG_READ_ACK: begin
+                if_ack_vld  = 1'b1;
+                if_rd_data  = reg_rd_data;
+            end
+            S_WRITE_ACCESS: begin
+                if (dummy_acc)
+                    if_ack_vld  = 1'b1;
+                    if (if_err_en)
+                        if_err  = 1'b1;
+                else if (reg_acc)
+                    if_ack_vld  = 1'b1;
+            end
+            S_READ_ACCESS: begin
+                if (dummy_acc)
+                    if_ack_vld  = 1'b1;
+                    if (if_err_en)
+                        if_err  = 1'b1;
+                else if (reg_rd_data_vld)
+                    if_ack_vld  = 1'b1;
+                    if_rd_data  = reg_rd_data;
+            end
+            default: begin
+                if_ack_vld  = 1'b0;
+                if_rd_data  = {DATA_WIDTH{1'b0}};
+                if_err      = 1'b0;
+            end
+        endcase
     end
-    else begin
-        fsm__slv__sync_reset <= soft_rst;
-    end
-end
-
-assign fsm__slv__req_vld = fsm__slv__req_vld_ff;
-assign fsm__mst__ack_vld = slv__fsm__ack_vld;
-// assign fsm_slv output signal, IDLE state: wired to input, other working state to latch
-assign fsm__slv__addr       = (state == S_IDLE) ? {ADDR_WIDTH{1'b0}} : mst__fsm__addr_ff;
-assign fsm__slv__wr_en      = (state == S_IDLE) ? 1'b0 : mst__fsm__wr_en_ff;
-assign fsm__slv__rd_en      = (state == S_IDLE) ? 1'b0 : mst__fsm__rd_en_ff;
-assign fsm__slv__wr_data    = (state == S_IDLE) ? {DATA_WIDTH{1'b0}} : mst__fsm__wr_data_ff;
-assign fsm__mst__rd_data    = slv__fsm__ack_vld ? slv__fsm__rd_data : {DATA_WIDTH{1'b0}};
-
 endmodule

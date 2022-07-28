@@ -10,5 +10,5 @@ addrmap reg_network {
             // pcie
         } sys_periph;
         db_regs db_regs %= 0x1000;
-    } sys_periph @0x180000000;
+    } sys_periph @0x1e2000000;
 };
