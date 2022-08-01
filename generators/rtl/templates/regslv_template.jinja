@@ -28,12 +28,12 @@ module {{slv_name}} (
 {%- endfor %}
     clk,
     rst_n,
+    soft_rst,
     req_vld,
     wr_en,
     rd_en,
     addr,
     wr_data,
-    soft_rst,
     rd_data,
     ack_vld,
     err,
@@ -41,6 +41,13 @@ module {{slv_name}} (
     regslv_clk,
     regslv_rst_n,
 {%- endif %}
+{%- for reg in reg_list %}
+{%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
+{%- for sync_rst in get_sync_rst(field) %}
+    {{sync_rst}},
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
     err_en
 );
     parameter       ADDR_WIDTH                  = {{get_addr_width(slv_node)}};
@@ -97,7 +104,7 @@ module {{slv_name}} (
     logic   [DATA_WIDTH-1:0]                    int_rd_data;
     logic                                       int_ack_vld;
     logic                                       int_err;
-{%- if has_cdc(slv_node) %}
+
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
     logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
@@ -105,7 +112,7 @@ module {{slv_name}} (
     logic                                       reg_rd_data_mux_dout_vld;
     logic                                       reg_rd_data_vld;
     logic   [DATA_WIDTH-1:0]                    reg_rd_data;
-
+{% if has_cdc(slv_node) %}
 //***********************************CLOCK DOMAIN CROSSING********************************************//
     localparam      FORWARD_DELIVER_NUM         = ADDR_WIDTH + DATA_WIDTH + 4;
     localparam      BACKWARD_DELIVER_NUM        = DATA_WIDTH + 2;
@@ -125,7 +132,7 @@ module {{slv_name}} (
         .clk_b                                  (regslv_clk),
         .rst_b_n                                (regslv_rst_n),
         .pulse_out                              (pulse_deliver_forward_pulse_out));
-    assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data}  = pulse_deliver_forward_pulse_out;
+    assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data, int_soft_rst}  = pulse_deliver_forward_pulse_out;
 
     // deliver reg_native_if pulse from 3rd party IP to native clock domain
     assign  pulse_deliver_backward_pulse_in     = {int_ack_vld, int_err, int_rd_data};
@@ -169,7 +176,7 @@ module {{slv_name}} (
     logic   [DATA_WIDTH-1:0]                    reg_sw_wr_data;
 
     always_comb begin
-        if (int_req_vld) begin
+        if (int_req_vld & ~int_soft_rst) begin
             dec_reg_sel = {REG_NUM{1'b0}};
             dec_dummy_sel = 1'b0;
 
@@ -217,7 +224,7 @@ module {{slv_name}} (
         end
     endgenerate
 
-    assign  reg_acc                             = reg_sw_wr_sel | reg_sw_rd_sel;
+    assign  reg_acc                             = (|reg_sw_wr_sel) | (|reg_sw_rd_sel);
 
 //*******************************************FSM******************************************************//
     slv_fsm #(.DATA_WIDTH (DATA_WIDTH))

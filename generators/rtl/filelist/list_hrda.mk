@@ -1,5 +1,5 @@
 $(call declare-mod,hrda)
-$(call add,mod,hrda,hrda_field hrda_bridge hrda_cdc hrda_fsm hrda_snapshot)
+$(call add,mod,hrda,hrda_field hrda_bridge hrda_fsm hrda_snapshot)
 $(call add,mod,hrda,split_mux_2d)
 $(call add,core_name,hrda,hj:naqu:hrda:0.0.0)
 $(call add,core_file,hrda,$(sop_base)/hrda.core)
@@ -45,16 +45,6 @@ $(call add,mod,reg_native_if2third_party_ip,pulse_deliver)
 
 $(call declare-mod,hrda_bridge)
 $(call add,mod,hrda_bridge,apb2reg_native_if reg_native_if2apb reg_native_if2mem reg_native_if2third_party_ip)
-
-# --------------------------------------------------------------------------------------
-# cdc components
-# --------------------------------------------------------------------------------------
-$(call declare-mod,value_transmitter)
-$(call add,rtl,value_transmitter,$(sop_base)/rtl/hrda/cdc/value_transmitter.v)
-$(call add,mod,value_transmitter,value_deliver)
-
-$(call declare-mod,hrda_cdc)
-$(call add,mod,hrda_cdc,value_transmitter)
 
 # --------------------------------------------------------------------------------------
 # fsm components
