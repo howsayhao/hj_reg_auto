@@ -126,7 +126,7 @@ def export_chdr(root:RootNode, out_dir:str):
             "HRDA encounters some unknown errors\n{}\n"
             "C header exporter aborted due to previous errors".format(
                 traceback.format_exc()
-            )
+            ), raise_err=False
         )
     else:
         message.info("save C header files in directory: %s" % (chdr_dir))

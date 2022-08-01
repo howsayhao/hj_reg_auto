@@ -161,7 +161,7 @@ def export_pdf(root:RootNode, out_dir:str):
             "HRDA encounters some unknown errors\n{}\n"
             "pdf exporter aborted due to previous errors".format(
                 traceback.format_exc()
-            )
+            ), raise_err=False
         )
     else:
         message.info("save the pdf documentation in: %s" % (export_file))

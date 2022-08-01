@@ -304,12 +304,12 @@ module regslv_slv_map (
     map_12_9_TEM22__FIELD_1__next_value,
     clk,
     rst_n,
+    soft_rst,
     req_vld,
     wr_en,
     rd_en,
     addr,
     wr_data,
-    soft_rst,
     rd_data,
     ack_vld,
     err,
@@ -650,6 +650,7 @@ module regslv_slv_map (
     logic   [DATA_WIDTH-1:0]                    int_rd_data;
     logic                                       int_ack_vld;
     logic                                       int_err;
+
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
     logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
@@ -677,7 +678,7 @@ module regslv_slv_map (
         .clk_b                                  (regslv_clk),
         .rst_b_n                                (regslv_rst_n),
         .pulse_out                              (pulse_deliver_forward_pulse_out));
-    assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data}  = pulse_deliver_forward_pulse_out;
+    assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data, int_soft_rst}  = pulse_deliver_forward_pulse_out;
 
     // deliver reg_native_if pulse from 3rd party IP to native clock domain
     assign  pulse_deliver_backward_pulse_in     = {int_ack_vld, int_err, int_rd_data};
@@ -702,7 +703,7 @@ module regslv_slv_map (
     logic   [DATA_WIDTH-1:0]                    reg_sw_wr_data;
 
     always_comb begin
-        if (int_req_vld) begin
+        if (int_req_vld & ~int_soft_rst) begin
             dec_reg_sel = {REG_NUM{1'b0}};
             dec_dummy_sel = 1'b0;
 
@@ -837,7 +838,7 @@ module regslv_slv_map (
         end
     endgenerate
 
-    assign  reg_acc                             = reg_sw_wr_sel | reg_sw_rd_sel;
+    assign  reg_acc                             = (|reg_sw_wr_sel) | (|reg_sw_rd_sel);
 
 //*******************************************FSM******************************************************//
     slv_fsm #(.DATA_WIDTH (DATA_WIDTH))

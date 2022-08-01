@@ -80,8 +80,6 @@ class PreprocessListener(RDLListener):
 
         self.user_def_base_addr = 0
 
-        self.mode = 0
-
         # 6 types of addrmap instance
         self.prop_list = [
             "hj_gennetwork",
@@ -107,7 +105,7 @@ class PreprocessListener(RDLListener):
                 "addrmap: %s, address: 0x%x-0x%x, size: %s" % (
                     node.get_path_segment(array_suffix="_{index:d}"),
                     node.absolute_address,
-                    node.absolute_address + node.size,
+                    node.absolute_address + node.size - 1,
                     convert_size(node.size)
                 ), self.indent
             )

@@ -37,13 +37,15 @@ Description: {{get_property(node, "desc")}}
 {%- endmacro -%}
 
 {%- macro field_row(node) %}
-{{"| %2d:%-2d | %8s | %15s | %2s,%4s,%-5s | %-9s |"|format(node.msb, node.lsb,
-                                                           get_inst_name(node),
-                                                           get_property(node, "reset"),
-                                                           get_property(node, "sw"),
-                                                           get_property(node, "onread"),
-                                                           get_property(node, "onwrite"),
-                                                           get_property(node, "hw"))}}
+{{"| %2d:%-2d | %8s | %15s | %2s,%4s,%-5s | %-9s |"|format(
+    node.msb,
+    node.lsb,
+    get_inst_name(node),
+    get_property(node, "reset"),
+    get_property(node, "sw"),
+    get_property(node, "onread"),
+    get_property(node, "onwrite"),
+    get_property(node, "hw"))}}
 {%- endmacro %}
 
 {%- macro field_desc(node) -%}
@@ -52,7 +54,7 @@ Description: {{get_property(node, "desc")}}
     - named as: {{get_property(node, "name")}}
 {%- endif %}
 {%- if get_property(node, "hj_syncresetsignal") is not none %}
-    - synchronous reset signals: `{{get_property(node, "hj_syncresetsignal")}}`
+    - synchronous reset signals: *{{get_property(node, "hj_syncresetsignal")}}*
 {%- endif %}
 {%- if get_property(node, "desc") is not none %}
     - description: {{get_property(node, "desc")}}

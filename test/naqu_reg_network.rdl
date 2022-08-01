@@ -7,8 +7,11 @@ addrmap reg_network {
             // ddr
             phy_misc_disp phy_misc_disp[8];
             // security
+            rciep_reg rciep_reg;
             // pcie
+            pcie_disp_top pcie_disp_top[6];
+            pcie_mini_disp_top pcie_mini_disp_top;
         } sys_periph;
         db_regs db_regs %= 0x1000;
-    } sys_periph @0x1e2000000;
+    } sys_periph @0x1_e200_0000;
 };

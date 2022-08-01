@@ -9,8 +9,10 @@ from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, FieldNode, RootNode)
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType, PrecedenceType
 
-class RTLExporter:
 
+class RTLExporter:
+    """
+    """
     def __init__(self):
         """
         load jinja environment and basic context
@@ -132,11 +134,11 @@ class RTLExporter:
                 else:
                     template = None
 
-            if template:
-                self.context.update(update_context)
-                stream = template.stream(self.context)
+                if template:
+                    self.context.update(update_context)
+                    stream = template.stream(self.context)
 
-                stream.dump(dump_file)
+                    stream.dump(dump_file)
 
         # after addrmap traversal is done, dump filelist
         template = self.jj_env.get_template("filelist_template.jinja")
