@@ -60,11 +60,11 @@ module {{slv_name}} (
     {%- for field in reg.fields(skip_not_present=False) %}
     {%- if not field.is_alias %}
     {%- if field.is_hw_readable %}
-    output  logic   [{{field.width-1}}:0]       {{reg_name}}__{{field.inst_name}}__curr_value;
+    output  logic   {{"[%2s:0]"|format(field.width-1)}}                      {{reg_name}}__{{field.inst_name}}__curr_value;
     {%- endif %}
     {%- if field.is_hw_writable %}
     input   logic                               {{reg_name}}__{{field.inst_name}}__pulse;
-    input   logic   [{{field.width-1}}:0]       {{reg_name}}__{{field.inst_name}}__next_value;
+    input   logic   {{"[%2s:0]"|format(field.width-1)}}                      {{reg_name}}__{{field.inst_name}}__next_value;
     {%- endif %}
     {%- if get_property(field, "swacc") %}
     output  logic   [1:0]                       {{reg_name}}__{{field.inst_name}}__swacc;
@@ -78,7 +78,6 @@ module {{slv_name}} (
 
     input   logic                               clk;
     input   logic                               rst_n;
-
     input   logic                               req_vld;
     input   logic                               wr_en;
     input   logic                               rd_en;
@@ -89,7 +88,7 @@ module {{slv_name}} (
     output  logic                               ack_vld;
     output  logic                               err;
 {%- if has_cdc(slv_node) %}
-    // at internal register clock domain
+
     input   logic                               regslv_clk;
     input   logic                               regslv_rst_n;
 {%- endif %}
@@ -197,30 +196,30 @@ module {{slv_name}} (
         if (INSERT_REG_FF) begin: g_reg_ff
             always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
                 if (!{{curr_async_rst_n}}) begin
-                    reg_sw_wr_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_rd_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_wr_data                      <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
-                    dummy_acc                           <= 1'b0;
+                    reg_sw_wr_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_rd_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_wr_data              <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
+                    dummy_acc                   <= 1'b0;
                 end
                 else if (int_soft_rst) begin
-                    reg_sw_wr_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_rd_sel                       <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_wr_data                      <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
-                    dummy_acc                           <= 1'b0;
+                    reg_sw_wr_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_rd_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
+                    reg_sw_wr_data              <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
+                    dummy_acc                   <= 1'b0;
                 end
                 else begin
-                    reg_sw_wr_sel                       <= {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
-                    reg_sw_rd_sel                       <= {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
-                    reg_sw_wr_data                      <= int_wr_data;
-                    dummy_acc                           <= dec_dummy_sel;
+                    reg_sw_wr_sel               <= {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
+                    reg_sw_rd_sel               <= {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
+                    reg_sw_wr_data              <= int_wr_data;
+                    dummy_acc                   <= dec_dummy_sel;
                 end
             end
         end
         else begin: g_no_reg_ff
-            assign  reg_sw_wr_sel                       = {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
-            assign  reg_sw_rd_sel                       = {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
-            assign  reg_sw_wr_data                      = int_wr_data;
-            assign  dummy_acc                           = dec_dummy_sel;
+            assign  reg_sw_wr_sel               = {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
+            assign  reg_sw_rd_sel               = {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
+            assign  reg_sw_wr_data              = int_wr_data;
+            assign  dummy_acc                   = dec_dummy_sel;
         end
     endgenerate
 
@@ -249,9 +248,12 @@ module {{slv_name}} (
     {%- set reg_name = get_rtl_name(reg) %}
     logic                                       {{reg_name}}__sw_wr_en;
     logic                                       {{reg_name}}__sw_rd_en;
-    logic   [{{reg.size*8-1}}:0]                {{reg_name}}__sw_wr_data;
-    logic   [{{reg.size*8-1}}:0]                {{reg_name}}__sw_rd_data;
-{%- endfor -%}
+    logic   {{"[%2s:0]"|format(reg.size*8-1)}}                              {{reg_name}}__sw_wr_data;
+    logic   {{"[%2s:0]"|format(reg.size*8-1)}}                              {{reg_name}}__sw_rd_data;
+    {%- for field in reg.fields(skip_not_present=False) if not field.is_alias and not field.is_hw_readable and field.is_sw_readable %}
+    logic   {{"[%2s:0]"|format(field.width-1)}}                              {{reg_name}}__{{field.inst_name}}__curr_value;
+    {%- endfor %}
+{%- endfor %}
 {% set int_reg_idx = get_property(slv_node, "int_reg_idx") %}
 {%- for reg in reg_list %}
     {%- set reg_name = get_rtl_name(reg) -%}
@@ -272,10 +274,10 @@ module {{slv_name}} (
         .reg_rd_data                            ({{reg_name}}__sw_rd_data)
     );
     {%- else %}
-    assign  {{reg_name}}__sw_wr_en              = reg_sw_wr_sel[{{reg_idx[0]}}];
-    assign  {{reg_name}}__sw_rd_en              = reg_sw_rd_sel[{{reg_idx[0]}}];
-    assign  {{reg_name}}__sw_wr_data            = reg_sw_wr_data;
-    assign  reg_sw_rd_data[{{reg_idx[0]}}]   = {{reg_name}}__sw_rd_data;
+    assign  {{reg_name}}__sw_wr_en      = reg_sw_wr_sel[{{reg_idx[0]}}];
+    assign  {{reg_name}}__sw_rd_en      = reg_sw_rd_sel[{{reg_idx[0]}}];
+    assign  {{reg_name}}__sw_wr_data    = reg_sw_wr_data;
+    assign  reg_sw_rd_data[{{reg_idx[0]}}]  = {{reg_name}}__sw_rd_data;
     {%- endif %}
 {% for field in reg.fields(skip_not_present=False) %}
 {%- if not field.is_alias %}

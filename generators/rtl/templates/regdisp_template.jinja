@@ -6,12 +6,12 @@ module {{disp_name}} (
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
     {%- set child_name = get_rtl_name(child) -%}
     {%- set down_prefix_i = child_name + "__" + disp_name -%}
-    {%- set down_prefix_o = disp_name + "__" + child_name %}
-    {% if not is_regslv(child) -%}
+    {%- set down_prefix_o = disp_name + "__" + child_name -%}
+    {%- if not is_regslv(child) %}
     // {{child_name}} clock and reset domain
     {{child_name}}_clk,
     {{child_name}}_rst_n,
-    {%- endif -%}
+    {%- endif %}
     // reg_native_if forwarding to {{child_name}}
     {{down_prefix_o}}__req_vld,
     {{down_prefix_i}}__ack_vld,
@@ -79,15 +79,10 @@ module {{disp_name}} (
     {%- if is_regslv(child) %}
     output  logic                                       {{down_prefix_o}}__soft_rst;
     {% endif %}
-    {% endfor -%}
+    {%- endfor %}
 
-    logic   [FORWARD_NUM-1:0]                           downstream_req_vld;
     logic   [FORWARD_NUM-1:0]                           downstream_ack_vld;
     logic   [FORWARD_NUM-1:0]                           downstream_err;
-    logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr;
-    logic   [FORWARD_NUM-1:0]                           downstream_wr_en;
-    logic   [FORWARD_NUM-1:0]                           downstream_rd_en;
-    logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data;
     logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_rd_data;
     logic   [FORWARD_NUM-1:0]                           downstream_soft_rst;
 
@@ -96,12 +91,14 @@ module {{disp_name}} (
     logic   [FORWARD_NUM-1:0]                           downstream_wr_en_ff;
     logic   [FORWARD_NUM-1:0]                           downstream_rd_en_ff;
     logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data_ff;
+    logic   [FORWARD_NUM-1:0]                           downstream_soft_rst_ff;
 
     logic   [FORWARD_NUM-1:0]                           downstream_req_vld_imux;
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_imux;
     logic   [FORWARD_NUM-1:0]                           downstream_wr_en_imux;
     logic   [FORWARD_NUM-1:0]                           downstream_rd_en_imux;
     logic   [FORWARD_NUM-1:0] [DATA_WIDTH-1:0]          downstream_wr_data_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream_soft_rst_imux;
 
     logic   [FORWARD_NUM-1:0] [ADDR_WIDTH-1:0]          downstream_addr_conv;
 
@@ -134,6 +131,7 @@ module {{disp_name}} (
             downstream_wr_en_imux[i]        = 1'b0;
             downstream_rd_en_imux[i]        = 1'b0;
             downstream_wr_data_imux[i]      = {DATA_WIDTH{1'b0}};
+            downstream_soft_rst_imux[i]     = {{up_prefix_i}}__soft_rst;
 
             if (dec_if_sel[i]) begin
                 downstream_req_vld_imux[i]  = {{up_prefix_i}}__req_vld;
@@ -181,6 +179,7 @@ module {{disp_name}} (
                         downstream_wr_en_ff[cnt]        <= 1'b0;
                         downstream_rd_en_ff[cnt]        <= 1'b0;
                         downstream_wr_data_ff[cnt]      <= {DATA_WIDTH{1'b0}};
+                        downstream_soft_rst_ff[cnt]     <= 1'b0;
                     end
                     else begin
                         downstream_req_vld_ff[cnt]      <= downstream_req_vld_imux[cnt];
@@ -188,7 +187,7 @@ module {{disp_name}} (
                         downstream_wr_en_ff[cnt]        <= downstream_wr_en_imux[cnt];
                         downstream_rd_en_ff[cnt]        <= downstream_rd_en_imux[cnt];
                         downstream_wr_data_ff[cnt]      <= downstream_wr_data_imux[cnt];
-                        downstream_soft_rst[cnt]        <= {{up_prefix_i}}__soft_rst;
+                        downstream_soft_rst_ff[cnt]     <= downstream_soft_rst_imux[cnt];
                     end
                 end
             end
@@ -198,7 +197,7 @@ module {{disp_name}} (
                 assign downstream_wr_en_ff[cnt]         = downstream_wr_en_imux[cnt];
                 assign downstream_rd_en_ff[cnt]         = downstream_rd_en_imux[cnt];
                 assign downstream_wr_data_ff[cnt]       = downstream_wr_data_imux[cnt];
-                assign downstream_soft_rst[cnt]         = {{up_prefix_i}}__soft_rst;
+                assign downstream_soft_rst_ff[cnt]      = downstream_soft_rst_imux[cnt];
             end
         end
     endgenerate
@@ -218,7 +217,7 @@ module {{disp_name}} (
     reg_native_if2mem__{{disp_name}}2{{child_name}} (
         .native_clk({{disp_name}}_clk),
         .native_rst_n({{disp_name}}_rst_n),
-        .soft_rst(downstream_soft_rst[{{loop.index0}}]),
+        .soft_rst(downstream_soft_rst_ff[{{loop.index0}}]),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
         .err(downstream_err[{{loop.index0}}]),
@@ -274,7 +273,7 @@ module {{disp_name}} (
     assign  {{down_prefix_o}}__rd_en                = downstream_rd_en_ff[{{loop.index0}}];
     assign  {{down_prefix_o}}__wr_data              = downstream_wr_data_ff[{{loop.index0}}];
     {% if is_regslv(child) -%}
-    assign  {{down_prefix_o}}__soft_rst             = downstream_soft_rst[{{loop.index0}}];
+    assign  {{down_prefix_o}}__soft_rst             = downstream_soft_rst_ff[{{loop.index0}}];
     {%- endif %}
     assign  downstream_ack_vld[{{loop.index0}}]     = {{down_prefix_i}}__ack_vld;
     assign  downstream_err[{{loop.index0}}]         = {{down_prefix_i}}__err;
@@ -282,9 +281,7 @@ module {{disp_name}} (
     {%- endif -%}
     {%- endif %}
     {% endfor %}
-
 //**************************************BACKWARD DATAPATH**********************************************//
-
     // backward multiplexor for rd_data, ack_vld and err
     assign  dummy_reg_ack_vld               = dec_dummy_reg_sel & {{up_prefix_i}}__req_vld;
     assign  {{up_prefix_o}}__ack_vld_mux    = (| downstream_ack_vld) | dummy_reg_ack_vld;

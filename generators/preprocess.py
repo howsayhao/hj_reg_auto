@@ -25,9 +25,6 @@ class PreprocessAddressHandler:
         if root.top.get_property("base_addr") and root.top.get_property("hj_gendisp"):
             root.top.inst.addr_offset = root.top.get_property("base_addr")
 
-class PrecheckListener(RDLListener):
-    pass
-
 class PreprocessListener(RDLListener):
     """
     A listener for the `preprocess_walker` which preprocesses the register model.
@@ -183,7 +180,7 @@ class PreprocessListener(RDLListener):
             if not isinstance(node.parent, RootNode):
                 message.error(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for the whole register network, "
+                    "addrmap %s represents for the whole register network, "
                     "so it must be a top-level (root) addrmap instance" % (
                         self.ref.filename,
                         self.ref.line,
@@ -204,7 +201,7 @@ class PreprocessListener(RDLListener):
             if not node.parent.get_property("hj_gennetwork"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for regmst, "
+                    "addrmap %s represents for regmst, "
                     "so it must be instantiated under addrmap which represents for the whole register network" % (
                         self.ref.filename,
                         self.ref.line,
@@ -291,7 +288,7 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr") is False:
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for regmst, so hj_use_abs_addr must be true" % (
+                    "addrmap %s represents for regmst, so hj_use_abs_addr must be true" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -324,7 +321,7 @@ class PreprocessListener(RDLListener):
                 not node.parent.get_property("hj_gendisp"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for regdisp, so it must be instantiated at top level, "
+                    "addrmap %s represents for regdisp, so it must be instantiated at top level, "
                     "or under addrmap which represents for regmst or regdisp, but parent addrmap %s does not" % (
                         self.ref.filename,
                         self.ref.line,
@@ -339,7 +336,7 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr") is False:
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for regdisp, so hj_use_abs_addr must be true" % (
+                    "addrmap %s represents for regdisp, so hj_use_abs_addr must be true" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -375,7 +372,7 @@ class PreprocessListener(RDLListener):
                 not node.parent.get_property("hj_gendisp"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for regslv, so it must be instantiated at top level, "
+                    "addrmap %s represents for regslv, so it must be instantiated at top level, "
                     "or under addrmap which represents for regdisp, but parent addrmap %s does not" % (
                         self.ref.filename,
                         self.ref.line,
@@ -390,7 +387,7 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr"):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for regslv, so hj_use_abs_addr must be false" % (
+                    "addrmap %s represents for regslv, so hj_use_abs_addr must be false" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -420,7 +417,7 @@ class PreprocessListener(RDLListener):
             if not node.parent.get_property("hj_genslv") and not node.parent.get_property("hj_flatten_addrmap"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s can only be flattened in parent addrmap which "
+                    "addrmap %s can only be flattened in parent addrmap which "
                     "represents for regslv or is also flattened, but parent addrmap %s does not." % (
                         self.ref.filename,
                         self.ref.line,
@@ -453,7 +450,7 @@ class PreprocessListener(RDLListener):
                 not node.parent.get_property("hj_3rd_party_ip"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s representing for 3rd party IP must be covered by 3rd party IP addrmap, "
+                    "addrmap %s representing for 3rd party IP must be covered by 3rd party IP addrmap, "
                     "or have a parent addrmap which represents for regdisp, but parent addrmap %s does not." % (
                         self.ref.filename,
                         self.ref.line,
@@ -468,7 +465,7 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr") is None:
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "current addrmap %s represents for 3rd party IP, but you don't explicitly "
+                    "addrmap %s represents for 3rd party IP, but you don't explicitly "
                     "assign the property hj_use_abs_addr, and it will be assigned to true" % (
                         self.ref.filename,
                         self.ref.line,
