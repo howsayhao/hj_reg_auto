@@ -108,7 +108,7 @@ class PreprocessListener(RDLListener):
             )
 
         # addrmap imported by IP-XACT (.xml) files are treated as 3rd party IP automatically
-        if self.ref.filename.endswith(".xml"):
+        if str(node.inst.def_src_ref.filename).endswith(".xml"):
             node.inst.properties["hj_3rd_party_ip"] = True
 
         # check if addrmap is assigned one of following properties exclusively:
