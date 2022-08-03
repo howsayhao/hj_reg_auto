@@ -3,9 +3,8 @@ module reg_native_if2apb (
     req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data, err,
     psel, penable, pready, pwrite, paddr, pwdata, prdata, pslverr
 );
-    parameter   ADDR_WIDTH  = 64;
+    parameter   ADDR_WIDTH  = 48;
     parameter   DATA_WIDTH  = 32;
-    parameter   INSERT_FF   = 0;
 
     input   logic                       clk;
     input   logic                       rst_n;
@@ -67,11 +66,15 @@ module reg_native_if2apb (
     end
 
     // output logic
-
     // convert wr_en, rd_en, wr_data, rd_data to
     // pwrite, pwdata, prdata
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
+            psel        <=  1'b0;
+            pwrite      <=  1'b0;
+            paddr       <=  {ADDR_WIDTH{1'b0}};
+            pwdata      <=  {DATA_WIDTH{1'b0}};
+        end else if (next_state == S_IDLE) begin
             psel        <=  1'b0;
             pwrite      <=  1'b0;
             paddr       <=  {ADDR_WIDTH{1'b0}};
@@ -88,5 +91,4 @@ module reg_native_if2apb (
     assign  rd_data     = prdata;
     assign  ack_vld     = pready;
     assign  err         = pslverr;
-
 endmodule
