@@ -28,7 +28,7 @@ Description: {{get_property(node, "desc")}} \\
 |-------+----------+-----------------+---------------+-----------|
 | Bits  | Name     | Reset Value     | SW Access     | HW Access |
 |-------+----------+-----------------+---------------+-----------|{% endraw %}
-{%- for field in node.fields() -%}
+{%- for field in node.fields(skip_not_present=False) -%}
     {{field_row(field)}}
 {%- endfor -%}
 {% raw %}
@@ -36,7 +36,7 @@ Description: {{get_property(node, "desc")}} \\
 
 {% endraw %}
 
-{%- for field in node.fields() -%}
+{%- for field in node.fields(skip_not_present=False) -%}
     {{field_desc(field)}}
 {%- endfor -%}
 {%- endmacro -%}
