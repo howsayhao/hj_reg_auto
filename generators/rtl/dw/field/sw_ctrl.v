@@ -8,7 +8,7 @@ module sw_ctrl (
     swmod_out, swacc_rd_out, swacc_wr_out
 );
 
-    parameter               F_WIDTH             = 4;
+    parameter               F_WIDTH             = 1;
     parameter               SW_CNT              = 1;
     parameter   [3:0]       SW_TYPE             = `SW_RW;
     parameter   [3:0]       SW_ONREAD_TYPE      = `NA;
@@ -24,7 +24,7 @@ module sw_ctrl (
     input   logic                               sw_wr;
     output  logic                               sw_modify;
     input   logic   [F_WIDTH-1:0]               sw_wr_data;
-    output  logic   [F_WIDTH-1:0] 	            nxt_sw_value;
+    output  logic   [F_WIDTH-1:0]               nxt_sw_value;
     input   logic   [F_WIDTH-1:0]               field_value;
     output  logic                               swmod_out;
     output  logic                               swacc_rd_out;

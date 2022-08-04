@@ -1,6 +1,6 @@
 import os
-import sys
 import traceback
+import markdown
 
 import jinja2 as jj
 import utils.message as message
@@ -8,11 +8,9 @@ from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, RootNode)
 
 
-class ORGExporter:
-
+class DocExporter:
     def __init__(self):
-
-        # Top-level node
+        # top-level node
         self.top_node = None
 
         loader = jj.FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates"))
@@ -21,13 +19,15 @@ class ORGExporter:
             undefined=jj.StrictUndefined
         )
 
-    def export(self, top_node: Node, path: str):
+    def export(self, top_node:AddrmapNode, path:str, template_name:str):
         """
         Parameter
         ---------
         `top_node` :
         `path` :
         """
+        assert template_name in ("org", "md")
+
         # If it is the root node, skip to the top addrmap
         if isinstance(top_node, RootNode):
             top_node = top_node.top
@@ -51,7 +51,7 @@ class ORGExporter:
             'get_property': self._get_property
         }
 
-        template = self.jj_env.get_template("org.jinja")
+        template = self.jj_env.get_template("%s.jinja" % template_name)
         stream = template.stream(context)
         stream.dump(path)
 
@@ -66,7 +66,7 @@ class ORGExporter:
             return 1
 
     def _get_hier_name(self, node:Node):
-        return node.get_path()
+        return node.get_path(array_suffix="_{index:d}")
 
     def _get_abs_addr(self, node:AddressableNode):
         return hex(node.absolute_address)
@@ -85,7 +85,7 @@ class ORGExporter:
 
     def _get_inst_name(self, node:Node):
         # avoid to call `node.inst_name` property because of array suffix
-        return node.get_path_segment()
+        return node.get_path_segment(array_suffix="_{index:d}")
 
     def _get_property(self, node:Node, prop_name):
         if prop_name in ("sw", "hw"):
@@ -99,63 +99,59 @@ class ORGExporter:
         else:
             return node.get_property(prop_name, default=None)
 
-class MDExporter:
-    pass
-
-class PDFExporter(ORGExporter):
-
-    def __init__(self):
-        pass
-
-    def export(self, top_node: Node, path: str):
-        """
-        Parameter
-        ---------
-        `top_node` :
-        `path` :
-        """
-        super().export(top_node, path)
-        pass
-
 
 def export_org(root:RootNode, out_dir:str):
     """
-    Export UVM RAL model package
-
-    Parameter
-    ---------
-    `root` : `systemrdl.node.RootNode`, the root node of the compiled register model
-    `out_dir` : ouput directory to save the generated org mode file
     """
-    exporter = ORGExporter()
+    exporter = DocExporter()
     export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
 
     try:
-        exporter.export(root, export_file)
+        exporter.export(root, export_file, "org")
     except:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"
             "org exporter aborted due to previous errors".format(
                 traceback.format_exc()
-            )
+            ), raise_err=False
         )
     else:
         message.info("save the org mode documentation in: %s" % (export_file))
 
-def export_pdf(root:RootNode, out_dir:str):
-    """
-    Export UVM RAL model package
-
-    Parameter
-    ---------
-    `root` : `systemrdl.node.RootNode`, the root node of the compiled register model
-    `out_dir` : ouput directory to save the generated PDF file
-    """
-    exporter = PDFExporter()
-    export_file = os.path.join(out_dir, "%s.pdf" % (root.top.inst_name))
+def export_md(root:RootNode, out_dir:str):
+    exporter = DocExporter()
+    export_file = os.path.join(out_dir, "%s.md" % (root.top.inst_name))
 
     try:
-        exporter.export(root, export_file)
+        exporter.export(root, export_file, "md")
+    except:
+        message.error(
+            "HRDA encounters some unknown errors\n{}\n"
+            "markdown exporter aborted due to previous errors".format(
+                traceback.format_exc()
+            ), raise_err=False
+        )
+    else:
+        message.info("save the markdown documentation in: %s" % (export_file))
+
+def export_pdf(root:RootNode, out_dir:str):
+    """
+    """
+    exporter = DocExporter()
+    export_file = os.path.join(out_dir, "%s.pdf" % (root.top.inst_name))
+
+    md_tmp_file = os.path.join(out_dir, "%s.tmp.md" % (root.top.inst_name))
+    html_tmp_file = os.path.join(out_dir, "%s.tmp.html" % (root.top.inst_name))
+
+    try:
+        exporter.export(root, md_tmp_file, "md")
+
+        with open(md_tmp_file, "r") as f:
+            text = f.read()
+            html = markdown.markdown(text, extensions=["tables", "nl2br"])
+
+        with open(html_tmp_file, "w") as f:
+            f.write(html)
     except:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"
@@ -164,6 +160,9 @@ def export_pdf(root:RootNode, out_dir:str):
             ), raise_err=False
         )
     else:
-        message.info("save the pdf documentation in: %s" % (export_file))
-
-
+        # TODO
+        message.warning(
+            "PDF exporter is not implemented completely because of some dependencies,"
+            "and now it is able to export temporary markdown and html files only, "
+            "you can use the markdown and org exporter instead"
+        )

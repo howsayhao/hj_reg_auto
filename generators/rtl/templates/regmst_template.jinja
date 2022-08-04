@@ -6,16 +6,33 @@
 `default_nettype none
 module {{mst_name}} (
     // APB interface to upstream SoC interconnect
-    pclk, presetn, psel, penable, pready, pslverr, pwrite, paddr, pwdata, prdata,
+    pclk,
+    presetn,
+    psel,
+    penable,
+    pready,
+    pslverr,
+    pwrite,
+    paddr,
+    pwdata,
+    prdata,
     // pslverr assertion enable
     pslverr_en,
     // interrupt signal
     intr,
     // reg_native_if to the downstream regdisp module
-    {{prefix_o}}__req_vld, {{prefix_i}}__ack_vld, {{prefix_i}}__err,
-    {{prefix_o}}__wr_en, {{prefix_o}}__rd_en, {{prefix_o}}__addr,
-    {{prefix_o}}__wr_data, {{prefix_i}}__rd_data, {{prefix_o}}__soft_rst
+    {{prefix_o}}__req_vld,
+    {{prefix_i}}__ack_vld,
+    {{prefix_i}}__err,
+    {{prefix_o}}__wr_en,
+    {{prefix_o}}__rd_en,
+    {{prefix_o}}__addr,
+    {{prefix_o}}__wr_data,
+    {{prefix_i}}__rd_data,
+    {{prefix_o}}__soft_rst
 );
+    `include "common_funcs.vh"
+
     parameter       ADDR_WIDTH          = {{get_addr_width(mst_node)}};
     parameter       DATA_WIDTH          = {{get_data_width(mst_node)}};
     localparam      DB_REG_NUM          = 4;
@@ -121,23 +138,37 @@ module {{mst_name}} (
     //      internel debug registers
     //      external regdisp module
     //      empty address slot (dummy register)
+    localparam  DEC_ADDR_TRUNC_BITS = log2(DATA_WIDTH / 8);
+    localparam  DEC_ADDR_REM_BITS = ADDR_WIDTH - DEC_ADDR_TRUNC_BITS;
+
     always_comb begin
         dec_db_reg_sel      = {DB_REG_NUM{1'b0}};
         dec_ext_sel         = 1'b0;
         dec_dummy_reg_sel   = 1'b0;
-        unique casez (paddr[{{dec_addr_bit()|join(":")}}])
-        {%- for child in mst_node.children(unroll=True, skip_not_present=False) %}
-            {% if isinstance(child, AddrmapNode) -%}
-            {{get_comp_addr(child)|join(", ")|indent}}: dec_ext_sel = 1'b1;
-            {%- elif isinstance(child, RegfileNode) -%}
-            {{get_abs_addr(child, 0, 4)}}: dec_db_reg_sel[0] = 1'b1;
-            {{get_abs_addr(child, 1, 4)}}: dec_db_reg_sel[1] = 1'b1;
-            {{get_abs_addr(child, 2, 4)}}: dec_db_reg_sel[2] = 1'b1;
-            {{get_abs_addr(child, 3, 4)}}: dec_db_reg_sel[3] = 1'b1;
-            {% endif -%}
-        {%- endfor -%}
-            default: dec_dummy_reg_sel  = 1'b1;
-        endcase
+
+        if (fsm_req_vld) begin
+            unique case (1'b1)
+            {%- for child in mst_node.children(unroll=True, skip_not_present=False) %}
+                {% if isinstance(child, AddrmapNode) -%}
+                (DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS))
+                <= fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
+                (DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address+child.size)}} >> DEC_ADDR_TRUNC_BITS)):
+                    dec_ext_sel = 1'b1;
+                {%- elif isinstance(child, RegfileNode) -%}
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS):
+                    dec_db_reg_sel[0] = 1'b1;
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.absolute_address)}} + DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS):
+                    dec_db_reg_sel[1] = 1'b1;
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.absolute_address)}} + 2 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS):
+                    dec_db_reg_sel[2] = 1'b1;
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.absolute_address)}} + 3 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS):
+                    dec_db_reg_sel[3] = 1'b1;
+                {% endif -%}
+            {%- endfor -%}
+                default: dec_dummy_reg_sel  = 1'b1;
+            endcase
+        end
     end
 
 //*****************************************FSM INSTANCE************************************************//
@@ -164,8 +195,7 @@ module {{mst_name}} (
         .fsm_rd_data            (fsm_rd_data),
         .downstream_err         (downstream_err),
         .tmr_tmout              (tmr_tmout),
-        .tmr_rst                (tmr_rst)
-    );
+        .tmr_rst                (tmr_rst));
 
 //*******************************************TIMER*****************************************************//
     always_ff @(posedge pclk or negedge presetn) begin
@@ -214,8 +244,12 @@ module {{mst_name}} (
         .hw_pulse               (db_regs_acc_addr__val__pulse),
         .field_value            (db_regs_acc_addr__val__curr_value)
     );
-    assign  db_regs_acc_addr__val__pulse            = fsm_req_vld;
-    assign  db_regs_acc_addr__val__next_value       = fsm_addr;
+    assign  db_regs_acc_addr__val__pulse        = fsm_req_vld;
+
+    always_comb begin
+        db_regs_acc_addr__val__next_value                   = 64'h0;
+        db_regs_acc_addr__val__next_value[ADDR_WIDTH-1:0]   = fsm_addr;
+    end
 
     always_comb begin
         db_regs_acc_addr_o[63:0]     = 64'h0;
@@ -379,7 +413,7 @@ module {{mst_name}} (
         .hw_pulse               (1'b1),
         .field_value            ()
     );
-    assign  db_regs_stat__acc_type__next_value      = pwrite;
+    assign  db_regs_stat__acc_type__next_value      = fsm_wr_en;
 
     // field: intr_mask
     field #(
@@ -462,8 +496,8 @@ module {{mst_name}} (
     // internal register inverse multiplexor to debug registers
     assign  db_reg_wr_sel               = {DB_REG_NUM{fsm_wr_en}} & dec_db_reg_sel;
     assign  db_reg_rd_sel               = {DB_REG_NUM{fsm_rd_en}} & dec_db_reg_sel;
-    assign  dummy_reg_rd_sel            = dec_dummy_reg_sel & fsm_req_vld & fsm_rd_en;
-    assign  dummy_reg_wr_sel            = dec_dummy_reg_sel & fsm_req_vld & fsm_wr_en;
+    assign  dummy_reg_rd_sel            = dec_dummy_reg_sel & fsm_rd_en;
+    assign  dummy_reg_wr_sel            = dec_dummy_reg_sel & fsm_wr_en;
 
     assign  db_regs_acc_addr__snap_0_wr_data = db_reg_wr_sel[0] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
     assign  db_regs_acc_addr__snap_0_wr_en   = db_reg_wr_sel[0];

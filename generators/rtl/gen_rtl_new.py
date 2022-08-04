@@ -25,7 +25,7 @@ class RTLExporter:
 
         # basic context for all templates
         self.context = {
-            'bus_addr_width': 64,
+            'bus_addr_width': 48,
             'bus_data_width': 32,
             'RegNode': RegNode,
             'RegfileNode': RegfileNode,
@@ -57,6 +57,7 @@ class RTLExporter:
             'is_3rd_party_ip': self._is_3rd_party_ip,
             'is_regslv': self._is_regslv,
             'is_mem': self._is_mem,
+            'is_regdisp': self._is_regdisp,
             'format_addr': self._format_addr,
             'len': len,
             'format_sw_type': self._format_sw_type,
@@ -196,7 +197,7 @@ class RTLExporter:
 
     def _is_aligned(self, node:AddressableNode):
         # whether the forwarding module of regdisp is aligned to its absolute address
-        return node.absolute_address % (2 ** ceil(log2(node.total_size))) == 0
+        return node.absolute_address % (2 ** ceil(log2(node.size))) == 0
 
     def _get_comp_addr(self, node:AddressableNode):
         """
@@ -249,7 +250,7 @@ class RTLExporter:
         return forward_ff_param
 
     def _valid_bit(self, node:AddressableNode):
-        return ceil(log2(node.total_size))
+        return ceil(log2(node.size))
 
     def _get_inst_name(self, node:AddressableNode):
         return node.get_path_segment(array_suffix="_{index:d}")
@@ -270,10 +271,13 @@ class RTLExporter:
         return 1 if node.get_property("hj_cdc", default=False) else 0
 
     def _is_3rd_party_ip(self, node:AddrmapNode):
-        return node.get_property("hj_3rd_party_ip", default=False)
+        return node.get_property("hj_3rd_party_ip")
 
     def _is_regslv(self, node:AddrmapNode):
-        return node.get_property("hj_genslv", default=False)
+        return node.get_property("hj_genslv")
+
+    def _is_regdisp(self, node:AddrmapNode):
+        return node.get_property("hj_gendisp")
 
     def _is_mem(self, node:Node):
         return isinstance(node, MemNode)

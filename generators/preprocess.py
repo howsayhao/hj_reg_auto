@@ -732,14 +732,21 @@ class PreprocessListener(RDLListener):
         - total register number
         - filtered register number
         """
-        message.info("HRDA preprocess report\n"
-                     "------------------------------------------------\n"
-                     "total register number: %d\n"
-                     "total size: %s (%s) bytes\n"
-                     "filtered register number in UVM simulation: %d\n"
-                     "------------------------------------------------"
-                     % (self.total_reg_num, self.total_size, hex(self.total_size), self.filter_reg_num))
-        message.info("preprocessing time: %.4fs" % (time() - self.start_time))
+        message.info(
+            "HRDA preprocess report\n"
+            "------------------------------------------------\n"
+            "total register number: %d\n"
+            "total size: %s (%s) bytes\n"
+            "filtered register number in UVM simulation: %d\n"
+            "preprocessing time: %.4fs\n"
+            "------------------------------------------------" % (
+                self.total_reg_num,
+                self.total_size,
+                hex(self.total_size),
+                self.filter_reg_num,
+                time() - self.start_time
+            )
+        )
 
 def preprocess(root:RootNode, **user_ops):
     """

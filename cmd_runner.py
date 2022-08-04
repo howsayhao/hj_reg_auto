@@ -6,7 +6,7 @@ from multiprocessing import Process
 import utils.message as message
 from generators.chdr.export import export_chdr
 from generators.html.export import export_html
-from generators.pdf.export import export_org, export_pdf
+from generators.doc.export import export_org, export_md, export_pdf
 from generators.preprocess import preprocess
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
@@ -193,6 +193,11 @@ class CommandRunner:
             help="generate a pdf documentation"
         )
         parser_generate.add_argument(
+            "-gmd", "--gen_md",
+            action="store_true",
+            help="generate a markdown documentation"
+        )
+        parser_generate.add_argument(
             "-gral", "--gen_ral",
             action="store_true",
             help="generate UVM RAL model"
@@ -349,6 +354,14 @@ class CommandRunner:
                 Process(
                     target=export_pdf,
                     name="gen_pdf",
+                    args=(root, args.gen_dir)
+                )
+            )
+        if args.gen_all or args.gen_md:
+            proc_list.append(
+                Process(
+                    target=export_md,
+                    name="gen_md",
                     args=(root, args.gen_dir)
                 )
             )
