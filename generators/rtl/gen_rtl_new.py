@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import Field
 
 import os
 from math import ceil, log2
@@ -58,7 +59,6 @@ class RTLExporter:
             'is_regslv': self._is_regslv,
             'is_mem': self._is_mem,
             'is_regdisp': self._is_regdisp,
-            'format_addr': self._format_addr,
             'len': len,
             'format_sw_type': self._format_sw_type,
             'format_onread_type': self._format_onread_type,
@@ -70,7 +70,8 @@ class RTLExporter:
             'get_reset_val': self._get_reset_val,
             'is_singlepulse': self._is_singlepulse,
             'has_swmod': self._has_swmod,
-            'has_swacc': self._has_swacc
+            'has_swacc': self._has_swacc,
+            'is_hard_wired': self._is_hard_wired
         }
 
     def export(self, root:RootNode, rtl_dir:str):
@@ -247,6 +248,8 @@ class RTLExporter:
             else:
                 forward_ff_param.append("1'b0")
 
+        forward_ff_param.reverse()
+
         return forward_ff_param
 
     def _valid_bit(self, node:AddressableNode):
@@ -268,16 +271,16 @@ class RTLExporter:
             return self.context.get("bus_addr_width")
 
     def _has_cdc(self, node:AddressableNode):
-        return 1 if node.get_property("hj_cdc", default=False) else 0
+        return int(node.get_property("hj_cdc", default=False))
 
-    def _is_3rd_party_ip(self, node:AddrmapNode):
-        return node.get_property("hj_3rd_party_ip")
+    def _is_3rd_party_ip(self, node:AddrmapNode|MemNode):
+        return node.get_property("hj_3rd_party_ip", default=False)
 
-    def _is_regslv(self, node:AddrmapNode):
-        return node.get_property("hj_genslv")
+    def _is_regslv(self, node:AddrmapNode|MemNode):
+        return node.get_property("hj_genslv", default=False)
 
-    def _is_regdisp(self, node:AddrmapNode):
-        return node.get_property("hj_gendisp")
+    def _is_regdisp(self, node:AddrmapNode|MemNode):
+        return node.get_property("hj_gendisp", default=False)
 
     def _is_mem(self, node:Node):
         return isinstance(node, MemNode)
@@ -304,9 +307,6 @@ class RTLExporter:
         assert node.get_property("hj_genslv")
 
         return node.get_property("addr_list")
-
-    def _format_addr(self, addr:int):
-        return "{}'h{:x}".format(self.context["bus_addr_width"], addr)
 
     def _skip_reg_mux_dff_0(self, node:AddrmapNode):
         return int(node.get_property("hj_skip_reg_mux_dff_0", default=True))
@@ -405,10 +405,14 @@ class RTLExporter:
         elif node.get_property("hwset"):
             return "`HW_SET"
 
-        if hw_prop in (AccessType.rw, AccessType.w):
+        if hw_prop == AccessType.rw:
             return "`HW_RW"
-        elif hw_prop in (AccessType.r, AccessType.na):
+        elif hw_prop == AccessType.w:
+            return "`HW_WO"
+        elif hw_prop == AccessType.r:
             return "`HW_RO"
+        elif hw_prop == AccessType.na:
+            return "`HW_NA"
 
     def _format_precedence_type(self, node:FieldNode):
         if node.get_property("precedence", default=PrecedenceType.sw) == PrecedenceType.sw:
@@ -433,3 +437,6 @@ class RTLExporter:
 
     def _has_swacc(self, node:FieldNode):
         return int(node.get_property("swacc", default=False))
+
+    def _is_hard_wired(self, node:FieldNode):
+        return int(node.get_property("hard_wired", default=False))

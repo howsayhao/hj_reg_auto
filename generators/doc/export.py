@@ -6,6 +6,7 @@ import jinja2 as jj
 import utils.message as message
 from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
                             RegfileNode, RegNode, RootNode)
+from utils.misc import convert_size
 
 
 class DocExporter:
@@ -26,7 +27,7 @@ class DocExporter:
         `top_node` :
         `path` :
         """
-        assert template_name in ("org", "md")
+        assert template_name in ("org", "org_simplified", "md")
 
         # If it is the root node, skip to the top addrmap
         if isinstance(top_node, RootNode):
@@ -48,7 +49,9 @@ class DocExporter:
             'get_size': self._get_size,
             'get_total_size': self._get_total_size,
             'get_inst_name': self._get_inst_name,
-            'get_property': self._get_property
+            'get_property': self._get_property,
+            'convert_size': convert_size,
+            'get_all_blocks': self._get_all_blocks
         }
 
         template = self.jj_env.get_template("%s.jinja" % template_name)
@@ -99,15 +102,29 @@ class DocExporter:
         else:
             return node.get_property(prop_name, default=None)
 
+    def _get_all_blocks(self, node:Node):
+        def _get_all_sub_blocks(node:Node):
+            for child in node.children(unroll=True, skip_not_present=False):
+                if isinstance(child, (AddrmapNode, MemNode)):
+                    yield child
 
-def export_org(root:RootNode, out_dir:str):
+                    yield from _get_all_sub_blocks(child)
+
+        yield node
+        yield from _get_all_sub_blocks(node)
+
+
+def export_org(root:RootNode, out_dir:str, simplified=False):
     """
     """
     exporter = DocExporter()
     export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
 
     try:
-        exporter.export(root, export_file, "org")
+        exporter.export(
+            root,
+            export_file,
+            "org" if not simplified else "org_simplified")
     except:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"
@@ -162,7 +179,7 @@ def export_pdf(root:RootNode, out_dir:str):
     else:
         # TODO
         message.warning(
-            "PDF exporter is not implemented completely because of some dependencies,"
+            "PDF exporter is not implemented completely because of some dependencies, "
             "and now it is able to export temporary markdown and html files only, "
             "you can use the markdown and org exporter instead"
         )

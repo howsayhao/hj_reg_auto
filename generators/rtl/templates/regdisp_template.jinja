@@ -37,6 +37,7 @@ module {{disp_name}} (
 );
     `include "common_funcs.vh"
 
+    parameter   BASE_ADDR = {{"'h%x"|format(disp_node.absolute_address if use_abs_addr(disp_node) else 0)}};
     parameter   UPSTREAM_ADDR_WIDTH = {{get_addr_width(disp_node)}};
     parameter   UPSTREAM_DATA_WIDTH = {{get_data_width(disp_node)}};
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
@@ -46,7 +47,7 @@ module {{disp_name}} (
     parameter   {{get_rtl_name(child)|upper}}_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - {{get_rtl_name(child)|upper}}_ADDR_REM_BITS;
     {%- endfor %}
     parameter   FORWARD_NUM = {{get_forward_num(disp_node)}};
-    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_FF = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
+    parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
     parameter   INSERT_BACKWARD_FF = {{use_backward_ff(disp_node)}};
 
     input   logic   {{disp_name}}_clk;
@@ -115,10 +116,10 @@ module {{disp_name}} (
         if (upstream__{{disp_name}}__req_vld) begin
             unique case (1'b1)
             {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
-                (DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS))
+                (DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.address_offset)}} + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
                 <= upstream__{{disp_name}}__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
                 upstream__{{disp_name}}__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
-                (DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address+child.size)}} >> DEC_ADDR_TRUNC_BITS)):
+                (DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.address_offset+child.size)}} + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS)):
                     dec_if_sel[{{loop.index0}}] = 1'b1;
             {%- endfor %}
                 default: dec_dummy_reg_sel  = 1'b1;
@@ -163,7 +164,7 @@ module {{disp_name}} (
     {%- elif is_aligned(child) %}
     assign  downstream_addr_conv[{{loop.index0}}] = {{"{{"}}{{get_rtl_name(child)|upper}}_ADDR_TRUNC_BITS{{"{"}}1'b0{{"}}"}}, downstream_addr_imux[{{loop.index0}}][{{get_rtl_name(child)|upper}}_ADDR_REM_BITS-1:0]{{"}"}};
     {%- else %}
-    assign  downstream_addr_conv[{{loop.index0}}] = downstream_addr_imux[{{loop.index0}}] - UPSTREAM_ADDR_WIDTH'('h{{"%x"|format(child.absolute_address)}});
+    assign  downstream_addr_conv[{{loop.index0}}] = downstream_addr_imux[{{loop.index0}}] - UPSTREAM_ADDR_WIDTH'('h{{"%x"|format(child.absolute_address if use_abs_addr(disp_node) else child.address_offset)}});
     {%- endif %}
     {%- endfor %}
 

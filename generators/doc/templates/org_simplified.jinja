@@ -1,0 +1,7 @@
+|-----------------+------------+---------------+------|
+| hierarchy level | block name | address range | size |
+|-----------------+------------+---------------+------|
+{% for blk in get_all_blocks(top_node) -%}
+| {{get_hier_depth(blk)}} | {{get_inst_name(blk)}} | {{get_abs_addr(blk)}}-{{get_end_addr(blk)}} | {{convert_size(blk.size)}} |
+{% endfor -%}
+|-----------------+------------+---------------+------|

@@ -188,6 +188,11 @@ class CommandRunner:
             help="generate an org mode documentation"
         )
         parser_generate.add_argument(
+            "--simplified_org",
+            action="store_true",
+            help="org mode documentation is simplified and only contains block contents"
+        )
+        parser_generate.add_argument(
             "-gpdf", "--gen_pdf",
             action="store_true",
             help="generate a pdf documentation"
@@ -346,7 +351,7 @@ class CommandRunner:
                 Process(
                     target=export_org,
                     name="gen_org",
-                    args=(root, args.gen_dir)
+                    args=(root, args.gen_dir, bool(args.simplified_org))
                 )
             )
         if args.gen_all or args.gen_pdf:

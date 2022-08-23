@@ -3,7 +3,7 @@ module apb2reg_native_if (
     psel, penable, pready, pwrite, paddr, pwdata, prdata, pslverr,
     req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data, err
 );
-    parameter   ADDR_WIDTH  = 64;
+    parameter   ADDR_WIDTH  = 48;
     parameter   DATA_WIDTH  = 32;
 
     input   logic                       clk;
@@ -49,7 +49,7 @@ module apb2reg_native_if (
     always_comb begin
         case (state)
             S_IDLE:
-                if (req_vld & (wr_en | rd_en))
+                if (psel & ~penable)
                     if (ack_vld)
                         next_state  = S_ACK;
                     else
@@ -83,7 +83,7 @@ module apb2reg_native_if (
     assign  rd_en       = psel & ~penable & ~pwrite;
     assign  addr        = (psel & ~penable) ? paddr : {ADDR_WIDTH{1'b0}};
     assign  wr_data     = (psel & ~penable) ? pwdata : {DATA_WIDTH{1'b0}};
-    assign  pready      = (state == S_ACK) || (state == S_WAIT && next_state == S_IDLE);
+    assign  pready      = (state == S_IDLE) || (state == S_ACK) || (state == S_WAIT && next_state == S_IDLE);
     assign  prdata      = (state == S_ACK) ? rd_data_ff : ((state == S_WAIT && next_state == S_IDLE) ? rd_data : {DATA_WIDTH{1'b0}});
     assign  pslverr     = (state == S_ACK) ? err_ff : ((state == S_WAIT && next_state == S_IDLE) ? err : 1'b0);
 endmodule

@@ -26,6 +26,7 @@ module regdisp_disp_map (
 );
     `include "common_funcs.vh"
 
+    parameter   BASE_ADDR = 'h0;
     parameter   UPSTREAM_ADDR_WIDTH = 48;
     parameter   UPSTREAM_DATA_WIDTH = 32;
     parameter   REGSLV_SLV_MAP_ADDR_WIDTH = 48;
@@ -33,7 +34,7 @@ module regdisp_disp_map (
     parameter   REGSLV_SLV_MAP_ADDR_REM_BITS = 13;
     parameter   REGSLV_SLV_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGSLV_SLV_MAP_ADDR_REM_BITS;
     parameter   FORWARD_NUM = 1;
-    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_FF = {1'b0};
+    parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {1'b0};
     parameter   INSERT_BACKWARD_FF = 0;
 
     input   logic   regdisp_disp_map_clk;
@@ -91,15 +92,16 @@ module regdisp_disp_map (
         dec_if_sel          = {FORWARD_NUM{1'b0}};
         dec_dummy_reg_sel   = 1'b0;
 
-        if (upstream__regdisp_disp_map__req_vld)
+        if (upstream__regdisp_disp_map__req_vld) begin
             unique case (1'b1)
-                (DEC_ADDR_REM_BITS'('h20000000 >> DEC_ADDR_TRUNC_BITS))
+                (DEC_ADDR_REM_BITS'(('h0 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
                 <= upstream__regdisp_disp_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
                 upstream__regdisp_disp_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
-                (DEC_ADDR_REM_BITS'('h200010c8 >> DEC_ADDR_TRUNC_BITS)):
+                (DEC_ADDR_REM_BITS'(('h10c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS)):
                     dec_if_sel[0] = 1'b1;
                 default: dec_dummy_reg_sel  = 1'b1;
             endcase
+        end
     end
 
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data

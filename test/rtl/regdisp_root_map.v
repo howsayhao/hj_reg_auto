@@ -26,6 +26,7 @@ module regdisp_root_map (
 );
     `include "common_funcs.vh"
 
+    parameter   BASE_ADDR = 'h0;
     parameter   UPSTREAM_ADDR_WIDTH = 48;
     parameter   UPSTREAM_DATA_WIDTH = 32;
     parameter   REGDISP_DISP_MAP_ADDR_WIDTH = 48;
@@ -33,7 +34,7 @@ module regdisp_root_map (
     parameter   REGDISP_DISP_MAP_ADDR_REM_BITS = 13;
     parameter   REGDISP_DISP_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGDISP_DISP_MAP_ADDR_REM_BITS;
     parameter   FORWARD_NUM = 1;
-    parameter   [0:FORWARD_NUM-1]   INSERT_FORWARD_FF = {1'b0};
+    parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {1'b0};
     parameter   INSERT_BACKWARD_FF = 0;
 
     input   logic   regdisp_root_map_clk;
@@ -91,15 +92,16 @@ module regdisp_root_map (
         dec_if_sel          = {FORWARD_NUM{1'b0}};
         dec_dummy_reg_sel   = 1'b0;
 
-        if (upstream__regdisp_root_map__req_vld)
+        if (upstream__regdisp_root_map__req_vld) begin
             unique case (1'b1)
-                (DEC_ADDR_REM_BITS'('h20000000 >> DEC_ADDR_TRUNC_BITS))
+                (DEC_ADDR_REM_BITS'(('h0 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
                 <= upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
                 upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
-                (DEC_ADDR_REM_BITS'('h200010c8 >> DEC_ADDR_TRUNC_BITS)):
+                (DEC_ADDR_REM_BITS'(('h10c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS)):
                     dec_if_sel[0] = 1'b1;
                 default: dec_dummy_reg_sel  = 1'b1;
             endcase
+        end
     end
 
     // forward inverse multiplexor for req_vld, addr, wr_en, rd_en, wr_data
@@ -123,7 +125,7 @@ module regdisp_root_map (
     end
 
     // address conversion
-    assign  downstream_addr_conv[0] = downstream_addr_imux[0];
+    assign  downstream_addr_conv[0] = {{REGDISP_DISP_MAP_ADDR_TRUNC_BITS{1'b0}}, downstream_addr_imux[0][REGDISP_DISP_MAP_ADDR_REM_BITS-1:0]};
 
     // optionally insert forwarding flip-flops,
     // which depends on hj_use_forward_ff in child addrmaps

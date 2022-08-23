@@ -50,6 +50,8 @@ module {{slv_name}} (
 {%- endfor %}
     err_en
 );
+    `include "common_funcs.vh"
+
     parameter       ADDR_WIDTH                  = {{get_addr_width(slv_node)}};
     parameter       DATA_WIDTH                  = {{get_data_width(slv_node)}};
     parameter       INSERT_REG_FF               = 1;
@@ -166,6 +168,9 @@ module {{slv_name}} (
 {%- endif %}
 
 //**************************************ADDRESS DECODER***********************************************//
+    localparam  ADDR_TRUNC_BITS                 = log2(DATA_WIDTH / 8);
+    localparam  ADDR_REM_BITS                   = ADDR_WIDTH - ADDR_TRUNC_BITS;
+
     logic   [REG_NUM-1:0]                       dec_reg_sel;
     logic                                       dec_dummy_sel;
     logic                                       reg_acc;
@@ -179,9 +184,9 @@ module {{slv_name}} (
             dec_reg_sel = {REG_NUM{1'b0}};
             dec_dummy_sel = 1'b0;
 
-            unique casez (int_addr)
+            unique case (int_addr[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
                 {%- for addr in addr_list %}
-                {{format_addr(addr)}}: dec_reg_sel[{{loop.index0}}] = 1'b1;
+                {{"'h%x"|format(addr)}} >> ADDR_TRUNC_BITS: dec_reg_sel[{{loop.index0}}] = 1'b1;
                 {%- endfor %}
                 default: dec_dummy_sel = 1'b1;
             endcase
@@ -196,28 +201,28 @@ module {{slv_name}} (
         if (INSERT_REG_FF) begin: g_reg_ff
             always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
                 if (!{{curr_async_rst_n}}) begin
-                    reg_sw_wr_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_rd_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_wr_data              <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
+                    reg_sw_wr_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_rd_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
                     dummy_acc                   <= 1'b0;
                 end
                 else if (int_soft_rst) begin
-                    reg_sw_wr_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_rd_sel               <= {% raw %}{REG_NUM{1'b0}}{% endraw %};
-                    reg_sw_wr_data              <= {% raw %}{DATA_WIDTH{1'b0}}{% endraw %};
+                    reg_sw_wr_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_rd_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
                     dummy_acc                   <= 1'b0;
                 end
                 else begin
-                    reg_sw_wr_sel               <= {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
-                    reg_sw_rd_sel               <= {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
+                    reg_sw_wr_sel               <= {REG_NUM{int_wr_en}} & dec_reg_sel;
+                    reg_sw_rd_sel               <= {REG_NUM{int_rd_en}} & dec_reg_sel;
                     reg_sw_wr_data              <= int_wr_data;
                     dummy_acc                   <= dec_dummy_sel;
                 end
             end
         end
         else begin: g_no_reg_ff
-            assign  reg_sw_wr_sel               = {% raw %}{REG_NUM{int_wr_en}} & dec_reg_sel{% endraw %};
-            assign  reg_sw_rd_sel               = {% raw %}{REG_NUM{int_rd_en}} & dec_reg_sel{% endraw %};
+            assign  reg_sw_wr_sel               = {REG_NUM{int_wr_en}} & dec_reg_sel;
+            assign  reg_sw_rd_sel               = {REG_NUM{int_rd_en}} & dec_reg_sel;
             assign  reg_sw_wr_data              = int_wr_data;
             assign  dummy_acc                   = dec_dummy_sel;
         end
@@ -293,7 +298,8 @@ module {{slv_name}} (
         .SWACC                                  ({{"{%d{1'b%d}}"|format(get_alias_num(field), has_swacc(field))}}),
         .PULSE                                  ({{"{%d{1'b%d}}"|format(get_alias_num(field), is_singlepulse(field))}}),
         .HW_TYPE                                ({{format_hw_type(field)}}),
-        .PRECEDENCE                             ({{format_precedence_type(field)}}))
+        .PRECEDENCE                             ({{format_precedence_type(field)}}),
+        .HARD_WIRED                             ({{is_hard_wired(field)}}))
     x__{{reg_name}}__{{field.inst_name}} (
         .clk                                    ({{curr_clk}}),
         .rst_n                                  ({{curr_async_rst_n}}),

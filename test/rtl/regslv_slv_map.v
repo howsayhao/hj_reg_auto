@@ -197,6 +197,8 @@ module regslv_slv_map (
     regslv_rst_n,
     err_en
 );
+    `include "common_funcs.vh"
+
     parameter       ADDR_WIDTH                  = 48;
     parameter       DATA_WIDTH                  = 32;
     parameter       INSERT_REG_FF               = 1;
@@ -453,6 +455,9 @@ module regslv_slv_map (
     assign  {ack_vld, err, rd_data}             = pulse_deliver_backward_pulse_out;
 
 //**************************************ADDRESS DECODER***********************************************//
+    localparam  ADDR_TRUNC_BITS                 = log2(DATA_WIDTH / 8);
+    localparam  ADDR_REM_BITS                   = ADDR_WIDTH - ADDR_TRUNC_BITS;
+
     logic   [REG_NUM-1:0]                       dec_reg_sel;
     logic                                       dec_dummy_sel;
     logic                                       reg_acc;
@@ -466,67 +471,67 @@ module regslv_slv_map (
             dec_reg_sel = {REG_NUM{1'b0}};
             dec_dummy_sel = 1'b0;
 
-            unique casez (int_addr)
-                48'hc: dec_reg_sel[0] = 1'b1;
-                48'h10: dec_reg_sel[1] = 1'b1;
-                48'h10c: dec_reg_sel[2] = 1'b1;
-                48'h110: dec_reg_sel[3] = 1'b1;
-                48'h120: dec_reg_sel[4] = 1'b1;
-                48'h124: dec_reg_sel[5] = 1'b1;
-                48'h220: dec_reg_sel[6] = 1'b1;
-                48'h224: dec_reg_sel[7] = 1'b1;
-                48'h234: dec_reg_sel[8] = 1'b1;
-                48'h238: dec_reg_sel[9] = 1'b1;
-                48'h334: dec_reg_sel[10] = 1'b1;
-                48'h338: dec_reg_sel[11] = 1'b1;
-                48'h348: dec_reg_sel[12] = 1'b1;
-                48'h34c: dec_reg_sel[13] = 1'b1;
-                48'h448: dec_reg_sel[14] = 1'b1;
-                48'h44c: dec_reg_sel[15] = 1'b1;
-                48'h45c: dec_reg_sel[16] = 1'b1;
-                48'h460: dec_reg_sel[17] = 1'b1;
-                48'h55c: dec_reg_sel[18] = 1'b1;
-                48'h560: dec_reg_sel[19] = 1'b1;
-                48'h60c: dec_reg_sel[20] = 1'b1;
-                48'h610: dec_reg_sel[21] = 1'b1;
-                48'h70c: dec_reg_sel[22] = 1'b1;
-                48'h710: dec_reg_sel[23] = 1'b1;
-                48'h720: dec_reg_sel[24] = 1'b1;
-                48'h724: dec_reg_sel[25] = 1'b1;
-                48'h820: dec_reg_sel[26] = 1'b1;
-                48'h824: dec_reg_sel[27] = 1'b1;
-                48'h834: dec_reg_sel[28] = 1'b1;
-                48'h838: dec_reg_sel[29] = 1'b1;
-                48'h934: dec_reg_sel[30] = 1'b1;
-                48'h938: dec_reg_sel[31] = 1'b1;
-                48'h948: dec_reg_sel[32] = 1'b1;
-                48'h94c: dec_reg_sel[33] = 1'b1;
-                48'ha48: dec_reg_sel[34] = 1'b1;
-                48'ha4c: dec_reg_sel[35] = 1'b1;
-                48'ha5c: dec_reg_sel[36] = 1'b1;
-                48'ha60: dec_reg_sel[37] = 1'b1;
-                48'hb5c: dec_reg_sel[38] = 1'b1;
-                48'hb60: dec_reg_sel[39] = 1'b1;
-                48'hb70: dec_reg_sel[40] = 1'b1;
-                48'hb74: dec_reg_sel[41] = 1'b1;
-                48'hc70: dec_reg_sel[42] = 1'b1;
-                48'hc74: dec_reg_sel[43] = 1'b1;
-                48'hc84: dec_reg_sel[44] = 1'b1;
-                48'hc88: dec_reg_sel[45] = 1'b1;
-                48'hd84: dec_reg_sel[46] = 1'b1;
-                48'hd88: dec_reg_sel[47] = 1'b1;
-                48'hd98: dec_reg_sel[48] = 1'b1;
-                48'hd9c: dec_reg_sel[49] = 1'b1;
-                48'he98: dec_reg_sel[50] = 1'b1;
-                48'he9c: dec_reg_sel[51] = 1'b1;
-                48'heac: dec_reg_sel[52] = 1'b1;
-                48'heb0: dec_reg_sel[53] = 1'b1;
-                48'hfac: dec_reg_sel[54] = 1'b1;
-                48'hfb0: dec_reg_sel[55] = 1'b1;
-                48'hfc0: dec_reg_sel[56] = 1'b1;
-                48'hfc4: dec_reg_sel[57] = 1'b1;
-                48'h10c0: dec_reg_sel[58] = 1'b1;
-                48'h10c4: dec_reg_sel[59] = 1'b1;
+            unique case (int_addr[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
+                'hc >> ADDR_TRUNC_BITS: dec_reg_sel[0] = 1'b1;
+                'h10 >> ADDR_TRUNC_BITS: dec_reg_sel[1] = 1'b1;
+                'h10c >> ADDR_TRUNC_BITS: dec_reg_sel[2] = 1'b1;
+                'h110 >> ADDR_TRUNC_BITS: dec_reg_sel[3] = 1'b1;
+                'h120 >> ADDR_TRUNC_BITS: dec_reg_sel[4] = 1'b1;
+                'h124 >> ADDR_TRUNC_BITS: dec_reg_sel[5] = 1'b1;
+                'h220 >> ADDR_TRUNC_BITS: dec_reg_sel[6] = 1'b1;
+                'h224 >> ADDR_TRUNC_BITS: dec_reg_sel[7] = 1'b1;
+                'h234 >> ADDR_TRUNC_BITS: dec_reg_sel[8] = 1'b1;
+                'h238 >> ADDR_TRUNC_BITS: dec_reg_sel[9] = 1'b1;
+                'h334 >> ADDR_TRUNC_BITS: dec_reg_sel[10] = 1'b1;
+                'h338 >> ADDR_TRUNC_BITS: dec_reg_sel[11] = 1'b1;
+                'h348 >> ADDR_TRUNC_BITS: dec_reg_sel[12] = 1'b1;
+                'h34c >> ADDR_TRUNC_BITS: dec_reg_sel[13] = 1'b1;
+                'h448 >> ADDR_TRUNC_BITS: dec_reg_sel[14] = 1'b1;
+                'h44c >> ADDR_TRUNC_BITS: dec_reg_sel[15] = 1'b1;
+                'h45c >> ADDR_TRUNC_BITS: dec_reg_sel[16] = 1'b1;
+                'h460 >> ADDR_TRUNC_BITS: dec_reg_sel[17] = 1'b1;
+                'h55c >> ADDR_TRUNC_BITS: dec_reg_sel[18] = 1'b1;
+                'h560 >> ADDR_TRUNC_BITS: dec_reg_sel[19] = 1'b1;
+                'h60c >> ADDR_TRUNC_BITS: dec_reg_sel[20] = 1'b1;
+                'h610 >> ADDR_TRUNC_BITS: dec_reg_sel[21] = 1'b1;
+                'h70c >> ADDR_TRUNC_BITS: dec_reg_sel[22] = 1'b1;
+                'h710 >> ADDR_TRUNC_BITS: dec_reg_sel[23] = 1'b1;
+                'h720 >> ADDR_TRUNC_BITS: dec_reg_sel[24] = 1'b1;
+                'h724 >> ADDR_TRUNC_BITS: dec_reg_sel[25] = 1'b1;
+                'h820 >> ADDR_TRUNC_BITS: dec_reg_sel[26] = 1'b1;
+                'h824 >> ADDR_TRUNC_BITS: dec_reg_sel[27] = 1'b1;
+                'h834 >> ADDR_TRUNC_BITS: dec_reg_sel[28] = 1'b1;
+                'h838 >> ADDR_TRUNC_BITS: dec_reg_sel[29] = 1'b1;
+                'h934 >> ADDR_TRUNC_BITS: dec_reg_sel[30] = 1'b1;
+                'h938 >> ADDR_TRUNC_BITS: dec_reg_sel[31] = 1'b1;
+                'h948 >> ADDR_TRUNC_BITS: dec_reg_sel[32] = 1'b1;
+                'h94c >> ADDR_TRUNC_BITS: dec_reg_sel[33] = 1'b1;
+                'ha48 >> ADDR_TRUNC_BITS: dec_reg_sel[34] = 1'b1;
+                'ha4c >> ADDR_TRUNC_BITS: dec_reg_sel[35] = 1'b1;
+                'ha5c >> ADDR_TRUNC_BITS: dec_reg_sel[36] = 1'b1;
+                'ha60 >> ADDR_TRUNC_BITS: dec_reg_sel[37] = 1'b1;
+                'hb5c >> ADDR_TRUNC_BITS: dec_reg_sel[38] = 1'b1;
+                'hb60 >> ADDR_TRUNC_BITS: dec_reg_sel[39] = 1'b1;
+                'hb70 >> ADDR_TRUNC_BITS: dec_reg_sel[40] = 1'b1;
+                'hb74 >> ADDR_TRUNC_BITS: dec_reg_sel[41] = 1'b1;
+                'hc70 >> ADDR_TRUNC_BITS: dec_reg_sel[42] = 1'b1;
+                'hc74 >> ADDR_TRUNC_BITS: dec_reg_sel[43] = 1'b1;
+                'hc84 >> ADDR_TRUNC_BITS: dec_reg_sel[44] = 1'b1;
+                'hc88 >> ADDR_TRUNC_BITS: dec_reg_sel[45] = 1'b1;
+                'hd84 >> ADDR_TRUNC_BITS: dec_reg_sel[46] = 1'b1;
+                'hd88 >> ADDR_TRUNC_BITS: dec_reg_sel[47] = 1'b1;
+                'hd98 >> ADDR_TRUNC_BITS: dec_reg_sel[48] = 1'b1;
+                'hd9c >> ADDR_TRUNC_BITS: dec_reg_sel[49] = 1'b1;
+                'he98 >> ADDR_TRUNC_BITS: dec_reg_sel[50] = 1'b1;
+                'he9c >> ADDR_TRUNC_BITS: dec_reg_sel[51] = 1'b1;
+                'heac >> ADDR_TRUNC_BITS: dec_reg_sel[52] = 1'b1;
+                'heb0 >> ADDR_TRUNC_BITS: dec_reg_sel[53] = 1'b1;
+                'hfac >> ADDR_TRUNC_BITS: dec_reg_sel[54] = 1'b1;
+                'hfb0 >> ADDR_TRUNC_BITS: dec_reg_sel[55] = 1'b1;
+                'hfc0 >> ADDR_TRUNC_BITS: dec_reg_sel[56] = 1'b1;
+                'hfc4 >> ADDR_TRUNC_BITS: dec_reg_sel[57] = 1'b1;
+                'h10c0 >> ADDR_TRUNC_BITS: dec_reg_sel[58] = 1'b1;
+                'h10c4 >> ADDR_TRUNC_BITS: dec_reg_sel[59] = 1'b1;
                 default: dec_dummy_sel = 1'b1;
             endcase
         end

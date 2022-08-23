@@ -90,3 +90,8 @@ property enable_pslverr {
     component = addrmap;
     type = boolean;
 };
+
+property hard_wired {
+    component = field;
+    type = boolean;
+};

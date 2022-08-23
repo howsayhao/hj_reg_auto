@@ -4,6 +4,7 @@ addrmap reg_network {
         hj_genmst = true;
         addrmap {
             hj_gendisp = true;
+            hj_use_abs_addr = true;
             // ddr
             phy_misc_disp phy_misc_disp[8];
             // security

@@ -66,8 +66,6 @@ module reg_native_if2apb (
     end
 
     // output logic
-    // convert wr_en, rd_en, wr_data, rd_data to
-    // pwrite, pwdata, prdata
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             psel        <=  1'b0;
@@ -87,8 +85,8 @@ module reg_native_if2apb (
         end
     end
 
-    assign  penable     = (state == S_ACCESS);
+    assign  penable     = (state != S_SETUP);
     assign  rd_data     = prdata;
-    assign  ack_vld     = pready;
+    assign  ack_vld     = (state == S_ACCESS) & pready;
     assign  err         = pslverr;
 endmodule
