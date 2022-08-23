@@ -284,11 +284,14 @@ class PreprocessListener(RDLListener):
                     # actually it is a correct situation
                     pass
 
-            # regmst uses absolute address to decode and forward transactions
-            if node.get_property("hj_use_abs_addr") is False:
+            # regmst defaults to use absolute address to decode and forward transactions
+            if node.get_property("hj_use_abs_addr") is None:
+                node.inst.properties["hj_use_abs_addr"] = True
+
+            if not node.get_property("hj_use_abs_addr"):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regmst, so hj_use_abs_addr must be true" % (
+                    "addrmap %s represents for regmst, so hj_use_abs_addr is recommended to be true (now is false)" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -296,8 +299,6 @@ class PreprocessListener(RDLListener):
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
-
-            node.inst.properties["hj_use_abs_addr"] = True
 
             # update rtl module names
             self.all_rtl_mod.append("regmst_{}".format(node.inst_name))
@@ -332,11 +333,14 @@ class PreprocessListener(RDLListener):
                     )
                 )
 
-            # regdisp uses absolute address to decode and forward transactions
+            # regdisp defaults to use address offset to decode and forward transactions
+            if node.get_property("hj_use_abs_addr") is None:
+                node.inst.properties["hj_use_abs_addr"] = False
+
             if node.get_property("hj_use_abs_addr") is False:
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regdisp, so hj_use_abs_addr must be true" % (
+                    "addrmap %s represents for regdisp, so hj_use_abs_addr is recommended to be true (now is false)" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -344,8 +348,6 @@ class PreprocessListener(RDLListener):
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
-
-            node.inst.properties["hj_use_abs_addr"] = True
 
             # update rtl module names
             self.all_rtl_mod.append("regdisp_{}".format(node.inst_name))
@@ -383,11 +385,14 @@ class PreprocessListener(RDLListener):
                     )
                 )
 
-            # regslv uses absolute address to decode transactions
+            # regslv defaults to use address offset to decode transactions
+            if node.get_property("hj_use_abs_addr") is None:
+                node.inst.properties["hj_use_abs_addr"] = False
+
             if node.get_property("hj_use_abs_addr"):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regslv, so hj_use_abs_addr must be false" % (
+                    "addrmap %s represents for regslv, so hj_use_abs_addr is recommended to be false" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -395,8 +400,6 @@ class PreprocessListener(RDLListener):
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
-
-            node.inst.properties["hj_use_abs_addr"] = False
 
             # SystemRDL instance properties do not need array suffix
             node.inst.properties["rtl_name"] = "regslv_{}".format(node.inst_name)
@@ -441,45 +444,43 @@ class PreprocessListener(RDLListener):
             if not self.keep_quiet:
                 message.debug("Recognized as 3rd party IP", self.indent)
 
-            self.is_in_3rd_party_ip = True
+            if not node.parent.get_property("hj_3rd_party_ip", default=False):
+                self.is_in_3rd_party_ip = True
 
-            # check whether 3rd party IP are forwarded by regdisp,
-            # or at the top level of the design
-            if not isinstance(node.parent, RootNode) and \
-                not node.parent.get_property("hj_gendisp") and \
-                not node.parent.get_property("hj_3rd_party_ip"):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s representing for 3rd party IP must be covered by 3rd party IP addrmap, "
-                    "or have a parent addrmap which represents for regdisp, but parent addrmap %s does not." % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                        node.parent.get_path_segment(array_suffix="_{index:d}")
+                # check whether 3rd party IP are forwarded by regdisp,
+                # or at the top level of the design
+                if not isinstance(node.parent, RootNode) and \
+                    not node.parent.get_property("hj_gendisp"):
+                    message.error(
+                        "%s, %d: %d:\n%s\n"
+                        "addrmap %s representing for 3rd party IP must be covered by 3rd party IP addrmap, "
+                        "or have a parent addrmap which represents for regdisp, but parent addrmap %s does not." % (
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
+                            node.get_path_segment(array_suffix="_{index:d}"),
+                            node.parent.get_path_segment(array_suffix="_{index:d}")
+                        )
                     )
-                )
 
-            # as for 3rd party IP, hj_use_abs_addr needs to be assigned by user
-            if node.get_property("hj_use_abs_addr") is None:
-                message.warning(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for 3rd party IP, but you don't explicitly "
-                    "assign the property hj_use_abs_addr, and it will be assigned to true" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}")
+                # as for 3rd party IP, hj_use_abs_addr needs to be assigned by user
+                if node.get_property("hj_use_abs_addr") is None:
+                    message.warning(
+                        "%s, %d: %d:\n%s\n"
+                        "addrmap %s represents for 3rd party IP, but you don't explicitly "
+                        "assign the property hj_use_abs_addr, and it will be assigned to true" % (
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
+                            node.get_path_segment(array_suffix="_{index:d}")
+                        )
                     )
-                )
-                # write default value
-                node.inst.properties["hj_use_abs_addr"] = True
+                    # write default value
+                    node.inst.properties["hj_use_abs_addr"] = True
 
-            node.inst.properties["hj_3rd_party_ip"] = True
             node.inst.properties["ispresent"] = False
-
             node.inst.properties["rtl_name"] = node.inst_name
 
             self.is_filtered = True
@@ -504,12 +505,17 @@ class PreprocessListener(RDLListener):
         if node.get_property("hj_flatten_addrmap"):
             self.reg_name.pop()
 
-        if node.get_property("hj_3rd_party_ip"):
+        if node.get_property("hj_3rd_party_ip") and \
+            not node.parent.get_property("hj_3rd_party_ip", default=False):
             self.is_in_3rd_party_ip = False
 
         self.is_filtered = self.runtime_stack.pop()
 
     def enter_Mem(self, node):
+        # memory imported by IP-XACT (.xml) files are treated as 3rd party IP automatically
+        if str(node.inst.def_src_ref.filename).endswith(".xml"):
+            node.inst.properties["hj_3rd_party_ip"] = True
+
         # debug message
         if not self.keep_quiet:
             message.debug(
@@ -520,36 +526,36 @@ class PreprocessListener(RDLListener):
                     convert_size(node.size)
                 ), self.indent
             )
-
-        if not node.parent.get_property("hj_gendisp") and \
-            not node.parent.get_property("hj_3rd_party_ip"):
-            message.error(
-                "%s, %d: %d:\n%s\n"
-                "the parent addrmap %s of memory instance %s is not recognized as "
-                "regdisp or 3rd party IP, and memories must be forwarded by a regdisp or 3rd party IP" % (
-                    self.ref.filename,
-                    self.ref.line,
-                    self.ref.line_selection[0],
-                    self.ref.line_text,
-                    node.parent.get_path_segment(array_suffix="_{index:d}"),
-                    node.get_path_segment(array_suffix="_{index:d}")
-                )
-            )
-
-        # check if memory width satisfies the requirement of 32 * (2^i)
-        if not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
-            message.error(
-                "%s, %d: %d:\n%s\n"
-                "width of memory %s requires a number of 32 * (2^i), such as 32, 64, 128..." % (
+        if not self.is_in_3rd_party_ip:
+            if not node.parent.get_property("hj_gendisp"):
+                message.error(
+                    "%s, %d: %d:\n%s\n"
+                    "the parent addrmap %s of memory instance %s is not recognized as "
+                    "regdisp or 3rd party IP, and memories must be forwarded by a regdisp or 3rd party IP" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
                         self.ref.line_text,
+                        node.parent.get_path_segment(array_suffix="_{index:d}"),
                         node.get_path_segment(array_suffix="_{index:d}")
+                    )
                 )
-            )
 
-        node.inst.properties["hj_use_abs_addr"] = False
+            # check if memory width satisfies the requirement of 32 * (2^i)
+            if not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
+                message.error(
+                    "%s, %d: %d:\n%s\n"
+                    "width of memory %s requires a number of 32 * (2^i), such as 32, 64, 128..." % (
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
+                            node.get_path_segment(array_suffix="_{index:d}")
+                    )
+                )
+
+            node.inst.properties["hj_use_abs_addr"] = False
+
         node.inst.properties["rtl_name"] = "mem_{}".format(node.inst_name)
 
     def exit_Mem(self, node):
@@ -645,6 +651,32 @@ class PreprocessListener(RDLListener):
         self.reg_name.pop()
 
     def enter_Field(self, node):
+        if node.get_property("hard_wired"):
+            if node.get_property("hwclr") or node.get_property("hwset") or \
+                not node.get_property("sw") == AccessType.r or node.get_property("onread"):
+                message.error(
+                    "%s, %d: %d:\n%s\n"
+                    "hard-wired field %s is only allowed to have following access types: "
+                    "hw = r/rw/na (without any side effect like hwclr or hwset), "
+                    "sw = r (without any side effect like rset or rclr)" % (
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
+                        node.get_path_segment(array_suffix="_{index:d}")
+                    )
+                )
+            if node.get_property("hj_syncresetsignal"):
+                message.error(
+                    "%s, %d: %d:\n%s\n"
+                    "hard-wired field %s is not allowed to have synchronous reset signals" % (
+                        self.ref.filename,
+                        self.ref.line,
+                        self.ref.line_selection[0],
+                        self.ref.line_text,
+                        node.get_path_segment(array_suffix="_{index:d}")
+                    )
+                )
         if node.is_hw_writable and node.get_property("singlepulse"):
             message.warning(
                 "%s, %d: %d:\n%s\n"

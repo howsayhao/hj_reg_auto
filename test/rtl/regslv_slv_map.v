@@ -940,8 +940,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_0_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -966,8 +967,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_0_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -992,8 +994,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_0_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1030,8 +1033,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_0_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1056,8 +1060,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_0_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1082,8 +1087,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_0_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1144,8 +1150,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_1_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1170,8 +1177,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_1_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1196,8 +1204,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_1_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1234,8 +1243,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_1_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1260,8 +1270,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_1_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1286,8 +1297,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_1_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1348,8 +1360,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_2_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1374,8 +1387,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_2_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1400,8 +1414,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_2_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1438,8 +1453,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_2_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1464,8 +1480,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_2_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1490,8 +1507,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_2_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1552,8 +1570,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_3_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1578,8 +1597,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_3_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1604,8 +1624,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_3_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1642,8 +1663,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_3_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1668,8 +1690,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_3_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1694,8 +1717,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_3_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1756,8 +1780,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_4_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1782,8 +1807,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_4_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1808,8 +1834,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_4_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1846,8 +1873,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_4_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1872,8 +1900,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_4_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1898,8 +1927,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_11_4_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1960,8 +1990,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_0_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -1986,8 +2017,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_0_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2012,8 +2044,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_0_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2050,8 +2083,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_0_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2076,8 +2110,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_0_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2102,8 +2137,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_0_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2164,8 +2200,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_1_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2190,8 +2227,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_1_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2216,8 +2254,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_1_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2254,8 +2293,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_1_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2280,8 +2320,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_1_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2306,8 +2347,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_1_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2368,8 +2410,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_2_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2394,8 +2437,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_2_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2420,8 +2464,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_2_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2458,8 +2503,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_2_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2484,8 +2530,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_2_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2510,8 +2557,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_2_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2572,8 +2620,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_3_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2598,8 +2647,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_3_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2624,8 +2674,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_3_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2662,8 +2713,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_3_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2688,8 +2740,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_3_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2714,8 +2767,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_3_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2776,8 +2830,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_4_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2802,8 +2857,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_4_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2828,8 +2884,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_4_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2866,8 +2923,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_4_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2892,8 +2950,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_4_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2918,8 +2977,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_4_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -2980,8 +3040,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_5_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3006,8 +3067,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_5_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3032,8 +3094,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_5_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3070,8 +3133,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_5_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3096,8 +3160,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_5_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3122,8 +3187,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_5_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3184,8 +3250,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_6_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3210,8 +3277,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_6_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3236,8 +3304,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_6_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3274,8 +3343,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_6_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3300,8 +3370,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_6_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3326,8 +3397,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_6_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3388,8 +3460,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_7_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3414,8 +3487,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_7_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3440,8 +3514,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_7_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3478,8 +3553,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_7_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3504,8 +3580,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_7_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3530,8 +3607,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_7_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3592,8 +3670,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_8_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3618,8 +3697,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_8_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3644,8 +3724,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_8_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3682,8 +3763,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_8_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3708,8 +3790,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_8_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3734,8 +3817,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_8_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3796,8 +3880,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_9_TEM21__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3822,8 +3907,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_9_TEM21__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3848,8 +3934,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_9_TEM21__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3886,8 +3973,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_9_TEM22__FIELD_3 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3912,8 +4000,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_9_TEM22__FIELD_2 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -3938,8 +4027,9 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_RW),
-        .PRECEDENCE                             (`SW))
+        .HW_TYPE                                (`HW_WO),
+        .PRECEDENCE                             (`SW),
+        .HARD_WIRED                             (0))
     x__map_12_9_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),

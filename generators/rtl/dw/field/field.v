@@ -7,22 +7,19 @@ module field (
     hw_pulse, hw_value, field_value,
     swmod_out, swacc_out
 );
-
     parameter           F_WIDTH         = 4;
     parameter           ALIAS_NUM       = 1;
     parameter           SRST_CNT        = 0;
     parameter           PRECEDENCE      = `SW;
-
+    parameter           HARD_WIRED      = 0;
     parameter   [3:0]   SW_TYPE         [ALIAS_NUM-1:0]     = '{ALIAS_NUM{`SW_RW}};
     parameter   [3:0]   SW_ONREAD_TYPE  [ALIAS_NUM-1:0]     = '{ALIAS_NUM{`NA}};
     parameter   [3:0]   SW_ONWRITE_TYPE [ALIAS_NUM-1:0]     = '{ALIAS_NUM{`NA}};
     parameter           HW_TYPE                             = `HW_RW;
     parameter           SRST_WIDTH                          = SRST_CNT ? SRST_CNT : 1;
-
     parameter   [ALIAS_NUM-1:0]         SWMOD               = {ALIAS_NUM{1'b0}};
     parameter   [ALIAS_NUM-1:0]         SWACC               = {ALIAS_NUM{1'b0}};
     parameter   [ALIAS_NUM-1:0]         PULSE               = {ALIAS_NUM{1'b0}};
-
     parameter   [F_WIDTH-1:0]           ARST_VALUE          = {F_WIDTH{1'b0}};
     parameter   [F_WIDTH-1:0]           SRST_VALUE          = ARST_VALUE;
 
@@ -87,7 +84,11 @@ module field (
         end
     endgenerate
 
-    hw_ctrl #(.F_WIDTH (F_WIDTH), .HW_TYPE (HW_TYPE))
+    hw_ctrl #(
+        .F_WIDTH                            (F_WIDTH),
+        .HW_TYPE                            (HW_TYPE),
+        .HARD_WIRED                         (HARD_WIRED),
+        .HARD_WIRED_VAL                     (ARST_VALUE))
     hw_ctrl (
         .hw_pulse                           (hw_pulse),
         .hw_value                           (hw_value),
@@ -142,13 +143,18 @@ module field (
 
     assign field_value_modify = |field_mux_sel;
 
-    // field DFF
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            field_value <= ARST_VALUE;
-        else if (field_value_modify)
-            field_value <= nxt_field_value;
-    end
+    generate
+        if (HARD_WIRED)
+            assign field_value = nxt_hw_value;
+        else
+            // field DFF
+            always_ff @(posedge clk or negedge rst_n) begin
+                if (!rst_n)
+                    field_value <= ARST_VALUE;
+                else if (field_value_modify)
+                    field_value <= nxt_field_value;
+            end
+    endgenerate
 
     // swmod, swacc (swrd, swwr) genrated by software
     always_ff @(posedge clk or negedge rst_n)

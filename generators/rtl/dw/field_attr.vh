@@ -23,10 +23,12 @@
 `define WZT      4'd6 // Write 0 to Toggle
 
 // HW_TYPE
-`define HW_RO    4'd0 // Read only
-`define HW_RW    4'd1 // Read, Write on hw_pulse
-`define HW_CLR   4'd2 // Bitwise Clear, hw_pulse input is ignored.
-`define HW_SET   4'd3 // Bitwise Set, hw_pulse input is ignored.
+`define HW_NA    4'd0 // Hardware not accessible
+`define HW_RO    4'd1 // Read only
+`define HW_WO    4'd2 // Write only
+`define HW_RW    4'd3 // Read, Write on hw_pulse
+`define HW_CLR   4'd4 // Bitwise Clear, hw_pulse input is ignored.
+`define HW_SET   4'd5 // Bitwise Set, hw_pulse input is ignored.
 
 `define SW 0
 `define HW 1
