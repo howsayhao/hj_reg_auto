@@ -118,18 +118,20 @@ module slv_fsm
                 if_rd_data  = reg_rd_data;
             end
             S_WRITE_ACCESS: begin
-                if (dummy_acc)
+                if (dummy_acc) begin
                     if_ack_vld  = 1'b1;
                     if (if_err_en)
                         if_err  = 1'b1;
+                end
                 else if (reg_acc)
                     if_ack_vld  = 1'b1;
             end
             S_READ_ACCESS: begin
-                if (dummy_acc)
+                if (dummy_acc) begin
                     if_ack_vld  = 1'b1;
                     if (if_err_en)
                         if_err  = 1'b1;
+                end
                 else if (reg_rd_data_vld)
                     if_ack_vld  = 1'b1;
                     if_rd_data  = reg_rd_data;
