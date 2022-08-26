@@ -1,6 +1,7 @@
 import os.path
 from shutil import copy
 
+import jinja2 as jj
 import utils.message as message
 from openpyxl import load_workbook
 from openpyxl.worksheet.cell_range import CellRange
@@ -14,10 +15,10 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
     Parameter
     ---------
     `dir` : directory to generated template file
-    `name` : 生成模板的名字, 后续将作为regfile的名称使用
-    `rnum` : 生成模板中寄存器的数量
-    `rname` : 生成模板中各个寄存器的名字
-    `language` : 生成模板的语言格式, 支持中文/English
+    `name` : name of generated template file
+    `rnum` : register number
+    `rname` : register name list
+    `language` : cn or en
     """
     temp_file = os.path.join(os.path.dirname(__file__), "template_{}.xlsx".format(language))
     gen_file = os.path.join(dir, name)
@@ -62,10 +63,7 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
                     elif (row, col) == EXCEL_REG_HEAD["AddrOffset"]["Content"]["Loc"]:
                         new_cell.value = "{0:#0{1}X}".format(regidx<<2, 10)
 
-        # FIX: 上面Style Copy存在不能复制被合并的单元格的问题,
-        # 原因是在openpyxl里单元格合并不是一个Style,
-        # 而是将被合并单元格变成MergedCell Object,
-        # 与普通的Cell Object不同
+        # fix: merged cells
         area = CellRange(min_row=1, max_row=row_num, min_col=1, max_col=col_num)
         for mcr in ws.merged_cells:
             if mcr.coord not in area:
@@ -82,18 +80,43 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
     else:
         message.info("generate template: %s" % (gen_file))
 
-def gen_rdl_template(dir:str, name:str):
+def gen_rdl_template(dir:str, name:str, template_type:str, **kwargs):
     """
     generate templates in SystemRDL (.rdl) format
+
+    template_type: common, interrupt
     """
-    temp_file = os.path.join(os.path.dirname(__file__), "template.rdl")
+    common_template_file = os.path.join(os.path.dirname(__file__), "template.rdl")
 
     # handle duplicate file names
     suffix_num = 1
+    original_name = name
+
     while os.path.exists(os.path.join(dir, name)):
-        name = "{}_{}{}".format(os.path.splitext(name)[0], suffix_num, os.path.splitext(name)[1])
+        name = "{}_{}{}".format(
+            os.path.splitext(original_name)[0],
+            suffix_num,
+            os.path.splitext(original_name)[1]
+        )
         suffix_num += 1
 
     gen_file = os.path.join(dir, name)
-    copy(temp_file, gen_file)
+
+    if template_type == "common":
+        copy(common_template_file, gen_file)
+
+    elif template_type == "interrupt":
+        # dump interrupt template using jinja2
+        jj_env = jj.Environment(
+            loader=jj.FileSystemLoader(os.path.dirname(__file__)))
+        template = jj_env.get_template("intr.jinja2")
+
+        intr_num = kwargs.pop("intr_num")
+        stream = template.stream(intr_num=intr_num, inst_name=os.path.splitext(name)[0])
+        stream.dump(os.path.join(dir, name))
+
+    if kwargs:
+        message.info("some arguments are not valid when generating SystemRDL template")
+
     message.info("generate template: %s" % (gen_file))
+

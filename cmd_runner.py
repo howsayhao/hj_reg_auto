@@ -70,6 +70,16 @@ class CommandRunner:
             help="generate SystemRDL template"
         )
         parser_template.add_argument(
+            "--interrupt_template",
+            action="store_true",
+            help="the SystemRDL template is used for interrupts"
+        )
+        parser_template.add_argument(
+            "--interrupt_number",
+            nargs=1,
+            help="interrupt number generated in the template"
+        )
+        parser_template.add_argument(
             "-excel",
             action="store_true",
             help="to generate Excel worksheet template"
@@ -255,7 +265,6 @@ class CommandRunner:
             message.error("directory does not exists!")
 
         if args.excel:
-            print(args.excel)
             if args.name.endswith(".xls"):
                 message.info("file suffix .xls is replaced by .xlsx")
                 args.name += "x"
@@ -267,6 +276,12 @@ class CommandRunner:
                 append_name = reg_names[-1]
                 for _ in range(len(reg_names), args.rnum):
                     reg_names.append(append_name)
+
+            if args.interrupt_template or args.interrupt_number:
+                message.info(
+                    "--interrupt_template and --interrupt_number options are not supported "
+                    "for Excel worksheet template (only for SystemRDL)"
+                )
             gen_excel_template(args.dir, args.name, args.rnum,
                                reg_names, args.language)
 
@@ -274,9 +289,19 @@ class CommandRunner:
             if not args.name.endswith(".rdl"):
                 args.name += ".rdl"
             if args.rname or args.rnum or args.language:
-                message.info("-rname/-rnum/-l/--language options are not supported to "
-                             "generate an SystemRDL template now (only for Excel worksheets)")
-            gen_rdl_template(args.dir, args.name)
+                message.info(
+                    "-rname, -rnum and -l/--language options are not supported to "
+                    "generate an SystemRDL template now (only for Excel worksheets)"
+                )
+            if args.interrupt_template:
+                type = "interrupt"
+                if args.interrupt_number:
+                    intr_num = int(args.interrupt_number[0])
+                else:
+                    intr_num = 1
+            else:
+                type = "common"
+            gen_rdl_template(args.dir, args.name, type, intr_num=intr_num)
 
     @staticmethod
     def _parse(args):

@@ -1,0 +1,39 @@
+{%- set group_num = (intr_num / 32.0)|round(method="ceil")|int -%}
+{%- set rem_bits = intr_num - 32*(group_num-1) -%}
+addrmap {{inst_name}} {
+    hj_genslv = true;
+
+    field inj {hw=na;}; // software injection bits
+    field en {hw=na;};  // interrupt enable bits
+    field typ {hw=na;}; // interrupt type (level or edge triggered)
+    field stat {intr; onwrite=wzc;}; // interrupt status
+
+    {%- for group_idx in range(group_num) %}
+    {%- set bit_num = rem_bits if group_idx == group_num - 1 else 32 %}
+    reg {
+        {%- for bit_idx in range(bit_num) %}
+        inj inj_{{bit_idx}} = 0x0;
+        {%- endfor %}
+    } injection_{{group_idx}};
+    reg {
+        {%- for bit_idx in range(bit_num) %}
+        en en_{{bit_idx}} = 0x0;
+        {%- endfor %}
+    } enable_{{group_idx}};
+    reg {
+        {%- for bit_idx in range(bit_num) %}
+        typ typ_{{bit_idx}} = 0x0;
+        {%- endfor %}
+    } intr_type_{{group_idx}};
+    reg {
+        {%- for bit_idx in range(bit_num) %}
+        stat stat_{{bit_idx}} = 0x0;
+        {%- endfor %}
+    } status_{{group_idx}};
+    {%- for bit_idx in range(bit_num) %}
+    status_{{group_idx}}.stat_{{bit_idx}} -> enable = enable_{{group_idx}}.en_{{bit_idx}};
+    status_{{group_idx}}.stat_{{bit_idx}} -> injection = injection_{{group_idx}}.inj_{{bit_idx}};
+    status_{{group_idx}}.stat_{{bit_idx}} -> intr_type = intr_type_{{group_idx}}.typ_{{bit_idx}};
+    {%- endfor %}
+    {%- endfor %}
+};

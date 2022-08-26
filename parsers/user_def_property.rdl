@@ -95,3 +95,13 @@ property hard_wired {
     component = field;
     type = boolean;
 };
+
+property injection {
+    component = field;
+    type = ref;
+};
+
+property intr_type {
+    component = field;
+    type = ref;
+};

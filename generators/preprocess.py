@@ -689,6 +689,10 @@ class PreprocessListener(RDLListener):
                 )
             )
 
+        # if field is used for interrupt, the parent register must be an interrupt register
+        if node.get_property("intr"):
+            node.parent.inst.properties["intr"] = True
+
         # hdl_path_slice of filtered fields will be ignored in generated uvm ral model
         if not self.is_filtered:
             field_rtl_inst_name = "x__{reg_name}__{field_name}".format(

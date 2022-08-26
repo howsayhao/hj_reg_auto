@@ -1,5 +1,4 @@
 from __future__ import annotations
-from dataclasses import Field
 
 import os
 from math import ceil, log2
@@ -71,7 +70,10 @@ class RTLExporter:
             'is_singlepulse': self._is_singlepulse,
             'has_swmod': self._has_swmod,
             'has_swacc': self._has_swacc,
-            'is_hard_wired': self._is_hard_wired
+            'is_hard_wired': self._is_hard_wired,
+            'is_intr': self._is_intr,
+            'get_ref_prop': self._get_ref_prop,
+            'get_field_num': self._get_field_num
         }
 
     def export(self, root:RootNode, rtl_dir:str):
@@ -440,3 +442,13 @@ class RTLExporter:
 
     def _is_hard_wired(self, node:FieldNode):
         return int(node.get_property("hard_wired", default=False))
+
+    def _is_intr(self, node:FieldNode|RegNode):
+        return node.get_property("intr", default=False)
+
+    def _get_ref_prop(self, node:FieldNode, ref_prop:str) -> FieldNode:
+        assert node.get_property("intr")
+        return node.get_property(ref_prop)
+
+    def _get_field_num(self, node:RegNode):
+        return len(list(node.fields(skip_not_present=False)))

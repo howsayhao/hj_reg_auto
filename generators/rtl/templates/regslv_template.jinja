@@ -8,23 +8,18 @@
 module {{slv_name}} (
 {%- for reg in reg_list %}
     {%- set reg_name = get_rtl_name(reg) -%}
-    {%- for field in reg.fields(skip_not_present=False) -%}
-    {%- if not field.is_alias -%}
-    {%- if field.is_hw_readable %}
-    {{reg_name}}__{{field.inst_name}}__curr_value,
-    {%- endif %}
+    {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
+    {%- if field.is_hw_readable and not is_intr(field) %}{{reg_name}}__{{field.inst_name}}__curr_value,{%- endif %}
     {%- if field.is_hw_writable %}
-    {{reg_name}}__{{field.inst_name}}__pulse,
+    {%- if not is_intr(field) %}{{reg_name}}__{{field.inst_name}}__pulse,{%- endif %}
     {{reg_name}}__{{field.inst_name}}__next_value,
     {%- endif %}
-    {%- if get_property(field, "swacc") %}
-    {{reg_name}}__{{field.inst_name}}__swacc,
-    {%- endif %}
-    {%- if get_property(field, "swmod") %}
-    {{reg_name}}__{{field.inst_name}}__swmod,
-    {%- endif %}
-    {%- endif %}
+    {%- if get_property(field, "swacc") %}{{reg_name}}__{{field.inst_name}}__swacc,{%- endif %}
+    {%- if get_property(field, "swmod") %}{{reg_name}}__{{field.inst_name}}__swmod,{%- endif %}
     {%- endfor %}
+    {%- if is_intr(reg) %}
+    {{reg_name}}__intr_out,
+    {%- endif %}
 {%- endfor %}
     clk,
     rst_n,
@@ -55,17 +50,17 @@ module {{slv_name}} (
     parameter       ADDR_WIDTH                  = {{get_addr_width(slv_node)}};
     parameter       DATA_WIDTH                  = {{get_data_width(slv_node)}};
     parameter       INSERT_REG_FF               = 1;
-
     localparam      REG_NUM                     = {{addr_loc_num}};
-    {% for reg in reg_list -%}
+{% for reg in reg_list -%}
     {%- set reg_name = get_rtl_name(reg) -%}
-    {%- for field in reg.fields(skip_not_present=False) %}
-    {%- if not field.is_alias %}
-    {%- if field.is_hw_readable %}
+    {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
+    {%- if field.is_hw_readable and not is_intr(field) %}
     output  logic   {{"[%2s:0]"|format(field.width-1)}}                      {{reg_name}}__{{field.inst_name}}__curr_value;
     {%- endif %}
     {%- if field.is_hw_writable %}
+    {%- if not is_intr(field) %}
     input   logic                               {{reg_name}}__{{field.inst_name}}__pulse;
+    {%- endif %}
     input   logic   {{"[%2s:0]"|format(field.width-1)}}                      {{reg_name}}__{{field.inst_name}}__next_value;
     {%- endif %}
     {%- if get_property(field, "swacc") %}
@@ -74,10 +69,11 @@ module {{slv_name}} (
     {%- if get_property(field, "swmod") %}
     output  logic                               {{reg_name}}__{{field.inst_name}}__swmod;
     {%- endif %}
+    {%- endfor %}
+    {%- if is_intr(reg) %}
+    output  logic                               {{reg_name}}__intr_out;
     {%- endif %}
-    {%- endfor %}
-    {%- endfor %}
-
+{%- endfor %}
     input   logic                               clk;
     input   logic                               rst_n;
     input   logic                               req_vld;
@@ -90,7 +86,6 @@ module {{slv_name}} (
     output  logic                               ack_vld;
     output  logic                               err;
 {%- if has_cdc(slv_node) %}
-
     input   logic                               regslv_clk;
     input   logic                               regslv_rst_n;
 {%- endif %}
@@ -105,7 +100,6 @@ module {{slv_name}} (
     logic   [DATA_WIDTH-1:0]                    int_rd_data;
     logic                                       int_ack_vld;
     logic                                       int_err;
-
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
     logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
@@ -255,9 +249,17 @@ module {{slv_name}} (
     logic                                       {{reg_name}}__sw_rd_en;
     logic   {{"[%2s:0]"|format(reg.size*8-1)}}                              {{reg_name}}__sw_wr_data;
     logic   {{"[%2s:0]"|format(reg.size*8-1)}}                              {{reg_name}}__sw_rd_data;
-    {%- for field in reg.fields(skip_not_present=False) if not field.is_alias and not field.is_hw_readable and field.is_sw_readable %}
+    {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
+    {%- if field.is_sw_readable or is_intr(field) %}
     logic   {{"[%2s:0]"|format(field.width-1)}}                              {{reg_name}}__{{field.inst_name}}__curr_value;
+    {%- endif %}
+    {%- if field.is_hw_writable and is_intr(field) %}
+    logic                                       {{reg_name}}__{{field.inst_name}}__pulse;
+    {%- endif %}
     {%- endfor %}
+    {%- if is_intr(reg) %}
+    logic   {{"[%2s:0]"|format(get_field_num(reg)-1)}}                              {{reg_name}}__intr_vec;
+    {%- endif %}
 {%- endfor %}
 {% set int_reg_idx = get_property(slv_node, "int_reg_idx") %}
 {%- for reg in reg_list %}
@@ -329,10 +331,30 @@ module {{slv_name}} (
                                                 {%- else %}{{field.width}}'b0{% endif %}),
         .hw_pulse                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__pulse
                                                 {%- else %}1'b0{% endif %}),
-        .field_value                            ({% if field.is_hw_readable or field.is_sw_readable -%}
+        .field_value                            ({% if field.is_hw_readable or field.is_sw_readable or is_intr(field) -%}
                                                 {{reg_name}}__{{field.inst_name}}__curr_value{% endif %}));
-{% endif -%}
-{% endfor %}
+    {%- if is_intr(field) %}
+
+    always_comb begin
+        if ({{get_rtl_name(get_ref_prop(field, "intr_type").parent)}}__{{get_ref_prop(field, "intr_type").inst_name}}__curr_value)
+            {{reg_name}}__{{field.inst_name}}__pulse = {{reg_name}}__{{field.inst_name}}__next_value;
+        else
+            {{reg_name}}__{{field.inst_name}}__pulse = 1'b1;
+    end
+
+    assign  {{reg_name}}__intr_vec[{{loop.index0}}] =
+        ({{reg_name}}__{{field.inst_name}}__curr_value |
+        {{get_rtl_name(get_ref_prop(field, "injection").parent)}}__{{get_ref_prop(field, "injection").inst_name}}__curr_value) &
+        {{get_rtl_name(get_ref_prop(field, "enable").parent)}}__{{get_ref_prop(field, "enable").inst_name}}__curr_value;
+    {%- endif %}
+{%- endif %}
+{%- endfor %}
+    {%- if is_intr(reg) %}
+
+    // interrupt aggregation
+    assign  {{reg_name}}__intr_out = |{{reg_name}}__intr_vec;
+    {%- endif %}
+
     {% set orig_reg_name = get_rtl_name(reg.alias_primary) if reg.is_alias else reg_name -%}
     always_comb begin
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;

@@ -39,6 +39,16 @@
             <ipxact:bitWidth>8</ipxact:bitWidth>
             <ipxact:volatile>true</ipxact:volatile>
             <ipxact:access>read-write</ipxact:access>
+            <ipxact:enumeratedValues>
+              <ipxact:enumeratedValue>
+                <ipxact:name>SET</ipxact:name>
+                <ipxact:value>'h1</ipxact:value>
+              </ipxact:enumeratedValue>
+              <ipxact:enumeratedValue>
+                <ipxact:name>RESET</ipxact:name>
+                <ipxact:value>'h0</ipxact:value>
+              </ipxact:enumeratedValue>
+            </ipxact:enumeratedValues>
           </ipxact:field>
         </ipxact:register>
         <ipxact:register>
