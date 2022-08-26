@@ -1,0 +1,9 @@
+addrmap cmn700_naqu {
+    hj_gennetwork = true;
+    // format:
+    //  <type_name> <instance_name> @<address base>;
+    Shared_cmn700_MM Shared_cmn700_MM @0x2_0000_0000;
+    // APB4_Slave_NID584_MM APB4_Slave_NID584_MM @0x<user_defined_address>;
+    // APB4_Slave_NID132_MM APB4_Slave_NID132_MM @0x<user_defined_address>;
+    // APB4_Slave_NID900_MM APB4_Slave_NID900_MM @0x<user_defined_address>;
+};

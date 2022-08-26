@@ -238,6 +238,12 @@ class CommandRunner:
             action="store_true",
             help="turn off debug-level message display on terminal"
         )
+        parser_generate.add_argument(
+            "--skip_preprocess_check",
+            action="store_true",
+            help="skip preprocess check"
+        )
+
         parser_generate.set_defaults(func=self._generate)
 
         return parser
@@ -351,7 +357,12 @@ class CommandRunner:
                 "-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir)
             )
 
-        preprocess(root, filter=args.filter, quiet=args.quiet)
+        preprocess(
+            root,
+            filter=args.filter,
+            quiet=args.quiet,
+            skip_preprocess_check=(args.skip_preprocess_check or False)
+        )
 
         proc_list = []
 

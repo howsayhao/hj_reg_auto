@@ -59,7 +59,12 @@ class CHdrExporter:
                     template = self.jj_env.get_template("chdr.jinja")
 
                     stream = template.stream(self.context)
-                    stream.dump(os.path.join(dir, "%s.h" % (node.get_path_segment())))
+                    stream.dump(
+                        os.path.join(
+                            dir,
+                            "%s.h" % (node.get_path_segment(array_suffix="_{index:d}"))
+                        )
+                    )
 
                 self.export(top_node, node, dir)
 
@@ -73,12 +78,14 @@ class CHdrExporter:
         return hex(node.address_offset)
 
     def _get_inst_name(self, node:Node):
-        return node.get_path_segment()
+        return node.get_path_segment(array_suffix="_{index:d}")
 
     def _get_hier_name(self, node:Node):
-        return node.get_rel_path(self.context.get('node').parent,
-                                 hier_separator="_",
-                                 array_suffix="_{index:d}")
+        return node.get_rel_path(
+            self.context.get('node').parent,
+            hier_separator="_",
+            array_suffix="_{index:d}"
+        )
 
     def _get_all_fields(self, node:RegNode):
         """

@@ -90,8 +90,12 @@ class PreprocessListener(RDLListener):
         # user-defined operations
         # filter
         self.filter_pattern = user_ops.pop("filter", None)
+
         # keep quiet to screen debug message
         self.keep_quiet = user_ops.pop("quiet", False)
+
+        # skip preprocess check
+        self.skip_preprocess_check = user_ops.pop("skip_preprocess_check", False)
 
         message.info("HRDA Generator: start preprocessing")
 
@@ -120,7 +124,7 @@ class PreprocessListener(RDLListener):
             else:
                 node.inst.properties[prop] = False
 
-        if not prop_num == 1:
+        if not self.skip_preprocess_check and not prop_num == 1:
             message.error(
                 "%s, %d: %d:\n%s\n"
                 "addrmap instance %s must be explicitly assigned one of following properties exclusively: "
@@ -154,7 +158,8 @@ class PreprocessListener(RDLListener):
 
         if isinstance(node.parent, RootNode):
             # top-level addrmap instance can only be register network, regdisp or regslv
-            if not (node.get_property("hj_gennetwork") or
+            if not self.skip_preprocess_check and \
+                not (node.get_property("hj_gennetwork") or
                     node.get_property("hj_gendisp") or
                     node.get_property("hj_genslv") or
                     node.get_property("hj_3rd_party_ip")):
@@ -177,7 +182,7 @@ class PreprocessListener(RDLListener):
         if node.get_property("hj_gennetwork"):
             # check whether addrmap which represents for the whole register network
             # is a top-level (root) addrmap instance
-            if not isinstance(node.parent, RootNode):
+            if not self.skip_preprocess_check and not isinstance(node.parent, RootNode):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s represents for the whole register network, "
@@ -198,7 +203,7 @@ class PreprocessListener(RDLListener):
 
             # check whether regmst is instantiated under addrmap which represents for the whole register network,
             # if not, its address allocation will be wrong
-            if not node.parent.get_property("hj_gennetwork"):
+            if not self.skip_preprocess_check and not node.parent.get_property("hj_gennetwork"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s represents for regmst, "
@@ -219,7 +224,8 @@ class PreprocessListener(RDLListener):
             try:
                 # check whether first child of regmst is regdisp
                 disp_node = next(iter)
-                if not (isinstance(disp_node, AddrmapNode) and
+                if not self.skip_preprocess_check and \
+                    not (isinstance(disp_node, AddrmapNode) and
                     disp_node.get_property("hj_gendisp")):
                     message.error(
                         "%s, %d: %d:\n%s\n"
@@ -234,7 +240,8 @@ class PreprocessListener(RDLListener):
 
                 # check whether second child of regmst is debug regfile
                 rf_node = next(iter)
-                if not (isinstance(rf_node, RegfileNode) and
+                if not self.skip_preprocess_check and \
+                    not (isinstance(rf_node, RegfileNode) and
                     rf_node.type_name == "db_regs" and
                     rf_node.inst_name == "db_regs"):
                     message.error(
@@ -255,24 +262,10 @@ class PreprocessListener(RDLListener):
 
             except StopIteration:
                 # less than 2 instances under regmst found
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "less than two instances under regmst addrmap %s found" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}")
-                    )
-                )
-            else:
-                try:
-                    next(iter)
-                    # if there is no exception,
-                    # more than 2 instances under regmst are found
+                if not self.skip_preprocess_check:
                     message.error(
                         "%s, %d: %d:\n%s\n"
-                        "more than two instances under regmst addrmap %s found" % (
+                        "less than two instances under regmst addrmap %s found" % (
                             self.ref.filename,
                             self.ref.line,
                             self.ref.line_selection[0],
@@ -280,6 +273,22 @@ class PreprocessListener(RDLListener):
                             node.get_path_segment(array_suffix="_{index:d}")
                         )
                     )
+            else:
+                try:
+                    next(iter)
+                    # if there is no exception,
+                    # more than 2 instances under regmst are found
+                    if not self.skip_preprocess_check:
+                        message.error(
+                            "%s, %d: %d:\n%s\n"
+                            "more than two instances under regmst addrmap %s found" % (
+                                self.ref.filename,
+                                self.ref.line,
+                                self.ref.line_selection[0],
+                                self.ref.line_text,
+                                node.get_path_segment(array_suffix="_{index:d}")
+                            )
+                        )
                 except StopIteration:
                     # actually it is a correct situation
                     pass
@@ -288,10 +297,12 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr") is None:
                 node.inst.properties["hj_use_abs_addr"] = True
 
-            if not node.get_property("hj_use_abs_addr"):
+            if not self.skip_preprocess_check and \
+                not node.get_property("hj_use_abs_addr"):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regmst, so hj_use_abs_addr is recommended to be true (now is false)" % (
+                    "addrmap %s represents for regmst, so hj_use_abs_addr is "
+                    "recommended to be true (now is false)" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -317,7 +328,8 @@ class PreprocessListener(RDLListener):
                 message.debug("generate regdisp_{}".format(node.inst_name), self.indent)
 
             # check whether regdisp is instantiated under addrmap which represents for regmst or regdisp
-            if not isinstance(node.parent, RootNode) and \
+            if not self.skip_preprocess_check and \
+                not isinstance(node.parent, RootNode) and \
                 not node.parent.get_property("hj_genmst") and \
                 not node.parent.get_property("hj_gendisp"):
                 message.error(
@@ -337,7 +349,8 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr") is None:
                 node.inst.properties["hj_use_abs_addr"] = False
 
-            if node.get_property("hj_use_abs_addr") is False:
+            if not self.skip_preprocess_check and \
+                node.get_property("hj_use_abs_addr") is False:
                 message.warning(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s represents for regdisp, so hj_use_abs_addr is recommended to be true (now is false)" % (
@@ -370,7 +383,8 @@ class PreprocessListener(RDLListener):
             self.addr_list = []
             self.regslv_base_addr = node.absolute_address
 
-            if not isinstance(node.parent, RootNode) and \
+            if not self.skip_preprocess_check and \
+                not isinstance(node.parent, RootNode) and \
                 not node.parent.get_property("hj_gendisp"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
@@ -389,7 +403,8 @@ class PreprocessListener(RDLListener):
             if node.get_property("hj_use_abs_addr") is None:
                 node.inst.properties["hj_use_abs_addr"] = False
 
-            if node.get_property("hj_use_abs_addr"):
+            if not self.skip_preprocess_check and \
+                node.get_property("hj_use_abs_addr"):
                 message.warning(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s represents for regslv, so hj_use_abs_addr is recommended to be false" % (
@@ -417,7 +432,9 @@ class PreprocessListener(RDLListener):
         elif node.get_property("hj_flatten_addrmap"):
 
             # flattened addrmap can only be defined under the addrmap instantiated as regslv
-            if not node.parent.get_property("hj_genslv") and not node.parent.get_property("hj_flatten_addrmap"):
+            if not self.skip_preprocess_check and \
+                not node.parent.get_property("hj_genslv") and \
+                not node.parent.get_property("hj_flatten_addrmap"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s can only be flattened in parent addrmap which "
@@ -449,7 +466,8 @@ class PreprocessListener(RDLListener):
 
                 # check whether 3rd party IP are forwarded by regdisp,
                 # or at the top level of the design
-                if not isinstance(node.parent, RootNode) and \
+                if not self.skip_preprocess_check and \
+                    not isinstance(node.parent, RootNode) and \
                     not node.parent.get_property("hj_gendisp"):
                     message.error(
                         "%s, %d: %d:\n%s\n"
@@ -465,7 +483,8 @@ class PreprocessListener(RDLListener):
                     )
 
                 # as for 3rd party IP, hj_use_abs_addr needs to be assigned by user
-                if node.get_property("hj_use_abs_addr") is None:
+                if not self.skip_preprocess_check and \
+                    node.get_property("hj_use_abs_addr") is None:
                     message.warning(
                         "%s, %d: %d:\n%s\n"
                         "addrmap %s represents for 3rd party IP, but you don't explicitly "
@@ -527,7 +546,8 @@ class PreprocessListener(RDLListener):
                 ), self.indent
             )
         if not self.is_in_3rd_party_ip:
-            if not node.parent.get_property("hj_gendisp"):
+            if not self.skip_preprocess_check and \
+                not node.parent.get_property("hj_gendisp"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "the parent addrmap %s of memory instance %s is not recognized as "
@@ -542,7 +562,8 @@ class PreprocessListener(RDLListener):
                 )
 
             # check if memory width satisfies the requirement of 32 * (2^i)
-            if not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
+            if not self.skip_preprocess_check and \
+                not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "width of memory %s requires a number of 32 * (2^i), such as 32, 64, 128..." % (
@@ -582,7 +603,8 @@ class PreprocessListener(RDLListener):
         #   - inside 3rd party IPs
         if not self.is_in_3rd_party_ip:
             if node.parent.get_property("hj_genmst"):
-                if not (node.type_name == "db_regs" and node.inst_name == "db_regs"):
+                if not self.skip_preprocess_check and \
+                    not (node.type_name == "db_regs" and node.inst_name == "db_regs"):
                     message.error(
                         "%s, %d: %d:\n%s\n"
                         "illegal to instantiate regfile %s under %s which represents for regmst" % (
@@ -595,7 +617,8 @@ class PreprocessListener(RDLListener):
                         )
                     )
             else:
-                if not (node.parent.get_property("hj_genslv") or isinstance(node.parent, RegfileNode)):
+                if not self.skip_preprocess_check and \
+                    not (node.parent.get_property("hj_genslv") or isinstance(node.parent, RegfileNode)):
                     message.error(
                         "%s, %d: %d:\n%s\n"
                         "illegal to instantiate regfile %s under %s which is neither regslv nor regfile" % (
@@ -615,7 +638,8 @@ class PreprocessListener(RDLListener):
         self.total_reg_num += 1
 
         if self.is_in_regslv:
-            if node.size < 4:
+            if not self.skip_preprocess_check and \
+                node.size < 4:
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "HRDA doesn't support internal registers with a size of less than 32 bit (4 byte), "
@@ -652,7 +676,8 @@ class PreprocessListener(RDLListener):
 
     def enter_Field(self, node):
         if node.get_property("hard_wired"):
-            if node.get_property("hwclr") or node.get_property("hwset") or \
+            if not self.skip_preprocess_check and \
+                node.get_property("hwclr") or node.get_property("hwset") or \
                 not node.get_property("sw") == AccessType.r or node.get_property("onread"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
@@ -666,7 +691,8 @@ class PreprocessListener(RDLListener):
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
-            if node.get_property("hj_syncresetsignal"):
+            if not self.skip_preprocess_check and \
+                node.get_property("hj_syncresetsignal"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "hard-wired field %s is not allowed to have synchronous reset signals" % (
@@ -677,7 +703,8 @@ class PreprocessListener(RDLListener):
                         node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
-        if node.is_hw_writable and node.get_property("singlepulse"):
+        if not self.skip_preprocess_check and \
+            node.is_hw_writable and node.get_property("singlepulse"):
             message.warning(
                 "%s, %d: %d:\n%s\n"
                 "field %s is both hardware writable and software single pulse" % (

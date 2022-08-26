@@ -1,0 +1,86 @@
+addrmap intr_ex {
+    hj_genslv = true;
+
+    field inj {hw=na;}; // software injection bits
+    field en {hw=na;};  // interrupt enable bits
+    field typ {hw=na;}; // interrupt type (level or edge triggered)
+    field stat {intr; onwrite=wzc;}; // interrupt status
+    reg {
+        inj inj_0 = 0x0;
+        inj inj_1 = 0x0;
+        inj inj_2 = 0x0;
+        inj inj_3 = 0x0;
+        inj inj_4 = 0x0;
+        inj inj_5 = 0x0;
+        inj inj_6 = 0x0;
+        inj inj_7 = 0x0;
+        inj inj_8 = 0x0;
+        inj inj_9 = 0x0;
+    } injection_0;
+    reg {
+        en en_0 = 0x0;
+        en en_1 = 0x0;
+        en en_2 = 0x0;
+        en en_3 = 0x0;
+        en en_4 = 0x0;
+        en en_5 = 0x0;
+        en en_6 = 0x0;
+        en en_7 = 0x0;
+        en en_8 = 0x0;
+        en en_9 = 0x0;
+    } enable_0;
+    reg {
+        typ typ_0 = 0x0;
+        typ typ_1 = 0x0;
+        typ typ_2 = 0x0;
+        typ typ_3 = 0x0;
+        typ typ_4 = 0x0;
+        typ typ_5 = 0x0;
+        typ typ_6 = 0x0;
+        typ typ_7 = 0x0;
+        typ typ_8 = 0x0;
+        typ typ_9 = 0x0;
+    } intr_type_0;
+    reg {
+        stat stat_0 = 0x0;
+        stat stat_1 = 0x0;
+        stat stat_2 = 0x0;
+        stat stat_3 = 0x0;
+        stat stat_4 = 0x0;
+        stat stat_5 = 0x0;
+        stat stat_6 = 0x0;
+        stat stat_7 = 0x0;
+        stat stat_8 = 0x0;
+        stat stat_9 = 0x0;
+    } status_0;
+    status_0.stat_0 -> enable = enable_0.en_0;
+    status_0.stat_0 -> injection = injection_0.inj_0;
+    status_0.stat_0 -> intr_type = intr_type_0.typ_0;
+    status_0.stat_1 -> enable = enable_0.en_1;
+    status_0.stat_1 -> injection = injection_0.inj_1;
+    status_0.stat_1 -> intr_type = intr_type_0.typ_1;
+    status_0.stat_2 -> enable = enable_0.en_2;
+    status_0.stat_2 -> injection = injection_0.inj_2;
+    status_0.stat_2 -> intr_type = intr_type_0.typ_2;
+    status_0.stat_3 -> enable = enable_0.en_3;
+    status_0.stat_3 -> injection = injection_0.inj_3;
+    status_0.stat_3 -> intr_type = intr_type_0.typ_3;
+    status_0.stat_4 -> enable = enable_0.en_4;
+    status_0.stat_4 -> injection = injection_0.inj_4;
+    status_0.stat_4 -> intr_type = intr_type_0.typ_4;
+    status_0.stat_5 -> enable = enable_0.en_5;
+    status_0.stat_5 -> injection = injection_0.inj_5;
+    status_0.stat_5 -> intr_type = intr_type_0.typ_5;
+    status_0.stat_6 -> enable = enable_0.en_6;
+    status_0.stat_6 -> injection = injection_0.inj_6;
+    status_0.stat_6 -> intr_type = intr_type_0.typ_6;
+    status_0.stat_7 -> enable = enable_0.en_7;
+    status_0.stat_7 -> injection = injection_0.inj_7;
+    status_0.stat_7 -> intr_type = intr_type_0.typ_7;
+    status_0.stat_8 -> enable = enable_0.en_8;
+    status_0.stat_8 -> injection = injection_0.inj_8;
+    status_0.stat_8 -> intr_type = intr_type_0.typ_8;
+    status_0.stat_9 -> enable = enable_0.en_9;
+    status_0.stat_9 -> injection = injection_0.inj_9;
+    status_0.stat_9 -> intr_type = intr_type_0.typ_9;
+};
