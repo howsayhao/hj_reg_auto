@@ -46,9 +46,10 @@ module reg_native_if2third_party_ip (
             logic   [BACKWARD_DELIVER_NUM-1:0]      pulse_deliver_i_pulse_out;
 
             // deliver reg_native_if pulse from native to 3rd party IP clock domain
-            assign  pulse_deliver_o_pulse_in        = {req_vld, addr, wr_en, rd_en, wr_data};
+            assign  pulse_deliver_o_pulse_in = {req_vld, addr, wr_en, rd_en, {BUS_DATA_WIDTH{req_vld & wr_en}} & wr_data};
+
             pulse_deliver #(
-                .WIDTH(FORWARD_DELIVER_NUM)
+                .WIDTH                      (FORWARD_DELIVER_NUM)
             )
             pulse_deliver_o (
                 .scan_enable                (1'b0),
@@ -64,7 +65,7 @@ module reg_native_if2third_party_ip (
             // deliver reg_native_if pulse from 3rd party IP to native clock domain
             assign  pulse_deliver_i_pulse_in    = {ext_ack_vld, ext_err, ext_rd_data};
             pulse_deliver #(
-                .WIDTH(BACKWARD_DELIVER_NUM)
+                .WIDTH                      (BACKWARD_DELIVER_NUM)
             )
             pulse_deliver_i (
                 .scan_enable                (1'b0),
