@@ -274,7 +274,12 @@ module {{disp_name}} (
 {% endfor %}
 //**************************************BACKWARD DATAPATH**********************************************//
     // backward multiplexor for rd_data, ack_vld and err
-    assign  dummy_reg_ack_vld = dec_dummy_reg_sel;
+    always_ff @(posedge {{disp_name}}_clk or negedge {{disp_name}}_rst_n) begin
+        if (!{{disp_name}}_rst_n)
+            dummy_reg_ack_vld   <= 1'b0;
+        else
+            dummy_reg_ack_vld   <= dec_dummy_reg_sel;
+    end
     assign  {{disp_name}}__upstream__ack_vld_mux = (| downstream_ack_vld) | dummy_reg_ack_vld;
     assign  {{disp_name}}__upstream__err_mux = | downstream_err;
 
@@ -292,7 +297,7 @@ module {{disp_name}} (
     // optionally insert backward flip-flops after data passes through mux
     generate
         if (INSERT_BACKWARD_FF) begin: g_backward_ff
-            always @(posedge {{disp_name}}_clk or negedge {{disp_name}}_rst_n) begin
+            always_ff @(posedge {{disp_name}}_clk or negedge {{disp_name}}_rst_n) begin
                 if (!{{disp_name}}_rst_n) begin
                     {{disp_name}}__upstream__ack_vld    <= 1'b0;
                     {{disp_name}}__upstream__err        <= 1'b0;
