@@ -250,7 +250,7 @@ module {{slv_name}} (
     logic   {{"[%2s:0]"|format(reg.size*8-1)}}                              {{reg_name}}__sw_wr_data;
     logic   {{"[%2s:0]"|format(reg.size*8-1)}}                              {{reg_name}}__sw_rd_data;
     {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
-    {%- if field.is_sw_readable or is_intr(field) %}
+    {%- if (not field.is_hw_readable) and (field.is_sw_readable or is_intr(field)) %}
     logic   {{"[%2s:0]"|format(field.width-1)}}                              {{reg_name}}__{{field.inst_name}}__curr_value;
     {%- endif %}
     {%- if field.is_hw_writable and is_intr(field) %}
