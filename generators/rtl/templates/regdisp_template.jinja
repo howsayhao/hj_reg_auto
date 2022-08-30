@@ -37,7 +37,7 @@ module {{disp_name}} (
 );
     `include "common_funcs.vh"
 
-    parameter   BASE_ADDR = {{"'h%x"|format(disp_node.absolute_address if use_abs_addr(disp_node) else 0)}};
+    parameter   BASE_ADDR = 64'h{{"%x"|format(disp_node.absolute_address if use_abs_addr(disp_node) else 0)}};
     parameter   UPSTREAM_ADDR_WIDTH = {{get_addr_width(disp_node)}};
     parameter   UPSTREAM_DATA_WIDTH = {{get_data_width(disp_node)}};
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
