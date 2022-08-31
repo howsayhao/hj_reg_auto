@@ -26,7 +26,7 @@ module regdisp_disp_map (
 );
     `include "common_funcs.vh"
 
-    parameter   BASE_ADDR = 'h0;
+    parameter   BASE_ADDR = 64'h0;
     parameter   UPSTREAM_ADDR_WIDTH = 48;
     parameter   UPSTREAM_DATA_WIDTH = 32;
     parameter   REGSLV_SLV_MAP_ADDR_WIDTH = 48;
@@ -175,7 +175,12 @@ module regdisp_disp_map (
 
 //**************************************BACKWARD DATAPATH**********************************************//
     // backward multiplexor for rd_data, ack_vld and err
-    assign  dummy_reg_ack_vld = dec_dummy_reg_sel;
+    always_ff @(posedge regdisp_disp_map_clk or negedge regdisp_disp_map_rst_n) begin
+        if (!regdisp_disp_map_rst_n)
+            dummy_reg_ack_vld   <= 1'b0;
+        else
+            dummy_reg_ack_vld   <= dec_dummy_reg_sel;
+    end
     assign  regdisp_disp_map__upstream__ack_vld_mux = (| downstream_ack_vld) | dummy_reg_ack_vld;
     assign  regdisp_disp_map__upstream__err_mux = | downstream_err;
 
@@ -193,7 +198,7 @@ module regdisp_disp_map (
     // optionally insert backward flip-flops after data passes through mux
     generate
         if (INSERT_BACKWARD_FF) begin: g_backward_ff
-            always @(posedge regdisp_disp_map_clk or negedge regdisp_disp_map_rst_n) begin
+            always_ff @(posedge regdisp_disp_map_clk or negedge regdisp_disp_map_rst_n) begin
                 if (!regdisp_disp_map_rst_n) begin
                     regdisp_disp_map__upstream__ack_vld    <= 1'b0;
                     regdisp_disp_map__upstream__err        <= 1'b0;

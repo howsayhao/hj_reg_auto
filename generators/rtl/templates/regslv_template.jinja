@@ -9,13 +9,21 @@ module {{slv_name}} (
 {%- for reg in reg_list %}
     {%- set reg_name = get_rtl_name(reg) -%}
     {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
-    {%- if field.is_hw_readable and not is_intr(field) %}{{reg_name}}__{{field.inst_name}}__curr_value,{%- endif %}
+    {%- if field.is_hw_readable and not is_intr(field) %}
+    {{reg_name}}__{{field.inst_name}}__curr_value,
+    {%- endif %}
     {%- if field.is_hw_writable %}
-    {%- if not is_intr(field) %}{{reg_name}}__{{field.inst_name}}__pulse,{%- endif %}
+    {%- if not is_intr(field) %}
+    {{reg_name}}__{{field.inst_name}}__pulse,
+    {%- endif %}
     {{reg_name}}__{{field.inst_name}}__next_value,
     {%- endif %}
-    {%- if get_property(field, "swacc") %}{{reg_name}}__{{field.inst_name}}__swacc,{%- endif %}
-    {%- if get_property(field, "swmod") %}{{reg_name}}__{{field.inst_name}}__swmod,{%- endif %}
+    {%- if get_property(field, "swacc") %}
+    {{reg_name}}__{{field.inst_name}}__swacc,
+    {%- endif %}
+    {%- if get_property(field, "swmod") %}
+    {{reg_name}}__{{field.inst_name}}__swmod,
+    {%- endif %}
     {%- endfor %}
     {%- if is_intr(reg) %}
     {{reg_name}}__intr_out,
@@ -111,6 +119,7 @@ module {{slv_name}} (
 //***********************************CLOCK DOMAIN CROSSING********************************************//
     localparam      FORWARD_DELIVER_NUM         = ADDR_WIDTH + DATA_WIDTH + 4;
     localparam      BACKWARD_DELIVER_NUM        = DATA_WIDTH + 2;
+
     logic   [FORWARD_DELIVER_NUM-1:0]           pulse_deliver_forward_pulse_in;
     logic   [FORWARD_DELIVER_NUM-1:0]           pulse_deliver_forward_pulse_out;
     logic   [BACKWARD_DELIVER_NUM-1:0]          pulse_deliver_backward_pulse_in;
@@ -118,7 +127,9 @@ module {{slv_name}} (
 
     // deliver reg_native_if pulse from native to 3rd party IP clock domain
     assign  pulse_deliver_forward_pulse_in      = {req_vld, addr, wr_en, rd_en, wr_data, soft_rst};
-    pulse_deliver #(.WIDTH (FORWARD_DELIVER_NUM))
+    pulse_deliver #(
+        .WIDTH                                  (FORWARD_DELIVER_NUM)
+    )
     pulse_deliver_forward (
         .scan_enable                            (1'b0),
         .clk_a                                  (clk),
@@ -126,7 +137,8 @@ module {{slv_name}} (
         .pulse_in                               (pulse_deliver_forward_pulse_in),
         .clk_b                                  (regslv_clk),
         .rst_b_n                                (regslv_rst_n),
-        .pulse_out                              (pulse_deliver_forward_pulse_out));
+        .pulse_out                              (pulse_deliver_forward_pulse_out)
+    );
     assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data, int_soft_rst}  = pulse_deliver_forward_pulse_out;
 
     // deliver reg_native_if pulse from 3rd party IP to native clock domain
@@ -334,7 +346,6 @@ module {{slv_name}} (
         .field_value                            ({% if field.is_hw_readable or field.is_sw_readable or is_intr(field) -%}
                                                 {{reg_name}}__{{field.inst_name}}__curr_value{% endif %}));
     {%- if is_intr(field) %}
-
     always_comb begin
         if ({{get_rtl_name(get_ref_prop(field, "intr_type").parent)}}__{{get_ref_prop(field, "intr_type").inst_name}}__curr_value)
             {{reg_name}}__{{field.inst_name}}__pulse = {{reg_name}}__{{field.inst_name}}__next_value;
@@ -348,13 +359,11 @@ module {{slv_name}} (
         {{get_rtl_name(get_ref_prop(field, "enable").parent)}}__{{get_ref_prop(field, "enable").inst_name}}__curr_value;
     {%- endif %}
 {%- endif %}
-{%- endfor %}
+{% endfor %}
     {%- if is_intr(reg) %}
-
     // interrupt aggregation
     assign  {{reg_name}}__intr_out = |{{reg_name}}__intr_vec;
     {%- endif %}
-
     {% set orig_reg_name = get_rtl_name(reg.alias_primary) if reg.is_alias else reg_name -%}
     always_comb begin
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
