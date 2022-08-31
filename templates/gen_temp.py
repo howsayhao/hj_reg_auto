@@ -109,7 +109,7 @@ def gen_rdl_template(dir:str, name:str, template_type:str, **kwargs):
         # dump interrupt template using jinja2
         jj_env = jj.Environment(
             loader=jj.FileSystemLoader(os.path.dirname(__file__)))
-        template = jj_env.get_template("intr.jinja2")
+        template = jj_env.get_template("intr.jinja")
 
         intr_num = kwargs.pop("intr_num")
         stream = template.stream(intr_num=intr_num, inst_name=os.path.splitext(name)[0])
