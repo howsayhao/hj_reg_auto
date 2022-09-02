@@ -149,7 +149,9 @@ module regslv_intr_ex (
     assign  reg_acc                             = (|reg_sw_wr_sel) | (|reg_sw_rd_sel);
 
 //*******************************************FSM******************************************************//
-    slv_fsm #(.DATA_WIDTH (DATA_WIDTH))
+    slv_fsm #(
+        .DATA_WIDTH (DATA_WIDTH)
+    )
     slv_fsm (
         .clk                                    (clk),
         .rst_n                                  (rst_n),
@@ -164,7 +166,8 @@ module regslv_intr_ex (
         .dummy_acc                              (dummy_acc),
         .reg_acc                                (reg_acc),
         .reg_rd_data                            (reg_rd_data),
-        .reg_rd_data_vld                        (reg_rd_data_vld));
+        .reg_rd_data_vld                        (reg_rd_data_vld)
+    );
 
 //***********************************FIELDS AND REGISTERS*********************************************//
     logic                                       injection_0__sw_wr_en;

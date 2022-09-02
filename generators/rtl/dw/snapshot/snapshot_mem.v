@@ -51,7 +51,6 @@ module snapshot_mem (
     logic                                       ss_acc_wr;
     logic                                       ss_acc_rd;
     logic   [BUS_DATA_WIDTH-1:0]                ss_rd_data;
-
     logic                                       mem_acc_wr;
     logic                                       mem_acc_rd;
     logic                                       mem_acc;
@@ -68,8 +67,8 @@ module snapshot_mem (
         end
 
         if (PARTITION_CNT > 1) begin: g_ss_acc
-            assign  ss_acc_wr           = | ss_wr_en[PARTITION_CNT-1:1];
-            assign  ss_acc_rd           = | ss_rd_en[PARTITION_CNT-1:1];
+            assign  ss_acc_wr           = |ss_wr_en[PARTITION_CNT-1:1];
+            assign  ss_acc_rd           = |ss_rd_en[PARTITION_CNT-1:1];
         end else begin : g_no_ss_acc
             assign  ss_acc_wr           = 1'b0;
             assign  ss_acc_rd           = 1'b0;

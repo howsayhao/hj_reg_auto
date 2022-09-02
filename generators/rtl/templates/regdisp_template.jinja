@@ -235,13 +235,14 @@ module {{disp_name}} (
         .mem_wr_data({{disp_name}}__{{child_name}}__wr_data),
         .mem_rd_data({{child_name}}__{{disp_name}}__rd_data));
     {%- elif is_3rd_party_ip(child) %}
-    reg_native_if2third_party_ip #(
+    reg_native_if_1to1 #(
         .CDC_ENABLE({{has_cdc(child)}}),
         .BUS_DATA_WIDTH(UPSTREAM_DATA_WIDTH),
         .BUS_ADDR_WIDTH(UPSTREAM_ADDR_WIDTH))
-    reg_native_if2third_party_ip__{{disp_name}}2{{child_name}} (
+    reg_native_if_1to1__{{disp_name}}2{{child_name}} (
         .native_clk({{disp_name}}_clk),
         .native_rst_n({{disp_name}}_rst_n),
+        .soft_rst(1'b0),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
         .err(downstream_err[{{loop.index0}}]),
@@ -252,6 +253,7 @@ module {{disp_name}} (
         .rd_data(downstream_rd_data[{{loop.index0}}]),
         .ext_clk({{child_name}}_clk),
         .ext_rst_n({{child_name}}_rst_n),
+        .ext_soft_rst(),
         .ext_req_vld({{disp_name}}__{{child_name}}__req_vld),
         .ext_ack_vld({{child_name}}__{{disp_name}}__ack_vld),
         .ext_err({{child_name}}__{{disp_name}}__err),

@@ -417,42 +417,35 @@ module regslv_slv_map (
     logic   [DATA_WIDTH-1:0]                    reg_rd_data;
 
 //***********************************CLOCK DOMAIN CROSSING********************************************//
-    localparam      FORWARD_DELIVER_NUM         = ADDR_WIDTH + DATA_WIDTH + 4;
-    localparam      BACKWARD_DELIVER_NUM        = DATA_WIDTH + 2;
-
-    logic   [FORWARD_DELIVER_NUM-1:0]           pulse_deliver_forward_pulse_in;
-    logic   [FORWARD_DELIVER_NUM-1:0]           pulse_deliver_forward_pulse_out;
-    logic   [BACKWARD_DELIVER_NUM-1:0]          pulse_deliver_backward_pulse_in;
-    logic   [BACKWARD_DELIVER_NUM-1:0]          pulse_deliver_backward_pulse_out;
-
-    // deliver reg_native_if pulse from native to 3rd party IP clock domain
-    assign  pulse_deliver_forward_pulse_in      = {req_vld, addr, wr_en, rd_en, wr_data, soft_rst};
-    pulse_deliver #(
-        .WIDTH                                  (FORWARD_DELIVER_NUM)
+    reg_native_if_1to1 #(
+        .CDC_ENABLE                             (1),
+        .BUS_ADDR_WIDTH                         (ADDR_WIDTH),
+        .BUS_DATA_WIDTH                         (DATA_WIDTH)
     )
-    pulse_deliver_forward (
-        .scan_enable                            (1'b0),
-        .clk_a                                  (clk),
-        .rst_a_n                                (rst_n),
-        .pulse_in                               (pulse_deliver_forward_pulse_in),
-        .clk_b                                  (regslv_clk),
-        .rst_b_n                                (regslv_rst_n),
-        .pulse_out                              (pulse_deliver_forward_pulse_out)
+    reg_native_if_1to1 (
+        .native_clk                             (clk),
+        .native_rst_n                           (rst_n),
+        .soft_rst                               (soft_rst),
+        .req_vld                                (req_vld),
+        .ack_vld                                (ack_vld),
+        .err                                    (err),
+        .addr                                   (addr),
+        .wr_en                                  (wr_en),
+        .rd_en                                  (rd_en),
+        .wr_data                                (wr_data),
+        .rd_data                                (rd_data),
+        .ext_clk                                (regslv_clk),
+        .ext_rst_n                              (regslv_rst_n),
+        .ext_soft_rst                           (int_soft_rst),
+        .ext_req_vld                            (int_req_vld),
+        .ext_ack_vld                            (int_ack_vld),
+        .ext_err                                (int_err),
+        .ext_addr                               (int_addr),
+        .ext_wr_en                              (int_wr_en),
+        .ext_rd_en                              (int_rd_en),
+        .ext_wr_data                            (int_wr_data),
+        .ext_rd_data                            (int_rd_data)
     );
-    assign  {int_req_vld, int_addr, int_wr_en, int_rd_en, int_wr_data, int_soft_rst}  = pulse_deliver_forward_pulse_out;
-
-    // deliver reg_native_if pulse from 3rd party IP to native clock domain
-    assign  pulse_deliver_backward_pulse_in     = {int_ack_vld, int_err, int_rd_data};
-    pulse_deliver #(.WIDTH (BACKWARD_DELIVER_NUM))
-    pulse_deliver_backward (
-        .scan_enable                            (1'b0),
-        .clk_a                                  (regslv_clk),
-        .rst_a_n                                (regslv_rst_n),
-        .pulse_in                               (pulse_deliver_backward_pulse_in),
-        .clk_b                                  (clk),
-        .rst_b_n                                (rst_n),
-        .pulse_out                              (pulse_deliver_backward_pulse_out));
-    assign  {ack_vld, err, rd_data}             = pulse_deliver_backward_pulse_out;
 
 //**************************************ADDRESS DECODER***********************************************//
     localparam  ADDR_TRUNC_BITS                 = log2(DATA_WIDTH / 8);
@@ -575,7 +568,9 @@ module regslv_slv_map (
     assign  reg_acc                             = (|reg_sw_wr_sel) | (|reg_sw_rd_sel);
 
 //*******************************************FSM******************************************************//
-    slv_fsm #(.DATA_WIDTH (DATA_WIDTH))
+    slv_fsm #(
+        .DATA_WIDTH (DATA_WIDTH)
+    )
     slv_fsm (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
@@ -590,7 +585,8 @@ module regslv_slv_map (
         .dummy_acc                              (dummy_acc),
         .reg_acc                                (reg_acc),
         .reg_rd_data                            (reg_rd_data),
-        .reg_rd_data_vld                        (reg_rd_data_vld));
+        .reg_rd_data_vld                        (reg_rd_data_vld)
+    );
 
 //***********************************FIELDS AND REGISTERS*********************************************//
     logic                                       map_11_0_TEM21__sw_wr_en;

@@ -294,20 +294,23 @@ class CommandRunner:
         if args.rdl:
             if not args.name.endswith(".rdl"):
                 args.name += ".rdl"
+
             if args.rname or args.rnum or args.language:
                 message.info(
                     "-rname, -rnum and -l/--language options are not supported to "
                     "generate an SystemRDL template now (only for Excel worksheets)"
                 )
+
             if args.interrupt_template:
                 type = "interrupt"
                 if args.interrupt_number:
                     intr_num = int(args.interrupt_number[0])
                 else:
                     intr_num = 1
+                gen_rdl_template(args.dir, args.name, type, intr_num=intr_num)
             else:
                 type = "common"
-            gen_rdl_template(args.dir, args.name, type, intr_num=intr_num)
+                gen_rdl_template(args.dir, args.name, type)
 
     @staticmethod
     def _parse(args):

@@ -1,10 +1,10 @@
 `default_nettype none
-module reg_native_if2third_party_ip (
+module reg_native_if_1to1 (
     // native domain
-    native_clk, native_rst_n,
+    native_clk, native_rst_n, soft_rst,
     req_vld, ack_vld, err, addr, wr_en, rd_en, wr_data, rd_data,
     // target domain
-    ext_clk, ext_rst_n,
+    ext_clk, ext_rst_n, ext_soft_rst,
     ext_req_vld, ext_ack_vld, ext_err, ext_addr, ext_wr_en, ext_rd_en, ext_wr_data, ext_rd_data
 );
     parameter   CDC_ENABLE                  = 0;
@@ -13,6 +13,7 @@ module reg_native_if2third_party_ip (
 
     input   logic                           native_clk;
     input   logic                           native_rst_n;
+    input   logic                           soft_rst;
     input   logic                           req_vld;
     output  logic                           ack_vld;
     output  logic                           err;
@@ -24,6 +25,7 @@ module reg_native_if2third_party_ip (
 
     input   logic                           ext_clk;
     input   logic                           ext_rst_n;
+    output  logic                           ext_soft_rst;
     output  logic                           ext_req_vld;
     input   logic                           ext_ack_vld;
     input   logic                           ext_err;
@@ -36,15 +38,15 @@ module reg_native_if2third_party_ip (
 //***************************************************CLOCK DOMAIN CROSSING**************************************************//
     generate
         if (CDC_ENABLE) begin: g_cdc
-            logic   [1:0]                   value_deliver_ctrl_o_value_in;
-            logic   [1:0]                   value_deliver_ctrl_o_value_out;
+            logic   [2:0]                   value_deliver_ctrl_o_value_in;
+            logic   [2:0]                   value_deliver_ctrl_o_value_out;
             logic                           req_vld_wr_en;
 
-            // deliver reg_native_if control signal (req_vld, wr_en, rd_en)
+            // deliver reg_native_if control signal (req_vld, soft_rst, wr_en, rd_en)
             // from native to target clock domain
-            assign  value_deliver_ctrl_o_value_in = {wr_en, rd_en};
+            assign  value_deliver_ctrl_o_value_in = {soft_rst, wr_en, rd_en};
             value_deliver_1cycle #(
-                .WIDTH                      (2)
+                .WIDTH                      (3)
             )
             value_deliver_ctrl_o (
                 .scan_enable                (1'b0),
@@ -57,7 +59,7 @@ module reg_native_if2third_party_ip (
                 .pulse_out                  (ext_req_vld),
                 .value_out                  (value_deliver_ctrl_o_value_out)
             );
-            assign  {ext_wr_en, ext_rd_en} = value_deliver_ctrl_o_value_out;
+            assign  {ext_soft_rst, ext_wr_en, ext_rd_en} = value_deliver_ctrl_o_value_out;
 
             // deliver reg_native_if wr_data
             // from native to target clock domain
@@ -128,6 +130,7 @@ module reg_native_if2third_party_ip (
                 .value_out                  (rd_data)
             );
         end else begin: g_no_cdc
+            assign  ext_soft_rst            = soft_rst;
             assign  ext_req_vld             = req_vld;
             assign  ext_addr                = addr;
             assign  ext_wr_en               = wr_en;
