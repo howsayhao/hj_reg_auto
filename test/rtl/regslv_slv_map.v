@@ -1111,9 +1111,6 @@ module regslv_slv_map (
     assign  map_11_0_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[2]  = map_11_0_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_11_0_TEM21_alias__sw_rd_data = 32'h0;
         map_11_0_TEM21_alias__sw_rd_data[13:13] = map_11_0_TEM21__FIELD_3__curr_value;
@@ -1125,9 +1122,6 @@ module regslv_slv_map (
     assign  map_11_0_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[3];
     assign  map_11_0_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[3]  = map_11_0_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_11_0_TEM22_alias__sw_rd_data = 32'h0;
@@ -1327,9 +1321,6 @@ module regslv_slv_map (
     assign  map_11_1_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[6]  = map_11_1_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_11_1_TEM21_alias__sw_rd_data = 32'h0;
         map_11_1_TEM21_alias__sw_rd_data[13:13] = map_11_1_TEM21__FIELD_3__curr_value;
@@ -1341,9 +1332,6 @@ module regslv_slv_map (
     assign  map_11_1_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[7];
     assign  map_11_1_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[7]  = map_11_1_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_11_1_TEM22_alias__sw_rd_data = 32'h0;
@@ -1543,9 +1531,6 @@ module regslv_slv_map (
     assign  map_11_2_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[10]  = map_11_2_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_11_2_TEM21_alias__sw_rd_data = 32'h0;
         map_11_2_TEM21_alias__sw_rd_data[13:13] = map_11_2_TEM21__FIELD_3__curr_value;
@@ -1557,9 +1542,6 @@ module regslv_slv_map (
     assign  map_11_2_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[11];
     assign  map_11_2_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[11]  = map_11_2_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_11_2_TEM22_alias__sw_rd_data = 32'h0;
@@ -1759,9 +1741,6 @@ module regslv_slv_map (
     assign  map_11_3_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[14]  = map_11_3_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_11_3_TEM21_alias__sw_rd_data = 32'h0;
         map_11_3_TEM21_alias__sw_rd_data[13:13] = map_11_3_TEM21__FIELD_3__curr_value;
@@ -1773,9 +1752,6 @@ module regslv_slv_map (
     assign  map_11_3_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[15];
     assign  map_11_3_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[15]  = map_11_3_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_11_3_TEM22_alias__sw_rd_data = 32'h0;
@@ -1975,9 +1951,6 @@ module regslv_slv_map (
     assign  map_11_4_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[18]  = map_11_4_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_11_4_TEM21_alias__sw_rd_data = 32'h0;
         map_11_4_TEM21_alias__sw_rd_data[13:13] = map_11_4_TEM21__FIELD_3__curr_value;
@@ -1989,9 +1962,6 @@ module regslv_slv_map (
     assign  map_11_4_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[19];
     assign  map_11_4_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[19]  = map_11_4_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_11_4_TEM22_alias__sw_rd_data = 32'h0;
@@ -2191,9 +2161,6 @@ module regslv_slv_map (
     assign  map_12_0_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[22]  = map_12_0_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_0_TEM21_alias__sw_rd_data = 32'h0;
         map_12_0_TEM21_alias__sw_rd_data[13:13] = map_12_0_TEM21__FIELD_3__curr_value;
@@ -2205,9 +2172,6 @@ module regslv_slv_map (
     assign  map_12_0_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[23];
     assign  map_12_0_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[23]  = map_12_0_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_0_TEM22_alias__sw_rd_data = 32'h0;
@@ -2407,9 +2371,6 @@ module regslv_slv_map (
     assign  map_12_1_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[26]  = map_12_1_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_1_TEM21_alias__sw_rd_data = 32'h0;
         map_12_1_TEM21_alias__sw_rd_data[13:13] = map_12_1_TEM21__FIELD_3__curr_value;
@@ -2421,9 +2382,6 @@ module regslv_slv_map (
     assign  map_12_1_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[27];
     assign  map_12_1_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[27]  = map_12_1_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_1_TEM22_alias__sw_rd_data = 32'h0;
@@ -2623,9 +2581,6 @@ module regslv_slv_map (
     assign  map_12_2_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[30]  = map_12_2_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_2_TEM21_alias__sw_rd_data = 32'h0;
         map_12_2_TEM21_alias__sw_rd_data[13:13] = map_12_2_TEM21__FIELD_3__curr_value;
@@ -2637,9 +2592,6 @@ module regslv_slv_map (
     assign  map_12_2_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[31];
     assign  map_12_2_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[31]  = map_12_2_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_2_TEM22_alias__sw_rd_data = 32'h0;
@@ -2839,9 +2791,6 @@ module regslv_slv_map (
     assign  map_12_3_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[34]  = map_12_3_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_3_TEM21_alias__sw_rd_data = 32'h0;
         map_12_3_TEM21_alias__sw_rd_data[13:13] = map_12_3_TEM21__FIELD_3__curr_value;
@@ -2853,9 +2802,6 @@ module regslv_slv_map (
     assign  map_12_3_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[35];
     assign  map_12_3_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[35]  = map_12_3_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_3_TEM22_alias__sw_rd_data = 32'h0;
@@ -3055,9 +3001,6 @@ module regslv_slv_map (
     assign  map_12_4_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[38]  = map_12_4_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_4_TEM21_alias__sw_rd_data = 32'h0;
         map_12_4_TEM21_alias__sw_rd_data[13:13] = map_12_4_TEM21__FIELD_3__curr_value;
@@ -3069,9 +3012,6 @@ module regslv_slv_map (
     assign  map_12_4_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[39];
     assign  map_12_4_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[39]  = map_12_4_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_4_TEM22_alias__sw_rd_data = 32'h0;
@@ -3271,9 +3211,6 @@ module regslv_slv_map (
     assign  map_12_5_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[42]  = map_12_5_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_5_TEM21_alias__sw_rd_data = 32'h0;
         map_12_5_TEM21_alias__sw_rd_data[13:13] = map_12_5_TEM21__FIELD_3__curr_value;
@@ -3285,9 +3222,6 @@ module regslv_slv_map (
     assign  map_12_5_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[43];
     assign  map_12_5_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[43]  = map_12_5_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_5_TEM22_alias__sw_rd_data = 32'h0;
@@ -3487,9 +3421,6 @@ module regslv_slv_map (
     assign  map_12_6_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[46]  = map_12_6_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_6_TEM21_alias__sw_rd_data = 32'h0;
         map_12_6_TEM21_alias__sw_rd_data[13:13] = map_12_6_TEM21__FIELD_3__curr_value;
@@ -3501,9 +3432,6 @@ module regslv_slv_map (
     assign  map_12_6_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[47];
     assign  map_12_6_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[47]  = map_12_6_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_6_TEM22_alias__sw_rd_data = 32'h0;
@@ -3703,9 +3631,6 @@ module regslv_slv_map (
     assign  map_12_7_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[50]  = map_12_7_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_7_TEM21_alias__sw_rd_data = 32'h0;
         map_12_7_TEM21_alias__sw_rd_data[13:13] = map_12_7_TEM21__FIELD_3__curr_value;
@@ -3717,9 +3642,6 @@ module regslv_slv_map (
     assign  map_12_7_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[51];
     assign  map_12_7_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[51]  = map_12_7_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_7_TEM22_alias__sw_rd_data = 32'h0;
@@ -3919,9 +3841,6 @@ module regslv_slv_map (
     assign  map_12_8_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[54]  = map_12_8_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_8_TEM21_alias__sw_rd_data = 32'h0;
         map_12_8_TEM21_alias__sw_rd_data[13:13] = map_12_8_TEM21__FIELD_3__curr_value;
@@ -3933,9 +3852,6 @@ module regslv_slv_map (
     assign  map_12_8_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[55];
     assign  map_12_8_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[55]  = map_12_8_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_8_TEM22_alias__sw_rd_data = 32'h0;
@@ -4135,9 +4051,6 @@ module regslv_slv_map (
     assign  map_12_9_TEM21_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[58]  = map_12_9_TEM21_alias__sw_rd_data;
 
-
-
-
     always_comb begin
         map_12_9_TEM21_alias__sw_rd_data = 32'h0;
         map_12_9_TEM21_alias__sw_rd_data[13:13] = map_12_9_TEM21__FIELD_3__curr_value;
@@ -4149,9 +4062,6 @@ module regslv_slv_map (
     assign  map_12_9_TEM22_alias__sw_rd_en      = reg_sw_rd_sel[59];
     assign  map_12_9_TEM22_alias__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[59]  = map_12_9_TEM22_alias__sw_rd_data;
-
-
-
 
     always_comb begin
         map_12_9_TEM22_alias__sw_rd_data = 32'h0;

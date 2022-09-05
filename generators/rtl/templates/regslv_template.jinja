@@ -294,8 +294,7 @@ module {{slv_name}} (
     assign  {{reg_name}}__sw_wr_data    = reg_sw_wr_data;
     assign  reg_sw_rd_data[{{reg_idx[0]}}]  = {{reg_name}}__sw_rd_data;
     {%- endif %}
-{% for field in reg.fields(skip_not_present=False) %}
-{%- if not field.is_alias %}
+{% for field in reg.fields(skip_not_present=False) if not field.is_alias %}
     field #(
         .F_WIDTH                                ({{field.width}}),
         .ARST_VALUE                             ({{"%d'h%x"|format(field.width, get_reset_val(field))}}),
@@ -354,7 +353,6 @@ module {{slv_name}} (
         {{get_rtl_name(get_ref_prop(field, "injection").parent)}}__{{get_ref_prop(field, "injection").inst_name}}__curr_value) &
         {{get_rtl_name(get_ref_prop(field, "enable").parent)}}__{{get_ref_prop(field, "enable").inst_name}}__curr_value;
     {%- endif %}
-{%- endif %}
 {% endfor %}
     {%- if is_intr(reg) %}
     // interrupt aggregation
