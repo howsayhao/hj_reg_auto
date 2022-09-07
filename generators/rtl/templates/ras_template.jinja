@@ -1,0 +1,364 @@
+{%- set slv_name = get_rtl_name(slv_node) -%}
+{%- set addr_list = get_property(slv_node, "addr_list") -%}
+{%- set addr_loc_num = get_addr_loc_num(slv_node) -%}
+`include "field_attr.vh"
+`default_nettype none
+
+module {{slv_name}} (
+    clk,
+    rst_n,
+    soft_rst,
+    req_vld,
+    wr_en,
+    rd_en,
+    addr,
+    wr_data,
+    rd_data,
+    ack_vld,
+    err,
+    err_en
+);
+    `include "common_funcs.vh"
+
+    parameter   [31:0]      P_IS_ECC            = 0;
+    parameter   [31:0]      P_IS_UEU            = 0;
+    parameter   [31:0]      P_IS_POIS           = 0;
+    parameter               P_CORRECTED         = 1;
+    parameter               INSERT_REG_FF       = 1;
+    parameter               ADDR_WIDTH          = 64;
+
+    localparam              DATA_WIDTH          = 32;
+    localparam              REG_NUM             = {{addr_loc_num}};
+
+    input   logic                               clk;
+    input   logic                               rst_n;
+    input   logic                               soft_rst;
+    input   logic                               req_vld;
+    input   logic                               wr_en;
+    input   logic                               rd_en;
+    input   logic   [ADDR_WIDTH-1:0]            addr;
+    input   logic   [DATA_WIDTH-1:0]            wr_data;
+    output  logic   [DATA_WIDTH-1:0]            rd_data;
+    output  logic                               ack_vld;
+    output  logic                               err;
+    input   logic                               err_en;
+
+    logic                                       int_req_vld;
+    logic                                       int_wr_en;
+    logic                                       int_rd_en;
+    logic   [ADDR_WIDTH-1:0]                    int_addr;
+    logic   [DATA_WIDTH-1:0]                    int_wr_data;
+    logic                                       int_soft_rst;
+    logic   [DATA_WIDTH-1:0]                    int_rd_data;
+    logic                                       int_ack_vld;
+    logic                                       int_err;
+    logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
+    logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
+    logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
+    logic   [DATA_WIDTH-1:0]                    reg_rd_data_mux_dout;
+    logic                                       reg_rd_data_mux_dout_vld;
+    logic                                       reg_rd_data_vld;
+    logic   [DATA_WIDTH-1:0]                    reg_rd_data;
+
+    assign  int_req_vld                         = req_vld;
+    assign  int_wr_en                           = wr_en;
+    assign  int_rd_en                           = rd_en;
+    assign  int_addr                            = addr;
+    assign  int_wr_data                         = wr_data;
+    assign  int_soft_rst                        = soft_rst;
+    assign  rd_data                             = int_rd_data;
+    assign  ack_vld                             = int_ack_vld;
+    assign  err                                 = int_err;
+
+//**************************************ADDRESS DECODER***********************************************//
+    localparam  ADDR_TRUNC_BITS                 = log2(DATA_WIDTH / 8);
+    localparam  ADDR_REM_BITS                   = ADDR_WIDTH - ADDR_TRUNC_BITS;
+
+    logic   [REG_NUM-1:0]                       dec_reg_sel;
+    logic                                       dec_dummy_sel;
+    logic                                       reg_acc;
+    logic                                       dummy_acc;
+    logic   [REG_NUM-1:0]                       reg_sw_wr_sel;
+    logic   [REG_NUM-1:0]                       reg_sw_rd_sel;
+    logic   [DATA_WIDTH-1:0]                    reg_sw_wr_data;
+
+    always_comb begin
+        if (int_req_vld & ~int_soft_rst) begin
+            dec_reg_sel = {REG_NUM{1'b0}};
+            dec_dummy_sel = 1'b0;
+
+            unique case (int_addr[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
+                {%- for addr in addr_list %}
+                (ADDR_REM_BITS'(64'h{{"%x"|format(addr)}} >> ADDR_TRUNC_BITS)): dec_reg_sel[{{loop.index0}}] = 1'b1;
+                {%- endfor %}
+                default: dec_dummy_sel = 1'b1;
+            endcase
+        end
+        else begin
+            dec_reg_sel = {REG_NUM{1'b0}};
+            dec_dummy_sel = 1'b0;
+        end
+    end
+
+    generate
+        if (INSERT_REG_FF) begin: g_reg_ff
+            always_ff @(posedge clk or negedge rst_n) begin
+                if (!rst_n) begin
+                    reg_sw_wr_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_rd_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
+                    dummy_acc                   <= 1'b0;
+                end
+                else if (int_soft_rst) begin
+                    reg_sw_wr_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_rd_sel               <= {REG_NUM{1'b0}};
+                    reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
+                    dummy_acc                   <= 1'b0;
+                end
+                else begin
+                    reg_sw_wr_sel               <= {REG_NUM{int_wr_en}} & dec_reg_sel;
+                    reg_sw_rd_sel               <= {REG_NUM{int_rd_en}} & dec_reg_sel;
+                    reg_sw_wr_data              <= int_wr_data;
+                    dummy_acc                   <= dec_dummy_sel;
+                end
+            end
+        end
+        else begin: g_no_reg_ff
+            assign  reg_sw_wr_sel               = {REG_NUM{int_wr_en}} & dec_reg_sel;
+            assign  reg_sw_rd_sel               = {REG_NUM{int_rd_en}} & dec_reg_sel;
+            assign  reg_sw_wr_data              = int_wr_data;
+            assign  dummy_acc                   = dec_dummy_sel;
+        end
+    endgenerate
+
+    assign  reg_acc                             = (|reg_sw_wr_sel) | (|reg_sw_rd_sel);
+
+//*******************************************FSM******************************************************//
+    slv_fsm #(
+        .DATA_WIDTH (DATA_WIDTH)
+    )
+    slv_fsm (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .if_soft_rst                            (int_soft_rst),
+        .if_req_vld                             (int_req_vld),
+        .if_ack_vld                             (int_ack_vld),
+        .if_rd_data                             (int_rd_data),
+        .if_err                                 (int_err),
+        .if_err_en                              (err_en),
+        .if_wr_en                               (int_wr_en),
+        .if_rd_en                               (int_rd_en),
+        .dummy_acc                              (dummy_acc),
+        .reg_acc                                (reg_acc),
+        .reg_rd_data                            (reg_rd_data),
+        .reg_rd_data_vld                        (reg_rd_data_vld)
+    );
+
+//*************************************NODES AND RECORDS**********************************************//
+{%- set int_reg_idx = get_property(slv_node, "int_reg_idx") %}
+{%- set loop_cnt = [0] %}
+{%- for node in slv_node.children(unroll=True, skip_not_present=False) %}
+{%- set node_name = get_inst_name(node) %}
+    //****************************************************************************************//
+    // RAS Node {{loop.index0}}: {{node_name}}
+    // Size: {{node.size}}
+    // Address Offset: {{node.absolute_address - slv_node.absolute_address}}
+    //****************************************************************************************//
+{%- set node_loop = loop %}
+{%- for record in node.children(unroll=True, skip_not_present=False) %}
+{%- set record_name = get_inst_name(record) %}
+    //**********************************************************************************//
+    // RAS Record (index {{loop.index0}} in current node): {{record_name}}
+    // Size: {{node.size}}
+    // Address Offset: {{node.absolute_address - slv_node.absolute_address}}
+    //**********************************************************************************//
+{%- for reg in record.registers(unroll=True, skip_not_present=False) %}
+{%- set reg_name = get_rtl_name(reg) %}
+{%- set reg_idx = int_reg_idx[loop_cnt[0]] %}
+{%- if loop_cnt.append(loop_cnt.pop() + 1) %}{% endif %}
+    //****************************************************************************//
+    // Register: {{get_inst_name(reg)}}
+    // Size: {{reg.size}} bytes
+    // Address Offset: {{reg.absolute_address - slv_node.absolute_address}}
+    //****************************************************************************//
+    logic                                       {{reg_name}}__sw_wr_en;
+    logic                                       {{reg_name}}__sw_rd_en;
+    logic   {{"[%2s:0]"|format(reg.size*8-1)}}  {{" " * 28}}{{reg_name}}__sw_wr_data;
+    logic   {{"[%2s:0]"|format(reg.size*8-1)}}  {{" " * 28}}{{reg_name}}__sw_rd_data;
+{%- for field in reg.fields(skip_not_present=False) %}
+{%- if field.is_hw_readable or field.is_sw_readable %}
+    logic   {{"[%2s:0]"|format(field.width-1)}} {{" " * 29}}{{reg_name}}__{{field.inst_name}}__curr_value;
+{%- endif %}
+{%- if field.is_hw_writable %}
+    {%- if reg.type_name == "ERR_MISC0" and field.type_name == "IS" %}
+    logic   {{"[%2s:0]"|format(field.width-1) ~ " "*30}}{{reg_name}}__{{field.inst_name}}__pulse;
+    {%- else %}
+    logic                                       {{reg_name}}__{{field.inst_name}}__pulse;
+    {%- endif %}
+    logic   {{"[%2s:0]"|format(field.width-1) ~ " "*30}}{{reg_name}}__{{field.inst_name}}__next_value;
+{%- endif %}
+{%- endfor %}{# field loop #}
+
+{%- if need_snapshot(reg) %}
+    snapshot_reg #(.DATA_WIDTH(DATA_WIDTH), .REG_WIDTH({{reg.size * 8}}))
+    {{reg_name}}_snapshot_reg (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .soft_rst                               (int_soft_rst),
+        .snap_wr_en                             (reg_sw_wr_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
+        .snap_rd_en                             (reg_sw_rd_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
+        .snap_wr_data                           ({{"{"}}{{reg_idx[1]-reg_idx[0]+1}}{{"{"}}reg_sw_wr_data{{"}}"}}),
+        .snap_rd_data                           (reg_sw_rd_data[{{reg_idx[1]}}:{{reg_idx[0]}}]),
+        .reg_wr_en                              ({{reg_name}}__sw_wr_en),
+        .reg_rd_en                              ({{reg_name}}__sw_rd_en),
+        .reg_wr_data                            ({{reg_name}}__sw_wr_data),
+        .reg_rd_data                            ({{reg_name}}__sw_rd_data)
+    );
+{%- else %}
+    assign  {{reg_name}}__sw_wr_en = reg_sw_wr_sel[{{reg_idx[0]}}];
+    assign  {{reg_name}}__sw_rd_en = reg_sw_rd_sel[{{reg_idx[0]}}];
+    assign  {{reg_name}}__sw_wr_data = reg_sw_wr_data;
+    assign  reg_sw_rd_data[{{reg_idx[0]}}] = {{reg_name}}__sw_rd_data;
+{%- endif %}
+{% for field in reg.fields(skip_not_present=False) %}
+    {# IS (interrupt status) bits need to be split to support interrupt type (edge and level) #}
+    {%- if reg.type_name == "ERR_MISC0" and field.type_name == "IS" %}
+    {%- for n in range(field.width) %}{# single bit #}
+    field #(
+        .F_WIDTH                                (1),
+        .ARST_VALUE                             (1'b0),
+        .SW_TYPE                                ({{"{"~format_sw_type(field)~"}"}}),
+        .SW_ONREAD_TYPE                         ({{"{"~format_onread_type(field)~"}"}}),
+        .SW_ONWRITE_TYPE                        ({{"{"~format_onwrite_type(field)~"}"}}),
+        .HW_TYPE                                ({{format_hw_type(field)}}),
+        .HARD_WIRED                             ({{is_hard_wired(field)}})
+    )
+    x__{{reg_name}}__{{field.inst_name}} (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .sync_rst                               (1'b0),
+        .sw_wr_data                             ({{reg_name}}__sw_wr_data[{{field.high-n}}]),
+        .sw_rd                                  ({{reg_name}}__sw_rd_en),
+        .sw_wr                                  ({{reg_name}}__sw_wr_en),
+        .swmod_out                              (),
+        .swacc_out                              (),
+        .hw_value                               ({{reg_name}}__{{field.inst_name}}__next_value[{{field.high-n}}]),
+        .hw_pulse                               ({{reg_name}}__{{field.inst_name}}__pulse[{{field.high-n}}]),
+        .field_value                            ({{reg_name}}__{{field.inst_name}}__curr_value[{{field.high-n}}])
+    );
+    {%- endfor %}
+    {%- else %}
+    field #(
+        .F_WIDTH                                ({{field.width}}),
+        .ARST_VALUE                             ({{"%d'h%x"|format(field.width, get_reset_val(field))}}),
+        .SW_TYPE                                ({{"{"~format_sw_type(field)~"}"}}),
+        .SW_ONREAD_TYPE                         ({{"{"~format_onread_type(field)~"}"}}),
+        .SW_ONWRITE_TYPE                        ({{"{"~format_onwrite_type(field)~"}"}}),
+        .HW_TYPE                                ({{format_hw_type(field)}}),
+        .HARD_WIRED                             ({{is_hard_wired(field)}})
+    )
+    x__{{reg_name}}__{{field.inst_name}} (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .sync_rst                               (1'b0),
+        .sw_wr_data                             ({{reg_name}}__sw_wr_data[{{field.high}}:{{field.low}}]),
+        .sw_rd                                  ({{reg_name}}__sw_rd_en),
+        .sw_wr                                  ({{reg_name}}__sw_wr_en),
+        .swmod_out                              (),
+        .swacc_out                              (),
+        .hw_value                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__next_value
+                                                {%- else %}{{field.width}}'b0{% endif %}),
+        .hw_pulse                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__pulse
+                                                {%- else %}1'b0{% endif %}),
+        .field_value                            ({% if field.is_hw_readable or field.is_sw_readable -%}
+                                                {{reg_name}}__{{field.inst_name}}__curr_value{% endif %})
+    );
+{% endfor %}{# field loop #}
+    always_comb begin
+        {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
+        {%- for field in reg.fields(skip_not_present=False) %}
+        {%- if field.is_sw_readable %}
+        {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{reg_name}}__{{field.inst_name}}__curr_value;
+        {%- endif %}
+        {%- endfor %}{# field loop #}
+    end
+    {%- if reg.type_name == "ERR_FR" %}
+    {%- elif reg.type_name == "ERR_CTRL" %}
+    assign  {{node_name}}_{{record_name}}__FI = {{reg_name}}__FI__curr_value;
+    assign  {{node_name}}_{{record_name}}__CFI = {{reg_name}}__CFI__curr_value;
+    assign  {{node_name}}_{{record_name}}__ITT = {{reg_name}}__ITT__curr_value;
+    {%- elif reg.type_name == "ERR_ADDR" %}
+    {%- elif reg.type_name == "ERR_STATUS" %}
+    assign  {{reg_name}}__CE__pulse = {{node_name}}_{{record_name}}__plus_f;
+    assign  {{reg_name}}__CE__next_value = {{node_name}}_{{record_name}}__plus_f ? 2'b10 : 2'b00;
+    {%- elif reg.type_name == "ERR_MISC0" %}
+    assign  {{node_name}}_{{record_name}}__IS = {{reg_name}}__IS__curr_value;
+
+    always_comb begin
+        for (integer i = 0; i < 31; i = i + 1) begin
+            {{reg_name}}__IS__next_value[i] =
+                (({{node_name}}_{{record_name}}__interrupt[i] & {{node_name}}_{{record_name}}__FI) |
+                {{node_name}}_{{record_name}}__FIM_NORM[i]) & {{node_name}}_{{record_name}}__FEN[i];
+
+            if ({{node_name}}_{{record_name}}__ITT[i])
+                {{reg_name}}__IS__pulse[i] = 1'b1;
+            else
+                {{reg_name}}__IS__pulse[i] = {{reg_name}}__IS__next_value[i];
+        end
+    end
+
+    always_comb begin
+        {{reg_name}}__CEC__pulse = 1'b1;
+        if ({{node_name}}_{{record_name}}__plus_f) begin
+            {
+                {{node_name}}_{{record_name}}__OF,
+                {{reg_name}}__CEC__next_value
+            } = {{reg_name}}__CEC__curr_value + {{node_name}}_{{record_name}}_plus_value;
+        end
+        else begin
+            {{node_name}}_{{record_name}}__OF = 1'b0;
+            {{reg_name}}__CEC__next_value = {{reg_name}}__CEC__curr_value;
+        end
+    end
+    {%- elif reg.type_name == "ERR_MISC1" %}
+    assign  {{node_name}}_{{record_name}}__FEN = {{reg_name}}__FEN__curr_value;
+    assign  {{node_name}}_{{record_name}}__FMASK = {{reg_name}}__FMASK__curr_value;
+    {%- elif reg.type_name == "ERR_MISC2" %}
+    assign  {{node_name}}_{{record_name}}__FIM_OF = {{reg_name}}__FIM__curr_value[32];
+    assign  {{node_name}}_{{record_name}}__FIM_NORM = {{reg_name}}__FIM__curr_value[31:0];
+    {%- elif reg.type_name == "ERR_MISC3" %}
+    {%- endif %}
+{%- endfor %}{# reg loop #}
+    assign  {{node_name}}_{{record_name}}__plus_f = {{node_name}}_{{record_name}}__plus & {{node_name}}_{{record_name}}__FI;
+    assign  {{node_name}}_{{record_name}}__of_f =
+        ({{node_name}}_{{record_name}}__FIM_OF | {{node_name}}_{{record_name}}__OF) &
+        {{node_name}}_{{record_name}}_CFI;
+    assign  {{node_name}}_{{record_name}}__fault = (|{{node_name}}_{{record_name}}__IS) | {{node_name}}_{{record_name}}__of_f;
+    assign  {{node_name}}_{{record_name}}__fault_int =
+        {{node_name}}_{{record_name}}__fault & {{node_name}}_{{record_name}}__FI &
+        ~{{node_name}}_{{record_name}}__FMASK;
+{%- endfor %}{# record loop #}
+{% endfor %}{# node loop #}
+//*************************************READ DATA MUX**************************************************//
+    assign  reg_rd_data_mux_din                 = reg_sw_rd_data;
+    assign  reg_rd_data_mux_sel                 = reg_sw_rd_sel;
+    assign  reg_rd_data_vld                     = reg_rd_data_mux_dout_vld;
+    assign  reg_rd_data                         = reg_rd_data_mux_dout;
+
+    split_mux_2d #(
+        .WIDTH                                  (DATA_WIDTH),
+        .CNT                                    (REG_NUM),
+        .GROUP_SIZE                             ({{reg_mux_size(slv_node)}}),
+        .SKIP_DFF_0                             ({{skip_reg_mux_dff_0(slv_node)}}),
+        .SKIP_DFF_1                             ({{skip_reg_mux_dff_1(slv_node)}})
+    )
+    reg_rd_data_mux (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .din                                    (reg_rd_data_mux_din),
+        .sel                                    (reg_rd_data_mux_sel),
+        .dout                                   (reg_rd_data_mux_dout),
+        .dout_vld                               (reg_rd_data_mux_dout_vld)
+    );
+endmodule
+`default_nettype wire

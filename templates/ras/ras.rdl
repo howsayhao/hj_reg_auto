@@ -1,0 +1,79 @@
+regfile ras_record {
+    reg {
+        regwidth = 64;
+        field {sw = r;} FRX[31:31] = 1'b0;
+        field {sw = r;} TS [25:24] = 2'b0;
+        field {sw = r;} CI [23:22] = 2'b0;
+        field {sw = r;} INJ[21:20] = 2'b0;
+        field {sw = r;} CEO[19:18] = 2'b1;
+        field {sw = r;} DUI[17:16] = 2'b0;
+        field {sw = r;} RP [15:15] = 1'b0;
+        field {sw = r;} CEC[14:12] = 3'b100;
+        field {sw = r;} CFI[11:10] = 2'b10;
+        field {sw = r;} UE [9:8] = 2'b0;
+        field {sw = r;} FI [7:6] = 2'b10;
+        field {sw = r;} UI [5:4] = 2'b0;
+        field {sw = r;} ED [1:0] = 2'b0;
+    } ERR_FR;
+    reg {
+        regwidth = 64;
+        field {sw = rw;} ITT[63:32] = 32'b0;
+        field {sw = rw;} CFI[8:8] = 1'b0;
+        field {sw = rw;} FI [3:3] = 1'b0;
+        field {sw = r;}  UI [2:2] = 1'b0;
+        field {sw = rw;} ED [0:0] = 1'b0;
+    } ERR_CTRL;
+    reg {
+        regwidth = 64;
+        field {sw = r;} NS[63:63] = 1'b0;
+        field {sw = r;} SI[62:62] = 1'b1;
+        field {sw = r;} AI[61:61] = 1'b1;
+        field {sw = r;} VA[60:60] = 1'b0;
+    } ERR_ADDR;
+    reg {
+        regwidth = 64;
+        field {sw = r;} AV[31:31] = 1'b0;
+        field {sw = rw; onwrite = woclr;} V[30:30] = 1'b0;
+        field {sw = rw; onwrite = woclr;} UE[29:29] = 1'b0;
+        field {sw = r;} ER[28:28] = 1'b0;
+        field {sw = rw; onwrite = woclr;} OF[27:27] = 1'b1;
+        field {sw = rw; onwrite = woclr;} MV[26:26] = 1'b0;
+        field {sw = rw; onwrite = woclr;} CE[25:24] = 2'b10;
+        field {sw = r;} DE[23:23] = 1'b0;
+        field {sw = r;} PN[22:22] = 1'b0;
+        field {sw = rw; onwrite = woclr;} UET[21:20] = 2'b1;
+        field {sw = r;} CI[19:19] = 1'b0;
+        field {sw = r;} SERR[7:0] = 8'b1;
+    } ERR_STATUS;
+    reg {
+        regwidth = 64;
+        field {sw = rw; onwrite = woclr;} OF[47:47] = 1'b0;
+        field {sw = rw;} CEC[46:32] = 15'b0;
+        field {sw = rw; onwrite = woclr;} IS[31:0] = 32'b0;
+    } ERR_MISC0;
+    reg {
+        regwidth = 64;
+        field {sw = rw;} FMASK[32:32] = 1'b0;
+        field {sw = rw;} FEN[31:0] = 32'b0;
+    } ERR_MISC1;
+    reg {
+        regwidth = 64;
+        field {sw = rw;} FIM[32:0] = 33'b0;
+    } ERR_MISC2;
+    reg {
+        regwidth = 64;
+        field {hard_wired = true;} RES0[63:0] = 64'b0;
+    } ERR_MISC3;
+
+};
+
+regfile ras_node {
+    ras_record record_0;
+    ras_record record_1;
+};
+
+addrmap ras_nodes #(longint unsigned NODE_NUM = 1) {
+    hj_genslv = true;
+    is_ras_arch = true;
+    ras_node node[NODE_NUM];
+};

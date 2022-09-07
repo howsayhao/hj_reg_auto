@@ -1,5 +1,6 @@
 $(call declare-mod,hrda)
 $(call add,mhdl_ib_path,hrda,$(sop_base)/rtl/hrda)
+$(call add,mhdl_incdir,hrda,$(sop_base)/rtl/hrda)
 $(call add,mod,hrda,hrda_field hrda_bridge hrda_fsm hrda_snapshot)
 $(call add,mod,hrda,split_mux_2d)
 $(call add,core_name,hrda,hj:naqu:hrda:0.0.0)

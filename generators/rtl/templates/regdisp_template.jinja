@@ -116,10 +116,10 @@ module {{disp_name}} (
         if (upstream__{{disp_name}}__req_vld) begin
             unique case (1'b1)
             {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}
-                (DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.address_offset)}} + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
+                ((DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.address_offset)}} + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
                 <= upstream__{{disp_name}}__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
                 upstream__{{disp_name}}__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
-                (DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.address_offset+child.size)}} + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS)):
+                (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.address_offset+child.size)}} + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
                     dec_if_sel[{{loop.index0}}] = 1'b1;
             {%- endfor %}
                 default: dec_dummy_reg_sel  = 1'b1;

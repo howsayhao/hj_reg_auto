@@ -150,19 +150,19 @@ module {{mst_name}} (
             unique case (1'b1)
             {%- for child in mst_node.children(unroll=True, skip_not_present=False) %}
                 {% if isinstance(child, AddrmapNode) -%}
-                (DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS))
+                ((DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS))
                 <= fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
                 fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
-                (DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address+child.size)}} >> DEC_ADDR_TRUNC_BITS)):
+                (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address+child.size)}} >> DEC_ADDR_TRUNC_BITS))):
                     dec_ext_sel = 1'b1;
                 {%- elif isinstance(child, RegfileNode) -%}
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'('h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[0] = 1'b1;
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.absolute_address)}} + DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.absolute_address)}} + DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[1] = 1'b1;
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.absolute_address)}} + 2 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.absolute_address)}} + 2 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[2] = 1'b1;
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == DEC_ADDR_REM_BITS'(('h{{"%x"|format(child.absolute_address)}} + 3 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.absolute_address)}} + 3 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[3] = 1'b1;
                 {% endif -%}
             {%- endfor -%}

@@ -185,7 +185,7 @@ module {{slv_name}} (
 
             unique case (int_addr[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
                 {%- for addr in addr_list %}
-                ADDR_REM_BITS'({{"'h%x"|format(addr)}} >> ADDR_TRUNC_BITS): dec_reg_sel[{{loop.index0}}] = 1'b1;
+                (ADDR_REM_BITS'(64'h{{"%x"|format(addr)}} >> ADDR_TRUNC_BITS)): dec_reg_sel[{{loop.index0}}] = 1'b1;
                 {%- endfor %}
                 default: dec_dummy_sel = 1'b1;
             endcase
