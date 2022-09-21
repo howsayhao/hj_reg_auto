@@ -1,7 +1,7 @@
 $(call declare-mod,{{top_name}})
 $(call add,rtl,{{top_name}}, \
     {%- for file in filelist %}
-    $({{top_name|upper}}_DIR)/rtl/{{file}}{% if not loop.last %} \{% else %}){% endif %}
+    $(PROJECT_{{top_name|upper}}_HOME)/rtl/{{file}}{% if not loop.last %} \{% else %}){% endif %}
     {%- endfor %}
 
 $(call add,mod,{{top_name}},hrda)

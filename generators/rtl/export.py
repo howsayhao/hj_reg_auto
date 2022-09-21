@@ -24,7 +24,7 @@ def export_rtl(root:RootNode, out_dir:str, **kwargs):
     without_filelist = kwargs.pop("without_filelist", False)
 
     try:
-        RTLExporter().export(root, rtl_dir)
+        RTLExporter().export(root, rtl_dir, without_filelist=without_filelist)
     except Exception:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"

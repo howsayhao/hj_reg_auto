@@ -1,4 +1,3 @@
-{%- set disp_name = get_rtl_name(disp_node) -%}
 `default_nettype none
 module {{disp_name}} (
     {%- for child in disp_node.children(unroll=True, skip_not_present=False) %}

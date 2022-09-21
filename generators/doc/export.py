@@ -118,6 +118,7 @@ def export_org(root:RootNode, out_dir:str, simplified=False):
     """
     """
     exporter = DocExporter()
+
     if simplified:
         name = root.top.inst_name + "_simplified"
         typ = "org_simplified"
@@ -125,7 +126,11 @@ def export_org(root:RootNode, out_dir:str, simplified=False):
         name = root.top.inst_name + "_detailed"
         typ = "org"
 
-    export_file = os.path.join(out_dir, "%s.org" % name)
+    rtl_dir = os.path.join(out_dir, "docs")
+    if not os.path.exists(rtl_dir):
+        os.makedirs(rtl_dir)
+
+    export_file = os.path.join(rtl_dir, "%s.org" % name)
 
     try:
         exporter.export(root, export_file, typ)
@@ -141,7 +146,12 @@ def export_org(root:RootNode, out_dir:str, simplified=False):
 
 def export_md(root:RootNode, out_dir:str):
     exporter = DocExporter()
-    export_file = os.path.join(out_dir, "%s.md" % (root.top.inst_name))
+
+    rtl_dir = os.path.join(out_dir, "docs")
+    if not os.path.exists(rtl_dir):
+        os.makedirs(rtl_dir)
+
+    export_file = os.path.join(rtl_dir, "%s.md" % (root.top.inst_name))
 
     try:
         exporter.export(root, export_file, "md")
@@ -159,10 +169,15 @@ def export_pdf(root:RootNode, out_dir:str):
     """
     """
     exporter = DocExporter()
-    export_file = os.path.join(out_dir, "%s.pdf" % (root.top.inst_name))
 
-    md_tmp_file = os.path.join(out_dir, "%s.tmp.md" % (root.top.inst_name))
-    html_tmp_file = os.path.join(out_dir, "%s.tmp.html" % (root.top.inst_name))
+    rtl_dir = os.path.join(out_dir, "docs")
+    if not os.path.exists(rtl_dir):
+        os.makedirs(rtl_dir)
+
+    export_file = os.path.join(rtl_dir, "%s.pdf" % (root.top.inst_name))
+
+    md_tmp_file = os.path.join(rtl_dir, "%s.tmp.md" % (root.top.inst_name))
+    html_tmp_file = os.path.join(rtl_dir, "%s.tmp.html" % (root.top.inst_name))
 
     try:
         exporter.export(root, md_tmp_file, "md")

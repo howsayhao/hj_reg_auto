@@ -198,7 +198,17 @@ class CommandRunner:
         parser_generate.add_argument(
             "-grtl", "--gen_rtl",
             action="store_true",
-            help="generate synthesizable RTL code"
+            help="generate RTL code"
+        )
+        parser_generate.add_argument(
+            "--without_filelist",
+            action="store_true",
+            help="filelist will not be generated in RTL directory"
+        )
+        parser_generate.add_argument(
+            "--gen_hier_depth_range",
+            nargs=2,
+            help="specify the hierarchy depth range for generating RTL code"
         )
         parser_generate.add_argument(
             "-ghtml", "--gen_html",
@@ -208,12 +218,17 @@ class CommandRunner:
         parser_generate.add_argument(
             "-gorg", "--gen_org",
             action="store_true",
-            help="generate an org mode documentation"
+            help="generate an org documentation"
         )
         parser_generate.add_argument(
-            "--simplified_org",
+            "--only_simplified_org",
             action="store_true",
-            help="org mode documentation is simplified and only contains block contents"
+            help="org documentation is simplified and only contains block contents"
+        )
+        parser_generate.add_argument(
+            "--with_simplified_org",
+            action="store_true",
+            help="org documentation is generated with two versions: simplified and detailed"
         )
         parser_generate.add_argument(
             "-gpdf", "--gen_pdf",
@@ -391,60 +406,45 @@ class CommandRunner:
         proc_list = []
 
         if args.gen_all or args.gen_rtl:
+            kw = {
+                "without_filelist": args.without_filelist or False,
+                "gen_hier_depth_range": args.gen_hier_depth_range or None
+            }
+
             proc_list.append(
-                Process(
-                    target=export_rtl,
-                    name="gen_rtl",
-                    args=(root, args.gen_dir)
-                )
+                Process(target=export_rtl, name="gen_rtl", args=(root, args.gen_dir), kwargs=kw)
             )
-        if args.gen_all or args.gen_html:
+
+        # HTML generation will be deprecated in the future
+        if args.gen_html:
             proc_list.append(
-                Process(
-                    target=export_html,
-                    name="gen_html",
-                    args=(root, args.gen_dir)
-                )
+                Process(target=export_html, name="gen_html", args=(root, args.gen_dir))
             )
-        if args.gen_org:
-            proc_list.append(
-                Process(
-                    target=export_org,
-                    name="gen_org",
-                    args=(root, args.gen_dir, bool(args.simplified_org))
+        if args.gen_all or args.gen_org:
+            if args.only_simplified_org or args.with_simplified_org:
+                proc_list.append(
+                    Process(target=export_org, name="gen_org_simplified", args=(root, args.gen_dir, True))
                 )
-            )
+
+            if not args.only_simplified_org:
+                proc_list.append(
+                    Process(target=export_org, name="gen_org_detailed", args=(root, args.gen_dir, False))
+                )
         if args.gen_all or args.gen_pdf:
             proc_list.append(
-                Process(
-                    target=export_pdf,
-                    name="gen_pdf",
-                    args=(root, args.gen_dir)
-                )
+                Process(target=export_pdf, name="gen_pdf", args=(root, args.gen_dir))
             )
         if args.gen_all or args.gen_md:
             proc_list.append(
-                Process(
-                    target=export_md,
-                    name="gen_md",
-                    args=(root, args.gen_dir)
-                )
+                Process(target=export_md, name="gen_md", args=(root, args.gen_dir))
             )
         if args.gen_all or args.gen_ral:
             proc_list.append(
-                Process(
-                    target=export_uvm,
-                    name="gen_ral",
-                    args=(root, args.gen_dir)
-                )
+                Process(target=export_uvm, name="gen_ral", args=(root, args.gen_dir))
             )
         if args.gen_all or args.gen_chdr:
             proc_list.append(
-                Process(
-                    target=export_chdr,
-                    name="gen_chdr",
-                    args=(root, args.gen_dir)
-                )
+                Process(target=export_chdr, name="gen_chdr", args=(root, args.gen_dir))
             )
 
         # start multiprocessing and wait for all processes to finish

@@ -2,6 +2,11 @@
 
 // used to distinguish 6 different types of addrmap:
 // reg_network, regmst, regdisp, regslv, 3rd party IP, flatten addrmap
+property dont_gen_rtl {
+    component = addrmap;
+    type = boolean;
+};
+
 property hj_gennetwork {
     component = addrmap;
     type = boolean;

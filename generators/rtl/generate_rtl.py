@@ -78,7 +78,7 @@ class RTLExporter:
 
     def export(self, root:RootNode, rtl_dir:str, **kwargs):
         """
-        Export inhouse RTL module files: regmst, regdisp and regslv.
+        Export in-house RTL module files: regmst, regdisp and regslv.
 
         Parameters
         ----------
@@ -87,7 +87,10 @@ class RTLExporter:
         rtl_dir : str
             directory to save RTL modules
         """
-        # filelist for all inhouse generated RTL files: regmst, regdisp, regslv
+        without_filelist = kwargs.pop("without_filelist", False)
+        gen_hier_depth_range = kwargs.pop("gen_hier_depth_range", None)
+
+        # filelist for all in-house generated RTL files: regmst, regdisp, regslv
         filelist = []
 
         # top-level (root) addrmap instance name (not the RootNode)
@@ -96,13 +99,28 @@ class RTLExporter:
         # traverse all addrmap to get complete filelist and generate modules in pre-order
         for node in root.descendants(unroll=True, skip_not_present=False):
             if isinstance(node, AddrmapNode):
+                if node.is_array and node.get_property("hj_use_abs_addr"):
+                    need_array_suffix = True
+                else:
+                    need_array_suffix = False
+
                 # if current regmst/regdisp/regslv instance is in array,
                 # and it is not the first instance in the array,
                 # and it uses address offset,
                 # then skip it
-                if node.is_array and \
-                    node.current_idx[0] != 0 and \
+                if node.is_array and node.current_idx[0] != 0 and \
                     not node.get_property("hj_use_abs_addr"):
+                    continue
+
+                # if hierarchy depth range is specified,
+                # then skip generation of nodes which are not in the range
+                if gen_hier_depth_range:
+                    if gen_hier_depth_range[0] <= self._get_hier_depth(node) <= gen_hier_depth_range[1]:
+                        continue
+
+                # if some addrmap is assigned dont_gen_rtl property to true,
+                # then skip generation of the addrmap
+                if node.get_property("dont_gen_rtl", default=False):
                     continue
 
                 if node.get_property("hj_genmst"):
@@ -120,21 +138,33 @@ class RTLExporter:
                     filelist.append(filename)
 
                 elif node.get_property("hj_gendisp"):
+                    if need_array_suffix:
+                        disp_name = "{:s}{:d}".format(node.get_property("rtl_name"), node.current_idx[0])
+                    else:
+                        disp_name = node.get_property("rtl_name")
+
                     update_context = {
-                        'disp_node': node
+                        'disp_node': node,
+                        'disp_name': disp_name
                     }
 
                     template = self.jj_env.get_template("regdisp_template.jinja")
 
-                    filename = "{}.v".format(self._get_rtl_name(node))
+                    filename = "{}.v".format(disp_name)
                     dump_file = os.path.join(rtl_dir, filename)
 
                     # add regdisp to filelist
                     filelist.append(filename)
 
                 elif node.get_property("hj_genslv"):
+                    if need_array_suffix:
+                        slv_name = "{:s}{:d}".format(node.get_property("rtl_name"), node.current_idx[0])
+                    else:
+                        slv_name = node.get_property("rtl_name")
+
                     update_context = {
-                        'slv_node': node
+                        'slv_node': node,
+                        'slv_name': slv_name
                     }
 
                     if node.get_property("is_ras_arch"):
@@ -142,7 +172,7 @@ class RTLExporter:
                     else:
                         template = self.jj_env.get_template("regslv_template.jinja")
 
-                    filename = "{}.v".format(self._get_rtl_name(node))
+                    filename = "{}.v".format(slv_name)
                     dump_file = os.path.join(rtl_dir, filename)
 
                     # add regslv to filelist
@@ -157,8 +187,6 @@ class RTLExporter:
                     stream.dump(dump_file)
 
         # after addrmap traversal is done, dump filelist
-        without_filelist = kwargs.pop("without_filelist", False)
-
         if not without_filelist:
             template = self.jj_env.get_template("filelist_template.jinja")
             stream = template.stream(
@@ -178,14 +206,16 @@ class RTLExporter:
 
     def _get_rtl_name(self, node:Node):
         if isinstance(node, (MemNode, AddrmapNode)):
-            return node.get_property("rtl_name") if not node.is_array else \
-                "%s_%d" % (node.get_property("rtl_name"), node.current_idx[0])
+            if node.is_array:
+                return "%s_%d" % (node.get_property("rtl_name"), node.current_idx[0])
+            else:
+                return node.get_property("rtl_name")
         elif isinstance(node, RegNode):
             reg_name = [
                 node.get_path_segment(array_suffix="_{index:d}")
             ]
 
-            while not (isinstance(node.parent, AddrmapNode) and
+            while not (isinstance(node.parent, AddrmapNode) and \
                 node.parent.get_property("hj_genslv")):
                 node = node.parent
 
@@ -462,3 +492,13 @@ class RTLExporter:
 
     def _get_field_num(self, node:RegNode):
         return len(list(node.fields(skip_not_present=False)))
+
+    def _get_hier_depth(self, node:Node):
+        """
+        get the hierarchy of a component instance
+        which is corresponding to a `Node` object
+        """
+        if not isinstance(node.parent, RootNode):
+            return self._get_hier_depth(node.parent) + 1
+        else:
+            return 1
