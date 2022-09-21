@@ -1,6 +1,6 @@
 module reg_native_if2apb (
     clk, rst_n,
-    req_vld, ack_vld, wr_en, rd_en, addr, wr_data, rd_data, err,
+    req_vld, ack_vld, soft_rst, wr_en, rd_en, addr, wr_data, rd_data, err,
     psel, penable, pready, pwrite, paddr, pwdata, prdata, pslverr
 );
     parameter   ADDR_WIDTH  = 48;
@@ -11,6 +11,7 @@ module reg_native_if2apb (
 
     input   logic                       req_vld;
     output  logic                       ack_vld;
+    input   logic                       soft_rst;
     input   logic                       wr_en;
     input   logic                       rd_en;
     input   logic   [ADDR_WIDTH-1:0]    addr;
@@ -36,33 +37,38 @@ module reg_native_if2apb (
 
     // state register
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+        if (!rst_n)
             state <= S_IDLE;
-        end else begin
+        else if (soft_rst)
+            state <= S_IDLE;
+        else
             state <= next_state;
-        end
     end
 
     // state transfer
     always_comb begin
-        case(state)
-            S_IDLE: begin
-                if (req_vld)
-                    next_state  = S_SETUP;
-                else
-                    next_state  = S_IDLE;
-            end
-            S_SETUP: next_state = S_ACCESS;
-            S_ACCESS: begin
-                if (pready && req_vld)
-                    next_state  = S_SETUP;
-                else if (pready && !req_vld)
-                    next_state  = S_IDLE;
-                else
-                    next_state  = S_ACCESS;
-            end
-            default: next_state = S_IDLE;
-        endcase
+        if (soft_rst)
+            next_state  = S_IDLE;
+        else begin
+            case(state)
+                S_IDLE: begin
+                    if (req_vld)
+                        next_state  = S_SETUP;
+                    else
+                        next_state  = S_IDLE;
+                end
+                S_SETUP: next_state = S_ACCESS;
+                S_ACCESS: begin
+                    if (pready && req_vld)
+                        next_state  = S_SETUP;
+                    else if (pready && !req_vld)
+                        next_state  = S_IDLE;
+                    else
+                        next_state  = S_ACCESS;
+                end
+                default: next_state = S_IDLE;
+            endcase
+        end
     end
 
     // output logic

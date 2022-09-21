@@ -21,8 +21,10 @@ class PreprocessAddressHandler:
         other than 0, so here is just a compromise solution
         """
         # base address assigned by user-defined property base_addr
-        # only in addrmap which represents for regdisp and is at top level
-        if root.top.get_property("base_addr") and root.top.get_property("hj_gendisp"):
+        # only in addrmap which represents for reg_network or regdisp and is at top level
+        if root.top.get_property("base_addr") and \
+            (root.top.get_property("hj_gendisp") or \
+            root.top.get_property("hj_gennetwork")):
             root.top.inst.addr_offset = root.top.get_property("base_addr")
 
 class PreprocessListener(RDLListener):
@@ -601,35 +603,34 @@ class PreprocessListener(RDLListener):
         #   - under regslv
         #   - under regfile (nested)
         #   - inside 3rd party IPs
-        if not self.is_in_3rd_party_ip:
-            if node.parent.get_property("hj_genmst"):
-                if not self.skip_preprocess_check and \
-                    not (node.type_name == "db_regs" and node.inst_name == "db_regs"):
-                    message.error(
-                        "%s, %d: %d:\n%s\n"
-                        "illegal to instantiate regfile %s under %s which represents for regmst" % (
-                            self.ref.filename,
-                            self.ref.line,
-                            self.ref.line_selection[0],
-                            self.ref.line_text,
-                            node.get_path_segment(array_suffix="_{index:d}"),
-                            node.parent.get_path_segment(array_suffix="_{index:d}")
+        if not self.skip_preprocess_check and not self.is_in_3rd_party_ip \
+            and isinstance(node.parent, AddrmapNode):
+                if node.parent.get_property("hj_genmst"):
+                    if not (node.type_name == "db_regs" and node.inst_name == "db_regs"):
+                        message.error(
+                            "%s, %d: %d:\n%s\n"
+                            "illegal to instantiate regfile %s under %s which represents for regmst" % (
+                                self.ref.filename,
+                                self.ref.line,
+                                self.ref.line_selection[0],
+                                self.ref.line_text,
+                                node.get_path_segment(array_suffix="_{index:d}"),
+                                node.parent.get_path_segment(array_suffix="_{index:d}")
+                            )
                         )
-                    )
-            else:
-                if not self.skip_preprocess_check and \
-                    not (node.parent.get_property("hj_genslv") or isinstance(node.parent, RegfileNode)):
-                    message.error(
-                        "%s, %d: %d:\n%s\n"
-                        "illegal to instantiate regfile %s under %s which is neither regslv nor regfile" % (
-                            self.ref.filename,
-                            self.ref.line,
-                            self.ref.line_selection[0],
-                            self.ref.line_text,
-                            node.get_path_segment(array_suffix="_{index:d}"),
-                            node.parent.get_path_segment(array_suffix="_{index:d}")
+                else:
+                    if not node.parent.get_property("hj_genslv"):
+                        message.error(
+                            "%s, %d: %d:\n%s\n"
+                            "illegal to instantiate regfile %s under %s which is neither regslv nor regfile" % (
+                                self.ref.filename,
+                                self.ref.line,
+                                self.ref.line_selection[0],
+                                self.ref.line_text,
+                                node.get_path_segment(array_suffix="_{index:d}"),
+                                node.parent.get_path_segment(array_suffix="_{index:d}")
+                            )
                         )
-                    )
 
     def exit_Regfile(self, node):
         self.reg_name.pop()

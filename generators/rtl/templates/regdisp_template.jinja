@@ -17,7 +17,7 @@ module {{disp_name}} (
     {{disp_name}}__{{child_name}}__rd_en,
     {{disp_name}}__{{child_name}}__wr_data,
     {{child_name}}__{{disp_name}}__rd_data,
-    {%- if is_regslv(child) or is_regdisp(child) %}
+    {%- if is_regslv(child) or is_regdisp(child) or is_3rd_party_ip(child) %}
     {{disp_name}}__{{child_name}}__soft_rst,
     {%- endif %}
     {%- endfor %}
@@ -75,7 +75,7 @@ module {{disp_name}} (
     output  logic   {{disp_name}}__{{child_name}}__rd_en;
     output  logic   [{{child_name|upper}}_DATA_WIDTH-1:0] {{disp_name}}__{{child_name}}__wr_data;
     input   logic   [{{child_name|upper}}_DATA_WIDTH-1:0] {{child_name}}__{{disp_name}}__rd_data;
-    {%- if is_regslv(child) or is_regdisp(child) %}
+    {%- if is_regslv(child) or is_regdisp(child) or is_3rd_party_ip(child) %}
     output  logic   {{disp_name}}__{{child_name}}__soft_rst;
     {%- endif %}
     {%- endfor %}
@@ -242,7 +242,7 @@ module {{disp_name}} (
     reg_native_if_1to1__{{disp_name}}2{{child_name}} (
         .native_clk({{disp_name}}_clk),
         .native_rst_n({{disp_name}}_rst_n),
-        .soft_rst(1'b0),
+        .soft_rst(downstream_soft_rst_ff[{{loop.index0}}]),
         .req_vld(downstream_req_vld_ff[{{loop.index0}}]),
         .ack_vld(downstream_ack_vld[{{loop.index0}}]),
         .err(downstream_err[{{loop.index0}}]),
@@ -253,7 +253,7 @@ module {{disp_name}} (
         .rd_data(downstream_rd_data[{{loop.index0}}]),
         .ext_clk({{child_name}}_clk),
         .ext_rst_n({{child_name}}_rst_n),
-        .ext_soft_rst(),
+        .ext_soft_rst({{disp_name}}__{{child_name}}__soft_rst),
         .ext_req_vld({{disp_name}}__{{child_name}}__req_vld),
         .ext_ack_vld({{child_name}}__{{disp_name}}__ack_vld),
         .ext_err({{child_name}}__{{disp_name}}__err),

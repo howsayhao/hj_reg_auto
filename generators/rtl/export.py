@@ -4,10 +4,10 @@ import traceback
 import utils.message as message
 from systemrdl.node import RootNode
 
-from .gen_rtl_new import RTLExporter
+from .generate_rtl import RTLExporter
 
 
-def export_rtl(root:RootNode, out_dir:str):
+def export_rtl(root:RootNode, out_dir:str, **kwargs):
     """
     Generate RTL code, including regmst, regslv, regdisp and other components
 
@@ -20,6 +20,9 @@ def export_rtl(root:RootNode, out_dir:str):
 
     if not os.path.exists(rtl_dir):
         os.makedirs(rtl_dir)
+
+    without_filelist = kwargs.pop("without_filelist", False)
+
     try:
         RTLExporter().export(root, rtl_dir)
     except Exception:

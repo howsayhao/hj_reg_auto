@@ -76,7 +76,7 @@ class RTLExporter:
             'get_field_num': self._get_field_num
         }
 
-    def export(self, root:RootNode, rtl_dir:str):
+    def export(self, root:RootNode, rtl_dir:str, **kwargs):
         """
         Export inhouse RTL module files: regmst, regdisp and regslv.
 
@@ -96,6 +96,15 @@ class RTLExporter:
         # traverse all addrmap to get complete filelist and generate modules in pre-order
         for node in root.descendants(unroll=True, skip_not_present=False):
             if isinstance(node, AddrmapNode):
+                # if current regmst/regdisp/regslv instance is in array,
+                # and it is not the first instance in the array,
+                # and it uses address offset,
+                # then skip it
+                if node.is_array and \
+                    node.current_idx[0] != 0 and \
+                    not node.get_property("hj_use_abs_addr"):
+                    continue
+
                 if node.get_property("hj_genmst"):
                     update_context = {
                         'mst_node': node,
@@ -128,7 +137,10 @@ class RTLExporter:
                         'slv_node': node
                     }
 
-                    template = self.jj_env.get_template("regslv_template.jinja")
+                    if node.get_property("is_ras_arch"):
+                        template = self.jj_env.get_template("ras_template.jinja")
+                    else:
+                        template = self.jj_env.get_template("regslv_template.jinja")
 
                     filename = "{}.v".format(self._get_rtl_name(node))
                     dump_file = os.path.join(rtl_dir, filename)
@@ -145,24 +157,22 @@ class RTLExporter:
                     stream.dump(dump_file)
 
         # after addrmap traversal is done, dump filelist
-        template = self.jj_env.get_template("filelist_template.jinja")
-        stream = template.stream(
-            {
-                'top_name': top_name,
-                'filelist': filelist
-            }
-        )
+        without_filelist = kwargs.pop("without_filelist", False)
 
-        stream.dump(
-            os.path.join(
-                rtl_dir,
-                "list_{}.mk".format(top_name)
+        if not without_filelist:
+            template = self.jj_env.get_template("filelist_template.jinja")
+            stream = template.stream(
+                {
+                    'top_name': top_name,
+                    'filelist': filelist
+                }
             )
-        )
+
+            stream.dump(os.path.join(rtl_dir,"list_{}.mk".format(top_name)))
 
         message.info(
             "if you need to convert reg_native_if to or from some AMBA protocol bus "
-            "(support APB now), bridge components are already avaliable and you can "
+            "(support APB now), bridge components are already available and you can "
             "use them by instantiate apb2reg_native_if/reg_native_if2apb in your design."
         )
 

@@ -24,6 +24,9 @@ module {{slv_name}} (
     {%- if get_property(field, "swmod") %}
     {{reg_name}}__{{field.inst_name}}__swmod,
     {%- endif %}
+    {%- for sync_rst in get_sync_rst(field) %}
+    {{reg_name}}__{{field.inst_name}}__{{sync_rst}},
+    {%- endfor %}
     {%- endfor %}
     {%- if is_intr(reg) %}
     {{reg_name}}__intr_out,
@@ -44,13 +47,6 @@ module {{slv_name}} (
     regslv_clk,
     regslv_rst_n,
 {%- endif %}
-{%- for reg in reg_list %}
-{%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
-{%- for sync_rst in get_sync_rst(field) %}
-    {{sync_rst}},
-{%- endfor %}
-{%- endfor %}
-{%- endfor %}
     err_en
 );
     `include "common_funcs.vh"
@@ -77,6 +73,9 @@ module {{slv_name}} (
     {%- if get_property(field, "swmod") %}
     output  logic                               {{reg_name}}__{{field.inst_name}}__swmod;
     {%- endif %}
+    {%- for sync_rst in get_sync_rst(field) %}
+    input   logic                               {{reg_name}}__{{field.inst_name}}__{{sync_rst}};
+    {%- endfor %}
     {%- endfor %}
     {%- if is_intr(reg) %}
     output  logic                               {{reg_name}}__intr_out;
@@ -312,9 +311,10 @@ module {{slv_name}} (
     x__{{reg_name}}__{{field.inst_name}} (
         .clk                                    ({{curr_clk}}),
         .rst_n                                  ({{curr_async_rst_n}}),
-        .sync_rst                               ({%- if get_sync_rst(field) -%}
-                                                {{"{"}}{{get_sync_rst(field)|join(", ")}}{{"}"}}
-                                                {%- else %}1'b0{% endif -%}),
+        .sync_rst                               ({%- if get_sync_rst(field) -%}{{"{"}}
+                                                {%- for sync_rst in get_sync_rst(field) -%}
+                                                {{reg_name}}__{{field.inst_name}}__{{sync_rst}}{{", " if not loop.last}}
+                                                {%- endfor -%}{{"}"}}{%- else %}1'b0{% endif -%}),
         .sw_wr_data                             ({{"{"}}{{reg_name}}__sw_wr_data[{{field.high}}:{{field.low}}]
                                                 {%- if field.has_aliases -%}
                                                 {%- for alias_field in field.aliases(skip_not_present=False) -%}

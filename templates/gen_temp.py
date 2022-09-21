@@ -8,7 +8,7 @@ from openpyxl.worksheet.cell_range import CellRange
 from parsers.excel.args import EXCEL_REG_HEAD
 
 
-def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, table_interval=4):
+def generate_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, table_interval=4):
     """
     generate templates in Excel worksheet (.xlsx) format
 
@@ -80,7 +80,7 @@ def gen_excel_template(dir:str, name:str, rnum:int, rname:list, language:str, ta
     else:
         message.info("generate template: %s" % (gen_file))
 
-def gen_rdl_template(dir:str, name:str, template_type:str, **kwargs):
+def generate_rdl_template(dir:str, name:str, template_type:str, **kwargs):
     """
     generate templates in SystemRDL (.rdl) format
 
@@ -102,21 +102,28 @@ def gen_rdl_template(dir:str, name:str, template_type:str, **kwargs):
 
     gen_file = os.path.join(dir, name)
 
+    # use jinja2 engine to dump common interrupt and ras arch templates
+    jj_env = jj.Environment(
+        loader=jj.FileSystemLoader(os.path.dirname(__file__)))
+
     if template_type == "common":
         copy(common_template_file, gen_file)
 
     elif template_type == "interrupt":
-        # dump interrupt template using jinja2
-        jj_env = jj.Environment(
-            loader=jj.FileSystemLoader(os.path.dirname(__file__)))
         template = jj_env.get_template("intr.jinja")
 
         intr_num = kwargs.pop("intr_num")
         stream = template.stream(intr_num=intr_num, inst_name=os.path.splitext(name)[0])
         stream.dump(os.path.join(dir, name))
 
+    elif template_type == "ras":
+        template = jj_env.get_template("ras.jinja")
+
+        ras_record_list = kwargs.pop("ras_record_list")
+        stream = template.stream(record_list=ras_record_list, inst_name=os.path.splitext(name)[0])
+        stream.dump(os.path.join(dir, name))
+
     if kwargs:
-        message.info("some arguments are not valid when generating SystemRDL template")
+        message.info("some arguments are not valid when generating templates")
 
     message.info("generate template: %s" % (gen_file))
-

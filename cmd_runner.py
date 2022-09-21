@@ -11,7 +11,7 @@ from generators.preprocess import preprocess
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
 from parsers.parse import Parser
-from templates.gen_temp import gen_excel_template, gen_rdl_template
+from templates.gen_temp import generate_excel_template, generate_rdl_template
 
 __version__ = "0.4.0"
 __man_file__ = "hrda_reference_manual_v0.4.0_Rev.A.pdf"
@@ -72,12 +72,25 @@ class CommandRunner:
         parser_template.add_argument(
             "--interrupt_template",
             action="store_true",
-            help="the SystemRDL template is used for interrupts"
+            help="the SystemRDL template is used for merging interrupts"
         )
         parser_template.add_argument(
             "--interrupt_number",
             nargs=1,
-            help="interrupt number generated in the template"
+            help="interrupt number generated in the interrupt template"
+        )
+        parser_template.add_argument(
+            "--ras_template",
+            action="store_true",
+            help="the SystemRDL template is used for RAS architecture"
+        )
+        parser_template.add_argument(
+            "--ras_record_list",
+            nargs="+",
+            default=[1],
+            help="list of record numbers in each RAS node."
+            "for example, 1 2 3 means 3 nodes with each node has 1, 2, 3 records "
+            "respectively (default: %(default)s)"
         )
         parser_template.add_argument(
             "-excel",
@@ -264,7 +277,7 @@ class CommandRunner:
         `args.rname` : `list`, register names to be generated
         `args.language` : Excel template language, Chinese/English
         """
-        if (not args.excel) and (not args.rdl):
+        if not args.excel and not args.rdl:
             message.error("no template type (Excel worksheet or SystemRDL) is specified, "
                           "please use -excel or -rdl option")
         if not os.path.exists(args.dir):
@@ -272,7 +285,7 @@ class CommandRunner:
 
         if args.excel:
             if args.name.endswith(".xls"):
-                message.info("file suffix .xls is replaced by .xlsx")
+                message.info("file suffix .xls will be replaced by .xlsx")
                 args.name += "x"
             elif not args.name.endswith(".xlsx"):
                 args.name += ".xlsx"
@@ -283,13 +296,16 @@ class CommandRunner:
                 for _ in range(len(reg_names), args.rnum):
                     reg_names.append(append_name)
 
-            if args.interrupt_template or args.interrupt_number:
+            if args.interrupt_template or args.interrupt_number \
+                or args.ras_template or args.ras_record_list:
                 message.info(
-                    "--interrupt_template and --interrupt_number options are not supported "
-                    "for Excel worksheet template (only for SystemRDL)"
+                    "--interrupt_template, --interrupt_number, --ras_template and --ras_record_list"
+                    "options are not supported for Excel worksheet template (only for SystemRDL)"
                 )
-            gen_excel_template(args.dir, args.name, args.rnum,
-                               reg_names, args.language)
+            generate_excel_template(
+                args.dir, args.name, args.rnum,
+                reg_names, args.language
+            )
 
         if args.rdl:
             if not args.name.endswith(".rdl"):
@@ -307,10 +323,15 @@ class CommandRunner:
                     intr_num = int(args.interrupt_number[0])
                 else:
                     intr_num = 1
-                gen_rdl_template(args.dir, args.name, type, intr_num=intr_num)
+                generate_rdl_template(args.dir, args.name, type, intr_num=intr_num)
+            elif args.ras_template:
+                type = "ras"
+                if args.ras_record_list:
+                    ras_record_list = list(map(int, args.ras_record_list))
+                generate_rdl_template(args.dir, args.name, type, ras_record_list=ras_record_list)
             else:
                 type = "common"
-                gen_rdl_template(args.dir, args.name, type)
+                generate_rdl_template(args.dir, args.name, type)
 
     @staticmethod
     def _parse(args):
@@ -438,6 +459,7 @@ class CommandRunner:
 
         if len(sys.argv) <= 1:
             message.error(
-                "no command option is specified, use -h/--help option to get instruction")
+                "no command option is specified, use -h/--help option to get instruction"
+            )
 
         args.func(args)

@@ -132,9 +132,10 @@ module slv_fsm
                     if (if_err_en)
                         if_err  = 1'b1;
                 end
-                else if (reg_rd_data_vld)
+                else if (reg_rd_data_vld) begin
                     if_ack_vld  = 1'b1;
                     if_rd_data  = reg_rd_data;
+                end
             end
             default: begin
                 if_ack_vld  = 1'b0;

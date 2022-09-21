@@ -5,6 +5,16 @@
 `default_nettype none
 
 module {{slv_name}} (
+{%- for node in slv_node.children(unroll=True, skip_not_present=False) if isinstance(node, RegfileNode) %}
+{%- set node_name = get_inst_name(node) %}
+{%- for record in node.children(unroll=True, skip_not_present=False) %}
+{%- set record_name = get_inst_name(record) %}
+    {{node_name}}_{{record_name}}__plus,
+    {{node_name}}_{{record_name}}__plus_value,
+    {{node_name}}_{{record_name}}__interrupt,
+{%- endfor %}{# record loop #}
+{%- endfor %}{# node loop #}
+    fault_int,
     clk,
     rst_n,
     soft_rst,
@@ -20,16 +30,43 @@ module {{slv_name}} (
 );
     `include "common_funcs.vh"
 
-    parameter   [31:0]      P_IS_ECC            = 0;
-    parameter   [31:0]      P_IS_UEU            = 0;
-    parameter   [31:0]      P_IS_POIS           = 0;
-    parameter               P_CORRECTED         = 1;
-    parameter               INSERT_REG_FF       = 1;
-    parameter               ADDR_WIDTH          = 64;
+    `define SERR_NO_ERR     8'h00
+    `define SERR_IMP_DEF    8'h01
+    `define SERR_ECC        8'h02
+    `define SERR_POIS       8'h15
 
+    `define UET_IS_UEU      2'b01
+    `define UET_IS_UER      2'b11
+    `define UET_IS_NOERR    2'b00
+{%- for node in slv_node.children(unroll=True, skip_not_present=False) if isinstance(node, RegfileNode) %}
+{%- set node_name = get_inst_name(node) %}
+{%- for record in node.children(unroll=True, skip_not_present=False) %}
+{%- set record_name = get_inst_name(record) %}
+    parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_ECC      = 32'h0;
+    parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_UEU      = 32'h0;
+    parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_POIS     = 32'h0;
+    parameter               {{node_name|upper}}_{{record_name|upper}}_P_CORRECTED   = 1'h1;
+
+    localparam  [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF =
+        {{node_name|upper}}_{{record_name|upper}}_P_IS_ECC | {{node_name|upper}}_{{record_name|upper}}_P_IS_UEU | {{node_name|upper}}_{{record_name|upper}}_P_IS_POIS;
+    localparam  [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF  = ~{{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF;
+{%- endfor %}{# record loop #}
+{% endfor %}{# node loop #}
+    parameter               INSERT_REG_FF       = 1;
+
+    localparam              ADDR_WIDTH          = 64;
     localparam              DATA_WIDTH          = 32;
     localparam              REG_NUM             = {{addr_loc_num}};
-
+{%- for node in slv_node.children(unroll=True, skip_not_present=False) if isinstance(node, RegfileNode) %}
+{%- set node_name = get_inst_name(node) %}
+{%- for record in node.children(unroll=True, skip_not_present=False) %}
+{%- set record_name = get_inst_name(record) %}
+    input   logic                               {{node_name}}_{{record_name}}__plus;
+    input   logic   [14:0]                      {{node_name}}_{{record_name}}__plus_value;
+    input   logic   [31:0]                      {{node_name}}_{{record_name}}__interrupt;
+{%- endfor %}{# record loop #}
+{%- endfor %}{# node loop #}
+    output  logic                               fault_int;
     input   logic                               clk;
     input   logic                               rst_n;
     input   logic                               soft_rst;
@@ -156,30 +193,56 @@ module {{slv_name}} (
 
 //*************************************NODES AND RECORDS**********************************************//
 {%- set int_reg_idx = get_property(slv_node, "int_reg_idx") %}
-{%- set loop_cnt = [0] %}
+{%- set record_cnt, reg_cnt = [0], [0] %}
+{%- set ss_info = [] %}
+    logic   [55:0]                              err_gsr_s;
 {%- for node in slv_node.children(unroll=True, skip_not_present=False) %}
+{%- if isinstance(node, RegfileNode) %}
 {%- set node_name = get_inst_name(node) %}
+    {%- if loop.first %}
+    logic   {{"[%2s:0]"|format(loop.length-3) ~ " "*30}}fault_int_n;
+    {%- endif %}
     //****************************************************************************************//
     // RAS Node {{loop.index0}}: {{node_name}}
     // Size: {{node.size}}
-    // Address Offset: {{node.absolute_address - slv_node.absolute_address}}
+    // Address Offset: {{"0x%X"|format(node.absolute_address-slv_node.absolute_address)}}
     //****************************************************************************************//
 {%- set node_loop = loop %}
 {%- for record in node.children(unroll=True, skip_not_present=False) %}
 {%- set record_name = get_inst_name(record) %}
+    {%- if loop.first %}
+    logic   {{"[%2s:0]"|format(loop.length-1) ~ " "*30}}{{node_name}}__fault_int_r;
+    {%- endif %}
     //**********************************************************************************//
     // RAS Record (index {{loop.index0}} in current node): {{record_name}}
     // Size: {{node.size}}
-    // Address Offset: {{node.absolute_address - slv_node.absolute_address}}
+    // Address Offset: {{"0x%X"|format(record.absolute_address-slv_node.absolute_address)}}
     //**********************************************************************************//
+{%- set record_loop = loop %}
+    {%- if loop.first %}
+    logic                                       {{node_name}}__ctrl_fi;
+    logic                                       {{node_name}}__ctrl_cfi;
+    {%- endif %}
+    logic                                       {{node_name}}_{{record_name}}__plus_f;
+    logic                                       {{node_name}}_{{record_name}}__of_flag;
+    logic                                       {{node_name}}_{{record_name}}__of_fault;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__int_fault;
+    logic                                       {{node_name}}_{{record_name}}__fault;
+    logic                                       {{node_name}}_{{record_name}}__fim_of;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__fim_int;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__fen;
+    logic                                       {{node_name}}_{{record_name}}__fmask;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__itt;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__int_flag;
+    logic                                       {{node_name}}_{{record_name}}__or_all_int_flag;
 {%- for reg in record.registers(unroll=True, skip_not_present=False) %}
 {%- set reg_name = get_rtl_name(reg) %}
-{%- set reg_idx = int_reg_idx[loop_cnt[0]] %}
-{%- if loop_cnt.append(loop_cnt.pop() + 1) %}{% endif %}
+{%- set reg_idx = int_reg_idx[reg_cnt[0]] %}
+{%- if reg_cnt.append(reg_cnt.pop() + 1) %}{% endif %}
     //****************************************************************************//
     // Register: {{get_inst_name(reg)}}
     // Size: {{reg.size}} bytes
-    // Address Offset: {{reg.absolute_address - slv_node.absolute_address}}
+    // Address Offset: {{"0x%X"|format(reg.absolute_address-slv_node.absolute_address)}}
     //****************************************************************************//
     logic                                       {{reg_name}}__sw_wr_en;
     logic                                       {{reg_name}}__sw_rd_en;
@@ -190,7 +253,7 @@ module {{slv_name}} (
     logic   {{"[%2s:0]"|format(field.width-1)}} {{" " * 29}}{{reg_name}}__{{field.inst_name}}__curr_value;
 {%- endif %}
 {%- if field.is_hw_writable %}
-    {%- if reg.type_name == "ERR_MISC0" and field.type_name == "IS" %}
+    {%- if reg.type_name == "ERR_MISC0_0" and field.type_name == "IS" %}
     logic   {{"[%2s:0]"|format(field.width-1) ~ " "*30}}{{reg_name}}__{{field.inst_name}}__pulse;
     {%- else %}
     logic                                       {{reg_name}}__{{field.inst_name}}__pulse;
@@ -198,31 +261,58 @@ module {{slv_name}} (
     logic   {{"[%2s:0]"|format(field.width-1) ~ " "*30}}{{reg_name}}__{{field.inst_name}}__next_value;
 {%- endif %}
 {%- endfor %}{# field loop #}
+{# snapshot register for STATUS_0, MISC0_0, MISC0_1 #}
+{%- if reg.type_name == "ERR_STATUS_0" %}
+    logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    logic   [95:0]                              {{node_name}}_{{record_name}}__ss_reg_sw_wr_data;
+    logic   [95:0]                              {{node_name}}_{{record_name}}__ss_reg_sw_rd_data;
 
-{%- if need_snapshot(reg) %}
-    snapshot_reg #(.DATA_WIDTH(DATA_WIDTH), .REG_WIDTH({{reg.size * 8}}))
-    {{reg_name}}_snapshot_reg (
+    {% if ss_info.append(reg_idx[0]) %}{% endif -%}
+    assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[31:0];
+    assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[31:0] = {{reg_name}}__sw_rd_data;
+{%- elif reg.type_name == "ERR_MISC0_0" %}
+    {% if ss_info.append(reg_idx[0]) %}{% endif -%}
+    assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[63:32];
+    assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[63:32] = {{reg_name}}__sw_rd_data;
+{%- elif reg.type_name == "ERR_MISC0_1" %}
+    {% if ss_info.append(reg_idx[0]) %}{% endif -%}
+    assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[95:64];
+    assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[95:64] = {{reg_name}}__sw_rd_data;
+
+    snapshot_reg #(
+        .DATA_WIDTH                             (DATA_WIDTH),
+        .REG_WIDTH                              (96)
+    )
+    {{node_name}}_{{record_name}}__ss_reg (
         .clk                                    (clk),
         .rst_n                                  (rst_n),
         .soft_rst                               (int_soft_rst),
-        .snap_wr_en                             (reg_sw_wr_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
-        .snap_rd_en                             (reg_sw_rd_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
-        .snap_wr_data                           ({{"{"}}{{reg_idx[1]-reg_idx[0]+1}}{{"{"}}reg_sw_wr_data{{"}}"}}),
-        .snap_rd_data                           (reg_sw_rd_data[{{reg_idx[1]}}:{{reg_idx[0]}}]),
-        .reg_wr_en                              ({{reg_name}}__sw_wr_en),
-        .reg_rd_en                              ({{reg_name}}__sw_rd_en),
-        .reg_wr_data                            ({{reg_name}}__sw_wr_data),
-        .reg_rd_data                            ({{reg_name}}__sw_rd_data)
+        .snap_wr_en                             ({reg_sw_wr_sel[{{ss_info[2]}}], reg_sw_wr_sel[{{ss_info[1]}}], reg_sw_wr_sel[{{ss_info[0]}}]}),
+        .snap_rd_en                             ({reg_sw_rd_sel[{{ss_info[2]}}], reg_sw_rd_sel[{{ss_info[1]}}], reg_sw_rd_sel[{{ss_info[0]}}]}),
+        .snap_wr_data                           ({3{reg_sw_wr_data}}),
+        .snap_rd_data                           ({reg_sw_rd_data[{{ss_info[2]}}], reg_sw_rd_data[{{ss_info[1]}}], reg_sw_rd_data[{{ss_info[0]}}]}),
+        .reg_wr_en                              ({{node_name}}_{{record_name}}__ss_reg_sw_wr_en),
+        .reg_rd_en                              ({{node_name}}_{{record_name}}__ss_reg_sw_rd_en),
+        .reg_wr_data                            ({{node_name}}_{{record_name}}__ss_reg_sw_wr_data),
+        .reg_rd_data                            ({{node_name}}_{{record_name}}__ss_reg_sw_rd_data)
     );
+    {%- if ss_info.clear() %}{% endif -%}
 {%- else %}
     assign  {{reg_name}}__sw_wr_en = reg_sw_wr_sel[{{reg_idx[0]}}];
     assign  {{reg_name}}__sw_rd_en = reg_sw_rd_sel[{{reg_idx[0]}}];
     assign  {{reg_name}}__sw_wr_data = reg_sw_wr_data;
     assign  reg_sw_rd_data[{{reg_idx[0]}}] = {{reg_name}}__sw_rd_data;
 {%- endif %}
-{% for field in reg.fields(skip_not_present=False) %}
+{% for field in reg.fields(skip_not_present=False) -%}
     {# IS (interrupt status) bits need to be split to support interrupt type (edge and level) #}
-    {%- if reg.type_name == "ERR_MISC0" and field.type_name == "IS" %}
+    {%- if reg.type_name == "ERR_MISC0_0" and field.type_name == "IS" %}
     {%- for n in range(field.width) %}{# single bit #}
     field #(
         .F_WIDTH                                (1),
@@ -233,7 +323,7 @@ module {{slv_name}} (
         .HW_TYPE                                ({{format_hw_type(field)}}),
         .HARD_WIRED                             ({{is_hard_wired(field)}})
     )
-    x__{{reg_name}}__{{field.inst_name}} (
+    x__{{reg_name}}__{{field.inst_name}}_{{field.high-n}} (
         .clk                                    (clk),
         .rst_n                                  (rst_n),
         .sync_rst                               (1'b0),
@@ -246,7 +336,7 @@ module {{slv_name}} (
         .hw_pulse                               ({{reg_name}}__{{field.inst_name}}__pulse[{{field.high-n}}]),
         .field_value                            ({{reg_name}}__{{field.inst_name}}__curr_value[{{field.high-n}}])
     );
-    {%- endfor %}
+    {%- endfor %}{# bit loop #}
     {%- else %}
     field #(
         .F_WIDTH                                ({{field.width}}),
@@ -268,11 +358,13 @@ module {{slv_name}} (
         .swacc_out                              (),
         .hw_value                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__next_value
                                                 {%- else %}{{field.width}}'b0{% endif %}),
-        .hw_pulse                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__pulse
+        .hw_pulse                               ({% if field.is_hw_writable and not is_hard_wired(field) -%}
+                                                {{reg_name}}__{{field.inst_name}}__pulse
                                                 {%- else %}1'b0{% endif %}),
         .field_value                            ({% if field.is_hw_readable or field.is_sw_readable -%}
                                                 {{reg_name}}__{{field.inst_name}}__curr_value{% endif %})
     );
+    {%- endif -%}
 {% endfor %}{# field loop #}
     always_comb begin
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
@@ -282,63 +374,249 @@ module {{slv_name}} (
         {%- endif %}
         {%- endfor %}{# field loop #}
     end
-    {%- if reg.type_name == "ERR_FR" %}
-    {%- elif reg.type_name == "ERR_CTRL" %}
-    assign  {{node_name}}_{{record_name}}__FI = {{reg_name}}__FI__curr_value;
-    assign  {{node_name}}_{{record_name}}__CFI = {{reg_name}}__CFI__curr_value;
-    assign  {{node_name}}_{{record_name}}__ITT = {{reg_name}}__ITT__curr_value;
-    {%- elif reg.type_name == "ERR_ADDR" %}
-    {%- elif reg.type_name == "ERR_STATUS" %}
+    {% if reg.type_name == "ERR_FR_0_first" %}
+    {%- elif reg.type_name == "ERR_FR_0_otherwise" %}
+    {%- elif reg.type_name == "ERR_FR_1" %}
+    {%- elif reg.type_name == "ERR_CTRL_0_first" %}
+    assign  {{node_name}}__ctrl_fi = {{reg_name}}__FI__curr_value;
+    assign  {{node_name}}__ctrl_cfi = {{reg_name}}__CFI__curr_value;
+    {%- elif reg.type_name == "ERR_CTRL_0_otherwise" %}
+    {%- elif reg.type_name == "ERR_CTRL_1" %}
+    {%- elif reg.type_name == "ERR_ADDR_0" %}
+    {%- elif reg.type_name == "ERR_ADDR_1" %}
+    {%- elif reg.type_name == "ERR_STATUS_0" %}
     assign  {{reg_name}}__CE__pulse = {{node_name}}_{{record_name}}__plus_f;
     assign  {{reg_name}}__CE__next_value = {{node_name}}_{{record_name}}__plus_f ? 2'b10 : 2'b00;
-    {%- elif reg.type_name == "ERR_MISC0" %}
-    assign  {{node_name}}_{{record_name}}__IS = {{reg_name}}__IS__curr_value;
+    assign  {{reg_name}}__SERR__pulse = {{node_name}}_{{record_name}}__or_all_int_flag;
 
     always_comb begin
-        for (integer i = 0; i < 31; i = i + 1) begin
-            {{reg_name}}__IS__next_value[i] =
-                (({{node_name}}_{{record_name}}__interrupt[i] & {{node_name}}_{{record_name}}__FI) |
-                {{node_name}}_{{record_name}}__FIM_NORM[i]) & {{node_name}}_{{record_name}}__FEN[i];
+        case ({{reg_name}}__SERR__curr_value)
+            `SERR_ECC: begin
+                {{reg_name}}__SERR__next_value = `SERR_ECC;
+            end
+            `SERR_IMP_DEF: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC & {{node_name}}_{{record_name}}__int_flag) |
+                    {{node_name}}_{{record_name}}__of_flag)
+                    {{reg_name}}__SERR__next_value = `SERR_ECC;
+                else
+                    {{reg_name}}__SERR__next_value = `SERR_IMP_DEF;
+            end
+            `SERR_POIS: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC & {{node_name}}_{{record_name}}__int_flag) |
+                    {{node_name}}_{{record_name}}__of_flag)
+                    {{reg_name}}__SERR__next_value = `SERR_ECC;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF & {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = `SERR_IMP_DEF;
+                else
+                    {{reg_name}}__SERR__next_value = `SERR_POIS;
+            end
+            `SERR_NO_ERR: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC & {{node_name}}_{{record_name}}__int_flag) |
+                    {{node_name}}_{{record_name}}__of_flag)
+                    {{reg_name}}__SERR__next_value = `SERR_ECC;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF & {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = `SERR_IMP_DEF;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS & {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = `SERR_POIS;
+                else
+                    {{reg_name}}__SERR__next_value = `SERR_NO_ERR;
+            end
+            default: begin
+                {{reg_name}}__SERR__next_value = `SERR_NO_ERR;
+            end
+        endcase
+    end
 
-            if ({{node_name}}_{{record_name}}__ITT[i])
+    assign  {{reg_name}}__UET__pulse = {{node_name}}_{{record_name}}__or_all_int_flag;
+    always_comb begin
+        case ({{reg_name}}__UET__curr_value)
+            `UET_IS_UEU: begin
+                {{reg_name}}__UET__next_value = `UET_IS_UEU;
+            end
+            `UET_IS_UER: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF & {{node_name}}_{{record_name}}__int_flag) |
+                    {{node_name}}_{{record_name}}__of_flag)
+                    {{reg_name}}__UET__next_value = `UET_IS_UEU;
+                else
+                    {{reg_name}}__UET__next_value = `UET_IS_UER;
+            end
+            `UET_IS_NOERR: begin
+                {{reg_name}}__UET__next_value = `UET_IS_NOERR;
+            end
+            default: begin
+                {{reg_name}}__UET__next_value = `UET_IS_NOERR;
+            end
+        endcase
+    end
+
+    assign  {{reg_name}}__PN__pulse = {{reg_name}}__PN__next_value;
+    assign  {{reg_name}}__PN__next_value =
+        |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS & {{node_name}}_{{record_name}}__int_flag);
+
+    assign  {{reg_name}}__V__pulse = {{reg_name}}__V__next_value;
+    assign  {{reg_name}}__V__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
+    assign  err_gsr_s[{{record_cnt[0]}}] = {{reg_name}}__V__curr_value;
+
+    assign  {{reg_name}}__UE__pulse = {{reg_name}}__UE__next_value;
+    assign  {{reg_name}}__UE__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
+
+    assign  {{reg_name}}__OF__pulse = {{reg_name}}__OF__next_value;
+    assign  {{reg_name}}__OF__next_value = {{node_name}}_{{record_name}}__of_flag;
+
+    assign  {{reg_name}}__MV__pulse = {{reg_name}}__MV__next_value;
+    assign  {{reg_name}}__MV__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
+    {%- elif reg.type_name == "ERR_STATUS_1" %}
+    {%- elif reg.type_name == "ERR_MISC0_0" %}
+    assign  {{node_name}}_{{record_name}}__int_fault = {{reg_name}}__IS__curr_value;
+    always_comb begin
+        for (integer i = 0; i < 32; i = i + 1) begin
+            {{reg_name}}__IS__next_value[i] =
+                (({{node_name}}_{{record_name}}__interrupt[i] & {{node_name}}__ctrl_fi) |
+                {{node_name}}_{{record_name}}__fim_int[i]) & {{node_name}}_{{record_name}}__fen[i];
+            if ({{node_name}}_{{record_name}}__itt[i])
                 {{reg_name}}__IS__pulse[i] = 1'b1;
             else
                 {{reg_name}}__IS__pulse[i] = {{reg_name}}__IS__next_value[i];
         end
     end
+    assign  {{node_name}}_{{record_name}}__int_flag = {{reg_name}}__IS__next_value;
+    {%- elif reg.type_name == "ERR_MISC0_1" %}
+    assign  {{node_name}}_{{record_name}}__plus_f = {{node_name|upper}}_{{record_name|upper}}_P_CORRECTED &
+        {{node_name}}_{{record_name}}__plus & {{node_name}}__ctrl_fi & {{node_name}}__ctrl_cfi;
+
+    assign  {{reg_name}}__OF__pulse = {{reg_name}}__OF__next_value;
+    assign  {{reg_name}}__OF__next_value = {{node_name}}_{{record_name}}__of_flag;
 
     always_comb begin
         {{reg_name}}__CEC__pulse = 1'b1;
         if ({{node_name}}_{{record_name}}__plus_f) begin
             {
-                {{node_name}}_{{record_name}}__OF,
+                {{node_name}}_{{record_name}}__of_flag,
                 {{reg_name}}__CEC__next_value
-            } = {{reg_name}}__CEC__curr_value + {{node_name}}_{{record_name}}_plus_value;
+            } = {{reg_name}}__CEC__curr_value + {{node_name}}_{{record_name}}__plus_value;
         end
         else begin
-            {{node_name}}_{{record_name}}__OF = 1'b0;
+            {{node_name}}_{{record_name}}__of_flag = 1'b0;
             {{reg_name}}__CEC__next_value = {{reg_name}}__CEC__curr_value;
         end
     end
-    {%- elif reg.type_name == "ERR_MISC1" %}
-    assign  {{node_name}}_{{record_name}}__FEN = {{reg_name}}__FEN__curr_value;
-    assign  {{node_name}}_{{record_name}}__FMASK = {{reg_name}}__FMASK__curr_value;
-    {%- elif reg.type_name == "ERR_MISC2" %}
-    assign  {{node_name}}_{{record_name}}__FIM_OF = {{reg_name}}__FIM__curr_value[32];
-    assign  {{node_name}}_{{record_name}}__FIM_NORM = {{reg_name}}__FIM__curr_value[31:0];
-    {%- elif reg.type_name == "ERR_MISC3" %}
+
+    assign  {{node_name}}_{{record_name}}__of_fault =
+        ({{node_name}}_{{record_name}}__fim_of | {{reg_name}}__OF__curr_value) &
+        {{node_name}}__ctrl_cfi;
+    {% elif reg.type_name == "ERR_MISC1_0" %}
+    assign  {{node_name}}_{{record_name}}__fen = {{reg_name}}__FEN__curr_value;
+    {% elif reg.type_name == "ERR_MISC1_1" %}
+    assign  {{node_name}}_{{record_name}}__fmask = {{reg_name}}__FMASK__curr_value;
+    {% elif reg.type_name == "ERR_MISC2_0" %}
+    assign  {{node_name}}_{{record_name}}__fim_int = {{reg_name}}__FIM__curr_value[31:0];
+    {% elif reg.type_name == "ERR_MISC2_1" %}
+    assign  {{node_name}}_{{record_name}}__fim_of = {{reg_name}}__FIM__curr_value[0];
+    {% elif reg.type_name == "ERR_MISC3_0" %}
+    assign  {{node_name}}_{{record_name}}__itt = {{reg_name}}__ITT__curr_value;
+    {% elif reg.type_name == "ERR_MISC3_1" %}
     {%- endif %}
-{%- endfor %}{# reg loop #}
-    assign  {{node_name}}_{{record_name}}__plus_f = {{node_name}}_{{record_name}}__plus & {{node_name}}_{{record_name}}__FI;
-    assign  {{node_name}}_{{record_name}}__of_f =
-        ({{node_name}}_{{record_name}}__FIM_OF | {{node_name}}_{{record_name}}__OF) &
-        {{node_name}}_{{record_name}}_CFI;
-    assign  {{node_name}}_{{record_name}}__fault = (|{{node_name}}_{{record_name}}__IS) | {{node_name}}_{{record_name}}__of_f;
-    assign  {{node_name}}_{{record_name}}__fault_int =
-        {{node_name}}_{{record_name}}__fault & {{node_name}}_{{record_name}}__FI &
-        ~{{node_name}}_{{record_name}}__FMASK;
-{%- endfor %}{# record loop #}
+{% endfor %}{# reg loop #}
+    assign  {{node_name}}_{{record_name}}__or_all_int_flag = |{{node_name}}_{{record_name}}__int_flag;
+    assign  {{node_name}}_{{record_name}}__fault = (|{{node_name}}_{{record_name}}__int_fault) | {{node_name}}_{{record_name}}__of_fault;
+    assign  {{node_name}}__fault_int_r[{{loop.index0}}] = {{node_name}}_{{record_name}}__fault & ~{{node_name}}_{{record_name}}__fmask;
+{%- if record_cnt.append(record_cnt.pop() + 1) %}{% endif %}
+{% endfor %}{# record loop #}
+    assign  fault_int_n[{{loop.index0}}] =
+        (|{{node_name}}__fault_int_r) &
+        {{node_name}}__ctrl_fi;
+{%- else %}
+    {%- if node.type_name in ("ERR_GSR", "ERR_DEVARCH") %}{% set reg = node %}
+    {%- set reg_name = get_rtl_name(reg) %}
+    //****************************************************************************//
+    // Register: {{get_inst_name(reg)}}
+    // Size: {{reg.size}} bytes
+    // Address Offset: {{reg.absolute_address - slv_node.absolute_address}}
+    //****************************************************************************//
+    logic                                       {{reg_name}}__sw_wr_en;
+    logic                                       {{reg_name}}__sw_rd_en;
+    logic   {{"[%2s:0]"|format(reg.size*8-1)}}  {{" " * 28}}{{reg_name}}__sw_wr_data;
+    logic   {{"[%2s:0]"|format(reg.size*8-1)}}  {{" " * 28}}{{reg_name}}__sw_rd_data;
+    {%- for field in reg.fields(skip_not_present=False) %}
+    {%- if field.is_hw_readable or field.is_sw_readable %}
+    logic   {{"[%2s:0]"|format(field.width-1)}} {{" " * 29}}{{reg_name}}__{{field.inst_name}}__curr_value;
+    {%- endif %}
+    {%- if field.is_hw_writable %}
+    logic                                       {{reg_name}}__{{field.inst_name}}__pulse;
+    logic   {{"[%2s:0]"|format(field.width-1) ~ " "*30}}{{reg_name}}__{{field.inst_name}}__next_value;
+    {%- endif %}
+    {%- endfor %}{# field loop #}
+    {%- if reg.type_name == "ERR_GSR" %}{% set reg_idx = int_reg_idx[-2] %}
+    snapshot_reg #(
+        .DATA_WIDTH                             (DATA_WIDTH),
+        .REG_WIDTH                              ({{reg.size * 8}})
+    )
+    {{reg_name}}_snapshot_reg (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .soft_rst                               (int_soft_rst),
+        .snap_wr_en                             (reg_sw_wr_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
+        .snap_rd_en                             (reg_sw_rd_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
+        .snap_wr_data                           ({{"{"}}{{reg_idx[1]-reg_idx[0]+1}}{{"{"}}reg_sw_wr_data{{"}}"}}),
+        .snap_rd_data                           (reg_sw_rd_data[{{reg_idx[1]}}:{{reg_idx[0]}}]),
+        .reg_wr_en                              ({{reg_name}}__sw_wr_en),
+        .reg_rd_en                              ({{reg_name}}__sw_rd_en),
+        .reg_wr_data                            ({{reg_name}}__sw_wr_data),
+        .reg_rd_data                            ({{reg_name}}__sw_rd_data)
+    );
+    {%- elif reg.type_name == "ERR_DEVARCH" %}{% set reg_idx = int_reg_idx[-1] %}
+    assign  {{reg_name}}__sw_wr_en      = reg_sw_wr_sel[{{reg_idx[0]}}];
+    assign  {{reg_name}}__sw_rd_en      = reg_sw_rd_sel[{{reg_idx[0]}}];
+    assign  {{reg_name}}__sw_wr_data    = reg_sw_wr_data;
+    assign  reg_sw_rd_data[{{reg_idx[0]}}]  = {{reg_name}}__sw_rd_data;
+    {%- endif %}
+    {% for field in reg.fields(skip_not_present=False) %}
+    field #(
+        .F_WIDTH                                ({{field.width}}),
+        .ARST_VALUE                             ({{"%d'h%x"|format(field.width, get_reset_val(field))}}),
+        .SW_TYPE                                ({{"{"~format_sw_type(field)~"}"}}),
+        .SW_ONREAD_TYPE                         ({{"{"~format_onread_type(field)~"}"}}),
+        .SW_ONWRITE_TYPE                        ({{"{"~format_onwrite_type(field)~"}"}}),
+        .HW_TYPE                                ({{format_hw_type(field)}}),
+        .HARD_WIRED                             ({{is_hard_wired(field)}})
+    )
+    x__{{reg_name}}__{{field.inst_name}} (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .sync_rst                               (1'b0),
+        .sw_wr_data                             ({{reg_name}}__sw_wr_data[{{field.high}}:{{field.low}}]),
+        .sw_rd                                  ({{reg_name}}__sw_rd_en),
+        .sw_wr                                  ({{reg_name}}__sw_wr_en),
+        .swmod_out                              (),
+        .swacc_out                              (),
+        .hw_value                               ({% if field.is_hw_writable %}{{reg_name}}__{{field.inst_name}}__next_value
+                                                {%- else %}{{field.width}}'b0{% endif %}),
+        .hw_pulse                               ({% if field.is_hw_writable and not is_hard_wired(field) -%}
+                                                {{reg_name}}__{{field.inst_name}}__pulse
+                                                {%- else %}1'b0{% endif %}),
+        .field_value                            ({% if field.is_hw_readable or field.is_sw_readable -%}
+                                                {{reg_name}}__{{field.inst_name}}__curr_value{% endif %})
+    );
+    {%- if reg.type_name == "ERR_GSR" and field.type_name == "S" %}
+    assign  {{reg_name}}__S__next_value = err_gsr_s;
+    {%- endif %}
+    {%- endfor %}{# field loop #}
+    always_comb begin
+        {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
+        {%- for field in reg.fields(skip_not_present=False) %}
+        {%- if field.is_sw_readable %}
+        {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{reg_name}}__{{field.inst_name}}__curr_value;
+        {%- endif %}
+        {%- endfor %}{# field loop #}
+    end
+    {%- endif %}
+{%- endif %}
 {% endfor %}{# node loop #}
+    {%- if record_cnt[0] < 56 %}
+    assign  err_gsr_s[55:{{record_cnt[0]}}] = {{55-record_cnt[0]}}'h0;
+    {%- endif %}
+    assign  fault_int = |fault_int_n;
+
 //*************************************READ DATA MUX**************************************************//
     assign  reg_rd_data_mux_din                 = reg_sw_rd_data;
     assign  reg_rd_data_mux_sel                 = reg_sw_rd_sel;

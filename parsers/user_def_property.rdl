@@ -105,3 +105,8 @@ property intr_type {
     component = field;
     type = ref;
 };
+
+property is_ras_arch {
+    component = addrmap;
+    type = boolean;
+};

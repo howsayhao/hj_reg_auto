@@ -118,13 +118,17 @@ def export_org(root:RootNode, out_dir:str, simplified=False):
     """
     """
     exporter = DocExporter()
-    export_file = os.path.join(out_dir, "%s.org" % (root.top.inst_name))
+    if simplified:
+        name = root.top.inst_name + "_simplified"
+        typ = "org_simplified"
+    else:
+        name = root.top.inst_name + "_detailed"
+        typ = "org"
+
+    export_file = os.path.join(out_dir, "%s.org" % name)
 
     try:
-        exporter.export(
-            root,
-            export_file,
-            "org" if not simplified else "org_simplified")
+        exporter.export(root, export_file, typ)
     except:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"
@@ -133,7 +137,7 @@ def export_org(root:RootNode, out_dir:str, simplified=False):
             ), raise_err=False
         )
     else:
-        message.info("save the org mode documentation in: %s" % (export_file))
+        message.info("save the org documentation in: %s" % (export_file))
 
 def export_md(root:RootNode, out_dir:str):
     exporter = DocExporter()
