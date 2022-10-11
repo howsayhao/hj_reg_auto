@@ -6,7 +6,7 @@ addrmap {{inst_name}} {
     field inj {hw=na;}; // software injection bits
     field en {hw=na;};  // interrupt enable bits
     field typ {hw=na;}; // interrupt type (level or edge triggered)
-    field stat {intr; onwrite=wzc;}; // interrupt status
+    field stat {intr; onwrite=woclr;}; // interrupt status
 
     {%- for group_idx in range(group_num) %}
     {%- set bit_num = rem_bits if group_idx == group_num - 1 else 32 %}

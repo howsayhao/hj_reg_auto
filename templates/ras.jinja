@@ -58,7 +58,7 @@ addrmap ras_nodes {
 
     reg ERR_ADDR_0 {
         desc = "Error record address register 0";
-        RES0            RES0_31_0[31:0];
+        field {sw = r; hw = w;}                     PADDR_31_0[31:0] = 32'b0;
     };
     reg ERR_ADDR_1 {
         desc = "Error record address register 1";
@@ -67,7 +67,7 @@ addrmap ras_nodes {
         field {sw = r; hard_wired = true; hw = na;} AI[29:29] = 1'b1;
         field {sw = r; hard_wired = true; hw = na;} VA[28:28] = 1'b0;
         RES0                                        RES0_27_24[27:24];
-        RES0                                        RES0_23_0[23:0];
+        field {sw = r; hw = w;}                     PADDR_55_32[23:0] = 23'b0;
     };
 
     reg ERR_STATUS_0 {
@@ -128,7 +128,7 @@ addrmap ras_nodes {
     };
     reg ERR_MISC3_1 {
         desc = "Error record miscellaneous register 3_1";
-        RES0                RES0_31_0[31:0];
+        field {sw = r; hw = w;}     INFO[31:0] = 32'b0;
     };
 
     reg ERR_GSR {

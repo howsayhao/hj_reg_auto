@@ -1,4 +1,3 @@
-{%- set slv_name = get_rtl_name(slv_node) -%}
 {%- set addr_list = get_property(slv_node, "addr_list") -%}
 {%- set addr_loc_num = get_addr_loc_num(slv_node) -%}
 `include "field_attr.vh"
@@ -12,6 +11,8 @@ module {{slv_name}} (
     {{node_name}}_{{record_name}}__plus,
     {{node_name}}_{{record_name}}__plus_value,
     {{node_name}}_{{record_name}}__interrupt,
+    {{node_name}}_{{record_name}}__poi_err_addr,
+    {{node_name}}_{{record_name}}__poi_err_info,
 {%- endfor %}{# record loop #}
 {%- endfor %}{# node loop #}
     fault_int,
@@ -64,6 +65,8 @@ module {{slv_name}} (
     input   logic                               {{node_name}}_{{record_name}}__plus;
     input   logic   [14:0]                      {{node_name}}_{{record_name}}__plus_value;
     input   logic   [31:0]                      {{node_name}}_{{record_name}}__interrupt;
+    input   logic   [55:0]                      {{node_name}}_{{record_name}}__poi_err_addr;
+    input   logic   [31:0]                      {{node_name}}_{{record_name}}__poi_err_info;
 {%- endfor %}{# record loop #}
 {%- endfor %}{# node loop #}
     output  logic                               fault_int;
@@ -235,6 +238,11 @@ module {{slv_name}} (
     logic   [31:0]                              {{node_name}}_{{record_name}}__itt;
     logic   [31:0]                              {{node_name}}_{{record_name}}__int_flag;
     logic                                       {{node_name}}_{{record_name}}__or_all_int_flag;
+    logic                                       {{node_name}}_{{record_name}}__pn;
+    logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    logic   [191:0]                             {{node_name}}_{{record_name}}__ss_reg_sw_wr_data;
+    logic   [191:0]                             {{node_name}}_{{record_name}}__ss_reg_sw_rd_data;
 {%- for reg in record.registers(unroll=True, skip_not_present=False) %}
 {%- set reg_name = get_rtl_name(reg) %}
 {%- set reg_idx = int_reg_idx[reg_cnt[0]] %}
@@ -263,11 +271,6 @@ module {{slv_name}} (
 {%- endfor %}{# field loop #}
 {# snapshot register for STATUS_0, MISC0_0, MISC0_1 #}
 {%- if reg.type_name == "ERR_STATUS_0" %}
-    logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
-    logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
-    logic   [95:0]                              {{node_name}}_{{record_name}}__ss_reg_sw_wr_data;
-    logic   [95:0]                              {{node_name}}_{{record_name}}__ss_reg_sw_rd_data;
-
     {% if ss_info.append(reg_idx[0]) %}{% endif -%}
     assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
@@ -285,19 +288,49 @@ module {{slv_name}} (
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
     assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[95:64];
     assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[95:64] = {{reg_name}}__sw_rd_data;
+{%- elif reg.type_name == "ERR_ADDR_0" %}
+    {% if ss_info.append(reg_idx[0]) %}{% endif -%}
+    assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[127:96];
+    assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[127:96] = {{reg_name}}__sw_rd_data;
+{%- elif reg.type_name == "ERR_ADDR_1" %}
+    {% if ss_info.append(reg_idx[0]) %}{% endif -%}
+    assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[159:128];
+    assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[159:128] = {{reg_name}}__sw_rd_data;
+{%- elif reg.type_name == "ERR_MISC3_1" %}
+    {% if ss_info.append(reg_idx[0]) %}{% endif -%}
+    assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
+    assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
+    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[191:160];
+    assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[191:160] = {{reg_name}}__sw_rd_data;
 
     snapshot_reg #(
         .DATA_WIDTH                             (DATA_WIDTH),
-        .REG_WIDTH                              (96)
+        .REG_WIDTH                              (192)
     )
     {{node_name}}_{{record_name}}__ss_reg (
         .clk                                    (clk),
         .rst_n                                  (rst_n),
         .soft_rst                               (int_soft_rst),
-        .snap_wr_en                             ({reg_sw_wr_sel[{{ss_info[2]}}], reg_sw_wr_sel[{{ss_info[1]}}], reg_sw_wr_sel[{{ss_info[0]}}]}),
-        .snap_rd_en                             ({reg_sw_rd_sel[{{ss_info[2]}}], reg_sw_rd_sel[{{ss_info[1]}}], reg_sw_rd_sel[{{ss_info[0]}}]}),
-        .snap_wr_data                           ({3{reg_sw_wr_data}}),
-        .snap_rd_data                           ({reg_sw_rd_data[{{ss_info[2]}}], reg_sw_rd_data[{{ss_info[1]}}], reg_sw_rd_data[{{ss_info[0]}}]}),
+        .snap_wr_en                             ({
+                                                    {%- for i in range(5,-1,-1) -%}
+                                                    reg_sw_wr_sel[{{ss_info[i]}}]{{", " if not loop.last}}
+                                                    {%- endfor -%}
+                                                }),
+        .snap_rd_en                             ({
+                                                    {%- for i in range(5,-1,-1) -%}
+                                                    reg_sw_rd_sel[{{ss_info[i]}}]{{", " if not loop.last}}
+                                                    {%- endfor -%}
+                                                }),
+        .snap_wr_data                           ({6{reg_sw_wr_data}}),
+        .snap_rd_data                           ({
+                                                    {%- for i in range(5,-1,-1) -%}
+                                                    reg_sw_rd_data[{{ss_info[i]}}]{{", " if not loop.last}}
+                                                    {%- endfor -%}
+                                                }),
         .reg_wr_en                              ({{node_name}}_{{record_name}}__ss_reg_sw_wr_en),
         .reg_rd_en                              ({{node_name}}_{{record_name}}__ss_reg_sw_rd_en),
         .reg_wr_data                            ({{node_name}}_{{record_name}}__ss_reg_sw_wr_data),
@@ -383,7 +416,11 @@ module {{slv_name}} (
     {%- elif reg.type_name == "ERR_CTRL_0_otherwise" %}
     {%- elif reg.type_name == "ERR_CTRL_1" %}
     {%- elif reg.type_name == "ERR_ADDR_0" %}
+    assign  {{reg_name}}__PADDR__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__PADDR__next_value = {{node_name}}_{{record_name}}__poi_err_addr[31:0];
     {%- elif reg.type_name == "ERR_ADDR_1" %}
+    assign  {{reg_name}}__PADDR__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__PADDR__next_value = {{node_name}}_{{record_name}}__poi_err_addr[55:32];
     {%- elif reg.type_name == "ERR_STATUS_0" %}
     assign  {{reg_name}}__CE__pulse = {{node_name}}_{{record_name}}__plus_f;
     assign  {{reg_name}}__CE__next_value = {{node_name}}_{{record_name}}__plus_f ? 2'b10 : 2'b00;
@@ -450,8 +487,8 @@ module {{slv_name}} (
     end
 
     assign  {{reg_name}}__PN__pulse = {{reg_name}}__PN__next_value;
-    assign  {{reg_name}}__PN__next_value =
-        |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS & {{node_name}}_{{record_name}}__int_flag);
+    assign  {{reg_name}}__PN__next_value = |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS & {{node_name}}_{{record_name}}__int_flag);
+    assign  {{node_name}}_{{record_name}}__pn = {{reg_name}}__PN__pulse;
 
     assign  {{reg_name}}__V__pulse = {{reg_name}}__V__next_value;
     assign  {{reg_name}}__V__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
@@ -515,6 +552,8 @@ module {{slv_name}} (
     {% elif reg.type_name == "ERR_MISC3_0" %}
     assign  {{node_name}}_{{record_name}}__itt = {{reg_name}}__ITT__curr_value;
     {% elif reg.type_name == "ERR_MISC3_1" %}
+    assign  {{reg_name}}__INFO__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__INFO__next_value = {{node_name}}_{{record_name}}__poi_err_info;
     {%- endif %}
 {% endfor %}{# reg loop #}
     assign  {{node_name}}_{{record_name}}__or_all_int_flag = |{{node_name}}_{{record_name}}__int_flag;
@@ -525,7 +564,7 @@ module {{slv_name}} (
     assign  fault_int_n[{{loop.index0}}] =
         (|{{node_name}}__fault_int_r) &
         {{node_name}}__ctrl_fi;
-{%- else %}
+{%- else %}{# if isinstance(node, RegfileNode) #}
     {%- if node.type_name in ("ERR_GSR", "ERR_DEVARCH") %}{% set reg = node %}
     {%- set reg_name = get_rtl_name(reg) %}
     //****************************************************************************//
