@@ -114,7 +114,6 @@ module field (
     // ultimate mux to field
     generate
         if (PRECEDENCE == `SW) begin: g_fmux_sw_dominant
-            // For ROC hw_ctrl should update value based on cleared value
             assign field_mux_din_pre = {nxt_hw_value, nxt_sw_value};
             assign field_mux_sel_pre = {hw_modify, sw_modify};
         end

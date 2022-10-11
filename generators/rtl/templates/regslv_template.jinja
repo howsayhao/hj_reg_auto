@@ -362,7 +362,14 @@ module {{slv_name}} (
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
         {%- for field in reg.fields(skip_not_present=False) %}
         {%- if field.is_sw_readable %}
+        {%- if is_hard_wired(field) or (not field.is_hw_writable) %}
         {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{orig_reg_name}}__{{field.inst_name}}__curr_value;
+        {%- else %}
+        {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] =
+            {{orig_reg_name}}__{{field.inst_name}}__pulse ?
+            {{orig_reg_name}}__{{field.inst_name}}__next_value :
+            {{orig_reg_name}}__{{field.inst_name}}__curr_value;
+        {%- endif %}
         {%- endif %}
         {%- endfor %}
     end
