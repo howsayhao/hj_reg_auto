@@ -27,7 +27,11 @@ module {{slv_name}} (
     rd_data,
     ack_vld,
     err,
-    err_en
+    err_en,
+{%- if has_cdc(slv_node) %}
+    regslv_clk,
+    regslv_rst_n
+{%- endif %}
 );
     `include "common_funcs.vh"
 
@@ -43,10 +47,10 @@ module {{slv_name}} (
 {%- set node_name = get_inst_name(node) %}
 {%- for record in node.children(unroll=True, skip_not_present=False) %}
 {%- set record_name = get_inst_name(record) %}
+    parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_INTR_TYPE   = 32'h0;
     parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_ECC      = 32'h0;
     parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_UEU      = 32'h0;
     parameter   [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_IS_POIS     = 32'h0;
-    parameter               {{node_name|upper}}_{{record_name|upper}}_P_CORRECTED   = 1'h1;
 
     localparam  [31:0]      {{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF =
         {{node_name|upper}}_{{record_name|upper}}_P_IS_ECC | {{node_name|upper}}_{{record_name|upper}}_P_IS_UEU | {{node_name|upper}}_{{record_name|upper}}_P_IS_POIS;
@@ -54,9 +58,9 @@ module {{slv_name}} (
 {%- endfor %}{# record loop #}
 {% endfor %}{# node loop #}
     parameter               INSERT_REG_FF       = 1;
+    parameter               ADDR_WIDTH          = {{get_addr_width(slv_node)}};
+    parameter               DATA_WIDTH          = {{get_data_width(slv_node)}};
 
-    localparam              ADDR_WIDTH          = 64;
-    localparam              DATA_WIDTH          = 32;
     localparam              REG_NUM             = {{addr_loc_num}};
 {%- for node in slv_node.children(unroll=True, skip_not_present=False) if isinstance(node, RegfileNode) %}
 {%- set node_name = get_inst_name(node) %}
@@ -82,6 +86,10 @@ module {{slv_name}} (
     output  logic                               ack_vld;
     output  logic                               err;
     input   logic                               err_en;
+{%- if has_cdc(slv_node) %}
+    input   logic                               regslv_clk;
+    input   logic                               regslv_rst_n;
+{%- endif %}
 
     logic                                       int_req_vld;
     logic                                       int_wr_en;
@@ -99,7 +107,38 @@ module {{slv_name}} (
     logic                                       reg_rd_data_mux_dout_vld;
     logic                                       reg_rd_data_vld;
     logic   [DATA_WIDTH-1:0]                    reg_rd_data;
-
+{% if has_cdc(slv_node) %}
+//***********************************CLOCK DOMAIN CROSSING********************************************//
+    reg_native_if_1to1 #(
+        .CDC_ENABLE                             (1),
+        .BUS_ADDR_WIDTH                         (ADDR_WIDTH),
+        .BUS_DATA_WIDTH                         (DATA_WIDTH)
+    )
+    reg_native_if_1to1 (
+        .native_clk                             (clk),
+        .native_rst_n                           (rst_n),
+        .soft_rst                               (soft_rst),
+        .req_vld                                (req_vld),
+        .ack_vld                                (ack_vld),
+        .err                                    (err),
+        .addr                                   (addr),
+        .wr_en                                  (wr_en),
+        .rd_en                                  (rd_en),
+        .wr_data                                (wr_data),
+        .rd_data                                (rd_data),
+        .ext_clk                                (regslv_clk),
+        .ext_rst_n                              (regslv_rst_n),
+        .ext_soft_rst                           (int_soft_rst),
+        .ext_req_vld                            (int_req_vld),
+        .ext_ack_vld                            (int_ack_vld),
+        .ext_err                                (int_err),
+        .ext_addr                               (int_addr),
+        .ext_wr_en                              (int_wr_en),
+        .ext_rd_en                              (int_rd_en),
+        .ext_wr_data                            (int_wr_data),
+        .ext_rd_data                            (int_rd_data)
+    );
+{%- else %}
     assign  int_req_vld                         = req_vld;
     assign  int_wr_en                           = wr_en;
     assign  int_rd_en                           = rd_en;
@@ -109,6 +148,15 @@ module {{slv_name}} (
     assign  rd_data                             = int_rd_data;
     assign  ack_vld                             = int_ack_vld;
     assign  err                                 = int_err;
+{%- endif %}
+
+{%- if has_cdc(slv_node) -%}
+{%- set curr_clk = "regslv_clk" -%}
+{%- set curr_async_rst_n = "regslv_rst_n" -%}
+{% else %}
+{%- set curr_clk = "clk" -%}
+{%- set curr_async_rst_n = "rst_n" -%}
+{%- endif %}
 
 //**************************************ADDRESS DECODER***********************************************//
     localparam  ADDR_TRUNC_BITS                 = log2(DATA_WIDTH / 8);
@@ -142,8 +190,8 @@ module {{slv_name}} (
 
     generate
         if (INSERT_REG_FF) begin: g_reg_ff
-            always_ff @(posedge clk or negedge rst_n) begin
-                if (!rst_n) begin
+            always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
+                if (!{{curr_async_rst_n}}) begin
                     reg_sw_wr_sel               <= {REG_NUM{1'b0}};
                     reg_sw_rd_sel               <= {REG_NUM{1'b0}};
                     reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
@@ -178,8 +226,8 @@ module {{slv_name}} (
         .DATA_WIDTH (DATA_WIDTH)
     )
     slv_fsm (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .if_soft_rst                            (int_soft_rst),
         .if_req_vld                             (int_req_vld),
         .if_ack_vld                             (int_ack_vld),
@@ -228,6 +276,9 @@ module {{slv_name}} (
     {%- endif %}
     logic                                       {{node_name}}_{{record_name}}__plus_f;
     logic                                       {{node_name}}_{{record_name}}__of_flag;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__cec_wd_cnt;
+    logic                                       {{node_name}}_{{record_name}}__cec_wd_cnt_of;
+    logic   [14:0]                              {{node_name}}_{{record_name}}__cec_upd_value;
     logic                                       {{node_name}}_{{record_name}}__of_fault;
     logic   [31:0]                              {{node_name}}_{{record_name}}__int_fault;
     logic                                       {{node_name}}_{{record_name}}__fault;
@@ -235,7 +286,6 @@ module {{slv_name}} (
     logic   [31:0]                              {{node_name}}_{{record_name}}__fim_int;
     logic   [31:0]                              {{node_name}}_{{record_name}}__fen;
     logic                                       {{node_name}}_{{record_name}}__fmask;
-    logic   [31:0]                              {{node_name}}_{{record_name}}__itt;
     logic   [31:0]                              {{node_name}}_{{record_name}}__int_flag;
     logic                                       {{node_name}}_{{record_name}}__or_all_int_flag;
     logic                                       {{node_name}}_{{record_name}}__pn;
@@ -312,8 +362,8 @@ module {{slv_name}} (
         .REG_WIDTH                              (192)
     )
     {{node_name}}_{{record_name}}__ss_reg (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .soft_rst                               (int_soft_rst),
         .snap_wr_en                             ({
                                                     {%- for i in range(5,-1,-1) -%}
@@ -357,8 +407,8 @@ module {{slv_name}} (
         .HARD_WIRED                             ({{is_hard_wired(field)}})
     )
     x__{{reg_name}}__{{field.inst_name}}_{{field.high-n}} (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .sync_rst                               (1'b0),
         .sw_wr_data                             ({{reg_name}}__sw_wr_data[{{field.high-n}}]),
         .sw_rd                                  ({{reg_name}}__sw_rd_en),
@@ -381,8 +431,8 @@ module {{slv_name}} (
         .HARD_WIRED                             ({{is_hard_wired(field)}})
     )
     x__{{reg_name}}__{{field.inst_name}} (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .sync_rst                               (1'b0),
         .sw_wr_data                             ({{reg_name}}__sw_wr_data[{{field.high}}:{{field.low}}]),
         .sw_rd                                  ({{reg_name}}__sw_rd_en),
@@ -416,11 +466,11 @@ module {{slv_name}} (
     {%- elif reg.type_name == "ERR_CTRL_0_otherwise" %}
     {%- elif reg.type_name == "ERR_CTRL_1" %}
     {%- elif reg.type_name == "ERR_ADDR_0" %}
-    assign  {{reg_name}}__PADDR__pulse = {{node_name}}_{{record_name}}__pn;
-    assign  {{reg_name}}__PADDR__next_value = {{node_name}}_{{record_name}}__poi_err_addr[31:0];
+    assign  {{reg_name}}__PADDR_31_0__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__PADDR_31_0__next_value = {{node_name}}_{{record_name}}__poi_err_addr[31:0];
     {%- elif reg.type_name == "ERR_ADDR_1" %}
-    assign  {{reg_name}}__PADDR__pulse = {{node_name}}_{{record_name}}__pn;
-    assign  {{reg_name}}__PADDR__next_value = {{node_name}}_{{record_name}}__poi_err_addr[55:32];
+    assign  {{reg_name}}__PADDR_55_32__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__PADDR_55_32__next_value = {{node_name}}_{{record_name}}__poi_err_addr[55:32];
     {%- elif reg.type_name == "ERR_STATUS_0" %}
     assign  {{reg_name}}__CE__pulse = {{node_name}}_{{record_name}}__plus_f;
     assign  {{reg_name}}__CE__next_value = {{node_name}}_{{record_name}}__plus_f ? 2'b10 : 2'b00;
@@ -486,9 +536,12 @@ module {{slv_name}} (
         endcase
     end
 
-    assign  {{reg_name}}__PN__pulse = {{reg_name}}__PN__next_value;
-    assign  {{reg_name}}__PN__next_value = |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS & {{node_name}}_{{record_name}}__int_flag);
-    assign  {{node_name}}_{{record_name}}__pn = {{reg_name}}__PN__pulse;
+    assign  {{node_name}}_{{record_name}}__pn =
+        |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS &
+        {{node_name}}_{{record_name}}__int_flag) &
+        ~{{reg_name}}__PN_curr_value;
+    assign  {{reg_name}}__PN__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__PN__next_value = {{reg_name}}__PN__pulse;
 
     assign  {{reg_name}}__V__pulse = {{reg_name}}__V__next_value;
     assign  {{reg_name}}__V__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
@@ -510,33 +563,45 @@ module {{slv_name}} (
             {{reg_name}}__IS__next_value[i] =
                 (({{node_name}}_{{record_name}}__interrupt[i] & {{node_name}}__ctrl_fi) |
                 {{node_name}}_{{record_name}}__fim_int[i]) & {{node_name}}_{{record_name}}__fen[i];
-            if ({{node_name}}_{{record_name}}__itt[i])
-                {{reg_name}}__IS__pulse[i] = 1'b1;
-            else
+            if ({{node_name|upper}}_{{record_name|upper}}_P_INTR_TYPE[i])
                 {{reg_name}}__IS__pulse[i] = {{reg_name}}__IS__next_value[i];
+            else
+                {{reg_name}}__IS__pulse[i] = 1'b1;
         end
     end
     assign  {{node_name}}_{{record_name}}__int_flag = {{reg_name}}__IS__next_value;
     {%- elif reg.type_name == "ERR_MISC0_1" %}
-    assign  {{node_name}}_{{record_name}}__plus_f = {{node_name|upper}}_{{record_name|upper}}_P_CORRECTED &
-        {{node_name}}_{{record_name}}__plus & {{node_name}}__ctrl_fi & {{node_name}}__ctrl_cfi;
+    assign  {{node_name}}_{{record_name}}__plus_f = {{node_name}}_{{record_name}}__plus & {{node_name}}__ctrl_fi & {{node_name}}__ctrl_cfi;
+
+    always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
+        if (~rst_n)
+            {{node_name}}_{{record_name}}__cec_wd_cnt   <= 32'b0;
+        else if ({{node_name}}_{{record_name}}__cec_wd_cnt < { {{reg_name}}__CEC_WD__curr_value, 16'b0 })
+            {{node_name}}_{{record_name}}__cec_wd_cnt   <= {{node_name}}_{{record_name}}__cec_wd_cnt + 32'b1;
+        else
+            {{node_name}}_{{record_name}}__cec_wd_cnt   <= 32'b0;
+    end
+    assign  {{node_name}}_{{record_name}}__cec_wd_cnt_of = {{node_name}}_{{record_name}}__cec_wd_cnt == { {{reg_name}}__CEC_WD__curr_value, 16'b0 };
 
     assign  {{reg_name}}__OF__pulse = {{reg_name}}__OF__next_value;
     assign  {{reg_name}}__OF__next_value = {{node_name}}_{{record_name}}__of_flag;
 
+    assign  {{reg_name}}__CEC__pulse = 1'b1;
     always_comb begin
-        {{reg_name}}__CEC__pulse = 1'b1;
         if ({{node_name}}_{{record_name}}__plus_f) begin
             {
                 {{node_name}}_{{record_name}}__of_flag,
-                {{reg_name}}__CEC__next_value
+                {{node_name}}_{{record_name}}__cec_upd_value
             } = {{reg_name}}__CEC__curr_value + {{node_name}}_{{record_name}}__plus_value;
         end
         else begin
             {{node_name}}_{{record_name}}__of_flag = 1'b0;
-            {{reg_name}}__CEC__next_value = {{reg_name}}__CEC__curr_value;
+            {{node_name}}_{{record_name}}__cec_upd_value = {{reg_name}}__CEC__curr_value;
         end
     end
+    assign  {{reg_name}}__CEC__next_value =
+            (~{{node_name}}_{{record_name}}__of_flag & ~{{reg_name}}__OF__curr_value & {{node_name}}_{{record_name}}__cec_wd_cnt_of) ?
+            15'b0 : {{node_name}}_{{record_name}}__cec_upd_value;
 
     assign  {{node_name}}_{{record_name}}__of_fault =
         ({{node_name}}_{{record_name}}__fim_of | {{reg_name}}__OF__curr_value) &
@@ -550,10 +615,9 @@ module {{slv_name}} (
     {% elif reg.type_name == "ERR_MISC2_1" %}
     assign  {{node_name}}_{{record_name}}__fim_of = {{reg_name}}__FIM__curr_value[0];
     {% elif reg.type_name == "ERR_MISC3_0" %}
-    assign  {{node_name}}_{{record_name}}__itt = {{reg_name}}__ITT__curr_value;
     {% elif reg.type_name == "ERR_MISC3_1" %}
-    assign  {{reg_name}}__INFO__pulse = {{node_name}}_{{record_name}}__pn;
-    assign  {{reg_name}}__INFO__next_value = {{node_name}}_{{record_name}}__poi_err_info;
+    assign  {{reg_name}}__POIS_INFO__pulse = {{node_name}}_{{record_name}}__pn;
+    assign  {{reg_name}}__POIS_INFO__next_value = {{node_name}}_{{record_name}}__poi_err_info;
     {%- endif %}
 {% endfor %}{# reg loop #}
     assign  {{node_name}}_{{record_name}}__or_all_int_flag = |{{node_name}}_{{record_name}}__int_flag;
@@ -591,8 +655,8 @@ module {{slv_name}} (
         .REG_WIDTH                              ({{reg.size * 8}})
     )
     {{reg_name}}_snapshot_reg (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .soft_rst                               (int_soft_rst),
         .snap_wr_en                             (reg_sw_wr_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
         .snap_rd_en                             (reg_sw_rd_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
@@ -620,8 +684,8 @@ module {{slv_name}} (
         .HARD_WIRED                             ({{is_hard_wired(field)}})
     )
     x__{{reg_name}}__{{field.inst_name}} (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .sync_rst                               (1'b0),
         .sw_wr_data                             ({{reg_name}}__sw_wr_data[{{field.high}}:{{field.low}}]),
         .sw_rd                                  ({{reg_name}}__sw_rd_en),
@@ -644,7 +708,14 @@ module {{slv_name}} (
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
         {%- for field in reg.fields(skip_not_present=False) %}
         {%- if field.is_sw_readable %}
+        {%- if is_hard_wired(field) or (not field.is_hw_writable) %}
         {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{reg_name}}__{{field.inst_name}}__curr_value;
+        {%- else %}
+        {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] =
+            {{reg_name}}__{{field.inst_name}}__pulse ?
+            {{reg_name}}__{{field.inst_name}}__next_value :
+            {{reg_name}}__{{field.inst_name}}__curr_value;
+        {%- endif %}
         {%- endif %}
         {%- endfor %}{# field loop #}
     end
@@ -670,8 +741,8 @@ module {{slv_name}} (
         .SKIP_DFF_1                             ({{skip_reg_mux_dff_1(slv_node)}})
     )
     reg_rd_data_mux (
-        .clk                                    (clk),
-        .rst_n                                  (rst_n),
+        .clk                                    ({{curr_clk}}),
+        .rst_n                                  ({{curr_async_rst_n}}),
         .din                                    (reg_rd_data_mux_din),
         .sel                                    (reg_rd_data_mux_sel),
         .dout                                   (reg_rd_data_mux_dout),
