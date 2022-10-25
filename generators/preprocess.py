@@ -21,10 +21,8 @@ class PreprocessAddressHandler:
         other than 0, so here is just a compromise solution
         """
         # base address assigned by user-defined property base_addr
-        # only in addrmap which represents for reg_network or regdisp and is at top level
-        if root.top.get_property("base_addr") and \
-            (root.top.get_property("hj_gendisp") or \
-            root.top.get_property("hj_gennetwork")):
+        # only in addrmap at the top level
+        if root.top.get_property("base_addr"):
             root.top.inst.addr_offset = root.top.get_property("base_addr")
 
 class PreprocessListener(RDLListener):
@@ -48,7 +46,7 @@ class PreprocessListener(RDLListener):
     - field
         - insert `hdl_path_slice` properties
 
-    Addtionally:
+    Additionally:
     - check violations of instance hierarchy relationship
     - filter some instances by setting ispresent to false, thus generated uvm ral model would ignore them
         - wildcard matching are supported
@@ -69,7 +67,7 @@ class PreprocessListener(RDLListener):
         self.int_reg_addr_loc_num = 0   # only used in regslv
         self.int_reg_idx = []        # only used in regslv
         self.addr_list = []
-        self.regslv_base_addr = 0
+        self.current_base_addr = 0
         self.runtime_stack = []
 
         self.total_reg_num = 0
@@ -159,52 +157,24 @@ class PreprocessListener(RDLListener):
         # ========================================================================================================
 
         if isinstance(node.parent, RootNode):
-            # top-level addrmap instance can only be register network, regdisp or regslv
-            if not self.skip_preprocess_check and \
-                not (node.get_property("hj_gennetwork") or
-                    node.get_property("hj_gendisp") or
-                    node.get_property("hj_genslv") or
-                    node.get_property("hj_3rd_party_ip")):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "top-level addrmap instance %s can only be one of following types: "
-                    "reg_network, regdisp, regslv or 3rd party IP" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                    )
-                )
-
             # for top-level (root) addrmap instance, calculate its total size
             self.total_size = node.total_size
 
-        # the model traverses in addrmap which represents for the whole register network
+        # the model traverses in addrmap which represents for an entity of register network
         if node.get_property("hj_gennetwork"):
-            # check whether addrmap which represents for the whole register network
-            # is a top-level (root) addrmap instance
-            if not self.skip_preprocess_check and not isinstance(node.parent, RootNode):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for the whole register network, "
-                    "so it must be a top-level (root) addrmap instance" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                    )
-                )
+            pass
 
         # the model traverses in addrmap which represents for regmst
         elif node.get_property("hj_genmst"):
             # debug message
             if not self.keep_quiet:
-                message.debug("generate regmst_{}".format(node.inst_name), self.indent)
+                message.debug(
+                    "generate regmst_{}".format(node.get_path_segment(array_suffix="_{index:d}")),
+                    self.indent
+                )
 
-            # check whether regmst is instantiated under addrmap which represents for the whole register network,
-            # if not, its address allocation will be wrong
+            # check whether regmst is instantiated under addrmap which represents
+            # for the register network, if not, its address allocation might be wrong
             if not self.skip_preprocess_check and not node.parent.get_property("hj_gennetwork"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
@@ -314,7 +284,7 @@ class PreprocessListener(RDLListener):
                 )
 
             # update rtl module names
-            self.all_rtl_mod.append("regmst_{}".format(node.inst_name))
+            self.all_rtl_mod.append("regmst_{}".format(node.get_path_segment(array_suffix="_{index:d}")))
             node.inst.properties["rtl_name"] = "regmst_{}".format(node.inst_name)
 
             # push field hdl path to stack and update it with current addrmap instance
@@ -329,7 +299,8 @@ class PreprocessListener(RDLListener):
             if not self.keep_quiet:
                 message.debug("generate regdisp_{}".format(node.inst_name), self.indent)
 
-            # check whether regdisp is instantiated under addrmap which represents for regmst or regdisp
+            # check whether regdisp is instantiated at top level
+            # or under addrmap which represents for regmst or regdisp
             if not self.skip_preprocess_check and \
                 not isinstance(node.parent, RootNode) and \
                 not node.parent.get_property("hj_genmst") and \
@@ -337,25 +308,7 @@ class PreprocessListener(RDLListener):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s represents for regdisp, so it must be instantiated at top level, "
-                    "or under addrmap which represents for regmst or regdisp, but parent addrmap %s does not" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                        node.parent.get_path_segment(array_suffix="_{index:d}")
-                    )
-                )
-
-            # regdisp defaults to use address offset to decode and forward transactions
-            if node.get_property("hj_use_abs_addr") is None:
-                node.inst.properties["hj_use_abs_addr"] = False
-
-            if not self.skip_preprocess_check and \
-                node.get_property("hj_use_abs_addr") is False:
-                message.warning(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regdisp, so hj_use_abs_addr is recommended to be true (now is false)" % (
+                    "or under addrmap which represents for regmst or regdisp" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
@@ -364,10 +317,16 @@ class PreprocessListener(RDLListener):
                     )
                 )
 
+            # regdisp defaults to use address offset to decode and forward transactions
+            if node.get_property("hj_use_abs_addr") is None:
+                node.inst.properties["hj_use_abs_addr"] = False
+
             # update rtl module names
-            self.all_rtl_mod.append("regdisp_{}".format(node.inst_name))
+            self.all_rtl_mod.append("regdisp_{}".format(node.get_path_segment(array_suffix="_{index:d}")))
             node.inst.properties["rtl_name"] = "regdisp_{}".format(node.inst_name)
 
+            # get total interface number this regdisp forwards to,
+            # namely the number of downstream reg_native_if
             node.inst.properties["forward_num"] = len(list(node.children(unroll=True, skip_not_present=False)))
 
         # the model traverses in addrmap which represents for regslv
@@ -383,21 +342,22 @@ class PreprocessListener(RDLListener):
             self.int_reg_addr_loc_num = 0
             self.int_reg_idx = []
             self.addr_list = []
-            self.regslv_base_addr = node.absolute_address
+            self.current_base_addr = node.absolute_address
 
+            # check whether regslv is instantiated at top level or
+            # under addrmap which represents for regdisp
             if not self.skip_preprocess_check and \
                 not isinstance(node.parent, RootNode) and \
                 not node.parent.get_property("hj_gendisp"):
                 message.error(
                     "%s, %d: %d:\n%s\n"
                     "addrmap %s represents for regslv, so it must be instantiated at top level, "
-                    "or under addrmap which represents for regdisp, but parent addrmap %s does not" % (
+                    "or under addrmap which represents for regdisp" % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
                         self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                        node.parent.get_path_segment(array_suffix="_{index:d}")
+                        node.get_path_segment(array_suffix="_{index:d}")
                     )
                 )
 
@@ -432,7 +392,6 @@ class PreprocessListener(RDLListener):
         # the model traverses in addrmap which will be flattened in the parent addrmap
         # so it represents for no RTL module
         elif node.get_property("hj_flatten_addrmap"):
-
             # flattened addrmap can only be defined under the addrmap instantiated as regslv
             if not self.skip_preprocess_check and \
                 not node.parent.get_property("hj_genslv") and \
@@ -466,31 +425,13 @@ class PreprocessListener(RDLListener):
             if not node.parent.get_property("hj_3rd_party_ip", default=False):
                 self.is_in_3rd_party_ip = True
 
-                # check whether 3rd party IP are forwarded by regdisp,
-                # or at the top level of the design
-                if not self.skip_preprocess_check and \
-                    not isinstance(node.parent, RootNode) and \
-                    not node.parent.get_property("hj_gendisp"):
-                    message.error(
-                        "%s, %d: %d:\n%s\n"
-                        "addrmap %s representing for 3rd party IP must be covered by 3rd party IP addrmap, "
-                        "or have a parent addrmap which represents for regdisp, but parent addrmap %s does not." % (
-                            self.ref.filename,
-                            self.ref.line,
-                            self.ref.line_selection[0],
-                            self.ref.line_text,
-                            node.get_path_segment(array_suffix="_{index:d}"),
-                            node.parent.get_path_segment(array_suffix="_{index:d}")
-                        )
-                    )
-
                 # as for 3rd party IP, hj_use_abs_addr needs to be assigned by user
                 if not self.skip_preprocess_check and \
                     node.get_property("hj_use_abs_addr") is None:
                     message.warning(
                         "%s, %d: %d:\n%s\n"
                         "addrmap %s represents for 3rd party IP, but you don't explicitly "
-                        "assign the property hj_use_abs_addr, and it will be assigned to true" % (
+                        "assign the property hj_use_abs_addr, and it will be assigned to false" % (
                             self.ref.filename,
                             self.ref.line,
                             self.ref.line_selection[0],
@@ -498,8 +439,8 @@ class PreprocessListener(RDLListener):
                             node.get_path_segment(array_suffix="_{index:d}")
                         )
                     )
-                    # write default value
-                    node.inst.properties["hj_use_abs_addr"] = True
+                    # default: use address offset to decode accesses
+                    node.inst.properties["hj_use_abs_addr"] = False
 
             node.inst.properties["ispresent"] = False
             node.inst.properties["rtl_name"] = node.inst_name
@@ -547,37 +488,23 @@ class PreprocessListener(RDLListener):
                     convert_size(node.size)
                 ), self.indent
             )
-        if not self.is_in_3rd_party_ip:
-            if not self.skip_preprocess_check and \
-                not node.parent.get_property("hj_gendisp"):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "the parent addrmap %s of memory instance %s is not recognized as "
-                    "regdisp or 3rd party IP, and memories must be forwarded by a regdisp or 3rd party IP" % (
+
+        # check if width of memory that are connected to regdisp satisfies the requirement of 32 * (2^i)
+        if not self.skip_preprocess_check and node.parent.get_property("hj_gendisp") and \
+            not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
+            message.error(
+                "%s, %d: %d:\n%s\n"
+                "width of memory %s requires a number of 32 * (2^i), such as 32, 64, 128..." % (
                         self.ref.filename,
                         self.ref.line,
                         self.ref.line_selection[0],
                         self.ref.line_text,
-                        node.parent.get_path_segment(array_suffix="_{index:d}"),
                         node.get_path_segment(array_suffix="_{index:d}")
-                    )
                 )
+            )
 
-            # check if memory width satisfies the requirement of 32 * (2^i)
-            if not self.skip_preprocess_check and \
-                not math.log2(node.get_property("memwidth", default=32) // 32).is_integer():
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "width of memory %s requires a number of 32 * (2^i), such as 32, 64, 128..." % (
-                            self.ref.filename,
-                            self.ref.line,
-                            self.ref.line_selection[0],
-                            self.ref.line_text,
-                            node.get_path_segment(array_suffix="_{index:d}")
-                    )
-                )
-
-            node.inst.properties["hj_use_abs_addr"] = False
+        # memory must use address offset to decode accesses
+        node.inst.properties["hj_use_abs_addr"] = False
 
         node.inst.properties["rtl_name"] = "mem_{}".format(node.inst_name)
 
@@ -662,7 +589,7 @@ class PreprocessListener(RDLListener):
                 ))
 
                 self.addr_list.extend([
-                        node.absolute_address - self.regslv_base_addr + i * 4 for i in range(node.size // 4)
+                        node.absolute_address - self.current_base_addr + i * 4 for i in range(node.size // 4)
                     ])
                 self.int_reg_addr_loc_num += node.size // 4
 
@@ -784,10 +711,12 @@ class PreprocessListener(RDLListener):
     def post_check(self):
         """
         """
-        if len(self.all_rtl_mod) != len(set(self.all_rtl_mod)):
+        dup = {x for x in self.all_rtl_mod if self.all_rtl_mod.count(x) > 1}
+
+        if len(dup) > 0:
             message.warning(
-                "duplicate RTL module names found, please check your addrmap instance names that "
-                "represent for regmst, regdisp or regslv modules"
+                "following duplicate RTL module names found: %s, please check your addrmap "
+                "instance names that represent for regmst, regdisp or regslv modules" % (", ".join(dup))
             )
 
     def get_report(self):
@@ -800,12 +729,12 @@ class PreprocessListener(RDLListener):
             "HRDA preprocess report\n"
             "------------------------------------------------\n"
             "total register number: %d\n"
-            "total size: %s (%s) bytes\n"
-            "filtered register number in UVM simulation: %d\n"
+            "total size: %s (%s bytes)\n"
+            "filtered register number in UVM RAL model: %d\n"
             "preprocessing time: %.4fs\n"
             "------------------------------------------------" % (
                 self.total_reg_num,
-                self.total_size,
+                convert_size(self.total_size),
                 hex(self.total_size),
                 self.filter_reg_num,
                 time() - self.start_time
