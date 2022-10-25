@@ -93,6 +93,13 @@ class DocExporter:
     def _get_property(self, node:Node, prop_name):
         if prop_name in ("sw", "hw"):
             return node.get_property(prop_name).name
+        elif prop_name == "hwsc":
+            if node.get_property("hwclr"):
+                return "hwclr"
+            elif node.get_property("hwset"):
+                return "hwset"
+            else:
+                return "-"
         elif prop_name in ("onread", "onwrite"):
             acc_type = node.get_property(prop_name)
             return "-" if acc_type is None else acc_type.name
@@ -198,7 +205,8 @@ def export_pdf(root:RootNode, out_dir:str):
     else:
         # TODO
         message.warning(
-            "PDF exporter is not implemented completely because of some dependencies, "
+            "PDF exporter is not implemented completely because of lack of dependencies, "
             "and now it is able to export temporary markdown and html files only, "
-            "you can use the markdown and org exporter instead"
+            "you can use the markdown and org exporter instead, or convert to "
+            "PDF from temporal HTML file manually by using browser like Chrome or Firefox"
         )

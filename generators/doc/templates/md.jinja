@@ -16,7 +16,7 @@ Description: {{get_property(node, "desc")}}
 {%- endmacro %}
 
 {%- macro field_row(node) %}
-{{"| %2d:%-2d | %8s | %15s | %2s,%4s,%-5s | %-9s |"|format(
+{{"| %2d:%-2d | %8s | %15s | %2s,%4s,%-5s | %2s,%-6s |"|format(
     node.msb,
     node.lsb,
     get_inst_name(node),
@@ -24,7 +24,8 @@ Description: {{get_property(node, "desc")}}
     get_property(node, "sw"),
     get_property(node, "onread"),
     get_property(node, "onwrite"),
-    get_property(node, "hw"))}}
+    get_property(node, "hw"),
+    get_property(node, "hwsc"))}}
 {%- endmacro %}
 
 {%- macro field_desc(node) %}
