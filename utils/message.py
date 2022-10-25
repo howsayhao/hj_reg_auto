@@ -24,7 +24,7 @@ def debug(msg:str, indent=0, msg_prefix="", raise_err=False):
     Optional:
         `HRDAError`
     """
-    print(" " * indent * 4 + msg_prefix + msg)
+    print(" " * indent * 2 + msg_prefix + msg)
 
     if raise_err:
         raise HRDAError(msg)
@@ -38,7 +38,10 @@ def info(msg:str, indent=0, msg_prefix="Info: ", raise_err=False):
     Optional:
         `HRDAError`
     """
-    print(" " * indent * 4 + PrintFormat.OKBLUE + msg_prefix + msg + PrintFormat.ENDC)
+    print(
+        " " * indent * 2 + PrintFormat.BOLD + PrintFormat.OKBLUE +
+        msg_prefix + PrintFormat.ENDC + msg
+    )
 
     if raise_err:
         raise HRDAError(msg)
@@ -52,7 +55,10 @@ def warning(msg:str, indent=0, msg_prefix="Warning: ", raise_err=False):
     Optional:
         `HRDAError`
     """
-    print(" " * indent * 4 + PrintFormat.WARNING + msg_prefix + msg + PrintFormat.ENDC)
+    print(
+        " " * indent * 2 + PrintFormat.BOLD + PrintFormat.WARNING +
+        msg_prefix + PrintFormat.ENDC + msg
+    )
 
     if raise_err:
         raise HRDAError(msg)
@@ -66,7 +72,10 @@ def error(msg:str, indent=0, msg_prefix="Error: ", raise_err = True):
     Optional:
         `HRDAError`
     """
-    print(" " * indent * 4 + PrintFormat.FAIL + msg_prefix + msg + PrintFormat.ENDC)
+    print(
+        " " * indent * 2 + PrintFormat.BOLD + PrintFormat.FAIL +
+        msg_prefix + PrintFormat.ENDC + msg
+    )
 
     if raise_err:
         raise HRDAError(msg)
