@@ -16,10 +16,9 @@ module {{mst_name}} (
     paddr,
     pwdata,
     prdata,
-    // pslverr assertion enable
-    pslverr_en,
-    // interrupt signal
-    intr,
+    pprot,
+    // error reporting interrupt
+    err_intr,
     // reg_native_if to the downstream regdisp module
     {{prefix_o}}__req_vld,
     {{prefix_i}}__ack_vld,
@@ -29,13 +28,14 @@ module {{mst_name}} (
     {{prefix_o}}__addr,
     {{prefix_o}}__wr_data,
     {{prefix_i}}__rd_data,
+    {{prefix_o}}__non_sec,
     {{prefix_o}}__soft_rst
 );
     `include "common_funcs.vh"
 
     parameter       ADDR_WIDTH          = {{get_addr_width(mst_node)}};
     parameter       DATA_WIDTH          = {{get_data_width(mst_node)}};
-    localparam      DB_REG_NUM          = 4;
+    localparam      DB_REG_NUM          = 5;
 
     input   logic                       pclk;
     input   logic                       presetn;
@@ -47,10 +47,8 @@ module {{mst_name}} (
     input   logic   [ADDR_WIDTH-1:0]    paddr;
     input   logic   [DATA_WIDTH-1:0]    pwdata;
     output  logic   [DATA_WIDTH-1:0]    prdata;
-
-    input   logic                       pslverr_en;
-    output  logic                       intr;
-
+    input   logic   [2:0]               pprot;
+    output  logic                       err_intr;
     output  logic                       {{prefix_o}}__req_vld;
     input   logic                       {{prefix_i}}__ack_vld;
     input   logic                       {{prefix_i}}__err;
@@ -59,6 +57,7 @@ module {{mst_name}} (
     output  logic   [ADDR_WIDTH-1:0]    {{prefix_o}}__addr;
     output  logic   [DATA_WIDTH-1:0]    {{prefix_o}}__wr_data;
     input   logic   [DATA_WIDTH-1:0]    {{prefix_i}}__rd_data;
+    output  logic                       {{prefix_o}}__non_sec;
     output  logic                       {{prefix_o}}__soft_rst;
 
     logic   [DB_REG_NUM-1:0]            dec_db_reg_sel;
@@ -72,12 +71,11 @@ module {{mst_name}} (
     logic   [ADDR_WIDTH-1:0]            fsm_addr;
     logic   [DATA_WIDTH-1:0]            fsm_wr_data;
     logic   [DATA_WIDTH-1:0]            fsm_rd_data;
+    logic                               fsm_non_sec;
 
     logic   [DATA_WIDTH-1:0]            tmr_cnt;
     logic                               tmr_tmout;
     logic                               tmr_rst;
-
-    logic                               downstream_err;
 
     logic   [31:0]                      db_regs_acc_addr__snap_0_wr_data;
     logic                               db_regs_acc_addr__snap_0_wr_en;
@@ -99,13 +97,11 @@ module {{mst_name}} (
     logic   [63:0]                      db_regs_acc_addr__val__next_value;
     logic                               db_regs_acc_addr__val__pulse;
     logic   [63:0]                      db_regs_acc_addr__val__curr_value;
-
     logic   [31:0]                      db_regs_tmr_thr_wr_data;
     logic                               db_regs_tmr_thr_wr_en;
     logic                               db_regs_tmr_thr_rd_en;
     logic   [31:0]                      db_regs_tmr_thr_o;
     logic   [31:0]                      db_regs_tmr_thr__cnt__curr_value;
-
     logic   [31:0]                      db_regs_stat_wr_data;
     logic                               db_regs_stat_wr_en;
     logic                               db_regs_stat_rd_en;
@@ -113,25 +109,37 @@ module {{mst_name}} (
     logic                               db_regs_stat__soft_rst__curr_value;
     logic                               db_regs_stat__err_occur__next_value;
     logic                               db_regs_stat__err_occur__pulse;
+    logic                               db_regs_stat__err_occur__curr_value;
     logic   [1:0]                       db_regs_stat__err_type__next_value;
     logic                               db_regs_stat__err_type__pulse;
+    logic   [1:0]                       db_regs_stat__err_type__curr_value;
     logic                               db_regs_stat__acc_type__next_value;
-    logic   [1:0]                       db_regs_stat__intr_mask__curr_value;
-    logic                               db_regs_stat__intr__curr_value;
+    logic                               db_regs_stat__acc_type__pulse;
+    logic                               db_regs_stat__acc_type__curr_value;
+    logic                               db_regs_stat__intr_mask__curr_value;
     logic                               db_regs_stat__intr__next_value;
     logic                               db_regs_stat__intr__pulse;
+    logic                               db_regs_stat__intr__curr_value;
+    logic   [31:0]                      db_regs_ctrl_wr_data;
+    logic                               db_regs_ctrl_wr_en;
+    logic                               db_regs_ctrl_rd_en;
+    logic   [31:0]                      db_regs_ctrl_o;
+    logic   [1:0]                       db_regs_ctrl__err_resp_config__curr_value;
 
-    logic   [DB_REG_NUM:0] [DATA_WIDTH-1:0]     int_rd_split_mux_din;
-    logic   [DB_REG_NUM:0]                      int_rd_split_mux_sel;
-    logic                                       int_rd_split_mux_dout_vld;
-    logic                                       int_wr_sel;
+    logic                               downstream_err;
+    logic                               pslverr_en;
+
+    logic   [DB_REG_NUM:0] [DATA_WIDTH-1:0]     rd_split_mux_din_i0;
+    logic   [DB_REG_NUM:0]                      rd_split_mux_sel_i0;
+    logic                                       rd_split_mux_dout_vld_i0;
+    logic                                       wr_sel_i0;
     logic                                       dummy_reg_rd_sel;
     logic                                       dummy_reg_wr_sel;
     logic   [DB_REG_NUM-1:0] [DATA_WIDTH-1:0]   db_reg_rd_data;
     logic   [DB_REG_NUM-1:0]                    db_reg_wr_sel;
     logic   [DB_REG_NUM-1:0]                    db_reg_rd_sel;
-    logic                                       int_ack_vld;
-    logic   [DATA_WIDTH-1:0]                    int_rd_data;
+    logic                                       ack_vld_i0;
+    logic   [DATA_WIDTH-1:0]                    rd_data_i0;
 
 //****************************************ADDRESS DECODER************************************************//
     // distinguish access requests to:
@@ -158,12 +166,14 @@ module {{mst_name}} (
                 {%- elif isinstance(child, RegfileNode) -%}
                 fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address)}} >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[0] = 1'b1;
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.absolute_address)}} + DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS)):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address+4)}} >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[1] = 1'b1;
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.absolute_address)}} + 2 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS)):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address+8)}} >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[2] = 1'b1;
-                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'((64'h{{"%x"|format(child.absolute_address)}} + 3 * DATA_WIDTH / 8) >> DEC_ADDR_TRUNC_BITS)):
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address+12)}} >> DEC_ADDR_TRUNC_BITS)):
                     dec_db_reg_sel[3] = 1'b1;
+                fsm_addr[ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] == (DEC_ADDR_REM_BITS'(64'h{{"%x"|format(child.absolute_address+16)}} >> DEC_ADDR_TRUNC_BITS)):
+                    dec_db_reg_sel[4] = 1'b1;
                 {% endif -%}
             {%- endfor -%}
                 default: dec_dummy_reg_sel  = 1'b1;
@@ -173,7 +183,8 @@ module {{mst_name}} (
 
 //*****************************************FSM INSTANCE************************************************//
     mst_fsm #(
-        .ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH))
+        .ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)
+    )
     mst_fsm (
         .pclk                   (pclk),
         .presetn                (presetn),
@@ -185,6 +196,7 @@ module {{mst_name}} (
         .pwrite                 (pwrite),
         .pwdata                 (pwdata),
         .prdata                 (prdata),
+        .pprot                  (pprot),
         .pslverr_en             (pslverr_en),
         .fsm_req_vld            (fsm_req_vld),
         .fsm_ack_vld            (fsm_ack_vld),
@@ -193,9 +205,11 @@ module {{mst_name}} (
         .fsm_rd_en              (fsm_rd_en),
         .fsm_wr_data            (fsm_wr_data),
         .fsm_rd_data            (fsm_rd_data),
+        .fsm_non_sec            (fsm_non_sec),
         .downstream_err         (downstream_err),
         .tmr_tmout              (tmr_tmout),
-        .tmr_rst                (tmr_rst));
+        .tmr_rst                (tmr_rst)
+    );
 
 //*******************************************TIMER*****************************************************//
     always_ff @(posedge pclk or negedge presetn) begin
@@ -284,10 +298,10 @@ module {{mst_name}} (
     //      counts for access cycles since regmst receives an APB transaction
     // absolute address:
     // base offset:
-    // reset value: 0x63 (0d99)
+    // reset value: 0xffff
     field #(
         .F_WIDTH                (32),
-        .ARST_VALUE             (32'h63),
+        .ARST_VALUE             (32'hffff),
         .SW_TYPE                ({`SW_RW}),
         .HW_TYPE                (`HW_RW),
         .PRECEDENCE             (`SW))
@@ -318,7 +332,7 @@ module {{mst_name}} (
     //      1:1 err_occur,
     //      3:2 err_type,
     //      4:4 acc_type,
-    //      6:5 intr_mask,
+    //      6:6 intr_mask,
     //      7:7 intr
     // absolute address:
     // base offset:
@@ -365,12 +379,15 @@ module {{mst_name}} (
         .swacc_out              (),
         .hw_value               (db_regs_stat__err_occur__next_value),
         .hw_pulse               (db_regs_stat__err_occur__pulse),
-        .field_value            ()
+        .field_value            (db_regs_stat__err_occur__curr_value)
     );
     assign  db_regs_stat__err_occur__pulse           = tmr_tmout | downstream_err;
-    assign  db_regs_stat__err_occur__next_value      = tmr_tmout | downstream_err;
+    assign  db_regs_stat__err_occur__next_value      = db_regs_stat__err_occur__pulse;
 
     // field: err_type
+    //  0b00: no error
+    //  0b01: downstream slave error (might be decode error or secure access error)
+    //  0b11: access timeout
     field #(
         .F_WIDTH                (2),
         .ARST_VALUE             (2'h0),
@@ -388,10 +405,10 @@ module {{mst_name}} (
         .swacc_out              (),
         .hw_value               (db_regs_stat__err_type__next_value),
         .hw_pulse               (db_regs_stat__err_type__pulse),
-        .field_value            ()
+        .field_value            (db_regs_stat__err_type__curr_value)
     );
-    assign  db_regs_stat__err_type__pulse           = tmr_tmout | downstream_err;
-    assign  db_regs_stat__err_type__next_value      = {tmr_tmout, downstream_err};
+    assign  db_regs_stat__err_type__pulse           = db_regs_stat__err_occur__pulse;
+    assign  db_regs_stat__err_type__next_value      = tmr_tmout ? 2'b11 : {1'b0, downstream_err};
 
     // field: acc_type
     field #(
@@ -410,15 +427,16 @@ module {{mst_name}} (
         .swmod_out              (),
         .swacc_out              (),
         .hw_value               (db_regs_stat__acc_type__next_value),
-        .hw_pulse               (1'b1),
-        .field_value            ()
+        .hw_pulse               (db_regs_stat__acc_type__pulse),
+        .field_value            (db_regs_stat__acc_type__curr_value)
     );
+    assign  db_regs_stat__acc_type__pulse           = fsm_wr_en;
     assign  db_regs_stat__acc_type__next_value      = fsm_wr_en;
 
     // field: intr_mask
     field #(
-        .F_WIDTH                (2),
-        .ARST_VALUE             (2'h0),
+        .F_WIDTH                (1),
+        .ARST_VALUE             (1'h0),
         .SW_TYPE                ({`SW_RW}),
         .HW_TYPE                (`HW_RO),
         .PRECEDENCE             (`SW))
@@ -426,12 +444,12 @@ module {{mst_name}} (
         .clk                    (pclk),
         .rst_n                  (presetn),
         .sync_rst               (1'b0),
-        .sw_wr_data             (db_regs_stat_wr_data[6:5]),
+        .sw_wr_data             (db_regs_stat_wr_data[6:6]),
         .sw_rd                  (db_regs_stat_rd_en),
         .sw_wr                  (db_regs_stat_wr_en),
         .swmod_out              (),
         .swacc_out              (),
-        .hw_value               (2'b0),
+        .hw_value               (1'b0),
         .hw_pulse               (1'b0),
         .field_value            (db_regs_stat__intr_mask__curr_value)
     );
@@ -456,17 +474,48 @@ module {{mst_name}} (
         .hw_pulse               (db_regs_stat__intr__pulse),
         .field_value            (db_regs_stat__intr__curr_value)
     );
-    assign  db_regs_stat__intr__pulse       = |(db_regs_stat__intr_mask__curr_value & {tmr_tmout, downstream_err});
-    assign  db_regs_stat__intr__next_value  = 1'b1;
+    assign  db_regs_stat__intr__pulse       = db_regs_stat__err_occur__pulse;
+    assign  db_regs_stat__intr__next_value  = db_regs_stat__intr__pulse;
 
-    assign  intr                            = db_regs_stat__intr__curr_value;
+    assign  err_intr            = (db_regs_ctrl__err_resp_config__curr_value == 2'h1) ?
+        (db_regs_stat__intr__curr_value & ~db_regs_stat__intr_mask__curr_value) : 1'b0;
 
-    // concatenation of all software-readable fields
     always_comb begin
         db_regs_stat_o[31:0]    = 32'h0;
-        db_regs_stat_o[0:0]     = db_regs_stat__soft_rst__curr_value;
-        db_regs_stat_o[6:5]     = db_regs_stat__intr_mask__curr_value;
         db_regs_stat_o[7:7]     = db_regs_stat__intr__curr_value;
+        db_regs_stat_o[6:6]     = db_regs_stat__intr_mask__curr_value;
+        db_regs_stat_o[4:4]     = db_regs_stat__acc_type__curr_value;
+        db_regs_stat_o[3:2]     = db_regs_stat__err_type__curr_value;
+        db_regs_stat_o[1:1]     = db_regs_stat__err_occur__curr_value;
+        db_regs_stat_o[0:0]     = db_regs_stat__soft_rst__curr_value;
+    end
+
+    // debug register: ctrl
+    field #(
+        .F_WIDTH                (2),
+        .ARST_VALUE             (2'h0),
+        .SW_TYPE                ({`SW_RW}),
+        .HW_TYPE                (`HW_RW),
+        .PRECEDENCE             (`SW))
+    x__db_regs_ctrl__err_resp_config (
+        .clk                    (pclk),
+        .rst_n                  (presetn),
+        .sync_rst               (1'b0),
+        .sw_wr_data             (db_regs_ctrl_wr_data[1:0]),
+        .sw_rd                  (db_regs_ctrl_rd_en),
+        .sw_wr                  (db_regs_ctrl_wr_en),
+        .swmod_out              (),
+        .swacc_out              (),
+        .hw_value               (2'h0),
+        .hw_pulse               (1'h0),
+        .field_value            (db_regs_ctrl__err_resp_config__curr_value)
+    );
+
+    assign pslverr_en           = db_regs_ctrl__err_resp_config__curr_value == 2'h2;
+
+    always_comb begin
+        db_regs_ctrl_o[31:0]    = 32'h0;
+        db_regs_ctrl_o[1:0]     = db_regs_ctrl__err_resp_config__curr_value;
     end
 
 
@@ -476,48 +525,53 @@ module {{mst_name}} (
     assign  db_reg_rd_data[1]           = db_regs_acc_addr__snap_1_o;
     assign  db_reg_rd_data[2]           = db_regs_tmr_thr_o;
     assign  db_reg_rd_data[3]           = db_regs_stat_o;
+    assign  db_reg_rd_data[4]           = db_regs_ctrl_o;
 
-    assign  int_rd_split_mux_din        = {db_reg_rd_data, {DATA_WIDTH{1'b0}}};
-    assign  int_rd_split_mux_sel        = {db_reg_rd_sel, dummy_reg_rd_sel};
-    assign  int_wr_sel                  = (| db_reg_wr_sel) | dummy_reg_wr_sel;
+    assign  rd_split_mux_din_i0         = {db_reg_rd_data, {DATA_WIDTH{1'b0}}};
+    assign  rd_split_mux_sel_i0         = {db_reg_rd_sel, dummy_reg_rd_sel};
+    assign  wr_sel_i0                   = (| db_reg_wr_sel) | dummy_reg_wr_sel;
     split_mux_2d #(
         .WIDTH(DATA_WIDTH), .CNT(DB_REG_NUM+1),
         .GROUP_SIZE(128), .SKIP_DFF_0(1), .SKIP_DFF_1(1))
     int_rd_split_mux (
         .clk                    (pclk),
         .rst_n                  (presetn),
-        .din                    (int_rd_split_mux_din),
-        .sel                    (int_rd_split_mux_sel),
-        .dout                   (int_rd_data),
-        .dout_vld               (int_rd_split_mux_dout_vld));
+        .din                    (rd_split_mux_din_i0),
+        .sel                    (rd_split_mux_sel_i0),
+        .dout                   (rd_data_i0),
+        .dout_vld               (rd_split_mux_dout_vld_i0));
 
-    assign  int_ack_vld         = int_rd_split_mux_dout_vld | int_wr_sel;
+    assign  ack_vld_i0          = rd_split_mux_dout_vld_i0 | wr_sel_i0;
 
     // internal register inverse multiplexor to debug registers
-    assign  db_reg_wr_sel               = {DB_REG_NUM{fsm_wr_en}} & dec_db_reg_sel;
-    assign  db_reg_rd_sel               = {DB_REG_NUM{fsm_rd_en}} & dec_db_reg_sel;
-    assign  dummy_reg_rd_sel            = dec_dummy_reg_sel & fsm_rd_en;
-    assign  dummy_reg_wr_sel            = dec_dummy_reg_sel & fsm_wr_en;
+    assign  db_reg_wr_sel       = {DB_REG_NUM{fsm_wr_en}} & dec_db_reg_sel;
+    assign  db_reg_rd_sel       = {DB_REG_NUM{fsm_rd_en}} & dec_db_reg_sel;
+    assign  dummy_reg_rd_sel    = dec_dummy_reg_sel & fsm_rd_en;
+    assign  dummy_reg_wr_sel    = dec_dummy_reg_sel & fsm_wr_en;
 
-    assign  db_regs_acc_addr__snap_0_wr_data = db_reg_wr_sel[0] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
-    assign  db_regs_acc_addr__snap_0_wr_en   = db_reg_wr_sel[0];
-    assign  db_regs_acc_addr__snap_0_rd_en   = db_reg_rd_sel[0];
+    assign  db_regs_acc_addr__snap_0_wr_data    = db_reg_wr_sel[0] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  db_regs_acc_addr__snap_0_wr_en      = db_reg_wr_sel[0];
+    assign  db_regs_acc_addr__snap_0_rd_en      = db_reg_rd_sel[0];
 
-    assign  db_regs_acc_addr__snap_1_wr_data = db_reg_wr_sel[1] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
-    assign  db_regs_acc_addr__snap_1_wr_en   = db_reg_wr_sel[1];
-    assign  db_regs_acc_addr__snap_1_rd_en   = db_reg_rd_sel[1];
+    assign  db_regs_acc_addr__snap_1_wr_data    = db_reg_wr_sel[1] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  db_regs_acc_addr__snap_1_wr_en      = db_reg_wr_sel[1];
+    assign  db_regs_acc_addr__snap_1_rd_en      = db_reg_rd_sel[1];
 
-    assign  db_regs_tmr_thr_wr_data          = db_reg_wr_sel[2] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
-    assign  db_regs_tmr_thr_wr_en            = db_reg_wr_sel[2];
-    assign  db_regs_tmr_thr_rd_en            = db_reg_rd_sel[2];
+    assign  db_regs_tmr_thr_wr_data             = db_reg_wr_sel[2] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  db_regs_tmr_thr_wr_en               = db_reg_wr_sel[2];
+    assign  db_regs_tmr_thr_rd_en               = db_reg_rd_sel[2];
 
-    assign  db_regs_stat_wr_data         = db_reg_wr_sel[3] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
-    assign  db_regs_stat_wr_en           = db_reg_wr_sel[3];
-    assign  db_regs_stat_rd_en           = db_reg_rd_sel[3];
+    assign  db_regs_stat_wr_data                = db_reg_wr_sel[3] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  db_regs_stat_wr_en                  = db_reg_wr_sel[3];
+    assign  db_regs_stat_rd_en                  = db_reg_rd_sel[3];
+
+    assign  db_regs_ctrl_wr_data                = db_reg_wr_sel[4] ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  db_regs_ctrl_wr_en                  = db_reg_wr_sel[4];
+    assign  db_regs_ctrl_rd_en                  = db_reg_rd_sel[4];
 
     // ultimate multiplexor to mst_fsm: ack_vld, rd_data, err
-    assign  fsm_rd_data                 = int_ack_vld ? int_rd_data : ({{prefix_i}}__ack_vld ? {{prefix_i}}__rd_data : {DATA_WIDTH{1'b0}});
-    assign  fsm_ack_vld                 = int_ack_vld | {{prefix_i}}__ack_vld;
+    assign  fsm_rd_data                 = ack_vld_i0 ? rd_data_i0 : ({{prefix_i}}__ack_vld ? {{prefix_i}}__rd_data : {DATA_WIDTH{1'b0}});
+    assign  fsm_ack_vld                 = ack_vld_i0 | {{prefix_i}}__ack_vld;
 
     // ultimate inverse multiplexor: to the external downstream regdisp module
     assign  {{prefix_o}}__req_vld       = fsm_req_vld & dec_ext_sel;
@@ -525,5 +579,6 @@ module {{mst_name}} (
     assign  {{prefix_o}}__rd_en         = fsm_rd_en & dec_ext_sel;
     assign  {{prefix_o}}__addr          = dec_ext_sel ? fsm_addr : {ADDR_WIDTH{1'b0}};
     assign  {{prefix_o}}__wr_data       = dec_ext_sel ? fsm_wr_data : {DATA_WIDTH{1'b0}};
+    assign  {{prefix_o}}__non_sec       = dec_ext_sel & fsm_non_sec;
 endmodule
 `default_nettype wire

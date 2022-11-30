@@ -7,7 +7,6 @@ module slv_fsm
     if_ack_vld,
     if_rd_data,
     if_err,
-    if_err_en,
     if_wr_en,
     if_rd_en,
     dummy_acc,
@@ -31,7 +30,6 @@ module slv_fsm
     output  logic                       if_ack_vld;
     output  logic   [DATA_WIDTH-1:0]    if_rd_data;
     output  logic                       if_err;
-    input   logic                       if_err_en;
     input   logic                       if_wr_en;
     input   logic                       if_rd_en;
     input   logic                       dummy_acc;
@@ -42,7 +40,6 @@ module slv_fsm
     logic   [2:0]                       state;
     logic   [2:0]                       next_state;
 
-    // state register
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             state   <= S_IDLE;
@@ -52,7 +49,6 @@ module slv_fsm
             state   <= next_state;
     end
 
-    // state transition logic
     always_comb begin
         if (if_soft_rst)
             next_state = S_IDLE;
@@ -98,7 +94,6 @@ module slv_fsm
             endcase
     end
 
-    // output logic
     always_comb begin
         if_ack_vld  = 1'b0;
         if_rd_data  = {DATA_WIDTH{1'b0}};
@@ -107,8 +102,7 @@ module slv_fsm
         case (state)
             S_DUMMY_ACK: begin
                 if_ack_vld  = 1'b1;
-                if (if_err_en)
-                    if_err  = 1'b1;
+                if_err  = 1'b1;
             end
             S_REG_WRITE_ACK: begin
                 if_ack_vld  = 1'b1;
@@ -120,8 +114,7 @@ module slv_fsm
             S_WRITE_ACCESS: begin
                 if (dummy_acc) begin
                     if_ack_vld  = 1'b1;
-                    if (if_err_en)
-                        if_err  = 1'b1;
+                    if_err  = 1'b1;
                 end
                 else if (reg_acc)
                     if_ack_vld  = 1'b1;
@@ -129,8 +122,7 @@ module slv_fsm
             S_READ_ACCESS: begin
                 if (dummy_acc) begin
                     if_ack_vld  = 1'b1;
-                    if (if_err_en)
-                        if_err  = 1'b1;
+                    if_err  = 1'b1;
                 end
                 else if (reg_rd_data_vld) begin
                     if_ack_vld  = 1'b1;

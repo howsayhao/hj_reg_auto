@@ -9,6 +9,7 @@ module regdisp_disp_map (
     regdisp_disp_map__regslv_slv_map__rd_en,
     regdisp_disp_map__regslv_slv_map__wr_data,
     regslv_slv_map__regdisp_disp_map__rd_data,
+    regdisp_disp_map__regslv_slv_map__non_sec,
     regdisp_disp_map__regslv_slv_map__soft_rst,
     // regdisp is in register native clock and reset domain
     regdisp_disp_map_clk,
@@ -22,6 +23,7 @@ module regdisp_disp_map (
     upstream__regdisp_disp_map__rd_en,
     upstream__regdisp_disp_map__wr_data,
     regdisp_disp_map__upstream__rd_data,
+    upstream__regdisp_disp_map__non_sec,
     upstream__regdisp_disp_map__soft_rst
 );
     `include "common_funcs.vh"
@@ -37,27 +39,29 @@ module regdisp_disp_map (
     parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {1'b0};
     parameter   INSERT_BACKWARD_FF = 0;
 
-    input   logic   regdisp_disp_map_clk;
-    input   logic   regdisp_disp_map_rst_n;
-    input   logic   upstream__regdisp_disp_map__req_vld;
-    output  logic   regdisp_disp_map__upstream__ack_vld;
-    output  logic   regdisp_disp_map__upstream__err;
+    input   logic                               regdisp_disp_map_clk;
+    input   logic                               regdisp_disp_map_rst_n;
+    input   logic                               upstream__regdisp_disp_map__req_vld;
+    output  logic                               regdisp_disp_map__upstream__ack_vld;
+    output  logic                               regdisp_disp_map__upstream__err;
     input   logic   [UPSTREAM_ADDR_WIDTH-1:0]   upstream__regdisp_disp_map__addr;
-    input   logic   upstream__regdisp_disp_map__wr_en;
-    input   logic   upstream__regdisp_disp_map__rd_en;
+    input   logic                               upstream__regdisp_disp_map__wr_en;
+    input   logic                               upstream__regdisp_disp_map__rd_en;
     input   logic   [UPSTREAM_DATA_WIDTH-1:0]   upstream__regdisp_disp_map__wr_data;
     output  logic   [UPSTREAM_DATA_WIDTH-1:0]   regdisp_disp_map__upstream__rd_data;
-    input   logic   upstream__regdisp_disp_map__soft_rst;
+    input   logic                               upstream__regdisp_disp_map__non_sec;
+    input   logic                               upstream__regdisp_disp_map__soft_rst;
     
-    output  logic   regdisp_disp_map__regslv_slv_map__req_vld;
-    input   logic   regslv_slv_map__regdisp_disp_map__ack_vld;
-    input   logic   regslv_slv_map__regdisp_disp_map__err;
+    output  logic                               regdisp_disp_map__regslv_slv_map__req_vld;
+    input   logic                               regslv_slv_map__regdisp_disp_map__ack_vld;
+    input   logic                               regslv_slv_map__regdisp_disp_map__err;
     output  logic   [REGSLV_SLV_MAP_ADDR_WIDTH-1:0] regdisp_disp_map__regslv_slv_map__addr;
-    output  logic   regdisp_disp_map__regslv_slv_map__wr_en;
-    output  logic   regdisp_disp_map__regslv_slv_map__rd_en;
+    output  logic                               regdisp_disp_map__regslv_slv_map__wr_en;
+    output  logic                               regdisp_disp_map__regslv_slv_map__rd_en;
     output  logic   [REGSLV_SLV_MAP_DATA_WIDTH-1:0] regdisp_disp_map__regslv_slv_map__wr_data;
     input   logic   [REGSLV_SLV_MAP_DATA_WIDTH-1:0] regslv_slv_map__regdisp_disp_map__rd_data;
-    output  logic   regdisp_disp_map__regslv_slv_map__soft_rst;
+    output  logic                               regdisp_disp_map__regslv_slv_map__non_sec;
+    output  logic                               regdisp_disp_map__regslv_slv_map__soft_rst;
 
     logic   [FORWARD_NUM-1:0]                           downstream_ack_vld;
     logic   [FORWARD_NUM-1:0]                           downstream_err;
@@ -68,12 +72,14 @@ module regdisp_disp_map (
     logic   [FORWARD_NUM-1:0]                           downstream_wr_en_ff;
     logic   [FORWARD_NUM-1:0]                           downstream_rd_en_ff;
     logic   [FORWARD_NUM-1:0] [UPSTREAM_DATA_WIDTH-1:0] downstream_wr_data_ff;
+    logic   [FORWARD_NUM-1:0]                           downstream_non_sec_ff;
     logic   [FORWARD_NUM-1:0]                           downstream_soft_rst_ff;
     logic   [FORWARD_NUM-1:0]                           downstream_req_vld_imux;
     logic   [FORWARD_NUM-1:0] [UPSTREAM_ADDR_WIDTH-1:0] downstream_addr_imux;
     logic   [FORWARD_NUM-1:0]                           downstream_wr_en_imux;
     logic   [FORWARD_NUM-1:0]                           downstream_rd_en_imux;
     logic   [FORWARD_NUM-1:0] [UPSTREAM_DATA_WIDTH-1:0] downstream_wr_data_imux;
+    logic   [FORWARD_NUM-1:0]                           downstream_non_sec_imux;
     logic   [FORWARD_NUM-1:0]                           downstream_soft_rst_imux;
     logic   [FORWARD_NUM-1:0] [UPSTREAM_ADDR_WIDTH-1:0] downstream_addr_conv;
     logic                                               regdisp_disp_map__upstream__ack_vld_mux;
@@ -112,6 +118,7 @@ module regdisp_disp_map (
             downstream_wr_en_imux[i]        = 1'b0;
             downstream_rd_en_imux[i]        = 1'b0;
             downstream_wr_data_imux[i]      = {UPSTREAM_DATA_WIDTH{1'b0}};
+            downstream_non_sec_imux[i]      = 1'b0;
             downstream_soft_rst_imux[i]     = upstream__regdisp_disp_map__soft_rst;
 
             if (dec_if_sel[i]) begin
@@ -120,6 +127,7 @@ module regdisp_disp_map (
                 downstream_wr_en_imux[i]    = upstream__regdisp_disp_map__wr_en;
                 downstream_rd_en_imux[i]    = upstream__regdisp_disp_map__rd_en;
                 downstream_wr_data_imux[i]  = upstream__regdisp_disp_map__wr_data;
+                downstream_non_sec_imux[i]  = upstream__regdisp_disp_map__non_sec;
             end
         end
     end
@@ -140,6 +148,7 @@ module regdisp_disp_map (
                         downstream_wr_en_ff[cnt]        <= 1'b0;
                         downstream_rd_en_ff[cnt]        <= 1'b0;
                         downstream_wr_data_ff[cnt]      <= {UPSTREAM_DATA_WIDTH{1'b0}};
+                        downstream_non_sec_ff[cnt]      <= 1'b0;
                         downstream_soft_rst_ff[cnt]     <= 1'b0;
                     end
                     else begin
@@ -148,6 +157,7 @@ module regdisp_disp_map (
                         downstream_wr_en_ff[cnt]        <= downstream_wr_en_imux[cnt];
                         downstream_rd_en_ff[cnt]        <= downstream_rd_en_imux[cnt];
                         downstream_wr_data_ff[cnt]      <= downstream_wr_data_imux[cnt];
+                        downstream_non_sec_ff[cnt]      <= downstream_non_sec_imux[cnt];
                         downstream_soft_rst_ff[cnt]     <= downstream_soft_rst_imux[cnt];
                     end
                 end
@@ -158,17 +168,19 @@ module regdisp_disp_map (
                 assign downstream_wr_en_ff[cnt]         = downstream_wr_en_imux[cnt];
                 assign downstream_rd_en_ff[cnt]         = downstream_rd_en_imux[cnt];
                 assign downstream_wr_data_ff[cnt]       = downstream_wr_data_imux[cnt];
+                assign downstream_non_sec_ff[cnt]       = downstream_non_sec_imux[cnt];
                 assign downstream_soft_rst_ff[cnt]      = downstream_soft_rst_imux[cnt];
             end
         end
     endgenerate
 
-    assign  regdisp_disp_map__regslv_slv_map__req_vld              = downstream_req_vld_ff[0];
-    assign  regdisp_disp_map__regslv_slv_map__addr                 = downstream_addr_ff[0];
-    assign  regdisp_disp_map__regslv_slv_map__wr_en                = downstream_wr_en_ff[0];
-    assign  regdisp_disp_map__regslv_slv_map__rd_en                = downstream_rd_en_ff[0];
-    assign  regdisp_disp_map__regslv_slv_map__wr_data              = downstream_wr_data_ff[0];
-    assign  regdisp_disp_map__regslv_slv_map__soft_rst             = downstream_soft_rst_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__req_vld      = downstream_req_vld_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__addr         = downstream_addr_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__wr_en        = downstream_wr_en_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__rd_en        = downstream_rd_en_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__wr_data      = downstream_wr_data_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__non_sec      = downstream_non_sec_ff[0];
+    assign  regdisp_disp_map__regslv_slv_map__soft_rst     = downstream_soft_rst_ff[0];
     assign  downstream_ack_vld[0]     = regslv_slv_map__regdisp_disp_map__ack_vld;
     assign  downstream_err[0]         = regslv_slv_map__regdisp_disp_map__err;
     assign  downstream_rd_data[0]     = regslv_slv_map__regdisp_disp_map__rd_data;
@@ -189,7 +201,7 @@ module regdisp_disp_map (
         if (!dummy_reg_ack_vld) begin
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
                 if (downstream_ack_vld[i]) begin
-                    regdisp_disp_map__upstream__rd_data_mux    = downstream_rd_data[i];
+                    regdisp_disp_map__upstream__rd_data_mux = downstream_rd_data[i];
                 end
             end
         end

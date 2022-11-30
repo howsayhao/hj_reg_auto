@@ -629,7 +629,8 @@ class Parser:
         # pre-defined SystemRDL files, such as user-defined properties
         predef_files = [
             os.path.join(os.path.dirname(__file__),  "user_def_property.rdl"),
-            os.path.join(os.path.dirname(__file__),  "db_reg_def.rdl")
+            os.path.join(os.path.dirname(__file__),  "db_reg_def.rdl"),
+            os.path.join(os.path.dirname(__file__),  "ras_reg_def.rdl")
         ]
 
         try:

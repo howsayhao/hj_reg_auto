@@ -4,10 +4,16 @@ regfile db_regs {
     reg { field {} cnt[31:0] = 0x63;} tmr_thr;
     reg {
         field { sw=rw; } intr[7:7] = 0x0;
-        field { sw=rw; hw=r; } intr_mask[6:5] = 0x0;
-        field { sw=r; } acc_type[4:4] = 0x0;
-        field { sw=r; } err_type[3:2] = 0x0;
-        field { sw=r; } err_occur[1:1] = 0x0;
+        field { sw=rw; hw=r; } intr_mask[6:6] = 0x0;
+        field { sw=rw; } acc_type[4:4] = 0x0;
+        field { sw=rw; } err_type[3:2] = 0x0;
+        field { sw=rw; } err_occur[1:1] = 0x0;
         field { sw=rw; hw=r; singlepulse;} soft_rst[0:0] = 0x0;
     } stat;
+    reg {
+        field {
+            sw=rw; hw=r;
+            desc = "configure the way regmst reports errors. 0x0: no error reporting; 0x1: by interrupt; 0x2: by bus error";
+        } err_resp_config[1:0] = 0x0;
+    } ctrl;
 };

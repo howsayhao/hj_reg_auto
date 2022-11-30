@@ -40,16 +40,23 @@ module {{slv_name}} (
     addr,
     wr_data,
     rd_data,
+    non_sec,
     ack_vld,
     err,
 {%- if has_cdc(slv_node) %}
     regslv_clk,
     regslv_rst_n,
 {%- endif %}
-    err_en
+    // indicate whether to report error when accessing undefined empty address space,
+    // or non-secure access, at native clock domain (clk)
+    error_report_en,
+    // indicate whether this regslv is in secure space, at native clock domain (clk)
+    domain_is_non_secure
 );
     `include "common_funcs.vh"
 
+    parameter       CDC_ENABLE                  = {{has_cdc(slv_node)}};
+    parameter       SECURE_ACCESS_CHECK         = 1;
     parameter       ADDR_WIDTH                  = {{get_addr_width(slv_node)}};
     parameter       DATA_WIDTH                  = {{get_data_width(slv_node)}};
     parameter       INSERT_REG_FF               = 1;
@@ -89,23 +96,25 @@ module {{slv_name}} (
     input   logic   [DATA_WIDTH-1:0]            wr_data;
     input   logic                               soft_rst;
     output  logic   [DATA_WIDTH-1:0]            rd_data;
+    input   logic                               non_sec;
     output  logic                               ack_vld;
     output  logic                               err;
 {%- if has_cdc(slv_node) %}
     input   logic                               regslv_clk;
     input   logic                               regslv_rst_n;
 {%- endif %}
-    input   logic                               err_en;
+    input   logic                               error_report_en;
+    input   logic                               domain_is_non_secure;
 
-    logic                                       int_req_vld;
-    logic                                       int_wr_en;
-    logic                                       int_rd_en;
-    logic   [ADDR_WIDTH-1:0]                    int_addr;
-    logic   [DATA_WIDTH-1:0]                    int_wr_data;
-    logic                                       int_soft_rst;
-    logic   [DATA_WIDTH-1:0]                    int_rd_data;
-    logic                                       int_ack_vld;
-    logic                                       int_err;
+    logic                                       req_vld_i0;
+    logic                                       wr_en_i0;
+    logic                                       rd_en_i0;
+    logic   [ADDR_WIDTH-1:0]                    addr_i0;
+    logic   [DATA_WIDTH-1:0]                    wr_data_i0;
+    logic                                       soft_rst_i0;
+    logic   [DATA_WIDTH-1:0]                    rd_data_i0;
+    logic                                       ack_vld_i0;
+    logic                                       err_i0;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
     logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
@@ -113,12 +122,21 @@ module {{slv_name}} (
     logic                                       reg_rd_data_mux_dout_vld;
     logic                                       reg_rd_data_vld;
     logic   [DATA_WIDTH-1:0]                    reg_rd_data;
-{% if has_cdc(slv_node) %}
+{%- if has_cdc(slv_node) -%}
+{%- set curr_clk = "regslv_clk" -%}
+{%- set curr_async_rst_n = "regslv_rst_n" -%}
+{% else %}
+{%- set curr_clk = "clk" -%}
+{%- set curr_async_rst_n = "rst_n" -%}
+{%- endif %}
+
+//************************************SECURE_ACCESS_CHECK*********************************************//
 //***********************************CLOCK DOMAIN CROSSING********************************************//
     reg_native_if_1to1 #(
-        .CDC_ENABLE                             (1),
+        .CDC_ENABLE                             (CDC_ENABLE),
         .BUS_ADDR_WIDTH                         (ADDR_WIDTH),
-        .BUS_DATA_WIDTH                         (DATA_WIDTH)
+        .BUS_DATA_WIDTH                         (DATA_WIDTH),
+        .SECURE_ACCESS_CHECK                    (SECURE_ACCESS_CHECK)
     )
     reg_native_if_1to1 (
         .native_clk                             (clk),
@@ -132,37 +150,22 @@ module {{slv_name}} (
         .rd_en                                  (rd_en),
         .wr_data                                (wr_data),
         .rd_data                                (rd_data),
-        .ext_clk                                (regslv_clk),
-        .ext_rst_n                              (regslv_rst_n),
-        .ext_soft_rst                           (int_soft_rst),
-        .ext_req_vld                            (int_req_vld),
-        .ext_ack_vld                            (int_ack_vld),
-        .ext_err                                (int_err),
-        .ext_addr                               (int_addr),
-        .ext_wr_en                              (int_wr_en),
-        .ext_rd_en                              (int_rd_en),
-        .ext_wr_data                            (int_wr_data),
-        .ext_rd_data                            (int_rd_data)
+        .non_sec                                (non_sec),
+        .ext_clk                                ({{curr_clk}}),
+        .ext_rst_n                              ({{curr_async_rst_n}}),
+        .ext_soft_rst                           (soft_rst_i0),
+        .ext_req_vld                            (req_vld_i0),
+        .ext_ack_vld                            (ack_vld_i0),
+        .ext_err                                (err_i0),
+        .ext_addr                               (addr_i0),
+        .ext_wr_en                              (wr_en_i0),
+        .ext_rd_en                              (rd_en_i0),
+        .ext_wr_data                            (wr_data_i0),
+        .ext_rd_data                            (rd_data_i0),
+        .ext_non_sec                            (),
+        .domain_is_non_secure                   (domain_is_non_secure),
+        .error_report_en                        (error_report_en)
     );
-{%- else %}
-    assign  int_req_vld                         = req_vld;
-    assign  int_wr_en                           = wr_en;
-    assign  int_rd_en                           = rd_en;
-    assign  int_addr                            = addr;
-    assign  int_wr_data                         = wr_data;
-    assign  int_soft_rst                        = soft_rst;
-    assign  rd_data                             = int_rd_data;
-    assign  ack_vld                             = int_ack_vld;
-    assign  err                                 = int_err;
-{%- endif %}
-
-{%- if has_cdc(slv_node) -%}
-{%- set curr_clk = "regslv_clk" -%}
-{%- set curr_async_rst_n = "regslv_rst_n" -%}
-{% else %}
-{%- set curr_clk = "clk" -%}
-{%- set curr_async_rst_n = "rst_n" -%}
-{%- endif %}
 
 //**************************************ADDRESS DECODER***********************************************//
     localparam  ADDR_TRUNC_BITS                 = log2(DATA_WIDTH / 8);
@@ -177,11 +180,11 @@ module {{slv_name}} (
     logic   [DATA_WIDTH-1:0]                    reg_sw_wr_data;
 
     always_comb begin
-        if (int_req_vld & ~int_soft_rst) begin
+        if (req_vld_i0 & ~soft_rst_i0) begin
             dec_reg_sel = {REG_NUM{1'b0}};
             dec_dummy_sel = 1'b0;
 
-            unique case (int_addr[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
+            unique case (addr_i0[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
                 {%- for addr in addr_list %}
                 (ADDR_REM_BITS'(64'h{{"%x"|format(addr)}} >> ADDR_TRUNC_BITS)): dec_reg_sel[{{loop.index0}}] = 1'b1;
                 {%- endfor %}
@@ -203,24 +206,24 @@ module {{slv_name}} (
                     reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
                     dummy_acc                   <= 1'b0;
                 end
-                else if (int_soft_rst) begin
+                else if (soft_rst_i0) begin
                     reg_sw_wr_sel               <= {REG_NUM{1'b0}};
                     reg_sw_rd_sel               <= {REG_NUM{1'b0}};
                     reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
                     dummy_acc                   <= 1'b0;
                 end
                 else begin
-                    reg_sw_wr_sel               <= {REG_NUM{int_wr_en}} & dec_reg_sel;
-                    reg_sw_rd_sel               <= {REG_NUM{int_rd_en}} & dec_reg_sel;
-                    reg_sw_wr_data              <= int_wr_data;
+                    reg_sw_wr_sel               <= {REG_NUM{wr_en_i0}} & dec_reg_sel;
+                    reg_sw_rd_sel               <= {REG_NUM{rd_en_i0}} & dec_reg_sel;
+                    reg_sw_wr_data              <= wr_data_i0;
                     dummy_acc                   <= dec_dummy_sel;
                 end
             end
         end
         else begin: g_no_reg_ff
-            assign  reg_sw_wr_sel               = {REG_NUM{int_wr_en}} & dec_reg_sel;
-            assign  reg_sw_rd_sel               = {REG_NUM{int_rd_en}} & dec_reg_sel;
-            assign  reg_sw_wr_data              = int_wr_data;
+            assign  reg_sw_wr_sel               = {REG_NUM{wr_en_i0}} & dec_reg_sel;
+            assign  reg_sw_rd_sel               = {REG_NUM{rd_en_i0}} & dec_reg_sel;
+            assign  reg_sw_wr_data              = wr_data_i0;
             assign  dummy_acc                   = dec_dummy_sel;
         end
     endgenerate
@@ -234,14 +237,13 @@ module {{slv_name}} (
     slv_fsm (
         .clk                                    ({{curr_clk}}),
         .rst_n                                  ({{curr_async_rst_n}}),
-        .if_soft_rst                            (int_soft_rst),
-        .if_req_vld                             (int_req_vld),
-        .if_ack_vld                             (int_ack_vld),
-        .if_rd_data                             (int_rd_data),
-        .if_err                                 (int_err),
-        .if_err_en                              (err_en),
-        .if_wr_en                               (int_wr_en),
-        .if_rd_en                               (int_rd_en),
+        .if_soft_rst                            (soft_rst_i0),
+        .if_req_vld                             (req_vld_i0),
+        .if_ack_vld                             (ack_vld_i0),
+        .if_rd_data                             (rd_data_i0),
+        .if_err                                 (err_i0),
+        .if_wr_en                               (wr_en_i0),
+        .if_rd_en                               (rd_en_i0),
         .dummy_acc                              (dummy_acc),
         .reg_acc                                (reg_acc),
         .reg_rd_data                            (reg_rd_data),
@@ -276,7 +278,7 @@ module {{slv_name}} (
     {{reg_name}}_snapshot_reg (
         .clk                                    ({{curr_clk}}),
         .rst_n                                  ({{curr_async_rst_n}}),
-        .soft_rst                               (int_soft_rst),
+        .soft_rst                               (soft_rst_i0),
         .snap_wr_en                             (reg_sw_wr_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
         .snap_rd_en                             (reg_sw_rd_sel[{{reg_idx[1]}}:{{reg_idx[0]}}]),
         .snap_wr_data                           ({{"{"}}{{reg_idx[1]-reg_idx[0]+1}}{{"{"}}reg_sw_wr_data{{"}}"}}),
@@ -359,9 +361,11 @@ module {{slv_name}} (
     {%- endif %}
     {% set orig_reg_name = get_rtl_name(reg.alias_primary) if reg.is_alias else reg_name -%}
     always_comb begin
+        {%- set all_fields = reg.fields(skip_not_present=False)|list %}
+        {%- if not (all_fields|length == 1 and all_fields[0].width == reg.size * 8 and all_fields[0].is_sw_readable) %}{# to avoid vc_lint w415a error #}
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
-        {%- for field in reg.fields(skip_not_present=False) %}
-        {%- if field.is_sw_readable %}
+        {%- endif %}
+        {%- for field in all_fields if field.is_sw_readable %}
         {%- if is_hard_wired(field) or (not field.is_hw_writable) %}
         {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{orig_reg_name}}__{{field.inst_name}}__curr_value;
         {%- else %}
@@ -369,7 +373,6 @@ module {{slv_name}} (
             {{orig_reg_name}}__{{field.inst_name}}__pulse ?
             {{orig_reg_name}}__{{field.inst_name}}__next_value :
             {{orig_reg_name}}__{{field.inst_name}}__curr_value;
-        {%- endif %}
         {%- endif %}
         {%- endfor %}
     end

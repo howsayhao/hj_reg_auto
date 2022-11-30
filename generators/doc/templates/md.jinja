@@ -5,6 +5,8 @@ Hierarchy: *{{get_hier_name(node)}}*
 Absolute Base Address: {{get_abs_addr(node)}}
 
 Size: {{get_size(node)}} Bytes
+
+Secure Attribute: {{get_secure_attr(node)}}
 {%- if get_property(node, "desc") is not none %}
 
 Description: {{get_property(node, "desc")}}

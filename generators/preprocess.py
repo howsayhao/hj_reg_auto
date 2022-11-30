@@ -6,9 +6,14 @@ import utils.message as message
 from utils.misc import convert_size
 from systemrdl import RDLListener, RDLWalker
 from systemrdl.rdltypes import AccessType
-from systemrdl.node import AddrmapNode, RegfileNode, RootNode
+from systemrdl.node import AddrmapNode, RegfileNode, RootNode, MemNode
 
 # FIXME: array suffix
+
+class DomainSecurityLevel:
+    SECURE = 0
+    NON_SECURE = 1
+    CONFIGURABLE = 2
 
 class PreprocessAddressHandler:
     """
@@ -124,6 +129,11 @@ class PreprocessListener(RDLListener):
             else:
                 node.inst.properties[prop] = False
 
+        if prop_num == 0:
+            if self.is_in_3rd_party_ip:
+                node.inst.properties["hj_3rd_party_ip"] = True
+            prop_num = 1
+
         if not self.skip_preprocess_check and not prop_num == 1:
             message.error(
                 "%s, %d: %d:\n%s\n"
@@ -171,21 +181,6 @@ class PreprocessListener(RDLListener):
                 message.debug(
                     "generate regmst_{}".format(node.get_path_segment(array_suffix="_{index:d}")),
                     self.indent
-                )
-
-            # check whether regmst is instantiated under addrmap which represents
-            # for the register network, if not, its address allocation might be wrong
-            if not self.skip_preprocess_check and not node.parent.get_property("hj_gennetwork"):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regmst, "
-                    "so it must be instantiated under addrmap which represents for the whole register network" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}"),
-                    )
                 )
 
             # check whether regmst addrmap consist of 2 immediate children:
@@ -284,8 +279,9 @@ class PreprocessListener(RDLListener):
                 )
 
             # update rtl module names
-            self.all_rtl_mod.append("regmst_{}".format(node.get_path_segment(array_suffix="_{index:d}")))
-            node.inst.properties["rtl_name"] = "regmst_{}".format(node.inst_name)
+            if not node.is_array or (node.is_array and node.current_idx[0] == 0):
+                self.all_rtl_mod.append("regmst_{}".format(node.inst_name))
+                node.inst.properties["rtl_name"] = "regmst_{}".format(node.inst_name)
 
             # push field hdl path to stack and update it with current addrmap instance
             self.runtime_stack.append(self.field_hdl_path)
@@ -299,31 +295,51 @@ class PreprocessListener(RDLListener):
             if not self.keep_quiet:
                 message.debug("generate regdisp_{}".format(node.inst_name), self.indent)
 
-            # check whether regdisp is instantiated at top level
-            # or under addrmap which represents for regmst or regdisp
-            if not self.skip_preprocess_check and \
-                not isinstance(node.parent, RootNode) and \
-                not node.parent.get_property("hj_genmst") and \
-                not node.parent.get_property("hj_gendisp"):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regdisp, so it must be instantiated at top level, "
-                    "or under addrmap which represents for regmst or regdisp" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}")
+            if not self.skip_preprocess_check:
+                # check whether regdisp is instantiated at top level
+                # or under addrmap which represents for regmst or regdisp
+                if not isinstance(node.parent, RootNode) and \
+                    not node.parent.get_property("hj_genmst") and \
+                    not node.parent.get_property("hj_gendisp"):
+                    message.error(
+                        "%s, %d: %d:\n%s\n"
+                        "addrmap %s represents for regdisp, so it must be instantiated at top level, "
+                        "or under addrmap which represents for regmst or regdisp" % (
+                            self.ref.filename,
+                            self.ref.line,
+                            self.ref.line_selection[0],
+                            self.ref.line_text,
+                            node.get_path_segment(array_suffix="_{index:d}")
+                        )
                     )
-                )
+
+                # the child of regdisp can only be:
+                # regdisp, regslv, 3rd party IP, memory
+                for child in node.children(skip_not_present=False):
+                    if not ((isinstance(child, AddrmapNode) and (child.get_property("hj_gendisp") or \
+                        child.get_property("hj_genslv") or child.get_property("hj_3rd_party_ip"))) \
+                        or isinstance(child, MemNode)):
+                        message.error(
+                            "%s, %d: %d:\n%s\n"
+                            "addrmap %s represents for regdisp, but its child %s is not one of the "
+                            "following type: regdisp, regslv, 3rd party IP, memory" % (
+                                self.ref.filename,
+                                self.ref.line,
+                                self.ref.line_selection[0],
+                                self.ref.line_text,
+                                node.get_path_segment(array_suffix="_{index:d}"),
+                                child.get_path_segment(array_suffix="_{index:d}")
+                            )
+                        )
 
             # regdisp defaults to use address offset to decode and forward transactions
             if node.get_property("hj_use_abs_addr") is None:
                 node.inst.properties["hj_use_abs_addr"] = False
 
             # update rtl module names
-            self.all_rtl_mod.append("regdisp_{}".format(node.get_path_segment(array_suffix="_{index:d}")))
-            node.inst.properties["rtl_name"] = "regdisp_{}".format(node.inst_name)
+            if not node.is_array or (node.is_array and node.current_idx[0] == 0):
+                self.all_rtl_mod.append("regdisp_{}".format(node.inst_name))
+                node.inst.properties["rtl_name"] = "regdisp_{}".format(node.inst_name)
 
             # get total interface number this regdisp forwards to,
             # namely the number of downstream reg_native_if
@@ -334,7 +350,7 @@ class PreprocessListener(RDLListener):
             # debug message
             if not self.keep_quiet:
                 message.debug(
-                    "generate regslv_{}".format(node.get_path_segment(array_suffix="_{index:d}")),
+                    "generate regslv_{}, CDC enabled: {}".format(node.get_path_segment(array_suffix="_{index:d}"), bool(node.get_property("hj_cdc", default=False))),
                     self.indent
                 )
 
@@ -343,23 +359,6 @@ class PreprocessListener(RDLListener):
             self.int_reg_idx = []
             self.addr_list = []
             self.current_base_addr = node.absolute_address
-
-            # check whether regslv is instantiated at top level or
-            # under addrmap which represents for regdisp
-            if not self.skip_preprocess_check and \
-                not isinstance(node.parent, RootNode) and \
-                not node.parent.get_property("hj_gendisp"):
-                message.error(
-                    "%s, %d: %d:\n%s\n"
-                    "addrmap %s represents for regslv, so it must be instantiated at top level, "
-                    "or under addrmap which represents for regdisp" % (
-                        self.ref.filename,
-                        self.ref.line,
-                        self.ref.line_selection[0],
-                        self.ref.line_text,
-                        node.get_path_segment(array_suffix="_{index:d}")
-                    )
-                )
 
             # regslv defaults to use address offset to decode transactions
             if node.get_property("hj_use_abs_addr") is None:
@@ -378,11 +377,9 @@ class PreprocessListener(RDLListener):
                     )
                 )
 
-            # SystemRDL instance properties do not need array suffix
-            node.inst.properties["rtl_name"] = "regslv_{}".format(node.inst_name)
-
-            # array instance in SystemRDL needs index suffix of corresponding RTL module names
-            self.all_rtl_mod.append("regslv_{}".format(node.get_path_segment(array_suffix="_{index:d}")))
+            if not node.is_array or (node.is_array and node.current_idx[0] == 0):
+                self.all_rtl_mod.append("regslv_{}".format(node.inst_name))
+                node.inst.properties["rtl_name"] = "regslv_{}".format(node.inst_name)
 
             self.runtime_stack.append(self.field_hdl_path)
             self.field_hdl_path = [
@@ -420,7 +417,7 @@ class PreprocessListener(RDLListener):
         elif node.get_property("hj_3rd_party_ip"):
             # debug message
             if not self.keep_quiet:
-                message.debug("Recognized as 3rd party IP", self.indent)
+                message.debug("Recognized as 3rd party IP, CDC enabled: {}".format(node.get_property("hj_cdc", default=False)), self.indent)
 
             if not node.parent.get_property("hj_3rd_party_ip", default=False):
                 self.is_in_3rd_party_ip = True
@@ -481,11 +478,12 @@ class PreprocessListener(RDLListener):
         # debug message
         if not self.keep_quiet:
             message.debug(
-                "memory: %s, address: 0x%x-0x%x, size: %s" % (
+                "memory: %s, address: 0x%x-0x%x, size: %s, CDC enabled: %s" % (
                     node.get_path_segment(array_suffix="_{index:d}"),
                     node.absolute_address,
                     node.absolute_address + node.size,
-                    convert_size(node.size)
+                    convert_size(node.size),
+                    bool(node.get_property("hj_cdc", default=False))
                 ), self.indent
             )
 
@@ -703,6 +701,40 @@ class PreprocessListener(RDLListener):
                         node.inst.properties["ispresent"] = False
                         break
 
+        # secure/non-secure property check
+        if isinstance(node, (AddrmapNode, MemNode)):
+            secure_config_ref = node.get_property("secure_config_ref", default=None)
+
+            if secure_config_ref:
+                if node.get_property("secure_attr", default=1) != DomainSecurityLevel.CONFIGURABLE:
+                    if not self.skip_preprocess_check:
+                        message.error(
+                            "%s, %d: %d:\n%s\n"
+                            "property secure_config_ref is set in %s, "
+                            "so it must have secure_attr set to configurable (secure_attr = 2)" % (
+                                self.ref.filename,
+                                self.ref.line,
+                                self.ref.line_selection[0],
+                                self.ref.line_text,
+                                node.get_path_segment(array_suffix="_{index:d}")
+                            )
+                        )
+                else:
+                    if node.find_by_path(secure_config_ref) is None:
+                        message.error(
+                            "%s, %d: %d:\n%s\n"
+                            "property secure_config_ref is set in %s, "
+                            "but the path %s does not exist" % (
+                                self.ref.filename,
+                                self.ref.line,
+                                self.ref.line_selection[0],
+                                self.ref.line_text,
+                                node.get_path_segment(array_suffix="_{index:d}"),
+                                secure_config_ref
+                            )
+                        )
+
+
     def exit_Component(self, node):
         self.indent -= 1
 
@@ -751,6 +783,12 @@ def preprocess(root:RootNode, **user_ops):
     preprocess_listener = PreprocessListener(user_ops)
 
     preprocess_walker.walk(root, preprocess_listener)
+
+    message.info(
+        "all type definitions in the root scope: %s" % (
+            ", ".join(root.inst.comp_defs.keys())
+        )
+    )
 
     preprocess_listener.post_check()
     preprocess_listener.get_report()

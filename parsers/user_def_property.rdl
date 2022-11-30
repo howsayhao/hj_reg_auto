@@ -115,3 +115,17 @@ property is_ras_arch {
     component = addrmap;
     type = boolean;
 };
+
+// 0: secure only, 1: non-secure, 2: configured by register
+property secure_attr {
+    component = addrmap | mem;
+    type = longint;
+};
+
+// relative path to the register field which configures security
+// attribute of this addrmap
+// used only when secure_attr = 2
+property secure_config_ref {
+    component = addrmap | mem;
+    type = string;
+};

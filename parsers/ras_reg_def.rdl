@@ -1,0 +1,151 @@
+// RAS Architecture Definitions
+field RES0 {sw = r; hard_wired = true; hw = na;};
+
+reg ERR_FR_0_first {
+    desc = "Error record feature register 0 (first record in this node)";
+    field {sw = r; hard_wired = true; hw = na;} FRX[31:31] = 1'b0;
+    RES0                                        RES0_30_26[30:26];
+    field {sw = r; hard_wired = true; hw = na;} TS [25:24] = 2'b00;
+    field {sw = r; hard_wired = true; hw = na;} CI [23:22] = 2'b00;
+    field {sw = r; hard_wired = true; hw = na;} INJ[21:20] = 2'b00;
+    field {sw = r; hard_wired = true; hw = na;} CEO[19:18] = 2'b01;
+    field {sw = r; hard_wired = true; hw = na;} DUI[17:16] = 2'b00;
+    field {sw = r; hard_wired = true; hw = na;} RP [15:15] = 1'b0;
+    field {sw = r; hard_wired = true; hw = na;} CEC[14:12] = 3'b010;
+    field {sw = r; hard_wired = true; hw = na;} CFI[11:10] = 2'b10;
+    field {sw = r; hard_wired = true; hw = na;} UE [9:8] = 2'b00;
+    field {sw = r; hard_wired = true; hw = na;} FI [7:6] = 2'b10;
+    field {sw = r; hard_wired = true; hw = na;} UI [5:4] = 2'b00;
+    RES0                                        RES0_3_2[3:2];
+    field {sw = r; hard_wired = true; hw = na;} ED [1:0] = 2'b10;
+};
+reg ERR_FR_0_otherwise {
+    desc = "Error record feature register 0 (not first record in this node)";
+    RES0                                        RES0_31_2[31:2];
+    field {sw = r; hard_wired = true; hw = na;} ED [1:0] = 2'b00;
+};
+reg ERR_FR_1 {
+    desc = "Error record feature register 1";
+    RES0 RES0_31_0[31:0];
+};
+
+reg ERR_CTRL_0_first {
+    desc = "Error record control register 0 (first record in this node)";
+    RES0                                        RES0_31_14[31:14];
+    RES0                                        RES0_13[13:13];
+    RES0                                        RES0_12[12:12];
+    RES0                                        RES0_11[11:11];
+    RES0                                        RES0_10[10:10];
+    RES0                                        RES0_9[9:9];
+    field {sw = rw; hw = r;}                    CFI[8:8] = 1'b1;
+    RES0                                        RES0_7[7:7];
+    RES0                                        RES0_6[6:6];
+    RES0                                        RES0_5[5:5];
+    RES0                                        RES0_4[4:4];
+    field {sw = rw; hw = r;}                    FI [3:3] = 1'b0;
+    field {sw = r; hard_wired = true; hw = na;} UI [2:2] = 1'b0;
+    RES0                                        RES0_1[1:1];
+    field {sw = r; hard_wired = true; hw = na;} ED [0:0] = 1'b0;
+};
+reg ERR_CTRL_0_otherwise {
+    desc = "Error record control register 0 (not first record in this node)";
+    RES0            RES0_31_0[31:0];
+};
+reg ERR_CTRL_1 {
+    desc = "Error record control register 1";
+    RES0            RES0_31_0[31:0];
+};
+
+reg ERR_ADDR_0 {
+    desc = "Error record address register 0";
+    field {sw = r; hw = w;}                     PADDR_31_0[31:0] = 32'b0;
+};
+reg ERR_ADDR_1 {
+    desc = "Error record address register 1";
+    field {sw = r; hard_wired = true; hw = na;} NS[31:31] = 1'b0;
+    field {sw = r; hard_wired = true; hw = na;} SI[30:30] = 1'b1;
+    field {sw = rw; hw = na;}                   AI[29:29] = 1'b0;
+    field {sw = rw; hw = na;}                   VA[28:28] = 1'b0;
+    RES0                                        RES0_27_24[27:24];
+    field {sw = r; hw = w;}                     PADDR_55_32[23:0] = 23'b0;
+};
+
+reg ERR_STATUS_0 {
+    desc = "Error record primary status register 0";
+    field {sw = r; hard_wired = true; hw = na;} AV[31:31] = 1'b0;
+    field {sw = rw; onwrite = woclr;}           V[30:30] = 1'b0;
+    field {sw = rw; onwrite = woclr;}           UE[29:29] = 1'b0;
+    field {sw = r; hard_wired = true; hw = na;} ER[28:28] = 1'b0;
+    field {sw = rw; onwrite = woclr;}           OF[27:27] = 1'b1;
+    field {sw = rw; onwrite = woclr;}           MV[26:26] = 1'b0;
+    field {sw = rw; onwrite = woclr;}           CE[25:24] = 2'b10;
+    field {sw = r; hard_wired = true; hw = na;} DE[23:23] = 1'b0;
+    field {sw = rw; onwrite = woclr;}           PN[22:22] = 1'b0;
+    field {sw = rw; onwrite = woclr;}           UET[21:20] = 2'b11;
+    field {sw = r; hard_wired = true; hw = na;} CI[19:19] = 1'b0;
+    RES0                                        RES0_18_16[18:16];
+    RES0                                        RES0_15_8[15:8];
+    field {sw = r;}                             SERR[7:0] = 8'b0;
+};
+reg ERR_STATUS_1 {
+    desc = "Error record primary status register 1";
+    RES0                                        RES0_31_0[31:0];
+};
+
+reg ERR_MISC0_0 {
+    desc = "Error record miscellaneous register 0_0";
+    field {sw = rw; onwrite = woclr;}           IS[31:0] = 32'b0;
+};
+reg ERR_MISC0_1 {
+    desc = "Error record miscellaneous register 0_1";
+    field {sw = rw; onwrite = woset; hw = r;}   CEC_WD[31:24] = 8'h0;
+    field {sw = rw; onwrite = woset; hw = r;}   WD_STEP[23:20] = 4'b0;
+    field {sw = rw; onwrite = woset; hw = r;}   CEC_TH[19:17] = 3'b0;
+    RES0                                        RES0_16_8[16:8];
+    field {sw = rw; onwrite = woclr;}           OF[7:7] = 1'b0;
+    field {sw = rw; onwrite = woset;}           CEC[6:0] = 7'b0;
+};
+
+reg ERR_MISC1_0 {
+    desc = "Error record miscellaneous register 1_0";
+    field {sw = rw; hw = r;}    FEN[31:0] = 32'b0;
+};
+reg ERR_MISC1_1 {
+    desc = "Error record miscellaneous register 1_1";
+    RES0                        RES0_31_1[31:1];
+    field {sw = rw; hw = r;}    FMASK[0:0] = 1'b0;
+};
+
+reg ERR_MISC2_0 {
+    desc = "Error record miscellaneous register 2_0";
+    field {sw = rw; hw = r;}    FIM[31:0] = 32'b0;
+};
+reg ERR_MISC2_1 {
+    desc = "Error record miscellaneous register 2_1";
+    RES0                        RES0_31_1[31:1];
+    field {sw = rw; hw = r;}    FIM[0:0] = 1'b0;
+};
+
+reg ERR_MISC3_0 {
+    desc = "Error record miscellaneous register 3_0";
+    RES0                        RES0_31_0[31:0];
+};
+reg ERR_MISC3_1 {
+    desc = "Error record miscellaneous register 3_1";
+    field {sw = r; hw = rw;}    POIS_INFO[31:0] = 32'b0;
+};
+
+reg ERR_GSR {
+    desc = "Error group status register";
+    regwidth = 64;
+    field {sw = r; hard_wired = true; hw = w;}  S[55:0] = 0x0;
+};
+
+reg ERR_DEVARCH {
+    desc = "Device architecture register (RO). Default value is 0x47710A00";
+    field {sw = r; hard_wired = true; hw = na;} ARCHITECT[31:21] = 0x23b;
+    field {sw = r; hard_wired = true; hw = na;} PRESENT[20:20] = 0x1;
+    field {sw = r; hard_wired = true; hw = na;} REVISION[19:16] = 0x1;
+    field {sw = r; hard_wired = true; hw = na;} ARCHVER[15:12] = 0x0;
+    field {sw = r; hard_wired = true; hw = na;} ARCHPART[11:0] = 0xa00;
+};

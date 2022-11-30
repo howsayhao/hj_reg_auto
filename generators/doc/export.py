@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import traceback
 import markdown
@@ -51,7 +53,8 @@ class DocExporter:
             'get_inst_name': self._get_inst_name,
             'get_property': self._get_property,
             'convert_size': convert_size,
-            'get_all_blocks': self._get_all_blocks
+            'get_all_blocks': self._get_all_blocks,
+            'get_secure_attr': self._get_secure_attr
         }
 
         template = self.jj_env.get_template("%s.jinja" % template_name)
@@ -119,6 +122,30 @@ class DocExporter:
 
         yield node
         yield from _get_all_sub_blocks(node)
+
+    def _get_secure_attr(self, node:AddrmapNode|MemNode):
+        secure_attr = node.get_property("secure_attr", default=None)
+        if secure_attr is None:
+            return "-"
+        elif secure_attr == 0:
+            return "secure"
+        elif secure_attr == 1:
+            return "non-secure"
+        elif secure_attr == 2:
+            ref_str = node.get_property("secure_config_ref", default=None)
+
+            if ref_str:
+                ref_node = node.find_by_path(ref_str)
+                if ref_node:
+                    sec_cfg_default_val = ref_node.get_property("reset")
+                else:
+                    sec_cfg_default_val = 0
+            else:
+                sec_cfg_default_val = 0
+
+            return "configured by register (default %s)" % (
+                "secure" if sec_cfg_default_val == 0 else "non-secure"
+            )
 
 
 def export_org(root:RootNode, out_dir:str, simplified=False):

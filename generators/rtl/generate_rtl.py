@@ -239,8 +239,15 @@ class RTLExporter:
         return node.get_property("hj_use_abs_addr")
 
     def _is_aligned(self, node:AddressableNode):
-        # whether the forwarding module of regdisp is aligned to its absolute address
-        return node.absolute_address % (2 ** ceil(log2(node.size))) == 0
+        """
+        whether the forwarding module of regdisp is aligned to its address
+        """
+        if node.parent.get_property("hj_use_abs_addr", default=False):
+            conv_addr = node.absolute_address
+        else:
+            conv_addr = node.address_offset
+
+        return conv_addr % (2 ** ceil(log2(node.size))) == 0
 
     def _get_comp_addr(self, node:AddressableNode):
         """

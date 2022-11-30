@@ -8,180 +8,105 @@ module regslv_slv_map (
     map_11_0_TEM21__FIELD_2__next_value,
     map_11_0_TEM21__FIELD_1__pulse,
     map_11_0_TEM21__FIELD_1__next_value,
-    map_11_0_TEM22__FIELD_3__pulse,
-    map_11_0_TEM22__FIELD_3__next_value,
-    map_11_0_TEM22__FIELD_2__pulse,
-    map_11_0_TEM22__FIELD_2__next_value,
-    map_11_0_TEM22__FIELD_1__pulse,
-    map_11_0_TEM22__FIELD_1__next_value,
+    map_11_0_TEM22__FIELD_1__curr_value,
     map_11_1_TEM21__FIELD_3__pulse,
     map_11_1_TEM21__FIELD_3__next_value,
     map_11_1_TEM21__FIELD_2__pulse,
     map_11_1_TEM21__FIELD_2__next_value,
     map_11_1_TEM21__FIELD_1__pulse,
     map_11_1_TEM21__FIELD_1__next_value,
-    map_11_1_TEM22__FIELD_3__pulse,
-    map_11_1_TEM22__FIELD_3__next_value,
-    map_11_1_TEM22__FIELD_2__pulse,
-    map_11_1_TEM22__FIELD_2__next_value,
-    map_11_1_TEM22__FIELD_1__pulse,
-    map_11_1_TEM22__FIELD_1__next_value,
+    map_11_1_TEM22__FIELD_1__curr_value,
     map_11_2_TEM21__FIELD_3__pulse,
     map_11_2_TEM21__FIELD_3__next_value,
     map_11_2_TEM21__FIELD_2__pulse,
     map_11_2_TEM21__FIELD_2__next_value,
     map_11_2_TEM21__FIELD_1__pulse,
     map_11_2_TEM21__FIELD_1__next_value,
-    map_11_2_TEM22__FIELD_3__pulse,
-    map_11_2_TEM22__FIELD_3__next_value,
-    map_11_2_TEM22__FIELD_2__pulse,
-    map_11_2_TEM22__FIELD_2__next_value,
-    map_11_2_TEM22__FIELD_1__pulse,
-    map_11_2_TEM22__FIELD_1__next_value,
+    map_11_2_TEM22__FIELD_1__curr_value,
     map_11_3_TEM21__FIELD_3__pulse,
     map_11_3_TEM21__FIELD_3__next_value,
     map_11_3_TEM21__FIELD_2__pulse,
     map_11_3_TEM21__FIELD_2__next_value,
     map_11_3_TEM21__FIELD_1__pulse,
     map_11_3_TEM21__FIELD_1__next_value,
-    map_11_3_TEM22__FIELD_3__pulse,
-    map_11_3_TEM22__FIELD_3__next_value,
-    map_11_3_TEM22__FIELD_2__pulse,
-    map_11_3_TEM22__FIELD_2__next_value,
-    map_11_3_TEM22__FIELD_1__pulse,
-    map_11_3_TEM22__FIELD_1__next_value,
+    map_11_3_TEM22__FIELD_1__curr_value,
     map_11_4_TEM21__FIELD_3__pulse,
     map_11_4_TEM21__FIELD_3__next_value,
     map_11_4_TEM21__FIELD_2__pulse,
     map_11_4_TEM21__FIELD_2__next_value,
     map_11_4_TEM21__FIELD_1__pulse,
     map_11_4_TEM21__FIELD_1__next_value,
-    map_11_4_TEM22__FIELD_3__pulse,
-    map_11_4_TEM22__FIELD_3__next_value,
-    map_11_4_TEM22__FIELD_2__pulse,
-    map_11_4_TEM22__FIELD_2__next_value,
-    map_11_4_TEM22__FIELD_1__pulse,
-    map_11_4_TEM22__FIELD_1__next_value,
+    map_11_4_TEM22__FIELD_1__curr_value,
     map_12_0_TEM21__FIELD_3__pulse,
     map_12_0_TEM21__FIELD_3__next_value,
     map_12_0_TEM21__FIELD_2__pulse,
     map_12_0_TEM21__FIELD_2__next_value,
     map_12_0_TEM21__FIELD_1__pulse,
     map_12_0_TEM21__FIELD_1__next_value,
-    map_12_0_TEM22__FIELD_3__pulse,
-    map_12_0_TEM22__FIELD_3__next_value,
-    map_12_0_TEM22__FIELD_2__pulse,
-    map_12_0_TEM22__FIELD_2__next_value,
-    map_12_0_TEM22__FIELD_1__pulse,
-    map_12_0_TEM22__FIELD_1__next_value,
+    map_12_0_TEM22__FIELD_1__curr_value,
     map_12_1_TEM21__FIELD_3__pulse,
     map_12_1_TEM21__FIELD_3__next_value,
     map_12_1_TEM21__FIELD_2__pulse,
     map_12_1_TEM21__FIELD_2__next_value,
     map_12_1_TEM21__FIELD_1__pulse,
     map_12_1_TEM21__FIELD_1__next_value,
-    map_12_1_TEM22__FIELD_3__pulse,
-    map_12_1_TEM22__FIELD_3__next_value,
-    map_12_1_TEM22__FIELD_2__pulse,
-    map_12_1_TEM22__FIELD_2__next_value,
-    map_12_1_TEM22__FIELD_1__pulse,
-    map_12_1_TEM22__FIELD_1__next_value,
+    map_12_1_TEM22__FIELD_1__curr_value,
     map_12_2_TEM21__FIELD_3__pulse,
     map_12_2_TEM21__FIELD_3__next_value,
     map_12_2_TEM21__FIELD_2__pulse,
     map_12_2_TEM21__FIELD_2__next_value,
     map_12_2_TEM21__FIELD_1__pulse,
     map_12_2_TEM21__FIELD_1__next_value,
-    map_12_2_TEM22__FIELD_3__pulse,
-    map_12_2_TEM22__FIELD_3__next_value,
-    map_12_2_TEM22__FIELD_2__pulse,
-    map_12_2_TEM22__FIELD_2__next_value,
-    map_12_2_TEM22__FIELD_1__pulse,
-    map_12_2_TEM22__FIELD_1__next_value,
+    map_12_2_TEM22__FIELD_1__curr_value,
     map_12_3_TEM21__FIELD_3__pulse,
     map_12_3_TEM21__FIELD_3__next_value,
     map_12_3_TEM21__FIELD_2__pulse,
     map_12_3_TEM21__FIELD_2__next_value,
     map_12_3_TEM21__FIELD_1__pulse,
     map_12_3_TEM21__FIELD_1__next_value,
-    map_12_3_TEM22__FIELD_3__pulse,
-    map_12_3_TEM22__FIELD_3__next_value,
-    map_12_3_TEM22__FIELD_2__pulse,
-    map_12_3_TEM22__FIELD_2__next_value,
-    map_12_3_TEM22__FIELD_1__pulse,
-    map_12_3_TEM22__FIELD_1__next_value,
+    map_12_3_TEM22__FIELD_1__curr_value,
     map_12_4_TEM21__FIELD_3__pulse,
     map_12_4_TEM21__FIELD_3__next_value,
     map_12_4_TEM21__FIELD_2__pulse,
     map_12_4_TEM21__FIELD_2__next_value,
     map_12_4_TEM21__FIELD_1__pulse,
     map_12_4_TEM21__FIELD_1__next_value,
-    map_12_4_TEM22__FIELD_3__pulse,
-    map_12_4_TEM22__FIELD_3__next_value,
-    map_12_4_TEM22__FIELD_2__pulse,
-    map_12_4_TEM22__FIELD_2__next_value,
-    map_12_4_TEM22__FIELD_1__pulse,
-    map_12_4_TEM22__FIELD_1__next_value,
+    map_12_4_TEM22__FIELD_1__curr_value,
     map_12_5_TEM21__FIELD_3__pulse,
     map_12_5_TEM21__FIELD_3__next_value,
     map_12_5_TEM21__FIELD_2__pulse,
     map_12_5_TEM21__FIELD_2__next_value,
     map_12_5_TEM21__FIELD_1__pulse,
     map_12_5_TEM21__FIELD_1__next_value,
-    map_12_5_TEM22__FIELD_3__pulse,
-    map_12_5_TEM22__FIELD_3__next_value,
-    map_12_5_TEM22__FIELD_2__pulse,
-    map_12_5_TEM22__FIELD_2__next_value,
-    map_12_5_TEM22__FIELD_1__pulse,
-    map_12_5_TEM22__FIELD_1__next_value,
+    map_12_5_TEM22__FIELD_1__curr_value,
     map_12_6_TEM21__FIELD_3__pulse,
     map_12_6_TEM21__FIELD_3__next_value,
     map_12_6_TEM21__FIELD_2__pulse,
     map_12_6_TEM21__FIELD_2__next_value,
     map_12_6_TEM21__FIELD_1__pulse,
     map_12_6_TEM21__FIELD_1__next_value,
-    map_12_6_TEM22__FIELD_3__pulse,
-    map_12_6_TEM22__FIELD_3__next_value,
-    map_12_6_TEM22__FIELD_2__pulse,
-    map_12_6_TEM22__FIELD_2__next_value,
-    map_12_6_TEM22__FIELD_1__pulse,
-    map_12_6_TEM22__FIELD_1__next_value,
+    map_12_6_TEM22__FIELD_1__curr_value,
     map_12_7_TEM21__FIELD_3__pulse,
     map_12_7_TEM21__FIELD_3__next_value,
     map_12_7_TEM21__FIELD_2__pulse,
     map_12_7_TEM21__FIELD_2__next_value,
     map_12_7_TEM21__FIELD_1__pulse,
     map_12_7_TEM21__FIELD_1__next_value,
-    map_12_7_TEM22__FIELD_3__pulse,
-    map_12_7_TEM22__FIELD_3__next_value,
-    map_12_7_TEM22__FIELD_2__pulse,
-    map_12_7_TEM22__FIELD_2__next_value,
-    map_12_7_TEM22__FIELD_1__pulse,
-    map_12_7_TEM22__FIELD_1__next_value,
+    map_12_7_TEM22__FIELD_1__curr_value,
     map_12_8_TEM21__FIELD_3__pulse,
     map_12_8_TEM21__FIELD_3__next_value,
     map_12_8_TEM21__FIELD_2__pulse,
     map_12_8_TEM21__FIELD_2__next_value,
     map_12_8_TEM21__FIELD_1__pulse,
     map_12_8_TEM21__FIELD_1__next_value,
-    map_12_8_TEM22__FIELD_3__pulse,
-    map_12_8_TEM22__FIELD_3__next_value,
-    map_12_8_TEM22__FIELD_2__pulse,
-    map_12_8_TEM22__FIELD_2__next_value,
-    map_12_8_TEM22__FIELD_1__pulse,
-    map_12_8_TEM22__FIELD_1__next_value,
+    map_12_8_TEM22__FIELD_1__curr_value,
     map_12_9_TEM21__FIELD_3__pulse,
     map_12_9_TEM21__FIELD_3__next_value,
     map_12_9_TEM21__FIELD_2__pulse,
     map_12_9_TEM21__FIELD_2__next_value,
     map_12_9_TEM21__FIELD_1__pulse,
     map_12_9_TEM21__FIELD_1__next_value,
-    map_12_9_TEM22__FIELD_3__pulse,
-    map_12_9_TEM22__FIELD_3__next_value,
-    map_12_9_TEM22__FIELD_2__pulse,
-    map_12_9_TEM22__FIELD_2__next_value,
-    map_12_9_TEM22__FIELD_1__pulse,
-    map_12_9_TEM22__FIELD_1__next_value,
+    map_12_9_TEM22__FIELD_1__curr_value,
     clk,
     rst_n,
     soft_rst,
@@ -191,14 +116,21 @@ module regslv_slv_map (
     addr,
     wr_data,
     rd_data,
+    non_sec,
     ack_vld,
     err,
     regslv_clk,
     regslv_rst_n,
-    err_en
+    // indicate whether to report error when accessing undefined empty address space,
+    // or non-secure access, at native clock domain (clk)
+    error_report_en,
+    // indicate whether this regslv is in secure space, at native clock domain (clk)
+    domain_is_non_secure
 );
     `include "common_funcs.vh"
 
+    parameter       CDC_ENABLE                  = 1;
+    parameter       SECURE_ACCESS_CHECK         = 1;
     parameter       ADDR_WIDTH                  = 48;
     parameter       DATA_WIDTH                  = 32;
     parameter       INSERT_REG_FF               = 1;
@@ -210,180 +142,105 @@ module regslv_slv_map (
     input   logic   [ 2:0]                      map_11_0_TEM21__FIELD_2__next_value;
     input   logic                               map_11_0_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_11_0_TEM21__FIELD_1__next_value;
-    input   logic                               map_11_0_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_11_0_TEM22__FIELD_3__next_value;
-    input   logic                               map_11_0_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_11_0_TEM22__FIELD_2__next_value;
-    input   logic                               map_11_0_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_11_0_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_11_0_TEM22__FIELD_1__curr_value;
     input   logic                               map_11_1_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_11_1_TEM21__FIELD_3__next_value;
     input   logic                               map_11_1_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_11_1_TEM21__FIELD_2__next_value;
     input   logic                               map_11_1_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_11_1_TEM21__FIELD_1__next_value;
-    input   logic                               map_11_1_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_11_1_TEM22__FIELD_3__next_value;
-    input   logic                               map_11_1_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_11_1_TEM22__FIELD_2__next_value;
-    input   logic                               map_11_1_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_11_1_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_11_1_TEM22__FIELD_1__curr_value;
     input   logic                               map_11_2_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_11_2_TEM21__FIELD_3__next_value;
     input   logic                               map_11_2_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_11_2_TEM21__FIELD_2__next_value;
     input   logic                               map_11_2_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_11_2_TEM21__FIELD_1__next_value;
-    input   logic                               map_11_2_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_11_2_TEM22__FIELD_3__next_value;
-    input   logic                               map_11_2_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_11_2_TEM22__FIELD_2__next_value;
-    input   logic                               map_11_2_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_11_2_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_11_2_TEM22__FIELD_1__curr_value;
     input   logic                               map_11_3_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_11_3_TEM21__FIELD_3__next_value;
     input   logic                               map_11_3_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_11_3_TEM21__FIELD_2__next_value;
     input   logic                               map_11_3_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_11_3_TEM21__FIELD_1__next_value;
-    input   logic                               map_11_3_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_11_3_TEM22__FIELD_3__next_value;
-    input   logic                               map_11_3_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_11_3_TEM22__FIELD_2__next_value;
-    input   logic                               map_11_3_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_11_3_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_11_3_TEM22__FIELD_1__curr_value;
     input   logic                               map_11_4_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_11_4_TEM21__FIELD_3__next_value;
     input   logic                               map_11_4_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_11_4_TEM21__FIELD_2__next_value;
     input   logic                               map_11_4_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_11_4_TEM21__FIELD_1__next_value;
-    input   logic                               map_11_4_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_11_4_TEM22__FIELD_3__next_value;
-    input   logic                               map_11_4_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_11_4_TEM22__FIELD_2__next_value;
-    input   logic                               map_11_4_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_11_4_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_11_4_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_0_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_0_TEM21__FIELD_3__next_value;
     input   logic                               map_12_0_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_0_TEM21__FIELD_2__next_value;
     input   logic                               map_12_0_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_0_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_0_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_0_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_0_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_0_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_0_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_0_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_0_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_1_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_1_TEM21__FIELD_3__next_value;
     input   logic                               map_12_1_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_1_TEM21__FIELD_2__next_value;
     input   logic                               map_12_1_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_1_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_1_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_1_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_1_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_1_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_1_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_1_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_1_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_2_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_2_TEM21__FIELD_3__next_value;
     input   logic                               map_12_2_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_2_TEM21__FIELD_2__next_value;
     input   logic                               map_12_2_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_2_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_2_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_2_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_2_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_2_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_2_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_2_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_2_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_3_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_3_TEM21__FIELD_3__next_value;
     input   logic                               map_12_3_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_3_TEM21__FIELD_2__next_value;
     input   logic                               map_12_3_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_3_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_3_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_3_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_3_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_3_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_3_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_3_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_3_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_4_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_4_TEM21__FIELD_3__next_value;
     input   logic                               map_12_4_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_4_TEM21__FIELD_2__next_value;
     input   logic                               map_12_4_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_4_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_4_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_4_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_4_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_4_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_4_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_4_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_4_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_5_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_5_TEM21__FIELD_3__next_value;
     input   logic                               map_12_5_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_5_TEM21__FIELD_2__next_value;
     input   logic                               map_12_5_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_5_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_5_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_5_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_5_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_5_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_5_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_5_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_5_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_6_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_6_TEM21__FIELD_3__next_value;
     input   logic                               map_12_6_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_6_TEM21__FIELD_2__next_value;
     input   logic                               map_12_6_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_6_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_6_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_6_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_6_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_6_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_6_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_6_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_6_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_7_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_7_TEM21__FIELD_3__next_value;
     input   logic                               map_12_7_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_7_TEM21__FIELD_2__next_value;
     input   logic                               map_12_7_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_7_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_7_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_7_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_7_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_7_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_7_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_7_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_7_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_8_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_8_TEM21__FIELD_3__next_value;
     input   logic                               map_12_8_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_8_TEM21__FIELD_2__next_value;
     input   logic                               map_12_8_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_8_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_8_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_8_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_8_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_8_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_8_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_8_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_8_TEM22__FIELD_1__curr_value;
     input   logic                               map_12_9_TEM21__FIELD_3__pulse;
     input   logic   [ 0:0]                      map_12_9_TEM21__FIELD_3__next_value;
     input   logic                               map_12_9_TEM21__FIELD_2__pulse;
     input   logic   [ 2:0]                      map_12_9_TEM21__FIELD_2__next_value;
     input   logic                               map_12_9_TEM21__FIELD_1__pulse;
     input   logic   [ 0:0]                      map_12_9_TEM21__FIELD_1__next_value;
-    input   logic                               map_12_9_TEM22__FIELD_3__pulse;
-    input   logic   [ 0:0]                      map_12_9_TEM22__FIELD_3__next_value;
-    input   logic                               map_12_9_TEM22__FIELD_2__pulse;
-    input   logic   [ 2:0]                      map_12_9_TEM22__FIELD_2__next_value;
-    input   logic                               map_12_9_TEM22__FIELD_1__pulse;
-    input   logic   [ 0:0]                      map_12_9_TEM22__FIELD_1__next_value;
+    output  logic   [31:0]                      map_12_9_TEM22__FIELD_1__curr_value;
     input   logic                               clk;
     input   logic                               rst_n;
     input   logic                               req_vld;
@@ -393,21 +250,23 @@ module regslv_slv_map (
     input   logic   [DATA_WIDTH-1:0]            wr_data;
     input   logic                               soft_rst;
     output  logic   [DATA_WIDTH-1:0]            rd_data;
+    input   logic                               non_sec;
     output  logic                               ack_vld;
     output  logic                               err;
     input   logic                               regslv_clk;
     input   logic                               regslv_rst_n;
-    input   logic                               err_en;
+    input   logic                               error_report_en;
+    input   logic                               domain_is_non_secure;
 
-    logic                                       int_req_vld;
-    logic                                       int_wr_en;
-    logic                                       int_rd_en;
-    logic   [ADDR_WIDTH-1:0]                    int_addr;
-    logic   [DATA_WIDTH-1:0]                    int_wr_data;
-    logic                                       int_soft_rst;
-    logic   [DATA_WIDTH-1:0]                    int_rd_data;
-    logic                                       int_ack_vld;
-    logic                                       int_err;
+    logic                                       req_vld_i0;
+    logic                                       wr_en_i0;
+    logic                                       rd_en_i0;
+    logic   [ADDR_WIDTH-1:0]                    addr_i0;
+    logic   [DATA_WIDTH-1:0]                    wr_data_i0;
+    logic                                       soft_rst_i0;
+    logic   [DATA_WIDTH-1:0]                    rd_data_i0;
+    logic                                       ack_vld_i0;
+    logic                                       err_i0;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_sw_rd_data;
     logic   [REG_NUM-1:0] [DATA_WIDTH-1:0]      reg_rd_data_mux_din;
     logic   [REG_NUM-1:0]                       reg_rd_data_mux_sel;
@@ -416,11 +275,13 @@ module regslv_slv_map (
     logic                                       reg_rd_data_vld;
     logic   [DATA_WIDTH-1:0]                    reg_rd_data;
 
+//************************************SECURE_ACCESS_CHECK*********************************************//
 //***********************************CLOCK DOMAIN CROSSING********************************************//
     reg_native_if_1to1 #(
-        .CDC_ENABLE                             (1),
+        .CDC_ENABLE                             (CDC_ENABLE),
         .BUS_ADDR_WIDTH                         (ADDR_WIDTH),
-        .BUS_DATA_WIDTH                         (DATA_WIDTH)
+        .BUS_DATA_WIDTH                         (DATA_WIDTH),
+        .SECURE_ACCESS_CHECK                    (SECURE_ACCESS_CHECK)
     )
     reg_native_if_1to1 (
         .native_clk                             (clk),
@@ -434,17 +295,21 @@ module regslv_slv_map (
         .rd_en                                  (rd_en),
         .wr_data                                (wr_data),
         .rd_data                                (rd_data),
+        .non_sec                                (non_sec),
         .ext_clk                                (regslv_clk),
         .ext_rst_n                              (regslv_rst_n),
-        .ext_soft_rst                           (int_soft_rst),
-        .ext_req_vld                            (int_req_vld),
-        .ext_ack_vld                            (int_ack_vld),
-        .ext_err                                (int_err),
-        .ext_addr                               (int_addr),
-        .ext_wr_en                              (int_wr_en),
-        .ext_rd_en                              (int_rd_en),
-        .ext_wr_data                            (int_wr_data),
-        .ext_rd_data                            (int_rd_data)
+        .ext_soft_rst                           (soft_rst_i0),
+        .ext_req_vld                            (req_vld_i0),
+        .ext_ack_vld                            (ack_vld_i0),
+        .ext_err                                (err_i0),
+        .ext_addr                               (addr_i0),
+        .ext_wr_en                              (wr_en_i0),
+        .ext_rd_en                              (rd_en_i0),
+        .ext_wr_data                            (wr_data_i0),
+        .ext_rd_data                            (rd_data_i0),
+        .ext_non_sec                            (),
+        .domain_is_non_secure                   (domain_is_non_secure),
+        .error_report_en                        (error_report_en)
     );
 
 //**************************************ADDRESS DECODER***********************************************//
@@ -460,11 +325,11 @@ module regslv_slv_map (
     logic   [DATA_WIDTH-1:0]                    reg_sw_wr_data;
 
     always_comb begin
-        if (int_req_vld & ~int_soft_rst) begin
+        if (req_vld_i0 & ~soft_rst_i0) begin
             dec_reg_sel = {REG_NUM{1'b0}};
             dec_dummy_sel = 1'b0;
 
-            unique case (int_addr[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
+            unique case (addr_i0[ADDR_WIDTH-1:ADDR_TRUNC_BITS])
                 (ADDR_REM_BITS'(64'hc >> ADDR_TRUNC_BITS)): dec_reg_sel[0] = 1'b1;
                 (ADDR_REM_BITS'(64'h10 >> ADDR_TRUNC_BITS)): dec_reg_sel[1] = 1'b1;
                 (ADDR_REM_BITS'(64'h10c >> ADDR_TRUNC_BITS)): dec_reg_sel[2] = 1'b1;
@@ -543,24 +408,24 @@ module regslv_slv_map (
                     reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
                     dummy_acc                   <= 1'b0;
                 end
-                else if (int_soft_rst) begin
+                else if (soft_rst_i0) begin
                     reg_sw_wr_sel               <= {REG_NUM{1'b0}};
                     reg_sw_rd_sel               <= {REG_NUM{1'b0}};
                     reg_sw_wr_data              <= {DATA_WIDTH{1'b0}};
                     dummy_acc                   <= 1'b0;
                 end
                 else begin
-                    reg_sw_wr_sel               <= {REG_NUM{int_wr_en}} & dec_reg_sel;
-                    reg_sw_rd_sel               <= {REG_NUM{int_rd_en}} & dec_reg_sel;
-                    reg_sw_wr_data              <= int_wr_data;
+                    reg_sw_wr_sel               <= {REG_NUM{wr_en_i0}} & dec_reg_sel;
+                    reg_sw_rd_sel               <= {REG_NUM{rd_en_i0}} & dec_reg_sel;
+                    reg_sw_wr_data              <= wr_data_i0;
                     dummy_acc                   <= dec_dummy_sel;
                 end
             end
         end
         else begin: g_no_reg_ff
-            assign  reg_sw_wr_sel               = {REG_NUM{int_wr_en}} & dec_reg_sel;
-            assign  reg_sw_rd_sel               = {REG_NUM{int_rd_en}} & dec_reg_sel;
-            assign  reg_sw_wr_data              = int_wr_data;
+            assign  reg_sw_wr_sel               = {REG_NUM{wr_en_i0}} & dec_reg_sel;
+            assign  reg_sw_rd_sel               = {REG_NUM{rd_en_i0}} & dec_reg_sel;
+            assign  reg_sw_wr_data              = wr_data_i0;
             assign  dummy_acc                   = dec_dummy_sel;
         end
     endgenerate
@@ -574,14 +439,13 @@ module regslv_slv_map (
     slv_fsm (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
-        .if_soft_rst                            (int_soft_rst),
-        .if_req_vld                             (int_req_vld),
-        .if_ack_vld                             (int_ack_vld),
-        .if_rd_data                             (int_rd_data),
-        .if_err                                 (int_err),
-        .if_err_en                              (err_en),
-        .if_wr_en                               (int_wr_en),
-        .if_rd_en                               (int_rd_en),
+        .if_soft_rst                            (soft_rst_i0),
+        .if_req_vld                             (req_vld_i0),
+        .if_ack_vld                             (ack_vld_i0),
+        .if_rd_data                             (rd_data_i0),
+        .if_err                                 (err_i0),
+        .if_wr_en                               (wr_en_i0),
+        .if_rd_en                               (rd_en_i0),
         .dummy_acc                              (dummy_acc),
         .reg_acc                                (reg_acc),
         .reg_rd_data                            (reg_rd_data),
@@ -600,9 +464,6 @@ module regslv_slv_map (
     logic                                       map_11_0_TEM22__sw_rd_en;
     logic   [31:0]                              map_11_0_TEM22__sw_wr_data;
     logic   [31:0]                              map_11_0_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_11_0_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_11_0_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_11_0_TEM22__FIELD_1__curr_value;
     logic                                       map_11_0_TEM21_alias__sw_wr_en;
     logic                                       map_11_0_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_11_0_TEM21_alias__sw_wr_data;
@@ -622,9 +483,6 @@ module regslv_slv_map (
     logic                                       map_11_1_TEM22__sw_rd_en;
     logic   [31:0]                              map_11_1_TEM22__sw_wr_data;
     logic   [31:0]                              map_11_1_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_11_1_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_11_1_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_11_1_TEM22__FIELD_1__curr_value;
     logic                                       map_11_1_TEM21_alias__sw_wr_en;
     logic                                       map_11_1_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_11_1_TEM21_alias__sw_wr_data;
@@ -644,9 +502,6 @@ module regslv_slv_map (
     logic                                       map_11_2_TEM22__sw_rd_en;
     logic   [31:0]                              map_11_2_TEM22__sw_wr_data;
     logic   [31:0]                              map_11_2_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_11_2_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_11_2_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_11_2_TEM22__FIELD_1__curr_value;
     logic                                       map_11_2_TEM21_alias__sw_wr_en;
     logic                                       map_11_2_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_11_2_TEM21_alias__sw_wr_data;
@@ -666,9 +521,6 @@ module regslv_slv_map (
     logic                                       map_11_3_TEM22__sw_rd_en;
     logic   [31:0]                              map_11_3_TEM22__sw_wr_data;
     logic   [31:0]                              map_11_3_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_11_3_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_11_3_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_11_3_TEM22__FIELD_1__curr_value;
     logic                                       map_11_3_TEM21_alias__sw_wr_en;
     logic                                       map_11_3_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_11_3_TEM21_alias__sw_wr_data;
@@ -688,9 +540,6 @@ module regslv_slv_map (
     logic                                       map_11_4_TEM22__sw_rd_en;
     logic   [31:0]                              map_11_4_TEM22__sw_wr_data;
     logic   [31:0]                              map_11_4_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_11_4_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_11_4_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_11_4_TEM22__FIELD_1__curr_value;
     logic                                       map_11_4_TEM21_alias__sw_wr_en;
     logic                                       map_11_4_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_11_4_TEM21_alias__sw_wr_data;
@@ -710,9 +559,6 @@ module regslv_slv_map (
     logic                                       map_12_0_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_0_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_0_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_0_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_0_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_0_TEM22__FIELD_1__curr_value;
     logic                                       map_12_0_TEM21_alias__sw_wr_en;
     logic                                       map_12_0_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_0_TEM21_alias__sw_wr_data;
@@ -732,9 +578,6 @@ module regslv_slv_map (
     logic                                       map_12_1_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_1_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_1_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_1_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_1_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_1_TEM22__FIELD_1__curr_value;
     logic                                       map_12_1_TEM21_alias__sw_wr_en;
     logic                                       map_12_1_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_1_TEM21_alias__sw_wr_data;
@@ -754,9 +597,6 @@ module regslv_slv_map (
     logic                                       map_12_2_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_2_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_2_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_2_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_2_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_2_TEM22__FIELD_1__curr_value;
     logic                                       map_12_2_TEM21_alias__sw_wr_en;
     logic                                       map_12_2_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_2_TEM21_alias__sw_wr_data;
@@ -776,9 +616,6 @@ module regslv_slv_map (
     logic                                       map_12_3_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_3_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_3_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_3_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_3_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_3_TEM22__FIELD_1__curr_value;
     logic                                       map_12_3_TEM21_alias__sw_wr_en;
     logic                                       map_12_3_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_3_TEM21_alias__sw_wr_data;
@@ -798,9 +635,6 @@ module regslv_slv_map (
     logic                                       map_12_4_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_4_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_4_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_4_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_4_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_4_TEM22__FIELD_1__curr_value;
     logic                                       map_12_4_TEM21_alias__sw_wr_en;
     logic                                       map_12_4_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_4_TEM21_alias__sw_wr_data;
@@ -820,9 +654,6 @@ module regslv_slv_map (
     logic                                       map_12_5_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_5_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_5_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_5_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_5_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_5_TEM22__FIELD_1__curr_value;
     logic                                       map_12_5_TEM21_alias__sw_wr_en;
     logic                                       map_12_5_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_5_TEM21_alias__sw_wr_data;
@@ -842,9 +673,6 @@ module regslv_slv_map (
     logic                                       map_12_6_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_6_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_6_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_6_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_6_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_6_TEM22__FIELD_1__curr_value;
     logic                                       map_12_6_TEM21_alias__sw_wr_en;
     logic                                       map_12_6_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_6_TEM21_alias__sw_wr_data;
@@ -864,9 +692,6 @@ module regslv_slv_map (
     logic                                       map_12_7_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_7_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_7_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_7_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_7_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_7_TEM22__FIELD_1__curr_value;
     logic                                       map_12_7_TEM21_alias__sw_wr_en;
     logic                                       map_12_7_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_7_TEM21_alias__sw_wr_data;
@@ -886,9 +711,6 @@ module regslv_slv_map (
     logic                                       map_12_8_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_8_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_8_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_8_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_8_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_8_TEM22__FIELD_1__curr_value;
     logic                                       map_12_8_TEM21_alias__sw_wr_en;
     logic                                       map_12_8_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_8_TEM21_alias__sw_wr_data;
@@ -908,9 +730,6 @@ module regslv_slv_map (
     logic                                       map_12_9_TEM22__sw_rd_en;
     logic   [31:0]                              map_12_9_TEM22__sw_wr_data;
     logic   [31:0]                              map_12_9_TEM22__sw_rd_data;
-    logic   [ 0:0]                              map_12_9_TEM22__FIELD_3__curr_value;
-    logic   [ 2:0]                              map_12_9_TEM22__FIELD_2__curr_value;
-    logic   [ 0:0]                              map_12_9_TEM22__FIELD_1__curr_value;
     logic                                       map_12_9_TEM21_alias__sw_wr_en;
     logic                                       map_12_9_TEM21_alias__sw_rd_en;
     logic   [31:0]                              map_12_9_TEM21_alias__sw_wr_data;
@@ -1007,10 +826,20 @@ module regslv_slv_map (
         .field_value                            (map_11_0_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_11_0_TEM21__sw_rd_data = 32'h0;
-        map_11_0_TEM21__sw_rd_data[13:13] = map_11_0_TEM21__FIELD_3__curr_value;
-        map_11_0_TEM21__sw_rd_data[16:14] = map_11_0_TEM21__FIELD_2__curr_value;
-        map_11_0_TEM21__sw_rd_data[17:17] = map_11_0_TEM21__FIELD_1__curr_value;
+        map_11_0_TEM21__sw_rd_data[13:13] =
+            map_11_0_TEM21__FIELD_3__pulse ?
+            map_11_0_TEM21__FIELD_3__next_value :
+            map_11_0_TEM21__FIELD_3__curr_value;
+        map_11_0_TEM21__sw_rd_data[16:14] =
+            map_11_0_TEM21__FIELD_2__pulse ?
+            map_11_0_TEM21__FIELD_2__next_value :
+            map_11_0_TEM21__FIELD_2__curr_value;
+        map_11_0_TEM21__sw_rd_data[17:17] =
+            map_11_0_TEM21__FIELD_1__pulse ?
+            map_11_0_TEM21__FIELD_1__next_value :
+            map_11_0_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_0_TEM22__sw_wr_en      = reg_sw_wr_sel[1];
@@ -1019,8 +848,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[1]  = map_11_0_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1029,81 +858,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_0_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_0_TEM22__sw_wr_data[13:13], map_11_0_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_11_0_TEM22__sw_rd_en, map_11_0_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_0_TEM22__sw_wr_en, map_11_0_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_0_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_11_0_TEM22__FIELD_3__pulse),
-        .field_value                            (map_11_0_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_0_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_0_TEM22__sw_wr_data[16:14], map_11_0_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_11_0_TEM22__sw_rd_en, map_11_0_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_0_TEM22__sw_wr_en, map_11_0_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_0_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_11_0_TEM22__FIELD_2__pulse),
-        .field_value                            (map_11_0_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_11_0_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_0_TEM22__sw_wr_data[17:17], map_11_0_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_11_0_TEM22__sw_wr_data[31:0], map_11_0_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_11_0_TEM22__sw_rd_en, map_11_0_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_11_0_TEM22__sw_wr_en, map_11_0_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_11_0_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_11_0_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_11_0_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_11_0_TEM22__sw_rd_data = 32'h0;
-        map_11_0_TEM22__sw_rd_data[13:13] = map_11_0_TEM22__FIELD_3__curr_value;
-        map_11_0_TEM22__sw_rd_data[16:14] = map_11_0_TEM22__FIELD_2__curr_value;
-        map_11_0_TEM22__sw_rd_data[17:17] = map_11_0_TEM22__FIELD_1__curr_value;
+        map_11_0_TEM22__sw_rd_data[31:0] = map_11_0_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_0_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[2];
@@ -1112,10 +884,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[2]  = map_11_0_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_11_0_TEM21_alias__sw_rd_data = 32'h0;
-        map_11_0_TEM21_alias__sw_rd_data[13:13] = map_11_0_TEM21__FIELD_3__curr_value;
-        map_11_0_TEM21_alias__sw_rd_data[16:14] = map_11_0_TEM21__FIELD_2__curr_value;
-        map_11_0_TEM21_alias__sw_rd_data[17:17] = map_11_0_TEM21__FIELD_1__curr_value;
+        map_11_0_TEM21_alias__sw_rd_data[13:13] =
+            map_11_0_TEM21__FIELD_3__pulse ?
+            map_11_0_TEM21__FIELD_3__next_value :
+            map_11_0_TEM21__FIELD_3__curr_value;
+        map_11_0_TEM21_alias__sw_rd_data[16:14] =
+            map_11_0_TEM21__FIELD_2__pulse ?
+            map_11_0_TEM21__FIELD_2__next_value :
+            map_11_0_TEM21__FIELD_2__curr_value;
+        map_11_0_TEM21_alias__sw_rd_data[17:17] =
+            map_11_0_TEM21__FIELD_1__pulse ?
+            map_11_0_TEM21__FIELD_1__next_value :
+            map_11_0_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_0_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[3];
@@ -1124,10 +906,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[3]  = map_11_0_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_11_0_TEM22_alias__sw_rd_data = 32'h0;
-        map_11_0_TEM22_alias__sw_rd_data[13:13] = map_11_0_TEM22__FIELD_3__curr_value;
-        map_11_0_TEM22_alias__sw_rd_data[16:14] = map_11_0_TEM22__FIELD_2__curr_value;
-        map_11_0_TEM22_alias__sw_rd_data[17:17] = map_11_0_TEM22__FIELD_1__curr_value;
+        map_11_0_TEM22_alias__sw_rd_data[31:0] = map_11_0_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_1_TEM21__sw_wr_en      = reg_sw_wr_sel[4];
@@ -1217,10 +996,20 @@ module regslv_slv_map (
         .field_value                            (map_11_1_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_11_1_TEM21__sw_rd_data = 32'h0;
-        map_11_1_TEM21__sw_rd_data[13:13] = map_11_1_TEM21__FIELD_3__curr_value;
-        map_11_1_TEM21__sw_rd_data[16:14] = map_11_1_TEM21__FIELD_2__curr_value;
-        map_11_1_TEM21__sw_rd_data[17:17] = map_11_1_TEM21__FIELD_1__curr_value;
+        map_11_1_TEM21__sw_rd_data[13:13] =
+            map_11_1_TEM21__FIELD_3__pulse ?
+            map_11_1_TEM21__FIELD_3__next_value :
+            map_11_1_TEM21__FIELD_3__curr_value;
+        map_11_1_TEM21__sw_rd_data[16:14] =
+            map_11_1_TEM21__FIELD_2__pulse ?
+            map_11_1_TEM21__FIELD_2__next_value :
+            map_11_1_TEM21__FIELD_2__curr_value;
+        map_11_1_TEM21__sw_rd_data[17:17] =
+            map_11_1_TEM21__FIELD_1__pulse ?
+            map_11_1_TEM21__FIELD_1__next_value :
+            map_11_1_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_1_TEM22__sw_wr_en      = reg_sw_wr_sel[5];
@@ -1229,8 +1018,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[5]  = map_11_1_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1239,81 +1028,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_1_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_1_TEM22__sw_wr_data[13:13], map_11_1_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_11_1_TEM22__sw_rd_en, map_11_1_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_1_TEM22__sw_wr_en, map_11_1_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_1_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_11_1_TEM22__FIELD_3__pulse),
-        .field_value                            (map_11_1_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_1_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_1_TEM22__sw_wr_data[16:14], map_11_1_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_11_1_TEM22__sw_rd_en, map_11_1_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_1_TEM22__sw_wr_en, map_11_1_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_1_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_11_1_TEM22__FIELD_2__pulse),
-        .field_value                            (map_11_1_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_11_1_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_1_TEM22__sw_wr_data[17:17], map_11_1_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_11_1_TEM22__sw_wr_data[31:0], map_11_1_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_11_1_TEM22__sw_rd_en, map_11_1_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_11_1_TEM22__sw_wr_en, map_11_1_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_11_1_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_11_1_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_11_1_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_11_1_TEM22__sw_rd_data = 32'h0;
-        map_11_1_TEM22__sw_rd_data[13:13] = map_11_1_TEM22__FIELD_3__curr_value;
-        map_11_1_TEM22__sw_rd_data[16:14] = map_11_1_TEM22__FIELD_2__curr_value;
-        map_11_1_TEM22__sw_rd_data[17:17] = map_11_1_TEM22__FIELD_1__curr_value;
+        map_11_1_TEM22__sw_rd_data[31:0] = map_11_1_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_1_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[6];
@@ -1322,10 +1054,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[6]  = map_11_1_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_11_1_TEM21_alias__sw_rd_data = 32'h0;
-        map_11_1_TEM21_alias__sw_rd_data[13:13] = map_11_1_TEM21__FIELD_3__curr_value;
-        map_11_1_TEM21_alias__sw_rd_data[16:14] = map_11_1_TEM21__FIELD_2__curr_value;
-        map_11_1_TEM21_alias__sw_rd_data[17:17] = map_11_1_TEM21__FIELD_1__curr_value;
+        map_11_1_TEM21_alias__sw_rd_data[13:13] =
+            map_11_1_TEM21__FIELD_3__pulse ?
+            map_11_1_TEM21__FIELD_3__next_value :
+            map_11_1_TEM21__FIELD_3__curr_value;
+        map_11_1_TEM21_alias__sw_rd_data[16:14] =
+            map_11_1_TEM21__FIELD_2__pulse ?
+            map_11_1_TEM21__FIELD_2__next_value :
+            map_11_1_TEM21__FIELD_2__curr_value;
+        map_11_1_TEM21_alias__sw_rd_data[17:17] =
+            map_11_1_TEM21__FIELD_1__pulse ?
+            map_11_1_TEM21__FIELD_1__next_value :
+            map_11_1_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_1_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[7];
@@ -1334,10 +1076,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[7]  = map_11_1_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_11_1_TEM22_alias__sw_rd_data = 32'h0;
-        map_11_1_TEM22_alias__sw_rd_data[13:13] = map_11_1_TEM22__FIELD_3__curr_value;
-        map_11_1_TEM22_alias__sw_rd_data[16:14] = map_11_1_TEM22__FIELD_2__curr_value;
-        map_11_1_TEM22_alias__sw_rd_data[17:17] = map_11_1_TEM22__FIELD_1__curr_value;
+        map_11_1_TEM22_alias__sw_rd_data[31:0] = map_11_1_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_2_TEM21__sw_wr_en      = reg_sw_wr_sel[8];
@@ -1427,10 +1166,20 @@ module regslv_slv_map (
         .field_value                            (map_11_2_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_11_2_TEM21__sw_rd_data = 32'h0;
-        map_11_2_TEM21__sw_rd_data[13:13] = map_11_2_TEM21__FIELD_3__curr_value;
-        map_11_2_TEM21__sw_rd_data[16:14] = map_11_2_TEM21__FIELD_2__curr_value;
-        map_11_2_TEM21__sw_rd_data[17:17] = map_11_2_TEM21__FIELD_1__curr_value;
+        map_11_2_TEM21__sw_rd_data[13:13] =
+            map_11_2_TEM21__FIELD_3__pulse ?
+            map_11_2_TEM21__FIELD_3__next_value :
+            map_11_2_TEM21__FIELD_3__curr_value;
+        map_11_2_TEM21__sw_rd_data[16:14] =
+            map_11_2_TEM21__FIELD_2__pulse ?
+            map_11_2_TEM21__FIELD_2__next_value :
+            map_11_2_TEM21__FIELD_2__curr_value;
+        map_11_2_TEM21__sw_rd_data[17:17] =
+            map_11_2_TEM21__FIELD_1__pulse ?
+            map_11_2_TEM21__FIELD_1__next_value :
+            map_11_2_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_2_TEM22__sw_wr_en      = reg_sw_wr_sel[9];
@@ -1439,8 +1188,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[9]  = map_11_2_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1449,81 +1198,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_2_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_2_TEM22__sw_wr_data[13:13], map_11_2_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_11_2_TEM22__sw_rd_en, map_11_2_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_2_TEM22__sw_wr_en, map_11_2_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_2_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_11_2_TEM22__FIELD_3__pulse),
-        .field_value                            (map_11_2_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_2_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_2_TEM22__sw_wr_data[16:14], map_11_2_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_11_2_TEM22__sw_rd_en, map_11_2_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_2_TEM22__sw_wr_en, map_11_2_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_2_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_11_2_TEM22__FIELD_2__pulse),
-        .field_value                            (map_11_2_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_11_2_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_2_TEM22__sw_wr_data[17:17], map_11_2_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_11_2_TEM22__sw_wr_data[31:0], map_11_2_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_11_2_TEM22__sw_rd_en, map_11_2_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_11_2_TEM22__sw_wr_en, map_11_2_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_11_2_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_11_2_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_11_2_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_11_2_TEM22__sw_rd_data = 32'h0;
-        map_11_2_TEM22__sw_rd_data[13:13] = map_11_2_TEM22__FIELD_3__curr_value;
-        map_11_2_TEM22__sw_rd_data[16:14] = map_11_2_TEM22__FIELD_2__curr_value;
-        map_11_2_TEM22__sw_rd_data[17:17] = map_11_2_TEM22__FIELD_1__curr_value;
+        map_11_2_TEM22__sw_rd_data[31:0] = map_11_2_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_2_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[10];
@@ -1532,10 +1224,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[10]  = map_11_2_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_11_2_TEM21_alias__sw_rd_data = 32'h0;
-        map_11_2_TEM21_alias__sw_rd_data[13:13] = map_11_2_TEM21__FIELD_3__curr_value;
-        map_11_2_TEM21_alias__sw_rd_data[16:14] = map_11_2_TEM21__FIELD_2__curr_value;
-        map_11_2_TEM21_alias__sw_rd_data[17:17] = map_11_2_TEM21__FIELD_1__curr_value;
+        map_11_2_TEM21_alias__sw_rd_data[13:13] =
+            map_11_2_TEM21__FIELD_3__pulse ?
+            map_11_2_TEM21__FIELD_3__next_value :
+            map_11_2_TEM21__FIELD_3__curr_value;
+        map_11_2_TEM21_alias__sw_rd_data[16:14] =
+            map_11_2_TEM21__FIELD_2__pulse ?
+            map_11_2_TEM21__FIELD_2__next_value :
+            map_11_2_TEM21__FIELD_2__curr_value;
+        map_11_2_TEM21_alias__sw_rd_data[17:17] =
+            map_11_2_TEM21__FIELD_1__pulse ?
+            map_11_2_TEM21__FIELD_1__next_value :
+            map_11_2_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_2_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[11];
@@ -1544,10 +1246,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[11]  = map_11_2_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_11_2_TEM22_alias__sw_rd_data = 32'h0;
-        map_11_2_TEM22_alias__sw_rd_data[13:13] = map_11_2_TEM22__FIELD_3__curr_value;
-        map_11_2_TEM22_alias__sw_rd_data[16:14] = map_11_2_TEM22__FIELD_2__curr_value;
-        map_11_2_TEM22_alias__sw_rd_data[17:17] = map_11_2_TEM22__FIELD_1__curr_value;
+        map_11_2_TEM22_alias__sw_rd_data[31:0] = map_11_2_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_3_TEM21__sw_wr_en      = reg_sw_wr_sel[12];
@@ -1637,10 +1336,20 @@ module regslv_slv_map (
         .field_value                            (map_11_3_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_11_3_TEM21__sw_rd_data = 32'h0;
-        map_11_3_TEM21__sw_rd_data[13:13] = map_11_3_TEM21__FIELD_3__curr_value;
-        map_11_3_TEM21__sw_rd_data[16:14] = map_11_3_TEM21__FIELD_2__curr_value;
-        map_11_3_TEM21__sw_rd_data[17:17] = map_11_3_TEM21__FIELD_1__curr_value;
+        map_11_3_TEM21__sw_rd_data[13:13] =
+            map_11_3_TEM21__FIELD_3__pulse ?
+            map_11_3_TEM21__FIELD_3__next_value :
+            map_11_3_TEM21__FIELD_3__curr_value;
+        map_11_3_TEM21__sw_rd_data[16:14] =
+            map_11_3_TEM21__FIELD_2__pulse ?
+            map_11_3_TEM21__FIELD_2__next_value :
+            map_11_3_TEM21__FIELD_2__curr_value;
+        map_11_3_TEM21__sw_rd_data[17:17] =
+            map_11_3_TEM21__FIELD_1__pulse ?
+            map_11_3_TEM21__FIELD_1__next_value :
+            map_11_3_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_3_TEM22__sw_wr_en      = reg_sw_wr_sel[13];
@@ -1649,8 +1358,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[13]  = map_11_3_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1659,81 +1368,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_3_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_3_TEM22__sw_wr_data[13:13], map_11_3_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_11_3_TEM22__sw_rd_en, map_11_3_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_3_TEM22__sw_wr_en, map_11_3_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_3_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_11_3_TEM22__FIELD_3__pulse),
-        .field_value                            (map_11_3_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_3_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_3_TEM22__sw_wr_data[16:14], map_11_3_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_11_3_TEM22__sw_rd_en, map_11_3_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_3_TEM22__sw_wr_en, map_11_3_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_3_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_11_3_TEM22__FIELD_2__pulse),
-        .field_value                            (map_11_3_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_11_3_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_3_TEM22__sw_wr_data[17:17], map_11_3_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_11_3_TEM22__sw_wr_data[31:0], map_11_3_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_11_3_TEM22__sw_rd_en, map_11_3_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_11_3_TEM22__sw_wr_en, map_11_3_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_11_3_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_11_3_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_11_3_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_11_3_TEM22__sw_rd_data = 32'h0;
-        map_11_3_TEM22__sw_rd_data[13:13] = map_11_3_TEM22__FIELD_3__curr_value;
-        map_11_3_TEM22__sw_rd_data[16:14] = map_11_3_TEM22__FIELD_2__curr_value;
-        map_11_3_TEM22__sw_rd_data[17:17] = map_11_3_TEM22__FIELD_1__curr_value;
+        map_11_3_TEM22__sw_rd_data[31:0] = map_11_3_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_3_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[14];
@@ -1742,10 +1394,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[14]  = map_11_3_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_11_3_TEM21_alias__sw_rd_data = 32'h0;
-        map_11_3_TEM21_alias__sw_rd_data[13:13] = map_11_3_TEM21__FIELD_3__curr_value;
-        map_11_3_TEM21_alias__sw_rd_data[16:14] = map_11_3_TEM21__FIELD_2__curr_value;
-        map_11_3_TEM21_alias__sw_rd_data[17:17] = map_11_3_TEM21__FIELD_1__curr_value;
+        map_11_3_TEM21_alias__sw_rd_data[13:13] =
+            map_11_3_TEM21__FIELD_3__pulse ?
+            map_11_3_TEM21__FIELD_3__next_value :
+            map_11_3_TEM21__FIELD_3__curr_value;
+        map_11_3_TEM21_alias__sw_rd_data[16:14] =
+            map_11_3_TEM21__FIELD_2__pulse ?
+            map_11_3_TEM21__FIELD_2__next_value :
+            map_11_3_TEM21__FIELD_2__curr_value;
+        map_11_3_TEM21_alias__sw_rd_data[17:17] =
+            map_11_3_TEM21__FIELD_1__pulse ?
+            map_11_3_TEM21__FIELD_1__next_value :
+            map_11_3_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_3_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[15];
@@ -1754,10 +1416,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[15]  = map_11_3_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_11_3_TEM22_alias__sw_rd_data = 32'h0;
-        map_11_3_TEM22_alias__sw_rd_data[13:13] = map_11_3_TEM22__FIELD_3__curr_value;
-        map_11_3_TEM22_alias__sw_rd_data[16:14] = map_11_3_TEM22__FIELD_2__curr_value;
-        map_11_3_TEM22_alias__sw_rd_data[17:17] = map_11_3_TEM22__FIELD_1__curr_value;
+        map_11_3_TEM22_alias__sw_rd_data[31:0] = map_11_3_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_4_TEM21__sw_wr_en      = reg_sw_wr_sel[16];
@@ -1847,10 +1506,20 @@ module regslv_slv_map (
         .field_value                            (map_11_4_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_11_4_TEM21__sw_rd_data = 32'h0;
-        map_11_4_TEM21__sw_rd_data[13:13] = map_11_4_TEM21__FIELD_3__curr_value;
-        map_11_4_TEM21__sw_rd_data[16:14] = map_11_4_TEM21__FIELD_2__curr_value;
-        map_11_4_TEM21__sw_rd_data[17:17] = map_11_4_TEM21__FIELD_1__curr_value;
+        map_11_4_TEM21__sw_rd_data[13:13] =
+            map_11_4_TEM21__FIELD_3__pulse ?
+            map_11_4_TEM21__FIELD_3__next_value :
+            map_11_4_TEM21__FIELD_3__curr_value;
+        map_11_4_TEM21__sw_rd_data[16:14] =
+            map_11_4_TEM21__FIELD_2__pulse ?
+            map_11_4_TEM21__FIELD_2__next_value :
+            map_11_4_TEM21__FIELD_2__curr_value;
+        map_11_4_TEM21__sw_rd_data[17:17] =
+            map_11_4_TEM21__FIELD_1__pulse ?
+            map_11_4_TEM21__FIELD_1__next_value :
+            map_11_4_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_4_TEM22__sw_wr_en      = reg_sw_wr_sel[17];
@@ -1859,8 +1528,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[17]  = map_11_4_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1869,81 +1538,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_4_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_4_TEM22__sw_wr_data[13:13], map_11_4_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_11_4_TEM22__sw_rd_en, map_11_4_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_4_TEM22__sw_wr_en, map_11_4_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_4_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_11_4_TEM22__FIELD_3__pulse),
-        .field_value                            (map_11_4_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_11_4_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_4_TEM22__sw_wr_data[16:14], map_11_4_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_11_4_TEM22__sw_rd_en, map_11_4_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_11_4_TEM22__sw_wr_en, map_11_4_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_11_4_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_11_4_TEM22__FIELD_2__pulse),
-        .field_value                            (map_11_4_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_11_4_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_11_4_TEM22__sw_wr_data[17:17], map_11_4_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_11_4_TEM22__sw_wr_data[31:0], map_11_4_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_11_4_TEM22__sw_rd_en, map_11_4_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_11_4_TEM22__sw_wr_en, map_11_4_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_11_4_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_11_4_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_11_4_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_11_4_TEM22__sw_rd_data = 32'h0;
-        map_11_4_TEM22__sw_rd_data[13:13] = map_11_4_TEM22__FIELD_3__curr_value;
-        map_11_4_TEM22__sw_rd_data[16:14] = map_11_4_TEM22__FIELD_2__curr_value;
-        map_11_4_TEM22__sw_rd_data[17:17] = map_11_4_TEM22__FIELD_1__curr_value;
+        map_11_4_TEM22__sw_rd_data[31:0] = map_11_4_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_11_4_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[18];
@@ -1952,10 +1564,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[18]  = map_11_4_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_11_4_TEM21_alias__sw_rd_data = 32'h0;
-        map_11_4_TEM21_alias__sw_rd_data[13:13] = map_11_4_TEM21__FIELD_3__curr_value;
-        map_11_4_TEM21_alias__sw_rd_data[16:14] = map_11_4_TEM21__FIELD_2__curr_value;
-        map_11_4_TEM21_alias__sw_rd_data[17:17] = map_11_4_TEM21__FIELD_1__curr_value;
+        map_11_4_TEM21_alias__sw_rd_data[13:13] =
+            map_11_4_TEM21__FIELD_3__pulse ?
+            map_11_4_TEM21__FIELD_3__next_value :
+            map_11_4_TEM21__FIELD_3__curr_value;
+        map_11_4_TEM21_alias__sw_rd_data[16:14] =
+            map_11_4_TEM21__FIELD_2__pulse ?
+            map_11_4_TEM21__FIELD_2__next_value :
+            map_11_4_TEM21__FIELD_2__curr_value;
+        map_11_4_TEM21_alias__sw_rd_data[17:17] =
+            map_11_4_TEM21__FIELD_1__pulse ?
+            map_11_4_TEM21__FIELD_1__next_value :
+            map_11_4_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_11_4_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[19];
@@ -1964,10 +1586,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[19]  = map_11_4_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_11_4_TEM22_alias__sw_rd_data = 32'h0;
-        map_11_4_TEM22_alias__sw_rd_data[13:13] = map_11_4_TEM22__FIELD_3__curr_value;
-        map_11_4_TEM22_alias__sw_rd_data[16:14] = map_11_4_TEM22__FIELD_2__curr_value;
-        map_11_4_TEM22_alias__sw_rd_data[17:17] = map_11_4_TEM22__FIELD_1__curr_value;
+        map_11_4_TEM22_alias__sw_rd_data[31:0] = map_11_4_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_0_TEM21__sw_wr_en      = reg_sw_wr_sel[20];
@@ -2057,10 +1676,20 @@ module regslv_slv_map (
         .field_value                            (map_12_0_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_0_TEM21__sw_rd_data = 32'h0;
-        map_12_0_TEM21__sw_rd_data[13:13] = map_12_0_TEM21__FIELD_3__curr_value;
-        map_12_0_TEM21__sw_rd_data[16:14] = map_12_0_TEM21__FIELD_2__curr_value;
-        map_12_0_TEM21__sw_rd_data[17:17] = map_12_0_TEM21__FIELD_1__curr_value;
+        map_12_0_TEM21__sw_rd_data[13:13] =
+            map_12_0_TEM21__FIELD_3__pulse ?
+            map_12_0_TEM21__FIELD_3__next_value :
+            map_12_0_TEM21__FIELD_3__curr_value;
+        map_12_0_TEM21__sw_rd_data[16:14] =
+            map_12_0_TEM21__FIELD_2__pulse ?
+            map_12_0_TEM21__FIELD_2__next_value :
+            map_12_0_TEM21__FIELD_2__curr_value;
+        map_12_0_TEM21__sw_rd_data[17:17] =
+            map_12_0_TEM21__FIELD_1__pulse ?
+            map_12_0_TEM21__FIELD_1__next_value :
+            map_12_0_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_0_TEM22__sw_wr_en      = reg_sw_wr_sel[21];
@@ -2069,8 +1698,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[21]  = map_12_0_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2079,81 +1708,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_0_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_0_TEM22__sw_wr_data[13:13], map_12_0_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_0_TEM22__sw_rd_en, map_12_0_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_0_TEM22__sw_wr_en, map_12_0_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_0_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_0_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_0_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_0_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_0_TEM22__sw_wr_data[16:14], map_12_0_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_0_TEM22__sw_rd_en, map_12_0_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_0_TEM22__sw_wr_en, map_12_0_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_0_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_0_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_0_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_0_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_0_TEM22__sw_wr_data[17:17], map_12_0_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_0_TEM22__sw_wr_data[31:0], map_12_0_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_0_TEM22__sw_rd_en, map_12_0_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_0_TEM22__sw_wr_en, map_12_0_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_0_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_0_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_0_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_0_TEM22__sw_rd_data = 32'h0;
-        map_12_0_TEM22__sw_rd_data[13:13] = map_12_0_TEM22__FIELD_3__curr_value;
-        map_12_0_TEM22__sw_rd_data[16:14] = map_12_0_TEM22__FIELD_2__curr_value;
-        map_12_0_TEM22__sw_rd_data[17:17] = map_12_0_TEM22__FIELD_1__curr_value;
+        map_12_0_TEM22__sw_rd_data[31:0] = map_12_0_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_0_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[22];
@@ -2162,10 +1734,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[22]  = map_12_0_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_0_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_0_TEM21_alias__sw_rd_data[13:13] = map_12_0_TEM21__FIELD_3__curr_value;
-        map_12_0_TEM21_alias__sw_rd_data[16:14] = map_12_0_TEM21__FIELD_2__curr_value;
-        map_12_0_TEM21_alias__sw_rd_data[17:17] = map_12_0_TEM21__FIELD_1__curr_value;
+        map_12_0_TEM21_alias__sw_rd_data[13:13] =
+            map_12_0_TEM21__FIELD_3__pulse ?
+            map_12_0_TEM21__FIELD_3__next_value :
+            map_12_0_TEM21__FIELD_3__curr_value;
+        map_12_0_TEM21_alias__sw_rd_data[16:14] =
+            map_12_0_TEM21__FIELD_2__pulse ?
+            map_12_0_TEM21__FIELD_2__next_value :
+            map_12_0_TEM21__FIELD_2__curr_value;
+        map_12_0_TEM21_alias__sw_rd_data[17:17] =
+            map_12_0_TEM21__FIELD_1__pulse ?
+            map_12_0_TEM21__FIELD_1__next_value :
+            map_12_0_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_0_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[23];
@@ -2174,10 +1756,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[23]  = map_12_0_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_0_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_0_TEM22_alias__sw_rd_data[13:13] = map_12_0_TEM22__FIELD_3__curr_value;
-        map_12_0_TEM22_alias__sw_rd_data[16:14] = map_12_0_TEM22__FIELD_2__curr_value;
-        map_12_0_TEM22_alias__sw_rd_data[17:17] = map_12_0_TEM22__FIELD_1__curr_value;
+        map_12_0_TEM22_alias__sw_rd_data[31:0] = map_12_0_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_1_TEM21__sw_wr_en      = reg_sw_wr_sel[24];
@@ -2267,10 +1846,20 @@ module regslv_slv_map (
         .field_value                            (map_12_1_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_1_TEM21__sw_rd_data = 32'h0;
-        map_12_1_TEM21__sw_rd_data[13:13] = map_12_1_TEM21__FIELD_3__curr_value;
-        map_12_1_TEM21__sw_rd_data[16:14] = map_12_1_TEM21__FIELD_2__curr_value;
-        map_12_1_TEM21__sw_rd_data[17:17] = map_12_1_TEM21__FIELD_1__curr_value;
+        map_12_1_TEM21__sw_rd_data[13:13] =
+            map_12_1_TEM21__FIELD_3__pulse ?
+            map_12_1_TEM21__FIELD_3__next_value :
+            map_12_1_TEM21__FIELD_3__curr_value;
+        map_12_1_TEM21__sw_rd_data[16:14] =
+            map_12_1_TEM21__FIELD_2__pulse ?
+            map_12_1_TEM21__FIELD_2__next_value :
+            map_12_1_TEM21__FIELD_2__curr_value;
+        map_12_1_TEM21__sw_rd_data[17:17] =
+            map_12_1_TEM21__FIELD_1__pulse ?
+            map_12_1_TEM21__FIELD_1__next_value :
+            map_12_1_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_1_TEM22__sw_wr_en      = reg_sw_wr_sel[25];
@@ -2279,8 +1868,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[25]  = map_12_1_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2289,81 +1878,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_1_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_1_TEM22__sw_wr_data[13:13], map_12_1_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_1_TEM22__sw_rd_en, map_12_1_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_1_TEM22__sw_wr_en, map_12_1_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_1_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_1_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_1_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_1_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_1_TEM22__sw_wr_data[16:14], map_12_1_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_1_TEM22__sw_rd_en, map_12_1_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_1_TEM22__sw_wr_en, map_12_1_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_1_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_1_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_1_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_1_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_1_TEM22__sw_wr_data[17:17], map_12_1_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_1_TEM22__sw_wr_data[31:0], map_12_1_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_1_TEM22__sw_rd_en, map_12_1_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_1_TEM22__sw_wr_en, map_12_1_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_1_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_1_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_1_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_1_TEM22__sw_rd_data = 32'h0;
-        map_12_1_TEM22__sw_rd_data[13:13] = map_12_1_TEM22__FIELD_3__curr_value;
-        map_12_1_TEM22__sw_rd_data[16:14] = map_12_1_TEM22__FIELD_2__curr_value;
-        map_12_1_TEM22__sw_rd_data[17:17] = map_12_1_TEM22__FIELD_1__curr_value;
+        map_12_1_TEM22__sw_rd_data[31:0] = map_12_1_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_1_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[26];
@@ -2372,10 +1904,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[26]  = map_12_1_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_1_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_1_TEM21_alias__sw_rd_data[13:13] = map_12_1_TEM21__FIELD_3__curr_value;
-        map_12_1_TEM21_alias__sw_rd_data[16:14] = map_12_1_TEM21__FIELD_2__curr_value;
-        map_12_1_TEM21_alias__sw_rd_data[17:17] = map_12_1_TEM21__FIELD_1__curr_value;
+        map_12_1_TEM21_alias__sw_rd_data[13:13] =
+            map_12_1_TEM21__FIELD_3__pulse ?
+            map_12_1_TEM21__FIELD_3__next_value :
+            map_12_1_TEM21__FIELD_3__curr_value;
+        map_12_1_TEM21_alias__sw_rd_data[16:14] =
+            map_12_1_TEM21__FIELD_2__pulse ?
+            map_12_1_TEM21__FIELD_2__next_value :
+            map_12_1_TEM21__FIELD_2__curr_value;
+        map_12_1_TEM21_alias__sw_rd_data[17:17] =
+            map_12_1_TEM21__FIELD_1__pulse ?
+            map_12_1_TEM21__FIELD_1__next_value :
+            map_12_1_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_1_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[27];
@@ -2384,10 +1926,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[27]  = map_12_1_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_1_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_1_TEM22_alias__sw_rd_data[13:13] = map_12_1_TEM22__FIELD_3__curr_value;
-        map_12_1_TEM22_alias__sw_rd_data[16:14] = map_12_1_TEM22__FIELD_2__curr_value;
-        map_12_1_TEM22_alias__sw_rd_data[17:17] = map_12_1_TEM22__FIELD_1__curr_value;
+        map_12_1_TEM22_alias__sw_rd_data[31:0] = map_12_1_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_2_TEM21__sw_wr_en      = reg_sw_wr_sel[28];
@@ -2477,10 +2016,20 @@ module regslv_slv_map (
         .field_value                            (map_12_2_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_2_TEM21__sw_rd_data = 32'h0;
-        map_12_2_TEM21__sw_rd_data[13:13] = map_12_2_TEM21__FIELD_3__curr_value;
-        map_12_2_TEM21__sw_rd_data[16:14] = map_12_2_TEM21__FIELD_2__curr_value;
-        map_12_2_TEM21__sw_rd_data[17:17] = map_12_2_TEM21__FIELD_1__curr_value;
+        map_12_2_TEM21__sw_rd_data[13:13] =
+            map_12_2_TEM21__FIELD_3__pulse ?
+            map_12_2_TEM21__FIELD_3__next_value :
+            map_12_2_TEM21__FIELD_3__curr_value;
+        map_12_2_TEM21__sw_rd_data[16:14] =
+            map_12_2_TEM21__FIELD_2__pulse ?
+            map_12_2_TEM21__FIELD_2__next_value :
+            map_12_2_TEM21__FIELD_2__curr_value;
+        map_12_2_TEM21__sw_rd_data[17:17] =
+            map_12_2_TEM21__FIELD_1__pulse ?
+            map_12_2_TEM21__FIELD_1__next_value :
+            map_12_2_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_2_TEM22__sw_wr_en      = reg_sw_wr_sel[29];
@@ -2489,8 +2038,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[29]  = map_12_2_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2499,81 +2048,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_2_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_2_TEM22__sw_wr_data[13:13], map_12_2_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_2_TEM22__sw_rd_en, map_12_2_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_2_TEM22__sw_wr_en, map_12_2_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_2_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_2_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_2_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_2_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_2_TEM22__sw_wr_data[16:14], map_12_2_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_2_TEM22__sw_rd_en, map_12_2_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_2_TEM22__sw_wr_en, map_12_2_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_2_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_2_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_2_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_2_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_2_TEM22__sw_wr_data[17:17], map_12_2_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_2_TEM22__sw_wr_data[31:0], map_12_2_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_2_TEM22__sw_rd_en, map_12_2_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_2_TEM22__sw_wr_en, map_12_2_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_2_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_2_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_2_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_2_TEM22__sw_rd_data = 32'h0;
-        map_12_2_TEM22__sw_rd_data[13:13] = map_12_2_TEM22__FIELD_3__curr_value;
-        map_12_2_TEM22__sw_rd_data[16:14] = map_12_2_TEM22__FIELD_2__curr_value;
-        map_12_2_TEM22__sw_rd_data[17:17] = map_12_2_TEM22__FIELD_1__curr_value;
+        map_12_2_TEM22__sw_rd_data[31:0] = map_12_2_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_2_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[30];
@@ -2582,10 +2074,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[30]  = map_12_2_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_2_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_2_TEM21_alias__sw_rd_data[13:13] = map_12_2_TEM21__FIELD_3__curr_value;
-        map_12_2_TEM21_alias__sw_rd_data[16:14] = map_12_2_TEM21__FIELD_2__curr_value;
-        map_12_2_TEM21_alias__sw_rd_data[17:17] = map_12_2_TEM21__FIELD_1__curr_value;
+        map_12_2_TEM21_alias__sw_rd_data[13:13] =
+            map_12_2_TEM21__FIELD_3__pulse ?
+            map_12_2_TEM21__FIELD_3__next_value :
+            map_12_2_TEM21__FIELD_3__curr_value;
+        map_12_2_TEM21_alias__sw_rd_data[16:14] =
+            map_12_2_TEM21__FIELD_2__pulse ?
+            map_12_2_TEM21__FIELD_2__next_value :
+            map_12_2_TEM21__FIELD_2__curr_value;
+        map_12_2_TEM21_alias__sw_rd_data[17:17] =
+            map_12_2_TEM21__FIELD_1__pulse ?
+            map_12_2_TEM21__FIELD_1__next_value :
+            map_12_2_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_2_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[31];
@@ -2594,10 +2096,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[31]  = map_12_2_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_2_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_2_TEM22_alias__sw_rd_data[13:13] = map_12_2_TEM22__FIELD_3__curr_value;
-        map_12_2_TEM22_alias__sw_rd_data[16:14] = map_12_2_TEM22__FIELD_2__curr_value;
-        map_12_2_TEM22_alias__sw_rd_data[17:17] = map_12_2_TEM22__FIELD_1__curr_value;
+        map_12_2_TEM22_alias__sw_rd_data[31:0] = map_12_2_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_3_TEM21__sw_wr_en      = reg_sw_wr_sel[32];
@@ -2687,10 +2186,20 @@ module regslv_slv_map (
         .field_value                            (map_12_3_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_3_TEM21__sw_rd_data = 32'h0;
-        map_12_3_TEM21__sw_rd_data[13:13] = map_12_3_TEM21__FIELD_3__curr_value;
-        map_12_3_TEM21__sw_rd_data[16:14] = map_12_3_TEM21__FIELD_2__curr_value;
-        map_12_3_TEM21__sw_rd_data[17:17] = map_12_3_TEM21__FIELD_1__curr_value;
+        map_12_3_TEM21__sw_rd_data[13:13] =
+            map_12_3_TEM21__FIELD_3__pulse ?
+            map_12_3_TEM21__FIELD_3__next_value :
+            map_12_3_TEM21__FIELD_3__curr_value;
+        map_12_3_TEM21__sw_rd_data[16:14] =
+            map_12_3_TEM21__FIELD_2__pulse ?
+            map_12_3_TEM21__FIELD_2__next_value :
+            map_12_3_TEM21__FIELD_2__curr_value;
+        map_12_3_TEM21__sw_rd_data[17:17] =
+            map_12_3_TEM21__FIELD_1__pulse ?
+            map_12_3_TEM21__FIELD_1__next_value :
+            map_12_3_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_3_TEM22__sw_wr_en      = reg_sw_wr_sel[33];
@@ -2699,8 +2208,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[33]  = map_12_3_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2709,81 +2218,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_3_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_3_TEM22__sw_wr_data[13:13], map_12_3_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_3_TEM22__sw_rd_en, map_12_3_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_3_TEM22__sw_wr_en, map_12_3_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_3_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_3_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_3_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_3_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_3_TEM22__sw_wr_data[16:14], map_12_3_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_3_TEM22__sw_rd_en, map_12_3_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_3_TEM22__sw_wr_en, map_12_3_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_3_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_3_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_3_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_3_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_3_TEM22__sw_wr_data[17:17], map_12_3_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_3_TEM22__sw_wr_data[31:0], map_12_3_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_3_TEM22__sw_rd_en, map_12_3_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_3_TEM22__sw_wr_en, map_12_3_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_3_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_3_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_3_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_3_TEM22__sw_rd_data = 32'h0;
-        map_12_3_TEM22__sw_rd_data[13:13] = map_12_3_TEM22__FIELD_3__curr_value;
-        map_12_3_TEM22__sw_rd_data[16:14] = map_12_3_TEM22__FIELD_2__curr_value;
-        map_12_3_TEM22__sw_rd_data[17:17] = map_12_3_TEM22__FIELD_1__curr_value;
+        map_12_3_TEM22__sw_rd_data[31:0] = map_12_3_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_3_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[34];
@@ -2792,10 +2244,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[34]  = map_12_3_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_3_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_3_TEM21_alias__sw_rd_data[13:13] = map_12_3_TEM21__FIELD_3__curr_value;
-        map_12_3_TEM21_alias__sw_rd_data[16:14] = map_12_3_TEM21__FIELD_2__curr_value;
-        map_12_3_TEM21_alias__sw_rd_data[17:17] = map_12_3_TEM21__FIELD_1__curr_value;
+        map_12_3_TEM21_alias__sw_rd_data[13:13] =
+            map_12_3_TEM21__FIELD_3__pulse ?
+            map_12_3_TEM21__FIELD_3__next_value :
+            map_12_3_TEM21__FIELD_3__curr_value;
+        map_12_3_TEM21_alias__sw_rd_data[16:14] =
+            map_12_3_TEM21__FIELD_2__pulse ?
+            map_12_3_TEM21__FIELD_2__next_value :
+            map_12_3_TEM21__FIELD_2__curr_value;
+        map_12_3_TEM21_alias__sw_rd_data[17:17] =
+            map_12_3_TEM21__FIELD_1__pulse ?
+            map_12_3_TEM21__FIELD_1__next_value :
+            map_12_3_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_3_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[35];
@@ -2804,10 +2266,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[35]  = map_12_3_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_3_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_3_TEM22_alias__sw_rd_data[13:13] = map_12_3_TEM22__FIELD_3__curr_value;
-        map_12_3_TEM22_alias__sw_rd_data[16:14] = map_12_3_TEM22__FIELD_2__curr_value;
-        map_12_3_TEM22_alias__sw_rd_data[17:17] = map_12_3_TEM22__FIELD_1__curr_value;
+        map_12_3_TEM22_alias__sw_rd_data[31:0] = map_12_3_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_4_TEM21__sw_wr_en      = reg_sw_wr_sel[36];
@@ -2897,10 +2356,20 @@ module regslv_slv_map (
         .field_value                            (map_12_4_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_4_TEM21__sw_rd_data = 32'h0;
-        map_12_4_TEM21__sw_rd_data[13:13] = map_12_4_TEM21__FIELD_3__curr_value;
-        map_12_4_TEM21__sw_rd_data[16:14] = map_12_4_TEM21__FIELD_2__curr_value;
-        map_12_4_TEM21__sw_rd_data[17:17] = map_12_4_TEM21__FIELD_1__curr_value;
+        map_12_4_TEM21__sw_rd_data[13:13] =
+            map_12_4_TEM21__FIELD_3__pulse ?
+            map_12_4_TEM21__FIELD_3__next_value :
+            map_12_4_TEM21__FIELD_3__curr_value;
+        map_12_4_TEM21__sw_rd_data[16:14] =
+            map_12_4_TEM21__FIELD_2__pulse ?
+            map_12_4_TEM21__FIELD_2__next_value :
+            map_12_4_TEM21__FIELD_2__curr_value;
+        map_12_4_TEM21__sw_rd_data[17:17] =
+            map_12_4_TEM21__FIELD_1__pulse ?
+            map_12_4_TEM21__FIELD_1__next_value :
+            map_12_4_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_4_TEM22__sw_wr_en      = reg_sw_wr_sel[37];
@@ -2909,8 +2378,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[37]  = map_12_4_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2919,81 +2388,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_4_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_4_TEM22__sw_wr_data[13:13], map_12_4_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_4_TEM22__sw_rd_en, map_12_4_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_4_TEM22__sw_wr_en, map_12_4_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_4_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_4_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_4_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_4_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_4_TEM22__sw_wr_data[16:14], map_12_4_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_4_TEM22__sw_rd_en, map_12_4_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_4_TEM22__sw_wr_en, map_12_4_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_4_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_4_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_4_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_4_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_4_TEM22__sw_wr_data[17:17], map_12_4_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_4_TEM22__sw_wr_data[31:0], map_12_4_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_4_TEM22__sw_rd_en, map_12_4_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_4_TEM22__sw_wr_en, map_12_4_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_4_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_4_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_4_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_4_TEM22__sw_rd_data = 32'h0;
-        map_12_4_TEM22__sw_rd_data[13:13] = map_12_4_TEM22__FIELD_3__curr_value;
-        map_12_4_TEM22__sw_rd_data[16:14] = map_12_4_TEM22__FIELD_2__curr_value;
-        map_12_4_TEM22__sw_rd_data[17:17] = map_12_4_TEM22__FIELD_1__curr_value;
+        map_12_4_TEM22__sw_rd_data[31:0] = map_12_4_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_4_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[38];
@@ -3002,10 +2414,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[38]  = map_12_4_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_4_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_4_TEM21_alias__sw_rd_data[13:13] = map_12_4_TEM21__FIELD_3__curr_value;
-        map_12_4_TEM21_alias__sw_rd_data[16:14] = map_12_4_TEM21__FIELD_2__curr_value;
-        map_12_4_TEM21_alias__sw_rd_data[17:17] = map_12_4_TEM21__FIELD_1__curr_value;
+        map_12_4_TEM21_alias__sw_rd_data[13:13] =
+            map_12_4_TEM21__FIELD_3__pulse ?
+            map_12_4_TEM21__FIELD_3__next_value :
+            map_12_4_TEM21__FIELD_3__curr_value;
+        map_12_4_TEM21_alias__sw_rd_data[16:14] =
+            map_12_4_TEM21__FIELD_2__pulse ?
+            map_12_4_TEM21__FIELD_2__next_value :
+            map_12_4_TEM21__FIELD_2__curr_value;
+        map_12_4_TEM21_alias__sw_rd_data[17:17] =
+            map_12_4_TEM21__FIELD_1__pulse ?
+            map_12_4_TEM21__FIELD_1__next_value :
+            map_12_4_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_4_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[39];
@@ -3014,10 +2436,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[39]  = map_12_4_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_4_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_4_TEM22_alias__sw_rd_data[13:13] = map_12_4_TEM22__FIELD_3__curr_value;
-        map_12_4_TEM22_alias__sw_rd_data[16:14] = map_12_4_TEM22__FIELD_2__curr_value;
-        map_12_4_TEM22_alias__sw_rd_data[17:17] = map_12_4_TEM22__FIELD_1__curr_value;
+        map_12_4_TEM22_alias__sw_rd_data[31:0] = map_12_4_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_5_TEM21__sw_wr_en      = reg_sw_wr_sel[40];
@@ -3107,10 +2526,20 @@ module regslv_slv_map (
         .field_value                            (map_12_5_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_5_TEM21__sw_rd_data = 32'h0;
-        map_12_5_TEM21__sw_rd_data[13:13] = map_12_5_TEM21__FIELD_3__curr_value;
-        map_12_5_TEM21__sw_rd_data[16:14] = map_12_5_TEM21__FIELD_2__curr_value;
-        map_12_5_TEM21__sw_rd_data[17:17] = map_12_5_TEM21__FIELD_1__curr_value;
+        map_12_5_TEM21__sw_rd_data[13:13] =
+            map_12_5_TEM21__FIELD_3__pulse ?
+            map_12_5_TEM21__FIELD_3__next_value :
+            map_12_5_TEM21__FIELD_3__curr_value;
+        map_12_5_TEM21__sw_rd_data[16:14] =
+            map_12_5_TEM21__FIELD_2__pulse ?
+            map_12_5_TEM21__FIELD_2__next_value :
+            map_12_5_TEM21__FIELD_2__curr_value;
+        map_12_5_TEM21__sw_rd_data[17:17] =
+            map_12_5_TEM21__FIELD_1__pulse ?
+            map_12_5_TEM21__FIELD_1__next_value :
+            map_12_5_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_5_TEM22__sw_wr_en      = reg_sw_wr_sel[41];
@@ -3119,8 +2548,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[41]  = map_12_5_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3129,81 +2558,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_5_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_5_TEM22__sw_wr_data[13:13], map_12_5_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_5_TEM22__sw_rd_en, map_12_5_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_5_TEM22__sw_wr_en, map_12_5_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_5_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_5_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_5_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_5_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_5_TEM22__sw_wr_data[16:14], map_12_5_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_5_TEM22__sw_rd_en, map_12_5_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_5_TEM22__sw_wr_en, map_12_5_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_5_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_5_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_5_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_5_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_5_TEM22__sw_wr_data[17:17], map_12_5_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_5_TEM22__sw_wr_data[31:0], map_12_5_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_5_TEM22__sw_rd_en, map_12_5_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_5_TEM22__sw_wr_en, map_12_5_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_5_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_5_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_5_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_5_TEM22__sw_rd_data = 32'h0;
-        map_12_5_TEM22__sw_rd_data[13:13] = map_12_5_TEM22__FIELD_3__curr_value;
-        map_12_5_TEM22__sw_rd_data[16:14] = map_12_5_TEM22__FIELD_2__curr_value;
-        map_12_5_TEM22__sw_rd_data[17:17] = map_12_5_TEM22__FIELD_1__curr_value;
+        map_12_5_TEM22__sw_rd_data[31:0] = map_12_5_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_5_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[42];
@@ -3212,10 +2584,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[42]  = map_12_5_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_5_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_5_TEM21_alias__sw_rd_data[13:13] = map_12_5_TEM21__FIELD_3__curr_value;
-        map_12_5_TEM21_alias__sw_rd_data[16:14] = map_12_5_TEM21__FIELD_2__curr_value;
-        map_12_5_TEM21_alias__sw_rd_data[17:17] = map_12_5_TEM21__FIELD_1__curr_value;
+        map_12_5_TEM21_alias__sw_rd_data[13:13] =
+            map_12_5_TEM21__FIELD_3__pulse ?
+            map_12_5_TEM21__FIELD_3__next_value :
+            map_12_5_TEM21__FIELD_3__curr_value;
+        map_12_5_TEM21_alias__sw_rd_data[16:14] =
+            map_12_5_TEM21__FIELD_2__pulse ?
+            map_12_5_TEM21__FIELD_2__next_value :
+            map_12_5_TEM21__FIELD_2__curr_value;
+        map_12_5_TEM21_alias__sw_rd_data[17:17] =
+            map_12_5_TEM21__FIELD_1__pulse ?
+            map_12_5_TEM21__FIELD_1__next_value :
+            map_12_5_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_5_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[43];
@@ -3224,10 +2606,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[43]  = map_12_5_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_5_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_5_TEM22_alias__sw_rd_data[13:13] = map_12_5_TEM22__FIELD_3__curr_value;
-        map_12_5_TEM22_alias__sw_rd_data[16:14] = map_12_5_TEM22__FIELD_2__curr_value;
-        map_12_5_TEM22_alias__sw_rd_data[17:17] = map_12_5_TEM22__FIELD_1__curr_value;
+        map_12_5_TEM22_alias__sw_rd_data[31:0] = map_12_5_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_6_TEM21__sw_wr_en      = reg_sw_wr_sel[44];
@@ -3317,10 +2696,20 @@ module regslv_slv_map (
         .field_value                            (map_12_6_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_6_TEM21__sw_rd_data = 32'h0;
-        map_12_6_TEM21__sw_rd_data[13:13] = map_12_6_TEM21__FIELD_3__curr_value;
-        map_12_6_TEM21__sw_rd_data[16:14] = map_12_6_TEM21__FIELD_2__curr_value;
-        map_12_6_TEM21__sw_rd_data[17:17] = map_12_6_TEM21__FIELD_1__curr_value;
+        map_12_6_TEM21__sw_rd_data[13:13] =
+            map_12_6_TEM21__FIELD_3__pulse ?
+            map_12_6_TEM21__FIELD_3__next_value :
+            map_12_6_TEM21__FIELD_3__curr_value;
+        map_12_6_TEM21__sw_rd_data[16:14] =
+            map_12_6_TEM21__FIELD_2__pulse ?
+            map_12_6_TEM21__FIELD_2__next_value :
+            map_12_6_TEM21__FIELD_2__curr_value;
+        map_12_6_TEM21__sw_rd_data[17:17] =
+            map_12_6_TEM21__FIELD_1__pulse ?
+            map_12_6_TEM21__FIELD_1__next_value :
+            map_12_6_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_6_TEM22__sw_wr_en      = reg_sw_wr_sel[45];
@@ -3329,8 +2718,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[45]  = map_12_6_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3339,81 +2728,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_6_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_6_TEM22__sw_wr_data[13:13], map_12_6_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_6_TEM22__sw_rd_en, map_12_6_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_6_TEM22__sw_wr_en, map_12_6_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_6_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_6_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_6_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_6_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_6_TEM22__sw_wr_data[16:14], map_12_6_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_6_TEM22__sw_rd_en, map_12_6_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_6_TEM22__sw_wr_en, map_12_6_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_6_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_6_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_6_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_6_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_6_TEM22__sw_wr_data[17:17], map_12_6_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_6_TEM22__sw_wr_data[31:0], map_12_6_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_6_TEM22__sw_rd_en, map_12_6_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_6_TEM22__sw_wr_en, map_12_6_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_6_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_6_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_6_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_6_TEM22__sw_rd_data = 32'h0;
-        map_12_6_TEM22__sw_rd_data[13:13] = map_12_6_TEM22__FIELD_3__curr_value;
-        map_12_6_TEM22__sw_rd_data[16:14] = map_12_6_TEM22__FIELD_2__curr_value;
-        map_12_6_TEM22__sw_rd_data[17:17] = map_12_6_TEM22__FIELD_1__curr_value;
+        map_12_6_TEM22__sw_rd_data[31:0] = map_12_6_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_6_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[46];
@@ -3422,10 +2754,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[46]  = map_12_6_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_6_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_6_TEM21_alias__sw_rd_data[13:13] = map_12_6_TEM21__FIELD_3__curr_value;
-        map_12_6_TEM21_alias__sw_rd_data[16:14] = map_12_6_TEM21__FIELD_2__curr_value;
-        map_12_6_TEM21_alias__sw_rd_data[17:17] = map_12_6_TEM21__FIELD_1__curr_value;
+        map_12_6_TEM21_alias__sw_rd_data[13:13] =
+            map_12_6_TEM21__FIELD_3__pulse ?
+            map_12_6_TEM21__FIELD_3__next_value :
+            map_12_6_TEM21__FIELD_3__curr_value;
+        map_12_6_TEM21_alias__sw_rd_data[16:14] =
+            map_12_6_TEM21__FIELD_2__pulse ?
+            map_12_6_TEM21__FIELD_2__next_value :
+            map_12_6_TEM21__FIELD_2__curr_value;
+        map_12_6_TEM21_alias__sw_rd_data[17:17] =
+            map_12_6_TEM21__FIELD_1__pulse ?
+            map_12_6_TEM21__FIELD_1__next_value :
+            map_12_6_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_6_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[47];
@@ -3434,10 +2776,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[47]  = map_12_6_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_6_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_6_TEM22_alias__sw_rd_data[13:13] = map_12_6_TEM22__FIELD_3__curr_value;
-        map_12_6_TEM22_alias__sw_rd_data[16:14] = map_12_6_TEM22__FIELD_2__curr_value;
-        map_12_6_TEM22_alias__sw_rd_data[17:17] = map_12_6_TEM22__FIELD_1__curr_value;
+        map_12_6_TEM22_alias__sw_rd_data[31:0] = map_12_6_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_7_TEM21__sw_wr_en      = reg_sw_wr_sel[48];
@@ -3527,10 +2866,20 @@ module regslv_slv_map (
         .field_value                            (map_12_7_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_7_TEM21__sw_rd_data = 32'h0;
-        map_12_7_TEM21__sw_rd_data[13:13] = map_12_7_TEM21__FIELD_3__curr_value;
-        map_12_7_TEM21__sw_rd_data[16:14] = map_12_7_TEM21__FIELD_2__curr_value;
-        map_12_7_TEM21__sw_rd_data[17:17] = map_12_7_TEM21__FIELD_1__curr_value;
+        map_12_7_TEM21__sw_rd_data[13:13] =
+            map_12_7_TEM21__FIELD_3__pulse ?
+            map_12_7_TEM21__FIELD_3__next_value :
+            map_12_7_TEM21__FIELD_3__curr_value;
+        map_12_7_TEM21__sw_rd_data[16:14] =
+            map_12_7_TEM21__FIELD_2__pulse ?
+            map_12_7_TEM21__FIELD_2__next_value :
+            map_12_7_TEM21__FIELD_2__curr_value;
+        map_12_7_TEM21__sw_rd_data[17:17] =
+            map_12_7_TEM21__FIELD_1__pulse ?
+            map_12_7_TEM21__FIELD_1__next_value :
+            map_12_7_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_7_TEM22__sw_wr_en      = reg_sw_wr_sel[49];
@@ -3539,8 +2888,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[49]  = map_12_7_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3549,81 +2898,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_7_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_7_TEM22__sw_wr_data[13:13], map_12_7_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_7_TEM22__sw_rd_en, map_12_7_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_7_TEM22__sw_wr_en, map_12_7_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_7_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_7_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_7_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_7_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_7_TEM22__sw_wr_data[16:14], map_12_7_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_7_TEM22__sw_rd_en, map_12_7_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_7_TEM22__sw_wr_en, map_12_7_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_7_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_7_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_7_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_7_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_7_TEM22__sw_wr_data[17:17], map_12_7_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_7_TEM22__sw_wr_data[31:0], map_12_7_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_7_TEM22__sw_rd_en, map_12_7_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_7_TEM22__sw_wr_en, map_12_7_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_7_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_7_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_7_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_7_TEM22__sw_rd_data = 32'h0;
-        map_12_7_TEM22__sw_rd_data[13:13] = map_12_7_TEM22__FIELD_3__curr_value;
-        map_12_7_TEM22__sw_rd_data[16:14] = map_12_7_TEM22__FIELD_2__curr_value;
-        map_12_7_TEM22__sw_rd_data[17:17] = map_12_7_TEM22__FIELD_1__curr_value;
+        map_12_7_TEM22__sw_rd_data[31:0] = map_12_7_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_7_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[50];
@@ -3632,10 +2924,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[50]  = map_12_7_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_7_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_7_TEM21_alias__sw_rd_data[13:13] = map_12_7_TEM21__FIELD_3__curr_value;
-        map_12_7_TEM21_alias__sw_rd_data[16:14] = map_12_7_TEM21__FIELD_2__curr_value;
-        map_12_7_TEM21_alias__sw_rd_data[17:17] = map_12_7_TEM21__FIELD_1__curr_value;
+        map_12_7_TEM21_alias__sw_rd_data[13:13] =
+            map_12_7_TEM21__FIELD_3__pulse ?
+            map_12_7_TEM21__FIELD_3__next_value :
+            map_12_7_TEM21__FIELD_3__curr_value;
+        map_12_7_TEM21_alias__sw_rd_data[16:14] =
+            map_12_7_TEM21__FIELD_2__pulse ?
+            map_12_7_TEM21__FIELD_2__next_value :
+            map_12_7_TEM21__FIELD_2__curr_value;
+        map_12_7_TEM21_alias__sw_rd_data[17:17] =
+            map_12_7_TEM21__FIELD_1__pulse ?
+            map_12_7_TEM21__FIELD_1__next_value :
+            map_12_7_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_7_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[51];
@@ -3644,10 +2946,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[51]  = map_12_7_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_7_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_7_TEM22_alias__sw_rd_data[13:13] = map_12_7_TEM22__FIELD_3__curr_value;
-        map_12_7_TEM22_alias__sw_rd_data[16:14] = map_12_7_TEM22__FIELD_2__curr_value;
-        map_12_7_TEM22_alias__sw_rd_data[17:17] = map_12_7_TEM22__FIELD_1__curr_value;
+        map_12_7_TEM22_alias__sw_rd_data[31:0] = map_12_7_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_8_TEM21__sw_wr_en      = reg_sw_wr_sel[52];
@@ -3737,10 +3036,20 @@ module regslv_slv_map (
         .field_value                            (map_12_8_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_8_TEM21__sw_rd_data = 32'h0;
-        map_12_8_TEM21__sw_rd_data[13:13] = map_12_8_TEM21__FIELD_3__curr_value;
-        map_12_8_TEM21__sw_rd_data[16:14] = map_12_8_TEM21__FIELD_2__curr_value;
-        map_12_8_TEM21__sw_rd_data[17:17] = map_12_8_TEM21__FIELD_1__curr_value;
+        map_12_8_TEM21__sw_rd_data[13:13] =
+            map_12_8_TEM21__FIELD_3__pulse ?
+            map_12_8_TEM21__FIELD_3__next_value :
+            map_12_8_TEM21__FIELD_3__curr_value;
+        map_12_8_TEM21__sw_rd_data[16:14] =
+            map_12_8_TEM21__FIELD_2__pulse ?
+            map_12_8_TEM21__FIELD_2__next_value :
+            map_12_8_TEM21__FIELD_2__curr_value;
+        map_12_8_TEM21__sw_rd_data[17:17] =
+            map_12_8_TEM21__FIELD_1__pulse ?
+            map_12_8_TEM21__FIELD_1__next_value :
+            map_12_8_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_8_TEM22__sw_wr_en      = reg_sw_wr_sel[53];
@@ -3749,8 +3058,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[53]  = map_12_8_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3759,81 +3068,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_8_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_8_TEM22__sw_wr_data[13:13], map_12_8_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_8_TEM22__sw_rd_en, map_12_8_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_8_TEM22__sw_wr_en, map_12_8_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_8_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_8_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_8_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_8_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_8_TEM22__sw_wr_data[16:14], map_12_8_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_8_TEM22__sw_rd_en, map_12_8_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_8_TEM22__sw_wr_en, map_12_8_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_8_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_8_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_8_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_8_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_8_TEM22__sw_wr_data[17:17], map_12_8_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_8_TEM22__sw_wr_data[31:0], map_12_8_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_8_TEM22__sw_rd_en, map_12_8_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_8_TEM22__sw_wr_en, map_12_8_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_8_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_8_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_8_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_8_TEM22__sw_rd_data = 32'h0;
-        map_12_8_TEM22__sw_rd_data[13:13] = map_12_8_TEM22__FIELD_3__curr_value;
-        map_12_8_TEM22__sw_rd_data[16:14] = map_12_8_TEM22__FIELD_2__curr_value;
-        map_12_8_TEM22__sw_rd_data[17:17] = map_12_8_TEM22__FIELD_1__curr_value;
+        map_12_8_TEM22__sw_rd_data[31:0] = map_12_8_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_8_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[54];
@@ -3842,10 +3094,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[54]  = map_12_8_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_8_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_8_TEM21_alias__sw_rd_data[13:13] = map_12_8_TEM21__FIELD_3__curr_value;
-        map_12_8_TEM21_alias__sw_rd_data[16:14] = map_12_8_TEM21__FIELD_2__curr_value;
-        map_12_8_TEM21_alias__sw_rd_data[17:17] = map_12_8_TEM21__FIELD_1__curr_value;
+        map_12_8_TEM21_alias__sw_rd_data[13:13] =
+            map_12_8_TEM21__FIELD_3__pulse ?
+            map_12_8_TEM21__FIELD_3__next_value :
+            map_12_8_TEM21__FIELD_3__curr_value;
+        map_12_8_TEM21_alias__sw_rd_data[16:14] =
+            map_12_8_TEM21__FIELD_2__pulse ?
+            map_12_8_TEM21__FIELD_2__next_value :
+            map_12_8_TEM21__FIELD_2__curr_value;
+        map_12_8_TEM21_alias__sw_rd_data[17:17] =
+            map_12_8_TEM21__FIELD_1__pulse ?
+            map_12_8_TEM21__FIELD_1__next_value :
+            map_12_8_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_8_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[55];
@@ -3854,10 +3116,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[55]  = map_12_8_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_8_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_8_TEM22_alias__sw_rd_data[13:13] = map_12_8_TEM22__FIELD_3__curr_value;
-        map_12_8_TEM22_alias__sw_rd_data[16:14] = map_12_8_TEM22__FIELD_2__curr_value;
-        map_12_8_TEM22_alias__sw_rd_data[17:17] = map_12_8_TEM22__FIELD_1__curr_value;
+        map_12_8_TEM22_alias__sw_rd_data[31:0] = map_12_8_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_9_TEM21__sw_wr_en      = reg_sw_wr_sel[56];
@@ -3947,10 +3206,20 @@ module regslv_slv_map (
         .field_value                            (map_12_9_TEM21__FIELD_1__curr_value));
 
     always_comb begin
+        (False, False, True)
         map_12_9_TEM21__sw_rd_data = 32'h0;
-        map_12_9_TEM21__sw_rd_data[13:13] = map_12_9_TEM21__FIELD_3__curr_value;
-        map_12_9_TEM21__sw_rd_data[16:14] = map_12_9_TEM21__FIELD_2__curr_value;
-        map_12_9_TEM21__sw_rd_data[17:17] = map_12_9_TEM21__FIELD_1__curr_value;
+        map_12_9_TEM21__sw_rd_data[13:13] =
+            map_12_9_TEM21__FIELD_3__pulse ?
+            map_12_9_TEM21__FIELD_3__next_value :
+            map_12_9_TEM21__FIELD_3__curr_value;
+        map_12_9_TEM21__sw_rd_data[16:14] =
+            map_12_9_TEM21__FIELD_2__pulse ?
+            map_12_9_TEM21__FIELD_2__next_value :
+            map_12_9_TEM21__FIELD_2__curr_value;
+        map_12_9_TEM21__sw_rd_data[17:17] =
+            map_12_9_TEM21__FIELD_1__pulse ?
+            map_12_9_TEM21__FIELD_1__next_value :
+            map_12_9_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_9_TEM22__sw_wr_en      = reg_sw_wr_sel[57];
@@ -3959,8 +3228,8 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[57]  = map_12_9_TEM22__sw_rd_data;
 
     field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h1),
+        .F_WIDTH                                (32),
+        .ARST_VALUE                             (32'h0),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3969,81 +3238,24 @@ module regslv_slv_map (
         .SWMOD                                  ({2{1'b0}}),
         .SWACC                                  ({2{1'b0}}),
         .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_9_TEM22__FIELD_3 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_9_TEM22__sw_wr_data[13:13], map_12_9_TEM22_alias__sw_wr_data[13:13]}),
-        .sw_rd                                  ({map_12_9_TEM22__sw_rd_en, map_12_9_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_9_TEM22__sw_wr_en, map_12_9_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_9_TEM22__FIELD_3__next_value),
-        .hw_pulse                               (map_12_9_TEM22__FIELD_3__pulse),
-        .field_value                            (map_12_9_TEM22__FIELD_3__curr_value));
-
-    field #(
-        .F_WIDTH                                (3),
-        .ARST_VALUE                             (3'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
-        .PRECEDENCE                             (`SW),
-        .HARD_WIRED                             (0))
-    x__map_12_9_TEM22__FIELD_2 (
-        .clk                                    (regslv_clk),
-        .rst_n                                  (regslv_rst_n),
-        .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_9_TEM22__sw_wr_data[16:14], map_12_9_TEM22_alias__sw_wr_data[16:14]}),
-        .sw_rd                                  ({map_12_9_TEM22__sw_rd_en, map_12_9_TEM22_alias__sw_rd_en}),
-        .sw_wr                                  ({map_12_9_TEM22__sw_wr_en, map_12_9_TEM22_alias__sw_wr_en}),
-        .swmod_out                              (),
-        .swacc_out                              (),
-        .hw_value                               (map_12_9_TEM22__FIELD_2__next_value),
-        .hw_pulse                               (map_12_9_TEM22__FIELD_2__pulse),
-        .field_value                            (map_12_9_TEM22__FIELD_2__curr_value));
-
-    field #(
-        .F_WIDTH                                (1),
-        .ARST_VALUE                             (1'h0),
-        .ALIAS_NUM                              (2),
-        .SRST_CNT                               (0),
-        .SW_TYPE                                ({`SW_RW, `SW_RW}),
-        .SW_ONREAD_TYPE                         ({`NA, `NA}),
-        .SW_ONWRITE_TYPE                        ({`NA, `NA}),
-        .SWMOD                                  ({2{1'b0}}),
-        .SWACC                                  ({2{1'b0}}),
-        .PULSE                                  ({2{1'b0}}),
-        .HW_TYPE                                (`HW_WO),
+        .HW_TYPE                                (`HW_RO),
         .PRECEDENCE                             (`SW),
         .HARD_WIRED                             (0))
     x__map_12_9_TEM22__FIELD_1 (
         .clk                                    (regslv_clk),
         .rst_n                                  (regslv_rst_n),
         .sync_rst                               (1'b0),
-        .sw_wr_data                             ({map_12_9_TEM22__sw_wr_data[17:17], map_12_9_TEM22_alias__sw_wr_data[17:17]}),
+        .sw_wr_data                             ({map_12_9_TEM22__sw_wr_data[31:0], map_12_9_TEM22_alias__sw_wr_data[31:0]}),
         .sw_rd                                  ({map_12_9_TEM22__sw_rd_en, map_12_9_TEM22_alias__sw_rd_en}),
         .sw_wr                                  ({map_12_9_TEM22__sw_wr_en, map_12_9_TEM22_alias__sw_wr_en}),
         .swmod_out                              (),
         .swacc_out                              (),
-        .hw_value                               (map_12_9_TEM22__FIELD_1__next_value),
-        .hw_pulse                               (map_12_9_TEM22__FIELD_1__pulse),
+        .hw_value                               (32'b0),
+        .hw_pulse                               (1'b0),
         .field_value                            (map_12_9_TEM22__FIELD_1__curr_value));
 
     always_comb begin
-        map_12_9_TEM22__sw_rd_data = 32'h0;
-        map_12_9_TEM22__sw_rd_data[13:13] = map_12_9_TEM22__FIELD_3__curr_value;
-        map_12_9_TEM22__sw_rd_data[16:14] = map_12_9_TEM22__FIELD_2__curr_value;
-        map_12_9_TEM22__sw_rd_data[17:17] = map_12_9_TEM22__FIELD_1__curr_value;
+        map_12_9_TEM22__sw_rd_data[31:0] = map_12_9_TEM22__FIELD_1__curr_value;
     end
 
     assign  map_12_9_TEM21_alias__sw_wr_en      = reg_sw_wr_sel[58];
@@ -4052,10 +3264,20 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[58]  = map_12_9_TEM21_alias__sw_rd_data;
 
     always_comb begin
+        (False, False, True)
         map_12_9_TEM21_alias__sw_rd_data = 32'h0;
-        map_12_9_TEM21_alias__sw_rd_data[13:13] = map_12_9_TEM21__FIELD_3__curr_value;
-        map_12_9_TEM21_alias__sw_rd_data[16:14] = map_12_9_TEM21__FIELD_2__curr_value;
-        map_12_9_TEM21_alias__sw_rd_data[17:17] = map_12_9_TEM21__FIELD_1__curr_value;
+        map_12_9_TEM21_alias__sw_rd_data[13:13] =
+            map_12_9_TEM21__FIELD_3__pulse ?
+            map_12_9_TEM21__FIELD_3__next_value :
+            map_12_9_TEM21__FIELD_3__curr_value;
+        map_12_9_TEM21_alias__sw_rd_data[16:14] =
+            map_12_9_TEM21__FIELD_2__pulse ?
+            map_12_9_TEM21__FIELD_2__next_value :
+            map_12_9_TEM21__FIELD_2__curr_value;
+        map_12_9_TEM21_alias__sw_rd_data[17:17] =
+            map_12_9_TEM21__FIELD_1__pulse ?
+            map_12_9_TEM21__FIELD_1__next_value :
+            map_12_9_TEM21__FIELD_1__curr_value;
     end
 
     assign  map_12_9_TEM22_alias__sw_wr_en      = reg_sw_wr_sel[59];
@@ -4064,10 +3286,7 @@ module regslv_slv_map (
     assign  reg_sw_rd_data[59]  = map_12_9_TEM22_alias__sw_rd_data;
 
     always_comb begin
-        map_12_9_TEM22_alias__sw_rd_data = 32'h0;
-        map_12_9_TEM22_alias__sw_rd_data[13:13] = map_12_9_TEM22__FIELD_3__curr_value;
-        map_12_9_TEM22_alias__sw_rd_data[16:14] = map_12_9_TEM22__FIELD_2__curr_value;
-        map_12_9_TEM22_alias__sw_rd_data[17:17] = map_12_9_TEM22__FIELD_1__curr_value;
+        map_12_9_TEM22_alias__sw_rd_data[31:0] = map_12_9_TEM22__FIELD_1__curr_value;
     end
 
 //*************************************READ DATA MUX**************************************************//
