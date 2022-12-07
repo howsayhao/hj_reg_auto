@@ -103,7 +103,7 @@ module regdisp_disp_map (
                 ((DEC_ADDR_REM_BITS'((64'h0 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
                 <= upstream__regdisp_disp_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
                 upstream__regdisp_disp_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
-                (DEC_ADDR_REM_BITS'((64'h10c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
+                (DEC_ADDR_REM_BITS'((64'h12c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
                     dec_if_sel[0] = 1'b1;
                 default: dec_dummy_reg_sel  = 1'b1;
             endcase

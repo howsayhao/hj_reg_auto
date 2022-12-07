@@ -5,8 +5,7 @@ from multiprocessing import Process
 
 import utils.message as message
 from generators.chdr.export import export_chdr
-from generators.html.export import export_html
-from generators.doc.export import export_org, export_md, export_pdf
+from generators.doc.export import export_doc
 from generators.preprocess import preprocess
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
@@ -37,8 +36,7 @@ class CommandRunner:
             prog="hrda",
             description="HJ-micro Register Design Automation (HRDA) Tool. "
                         "See reference manual in {}".format(
-                            os.path.join(os.path.dirname(
-                                __file__), __man_file__)
+                            os.path.join(os.path.dirname(__file__), __man_file__)
                         )
         )
         parser.add_argument(
@@ -196,7 +194,7 @@ class CommandRunner:
             help="directory to save generated files (default:%(default)s)"
         )
         parser_generate.add_argument(
-            "-grtl", "--gen_rtl",
+            "-grtl", "--generate_rtl",
             action="store_true",
             help="generate RTL code"
         )
@@ -211,14 +209,26 @@ class CommandRunner:
             help="specify the hierarchy depth range for generating RTL code"
         )
         parser_generate.add_argument(
-            "-ghtml", "--gen_html",
+            "-gdoc", "--generate_doc",
             action="store_true",
-            help="generate HTML-format register documentations"
+            help="generate documentation files in different formats"
         )
         parser_generate.add_argument(
-            "-gorg", "--gen_org",
+            "--doc_format",
+            nargs="+",
+            default=["html"],
+            choices=["html", "pdf", "md", "org", "txt"],
+            help="specify the format of generated documentation files"
+            "(default:%(default)s)"
+        )
+        parser_generate.add_argument(
+            "--doc_with_toc",
             action="store_true",
-            help="generate an org documentation"
+            help="generate table of contents in documentation files (html, pdf, md only)"
+        )
+        parser_generate.add_argument(
+            "-top", "--top_inst",
+            help="specify the top level addrmap instance to generate"
         )
         parser_generate.add_argument(
             "--only_simplified_org",
@@ -231,33 +241,23 @@ class CommandRunner:
             help="org documentation is generated with two versions: simplified and detailed"
         )
         parser_generate.add_argument(
-            "-gpdf", "--gen_pdf",
-            action="store_true",
-            help="generate a pdf documentation"
-        )
-        parser_generate.add_argument(
-            "-gmd", "--gen_md",
-            action="store_true",
-            help="generate a markdown documentation"
-        )
-        parser_generate.add_argument(
-            "-gral", "--gen_ral",
+            "-gral", "--generate_ral",
             action="store_true",
             help="generate UVM RAL model"
         )
         parser_generate.add_argument(
             "--filter",
             nargs="+",
-            help="filter some instances in UVM simulation "
+            help="filter matched instances in generation process"
             "(support wildcard character)"
         )
         parser_generate.add_argument(
-            "-gch", "--gen_chdr",
+            "-gch", "--generate_cheader",
             action="store_true",
             help="generate C headers"
         )
         parser_generate.add_argument(
-            "-gall", "--gen_all",
+            "-gall", "--generate_all",
             action="store_true",
             help="generate all related files"
         )
@@ -382,12 +382,11 @@ class CommandRunner:
         `args.list` : `str`, the file list text file
         `args.module` : top-level addrmap name and the `regmst` name in the `reg_tree` when all input are Excel files
         `args.gen_dir` : generation directory
-        `args.gen_rtl` : `bool`, whether to generate RTL modules
-        `args.gen_html` : `bool`, whether to generate HTML documentations
-        `args.gen_org` : `bool`, whether to generate org mode documentations
-        `args.gen_pdf` : `bool`, whether to generate PDF documentations
-        `args.gen_ral` : `bool`, whether to generate the UVM RAL model (.sv)
-        `args.gen_chdr` : `bool`, whether to generate C header files
+        `args.generate_rtl` : `bool`, whether to generate RTL modules
+        `args.generate_doc` : `bool`, whether to generate documentation
+        `args.doc_format` : `list`, documentation format
+        `args.generate_ral` : `bool`, whether to generate the UVM RAL model (.sv)
+        `args.generate_cheader` : `bool`, whether to generate C header files
         """
         root = Parser().parse(args.file, args.list, args.gen_dir, True, args.module)
 
@@ -396,6 +395,7 @@ class CommandRunner:
                 "-gdir/--gen_dir option assigns an invalid directory %s" % (args.gen_dir)
             )
 
+        # prepare the generation
         preprocess(
             root,
             filter=args.filter,
@@ -405,46 +405,68 @@ class CommandRunner:
 
         proc_list = []
 
-        if args.gen_all or args.gen_rtl:
-            kw = {
+        # when -top option is specified, search the root scope to
+        # find the top-level addrmap
+        if args.top_inst:
+            top_node = root.find_by_path(args.top_inst)
+
+            if not top_node:
+                message.error(
+                    "--top_inst option specifies an invalid path %s, "
+                    "maybe you don't specify the full hierarchical instance path" % (args.top_inst)
+                )
+        else:
+            top_node = root.top
+
+        # generate RTL modules
+        if args.generate_all or args.generate_rtl:
+            kwargs = {
                 "without_filelist": args.without_filelist or False,
-                "gen_hier_depth_range": args.gen_hier_depth_range or None
+                "gen_hier_depth_range": args.gen_hier_depth_range or None,
+                "filter": args.filter or None
             }
 
             proc_list.append(
-                Process(target=export_rtl, name="gen_rtl", args=(root, args.gen_dir), kwargs=kw)
+                Process(
+                    target=export_rtl,
+                    name="generate_rtl",
+                    args=(top_node, args.gen_dir), kwargs=kwargs)
             )
 
-        # HTML generation will be deprecated in the future
-        if args.gen_html:
+        # generate documentations (HTML, org mode, PDF, markdown, txt)
+        if args.generate_all or args.generate_doc:
+            kwargs = {
+                "only_simplified_org": args.only_simplified_org or False,
+                "with_simplified_org": args.with_simplified_org or False,
+                "with_toc": args.doc_with_toc or False,
+                "filter": args.filter or None
+            }
             proc_list.append(
-                Process(target=export_html, name="gen_html", args=(root, args.gen_dir))
+                Process(
+                    target=export_doc,
+                    name="generate_doc",
+                    args=(top_node, args.gen_dir, args.doc_format),
+                    kwargs=kwargs)
             )
-        if args.gen_all or args.gen_org:
-            if args.only_simplified_org or args.with_simplified_org:
-                proc_list.append(
-                    Process(target=export_org, name="gen_org_simplified", args=(root, args.gen_dir, True))
-                )
 
-            if not args.only_simplified_org:
-                proc_list.append(
-                    Process(target=export_org, name="gen_org_detailed", args=(root, args.gen_dir, False))
+        # generate the UVM RAL model
+        if args.generate_all or args.generate_ral:
+            proc_list.append(
+                Process(
+                    target=export_uvm,
+                    name="generate_ral",
+                    args=(top_node, args.gen_dir)
                 )
-        if args.gen_all or args.gen_pdf:
-            proc_list.append(
-                Process(target=export_pdf, name="gen_pdf", args=(root, args.gen_dir))
             )
-        if args.gen_all or args.gen_md:
+
+        # generate C header files
+        if args.generate_all or args.generate_cheader:
             proc_list.append(
-                Process(target=export_md, name="gen_md", args=(root, args.gen_dir))
-            )
-        if args.gen_all or args.gen_ral:
-            proc_list.append(
-                Process(target=export_uvm, name="gen_ral", args=(root, args.gen_dir))
-            )
-        if args.gen_all or args.gen_chdr:
-            proc_list.append(
-                Process(target=export_chdr, name="gen_chdr", args=(root, args.gen_dir))
+                Process(
+                    target=export_chdr,
+                    name="generate_cheader",
+                    args=(top_node, args.gen_dir)
+                )
             )
 
         # start multiprocessing and wait for all processes to finish

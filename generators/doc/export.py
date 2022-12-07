@@ -3,11 +3,12 @@ from __future__ import annotations
 import os
 import traceback
 import markdown
+import subprocess
 
 import jinja2 as jj
 import utils.message as message
 from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
-                            RegfileNode, RegNode, RootNode)
+                            RegfileNode, RegNode)
 from utils.misc import convert_size
 
 
@@ -22,18 +23,20 @@ class DocExporter:
             undefined=jj.StrictUndefined
         )
 
-    def export(self, top_node:AddrmapNode, path:str, template_name:str):
+    def export(self, top_node:AddrmapNode, export_file:str,
+               template_name:str, with_toc:bool=False):
         """
         Parameter
         ---------
-        `top_node` :
-        `path` :
+        top_node : AddrmapNode
+            top-level address map node
+        export_file : str
+            output file path
+        template_name : str
+            jinja2 template name used to generate the output file
+        with_toc : bool
+            whether to generate a table of contents
         """
-        assert template_name in ("org", "org_simplified", "md")
-
-        # If it is the root node, skip to the top addrmap
-        if isinstance(top_node, RootNode):
-            top_node = top_node.top
         self.top_node = top_node
 
         context = {
@@ -54,22 +57,22 @@ class DocExporter:
             'get_property': self._get_property,
             'convert_size': convert_size,
             'get_all_blocks': self._get_all_blocks,
-            'get_secure_attr': self._get_secure_attr
+            'get_secure_attr': self._get_secure_attr,
+            'get_base_node': self._get_base_node,
+            'with_toc': with_toc
         }
 
         template = self.jj_env.get_template("%s.jinja" % template_name)
-        stream = template.stream(context)
-        stream.dump(path)
+        template.stream(context).dump(export_file)
 
     def _get_hier_depth(self, node:Node):
         """
-        get the hierarchy of a component instance
-        which is corresponding to a `Node` object
+        Get the hierarchy depth of the node
         """
-        if not isinstance(node.parent, RootNode):
-            return self._get_hier_depth(node.parent) + 1
-        else:
+        if node == self.top_node:
             return 1
+        else:
+            return self._get_hier_depth(node.parent) + 1
 
     def _get_hier_name(self, node:Node):
         return node.get_path(array_suffix="_{index:d}")
@@ -77,8 +80,15 @@ class DocExporter:
     def _get_abs_addr(self, node:AddressableNode):
         return hex(node.absolute_address)
 
-    def _get_offset(self, node:AddressableNode):
-        return hex(node.address_offset)
+    def _get_base_node(self, node:Node):
+        if node == self.top_node or \
+            node.get_property("set_as_subsys_root", default=False):
+            return node
+        else:
+            return self._get_base_node(node.parent)
+
+    def _get_offset(self, node:AddressableNode, ref_node:AddressableNode):
+        return hex(node.absolute_address - ref_node.absolute_address)
 
     def _get_end_addr(self, node:AddressableNode):
         return hex(node.absolute_address+node.size-1)
@@ -147,93 +157,173 @@ class DocExporter:
                 "secure" if sec_cfg_default_val == 0 else "non-secure"
             )
 
-
-def export_org(root:RootNode, out_dir:str, simplified=False):
+def export_doc(top_node:AddrmapNode, out_dir:str, format_list:list[str], **kwargs):
     """
-    """
-    exporter = DocExporter()
+    Export documentation with optional file formats
 
-    if simplified:
-        name = root.top.inst_name + "_simplified"
-        typ = "org_simplified"
-    else:
-        name = root.top.inst_name + "_detailed"
-        typ = "org"
-
-    rtl_dir = os.path.join(out_dir, "docs")
-    if not os.path.exists(rtl_dir):
-        os.makedirs(rtl_dir)
-
-    export_file = os.path.join(rtl_dir, "%s.org" % name)
-
-    try:
-        exporter.export(root, export_file, typ)
-    except:
-        message.error(
-            "HRDA encounters some unknown errors\n{}\n"
-            "org exporter aborted due to previous errors".format(
-                traceback.format_exc()
-            ), raise_err=False
-        )
-    else:
-        message.info("save the org documentation in: %s" % (export_file))
-
-def export_md(root:RootNode, out_dir:str):
-    exporter = DocExporter()
-
-    rtl_dir = os.path.join(out_dir, "docs")
-    if not os.path.exists(rtl_dir):
-        os.makedirs(rtl_dir)
-
-    export_file = os.path.join(rtl_dir, "%s.md" % (root.top.inst_name))
-
-    try:
-        exporter.export(root, export_file, "md")
-    except:
-        message.error(
-            "HRDA encounters some unknown errors\n{}\n"
-            "markdown exporter aborted due to previous errors".format(
-                traceback.format_exc()
-            ), raise_err=False
-        )
-    else:
-        message.info("save the markdown documentation in: %s" % (export_file))
-
-def export_pdf(root:RootNode, out_dir:str):
-    """
+    Parameters
+    ----------
+    `top_node` : AddrmapNode
+        top-level address map node
+    `out_dir` : str
+        Output directory
+    `format_list` : list[str]
+        List of file formats to export
+    `kwargs` :
+        Additional arguments for each file format
     """
     exporter = DocExporter()
+    error_occur = False
 
-    rtl_dir = os.path.join(out_dir, "docs")
-    if not os.path.exists(rtl_dir):
-        os.makedirs(rtl_dir)
+    template_dict = {}
 
-    export_file = os.path.join(rtl_dir, "%s.pdf" % (root.top.inst_name))
+    with_toc = kwargs.pop("with_toc")
+    exclude_pattern = kwargs.pop("filter")
 
-    md_tmp_file = os.path.join(rtl_dir, "%s.tmp.md" % (root.top.inst_name))
-    html_tmp_file = os.path.join(rtl_dir, "%s.tmp.html" % (root.top.inst_name))
+    # org, markdown and txt doc are going to be generated by jinja2 engine
+    for format in format_list:
+        if format == "org":
+            if kwargs.pop("only_simplified_org"):
+                template_dict["org_simplified"] = format
+                continue
 
-    try:
-        exporter.export(root, md_tmp_file, "md")
+            if kwargs.pop("with_simplified_org"):
+                template_dict["org"] = format
 
-        with open(md_tmp_file, "r") as f:
-            text = f.read()
-            html = markdown.markdown(text, extensions=["tables", "nl2br"])
+            template_dict["org_detailed"] = format
 
-        with open(html_tmp_file, "w") as f:
-            f.write(html)
-    except:
+        elif format == "md":
+            template_dict["md"] = format
+
+        elif format == "txt":
+            template_dict["plain_text"] = format
+
+    out_dir = os.path.join(out_dir, "docs")
+
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    md_already_exported = False
+    html_already_generated = False
+
+    # indicate whether there are temporal files
+    md_tmp_exported = False
+    html_tmp_exported = False
+
+    for template_name, format in template_dict.items():
+        export_file = os.path.join(out_dir, "%s.%s" % (top_node.inst_name, format))
+
+        try:
+            exporter.export(top_node, export_file, template_name, with_toc)
+        except:
+            message.error(
+                "failed to export %s documentation" % format,
+                raise_err=False
+            )
+            error_occur = True
+        else:
+            if format == "md":
+                md_already_exported = True
+                md_file = export_file
+
+            message.info("save %s documentation in %s" % (format, export_file))
+
+    html_file = os.path.join(out_dir, "%s.html" % top_node.inst_name)
+
+    # markdown extensions used
+    md_exts = ["tables", "nl2br"]
+    if with_toc:
+        md_exts.append("toc")
+
+    # for html, we use markdown library to generate html from markdown
+    if "html" in format_list:
+        try:
+            # when markdown file is not generated, we generate it first
+            if not md_already_exported:
+                md_file = os.path.join(out_dir, "%s.md" % top_node.inst_name)
+                exporter.export(top_node, md_file, "md", with_toc)
+
+            markdown.markdownFromFile(
+                input=md_file,
+                output=html_file,
+                extensions=md_exts
+            )
+        except:
+            message.error(
+                "failed to export html documentation",
+                raise_err=False
+            )
+            error_occur = True
+        else:
+            if not md_already_exported:
+                md_tmp_exported = True
+
+            html_already_generated = True
+
+            message.info("save html documentation in %s" % html_file)
+
+    # for pdf, we use google-chrome to convert html to pdf
+    if "pdf" in format_list:
+        pdf_file = os.path.join(out_dir, "%s.pdf" % top_node.inst_name)
+
+        # when html file is not generated, we generate it first
+        if not html_already_generated:
+            try:
+                # when markdown file is not generated, we generate it first
+                if not md_already_exported:
+                    md_file = os.path.join(out_dir, "%s.md" % top_node.inst_name)
+                    exporter.export(top_node, md_file, "md", with_toc)
+
+                markdown.markdownFromFile(
+                    input=md_file,
+                    output=html_file,
+                    extensions=md_exts
+                )
+            except:
+                message.error(
+                    "failed to export intermediate html file",
+                    raise_err=False
+                )
+                error_occur = True
+            else:
+                if not md_already_exported:
+                    md_already_exported = True
+
+                html_tmp_exported = True
+        else:
+            # convert html to pdf by Google Chrome
+            message.info("generate PDF file by Google Chrome, it may take a while")
+
+            try:
+                subprocess.call(
+                    [
+                        'google-chrome',
+                        '--headless',
+                        '--disable-gpu',
+                        '--print-to-pdf-no-header',
+                        '--print-to-pdf={}'.format(export_file), html_file
+                    ])
+            except:
+                message.error(
+                    "failed to generate PDF by Google Chrome",
+                    raise_err=False
+                )
+            else:
+                message.info("save pdf documentation in %s" % pdf_file)
+
+    # delete intermediate files after all generation work is done
+    if md_tmp_exported:
+        os.remove(md_file)
+
+    if html_tmp_exported:
+        os.remove(html_file)
+
+    # raise error ultimately to trace back
+    # TODO: provide more accurate trace information
+    if error_occur:
         message.error(
-            "HRDA encounters some unknown errors\n{}\n"
-            "pdf exporter aborted due to previous errors".format(
+            "HRDA encounters some unknown errors,\n{}\n"
+            "doc exporter does not finish all work and exits incorrectly".format(
                 traceback.format_exc()
-            ), raise_err=False
-        )
-    else:
-        # TODO
-        message.warning(
-            "PDF exporter is not implemented completely because of lack of dependencies, "
-            "and now it is able to export temporary markdown and html files only, "
-            "you can use the markdown and org exporter instead, or convert to "
-            "PDF from temporal HTML file manually by using browser like Chrome or Firefox"
+            )
         )

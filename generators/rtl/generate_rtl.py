@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import fnmatch
 from math import ceil, log2
 
 import jinja2 as jj
@@ -22,6 +23,8 @@ class RTLExporter:
             loader=loader,
             undefined=jj.StrictUndefined
         )
+
+        self.top_node = None
 
         # basic context for all templates
         self.context = {
@@ -73,31 +76,39 @@ class RTLExporter:
             'is_hard_wired': self._is_hard_wired,
             'is_intr': self._is_intr,
             'get_ref_prop': self._get_ref_prop,
-            'get_field_num': self._get_field_num
+            'get_field_num': self._get_field_num,
+            'need_param_reset': self._need_param_reset
         }
 
-    def export(self, root:RootNode, rtl_dir:str, **kwargs):
+    def export(self, top_node:AddrmapNode, rtl_dir:str, **kwargs):
         """
         Export in-house RTL module files: regmst, regdisp and regslv.
 
         Parameters
         ----------
-        root : RootNode
-            root node of the design
+        top_node : AddrmapNode
+            Top node of the generation boundry.
         rtl_dir : str
-            directory to save RTL modules
+            Directory to save the generated RTL files.
+        kwargs : dict
+            Additional arguments to be passed to the template.
+            - without_filelist : bool
+            - gen_hier_depth_range : list
         """
         without_filelist = kwargs.pop("without_filelist", False)
         gen_hier_depth_range = kwargs.pop("gen_hier_depth_range", None)
+        exclude_pattern = kwargs.pop("filter", None)
 
         # filelist for all in-house generated RTL files: regmst, regdisp, regslv
         filelist = []
 
-        # top-level (root) addrmap instance name (not the RootNode)
-        top_name = root.top.inst_name
+        # specified top-level addrmap instance name
+        top_name = top_node.inst_name
 
-        # traverse all addrmap to get complete filelist and generate modules in pre-order
-        for node in root.descendants(unroll=True, skip_not_present=False):
+        self.top_node = top_node
+
+        # traverse all addrmap to get complete filelist and generate modules in pre-order (top-down)
+        for node in top_node.descendants(unroll=True, skip_not_present=False):
             if isinstance(node, AddrmapNode):
                 if node.is_array and node.get_property("hj_use_abs_addr"):
                     need_array_suffix = True
@@ -107,10 +118,16 @@ class RTLExporter:
                 # if current regmst/regdisp/regslv instance is in array,
                 # and it is not the first instance in the array,
                 # and it uses address offset,
-                # then skip it
+                # then there is no need to generate duplicate RTL module for it
                 if node.is_array and node.current_idx[0] != 0 and \
                     not node.get_property("hj_use_abs_addr"):
                     continue
+
+                # filter out/exclude the addrmap instances that are constrained
+                # by --filter option
+                if exclude_pattern:
+                    if fnmatch.fnmatchcase(node.inst_name, exclude_pattern):
+                        continue
 
                 # if hierarchy depth range is specified,
                 # then skip generation of nodes which are not in the range
@@ -509,3 +526,6 @@ class RTLExporter:
             return self._get_hier_depth(node.parent) + 1
         else:
             return 1
+
+    def _need_param_reset(self, node:FieldNode):
+        return node.get_property("parameterized_reset", default=False)

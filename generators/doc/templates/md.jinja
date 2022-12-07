@@ -1,16 +1,20 @@
 {%- macro addr_block_def(node) -%}
 {{'#' * get_hier_depth(node)}} {{get_abs_addr(node)}}-{{get_end_addr(node)}} {{get_inst_name(node)}}
-Hierarchy: *{{get_hier_name(node)}}*
+{%- set base_node = get_base_node(node) %}
+**Hierarchy**: *{{get_hier_name(node)}}*
 
-Absolute Base Address: {{get_abs_addr(node)}}
+**Absolute Address Base**: {{get_abs_addr(node)}}
 
-Size: {{get_size(node)}} Bytes
+**Offset**: {{get_offset(node, base_node)}} (based on [{{get_inst_name(base_node)}}](#{{get_abs_addr(base_node)}}-{{get_end_addr(base_node)}}-{{get_inst_name(base_node)}}))
 
-Secure Attribute: {{get_secure_attr(node)}}
+**Size**: {{get_size(node)}} Bytes
+
+**Secure Attribute**: {{get_secure_attr(node)}}
 {%- if get_property(node, "desc") is not none %}
 
-Description: {{get_property(node, "desc")}}
+**Description**: {{get_property(node, "desc")}}
 {%- endif %}
+***
 {% endmacro %}
 
 {%- macro mem_def(node) -%}
@@ -45,16 +49,17 @@ Description: {{get_property(node, "desc")}}
 
 {%- macro reg_def(node) -%}
 {{'#' * get_hier_depth(node)}} {{get_abs_addr(node)}}-{{get_end_addr(node)}} {{get_inst_name(node)}}
-Hierarchy: *{{get_hier_name(node)}}*
+{%- set base_node = get_base_node(node) %}
+**Hierarchy**: *{{get_hier_name(node)}}*
 
-Absolute Address: {{get_abs_addr(node)}}
+**Absolute Address**: {{get_abs_addr(node)}}
 
-Base Offset: {{get_offset(node)}}
+**Offset**: {{get_offset(node, base_node)}} (based on [{{get_inst_name(base_node)}}](#{{get_abs_addr(base_node)}}-{{get_end_addr(base_node)}}-{{get_inst_name(base_node)}}))
 
-Size: {{get_size(node)}} Bytes
+**Size**: {{get_size(node)}} Bytes
 {%- if get_property(node, "desc") is not none %}
 
-Description: {{get_property(node, "desc")}}
+**Description**: {{get_property(node, "desc")}}
 {%- endif %}
 {% raw %}
 | Bits  | Name     | Reset Value     | SW Access     | HW Access |
@@ -65,7 +70,8 @@ Description: {{get_property(node, "desc")}}
 
 {%- for field in node.fields(skip_not_present=False) %}
 {{field_desc(field)}}
-{%- endfor -%}
+{%- endfor %}
+***
 {%- endmacro -%}
 
 {%- macro child_def(node) -%}
@@ -77,6 +83,12 @@ Description: {{get_property(node, "desc")}}
 {{mem_def(node)}}
 {%- endif -%}
 {%- endmacro -%}
+
+{%- if with_toc %}
+# Table of Contents
+***
+[TOC]
+{%- endif %}
 
 {{addr_block_def(top_node)}}
 {%- for node in top_node.descendants(in_post_order=False, unroll=True, skip_not_present=False) %}

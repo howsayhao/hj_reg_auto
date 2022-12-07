@@ -2,19 +2,21 @@ import os
 import traceback
 
 import utils.message as message
-from systemrdl.node import RootNode
+from systemrdl.node import AddrmapNode
 
 from .generate_rtl import RTLExporter
 
 
-def export_rtl(root:RootNode, out_dir:str, **kwargs):
+def export_rtl(top_node:AddrmapNode, out_dir:str, **kwargs):
     """
     Generate RTL code, including regmst, regslv, regdisp and other components
 
     Parameter
     ---------
-    `root` : `systemrdl.node.RootNode`, compiled by SystemRDL Compiler
-    `out_dir` : output directory
+    top_node : AddrmapNode
+        Top-level address map node
+    out_dir : str
+        Output directory
     """
     rtl_dir = os.path.join(out_dir, "rtl")
 
@@ -24,7 +26,7 @@ def export_rtl(root:RootNode, out_dir:str, **kwargs):
     without_filelist = kwargs.pop("without_filelist", False)
 
     try:
-        RTLExporter().export(root, rtl_dir, without_filelist=without_filelist)
+        RTLExporter().export(top_node, rtl_dir, without_filelist=without_filelist)
     except Exception:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"

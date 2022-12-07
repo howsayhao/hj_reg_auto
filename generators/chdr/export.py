@@ -5,7 +5,7 @@ import traceback
 import jinja2 as jj
 import utils.message as message
 from systemrdl.node import (AddressableNode, AddrmapNode, MemNode, Node,
-                            RegfileNode, RegNode, RootNode)
+                            RegfileNode, RegNode)
 
 
 class CHdrExporter:
@@ -38,21 +38,21 @@ class CHdrExporter:
             'get_hier_name': self._get_hier_name
         }
 
-    def export(self, top_node: Node, curr_node: Node, dir: str):
+    def export(self, top_node: AddrmapNode, out_dir: str):
         """
         traverse all addrmap and generate all c header files in pre-order
 
         Parameter
         ---------
-        `top_node` :
-        `curr_node` :
-        `dir` :
         """
-        for node in curr_node.children(unroll=True, skip_not_present=False):
-            if isinstance(node, AddrmapNode):
-                if node.get_property("hj_genslv") or node.get_property("hj_3rd_party_ip"):
+        for child_node in top_node.children(unroll=True, skip_not_present=False):
+            if isinstance(child_node, AddrmapNode):
+                # generate independent c header files
+                if child_node.get_property("hj_genslv") or \
+                    child_node.get_property("hj_3rd_party_ip") or \
+                    child_node.get_property("set_as_subsys_root", default=False):
                     update_context = {
-                        'node': node
+                        'node': child_node
                     }
                     self.context.update(update_context)
 
@@ -61,12 +61,11 @@ class CHdrExporter:
                     stream = template.stream(self.context)
                     stream.dump(
                         os.path.join(
-                            dir,
-                            "%s.h" % (node.get_path_segment(array_suffix="_{index:d}"))
+                            out_dir, "%s.h" % (child_node.get_path_segment(array_suffix="_{index:d}"))
                         )
                     )
 
-                self.export(top_node, node, dir)
+                self.export(child_node, out_dir)
 
     def _get_property(self, node:Node, prop_name):
         return node.get_property(prop_name)
@@ -112,7 +111,7 @@ class CHdrExporter:
 
         return all_flds
 
-def export_chdr(root:RootNode, out_dir:str):
+def export_chdr(top_node:AddrmapNode, out_dir:str):
     """
     Export C header files.
 
@@ -122,12 +121,13 @@ def export_chdr(root:RootNode, out_dir:str):
     `out_dir` : ouput directory to save the generated C header files (.h)
     """
     exporter = CHdrExporter()
+
     chdr_dir = os.path.join(out_dir, "chdr")
     if not os.path.exists(chdr_dir):
         os.makedirs(chdr_dir)
 
     try:
-        exporter.export(root, root, chdr_dir)
+        exporter.export(top_node, chdr_dir)
     except Exception:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"

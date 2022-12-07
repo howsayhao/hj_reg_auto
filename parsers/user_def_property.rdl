@@ -1,12 +1,10 @@
-// user-defined properties
+/*
+ * HRDA User-defined Properties
+ */
+
 
 // used to distinguish 6 different types of addrmap:
 // reg_network, regmst, regdisp, regslv, 3rd party IP, flatten addrmap
-property dont_gen_rtl {
-    component = addrmap;
-    type = boolean;
-};
-
 property hj_gennetwork {
     component = addrmap;
     type = boolean;
@@ -128,4 +126,32 @@ property secure_attr {
 property secure_config_ref {
     component = addrmap | mem;
     type = string;
+};
+
+// field reset parameterization
+property parameterized_reset {
+    component = field;
+    type = boolean;
+};
+
+property set_as_subsys_root {
+    component = addrmap;
+    type = boolean;
+};
+
+/*
+ * Generator Runtime Properties
+ *
+ * Controls the behavior of HRDA generator when traversing
+ * into instances with which these attributes are attached
+ */
+
+/*
+ * During RTL generation process, ignore the current addrmap
+ * instance (i.e. do not generate corresponding RTL code)
+ * when this property is explicitly specified as true.
+ */
+property dont_gen_rtl {
+    component = addrmap;
+    type = boolean;
 };

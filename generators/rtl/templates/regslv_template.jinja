@@ -60,7 +60,14 @@ module {{slv_name}} (
     parameter       ADDR_WIDTH                  = {{get_addr_width(slv_node)}};
     parameter       DATA_WIDTH                  = {{get_data_width(slv_node)}};
     parameter       INSERT_REG_FF               = 1;
-    localparam      REG_NUM                     = {{addr_loc_num}};
+    parameter       REG_NUM                     = {{addr_loc_num}};
+
+{% for reg in reg_list -%}
+    {%- for field in reg.fields(skip_not_present=False) if not field.is_alias and need_param_reset(field) %}
+    parameter       {{get_rtl_name(reg)|upper}}__{{field.inst_name|upper}}__ARST_VALUE = {{"%d'h%x"|format(field.width, get_reset_val(field))}};
+    {%- endfor %}
+{%- endfor %}
+
 {% for reg in reg_list -%}
     {%- set reg_name = get_rtl_name(reg) -%}
     {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
@@ -297,7 +304,11 @@ module {{slv_name}} (
 {% for field in reg.fields(skip_not_present=False) if not field.is_alias %}
     field #(
         .F_WIDTH                                ({{field.width}}),
-        .ARST_VALUE                             ({{"%d'h%x"|format(field.width, get_reset_val(field))}}),
+        .ARST_VALUE                             ({%- if need_param_reset(field) -%}
+                                                {{get_rtl_name(reg)|upper}}__{{field.inst_name|upper}}__ARST_VALUE
+                                                {%- else -%}
+                                                {{"%d'h%x"|format(field.width, get_reset_val(field))}}
+                                                {%- endif -%}),
         .ALIAS_NUM                              ({{get_alias_num(field)}}),
         .SRST_CNT                               ({{get_sync_rst(field)|length}}),
         .SW_TYPE                                ({{"{"~format_sw_type(field)~"}"}}),

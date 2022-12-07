@@ -706,7 +706,8 @@ class PreprocessListener(RDLListener):
             secure_config_ref = node.get_property("secure_config_ref", default=None)
 
             if secure_config_ref:
-                if node.get_property("secure_attr", default=1) != DomainSecurityLevel.CONFIGURABLE:
+                if node.get_property("secure_attr", default=DomainSecurityLevel.NON_SECURE) != \
+                DomainSecurityLevel.CONFIGURABLE:
                     if not self.skip_preprocess_check:
                         message.error(
                             "%s, %d: %d:\n%s\n"

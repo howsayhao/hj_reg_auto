@@ -1,12 +1,14 @@
 {# macro definitions #}
 {%- macro addr_block_def(node) -%}
 {{'*' * get_hier_depth(node)}} {{get_abs_addr(node)}}-{{get_end_addr(node)}} {{get_inst_name(node)}}
-Hierarchy: ~{{get_hier_name(node)}}~ \\
-Absolute Base Address: {{get_abs_addr(node)}} \\
-Size: {{get_size(node)}} Bytes \\
-Secure Attribute: {{get_secure_attr(node)}} \\
+{%- set base_node = get_base_node(node) %}
+Hierarchy:              {{get_hier_name(node)}}
+Absolute Address Base:  {{get_abs_addr(node)}}
+Offset:                 {{get_offset(node, base_node)}} (based on {{get_inst_name(base_node)}})
+Size:                   {{get_size(node)}} Bytes
+Secure Attribute:       {{get_secure_attr(node)}}
 {%- if get_property(node, "desc") is not none %}
-Description: {{get_property(node, "desc")}} \\
+Description:            {{get_property(node, "desc")}}
 {%- endif %}
 
 {% endmacro %}
@@ -17,15 +19,16 @@ Description: {{get_property(node, "desc")}} \\
 
 {%- macro reg_def(node) -%}
 {{'*' * get_hier_depth(node)}} {{get_abs_addr(node)}}-{{get_end_addr(node)}} {{get_inst_name(node)}}
-Hierarchy: ~{{get_hier_name(node)}}~ \\
-Absolute Address: {{get_abs_addr(node)}} \\
-Base Offset: {{get_offset(node)}} \\
-Size: {{get_size(node)}} Bytes \\
+{%- set base_node = get_base_node(node) %}
+Hierarchy:              {{get_hier_name(node)}}
+Absolute Address Base:  {{get_abs_addr(node)}}
+Offset:                 {{get_offset(node, base_node)}} (based on {{get_inst_name(base_node)}})
+Size:                   {{get_size(node)}} Bytes
 {%- if get_property(node, "desc") is not none %}
-Description: {{get_property(node, "desc")}} \\
+Description:            {{get_property(node, "desc")}}
 {%- endif %}
 
-{% raw %}#+ATTR_LATEX: :environment longtable :align |c|p{0.3\textwidth}|p{0.2\textwidth}|c|l|l|
+{% raw %}
 |-------+----------+-----------------+---------------+-----------|
 | Bits  | Name     | Reset Value     | SW Access     | HW Access |
 |-------+----------+-----------------+---------------+-----------|{% endraw %}
@@ -55,17 +58,18 @@ Description: {{get_property(node, "desc")}} \\
 {%- endmacro %}
 
 {%- macro field_desc(node) -%}
-*{{get_inst_name(node)}}*
+---------------------------------------------------------------------
+{{get_inst_name(node)}}
 {%- if get_property(node, "name") is not none %}
-    + named as: {{get_property(node, "name")}}
+    named as: {{get_property(node, "name")}}
 {%- endif %}
 {%- if get_property(node, "hj_syncresetsignal") is not none %}
-    + synchronous reset signals: ~{{get_property(node, "hj_syncresetsignal")}}~
+    synchronous reset signals: {{get_property(node, "hj_syncresetsignal")}}
 {%- endif %}
 {%- if get_property(node, "desc") is not none %}
-    + description: {{get_property(node, "desc")}}
+    description: {{get_property(node, "desc")}}
 {%- endif %}
-
+---------------------------------------------------------------------
 {% endmacro %}
 
 {%- macro child_def(node) -%}

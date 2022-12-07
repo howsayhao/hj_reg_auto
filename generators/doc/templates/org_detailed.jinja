@@ -1,0 +1,88 @@
+{# macro definitions #}
+{%- macro addr_block_def(node) -%}
+{{'*' * get_hier_depth(node)}} {{get_abs_addr(node)}}-{{get_end_addr(node)}} {{get_inst_name(node)}}
+{%- set base_node = get_base_node(node) %}
+Hierarchy: ~{{get_hier_name(node)}}~ \\
+Absolute Address Base: {{get_abs_addr(node)}} \\
+Offset: {{get_offset(node, base_node)}} (based on {{get_inst_name(base_node)}}) \\
+Size: {{get_size(node)}} Bytes \\
+Secure Attribute: {{get_secure_attr(node)}} \\
+{%- if get_property(node, "desc") is not none %}
+Description: {{get_property(node, "desc")}} \\
+{%- endif %}
+
+{% endmacro %}
+
+{%- macro mem_def(node) -%}
+{{addr_block_def(node)}}
+{%- endmacro %}
+
+{%- macro reg_def(node) -%}
+{{'*' * get_hier_depth(node)}} {{get_abs_addr(node)}}-{{get_end_addr(node)}} {{get_inst_name(node)}}
+{%- set base_node = get_base_node(node) %}
+Hierarchy: ~{{get_hier_name(node)}}~ \\
+Absolute Address: {{get_abs_addr(node)}} \\
+Offset: {{get_offset(node, base_node)}} (based on {{get_inst_name(base_node)}}) \\
+Size: {{get_size(node)}} Bytes \\
+{%- if get_property(node, "desc") is not none %}
+Description: {{get_property(node, "desc")}} \\
+{%- endif %}
+
+{% raw %}#+ATTR_LATEX: :environment longtable :align |c|p{0.3\textwidth}|p{0.2\textwidth}|c|l|l|
+|-------+----------+-----------------+---------------+-----------|
+| Bits  | Name     | Reset Value     | SW Access     | HW Access |
+|-------+----------+-----------------+---------------+-----------|{% endraw %}
+{%- for field in node.fields(skip_not_present=False) -%}
+    {{field_row(field)}}
+{%- endfor -%}
+{% raw %}
+|-------+----------+-----------------+---------------+-----------|
+
+{% endraw %}
+
+{%- for field in node.fields(skip_not_present=False) -%}
+    {{field_desc(field)}}
+{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro field_row(node) %}
+{{"| %2d:%-2d | %8s | %15s | %2s,%4s,%-5s | %-9s |"|format(
+    node.msb,
+    node.lsb,
+    get_inst_name(node),
+    get_property(node, "reset"),
+    get_property(node, "sw"),
+    get_property(node, "onread"),
+    get_property(node, "onwrite"),
+    get_property(node, "hw"))}}
+{%- endmacro %}
+
+{%- macro field_desc(node) -%}
+*{{get_inst_name(node)}}*
+{%- if get_property(node, "name") is not none %}
+    + named as: {{get_property(node, "name")}}
+{%- endif %}
+{%- if get_property(node, "hj_syncresetsignal") is not none %}
+    + synchronous reset signals: ~{{get_property(node, "hj_syncresetsignal")}}~
+{%- endif %}
+{%- if get_property(node, "desc") is not none %}
+    + description: {{get_property(node, "desc")}}
+{%- endif %}
+
+{% endmacro %}
+
+{%- macro child_def(node) -%}
+    {%- if isinstance(node, RegNode) -%}
+        {{reg_def(node)}}
+    {%- elif isinstance(node, (RegfileNode, AddrmapNode)) -%}
+        {{addr_block_def(node)}}
+    {%- elif isinstance(node, MemNode) -%}
+        {{mem_def(node)}}
+    {%- endif -%}
+{%- endmacro -%}
+
+
+{{addr_block_def(top_node)}}
+{%- for node in top_node.descendants(in_post_order=False, unroll=True, skip_not_present=False) -%}
+    {{child_def(node)}}
+{%- endfor -%}

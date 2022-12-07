@@ -23,6 +23,13 @@ addrmap root_map {
         addrmap {
             hj_genslv = true;
             hj_cdc = true;
+
+            reg {
+                field {} FIELD_0[31:0] = 0xffff;
+            } TEM;
+
+            TEM.FIELD_0 -> parameterized_reset=true;
+
             flatten_map map_11[5];
             flatten_map map_12[10];
         } slv_map;
