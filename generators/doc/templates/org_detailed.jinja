@@ -82,7 +82,6 @@ Description: {{get_property(node, "desc")}} \\
 {%- endmacro -%}
 
 
-{{addr_block_def(top_node)}}
-{%- for node in top_node.descendants(in_post_order=False, unroll=True, skip_not_present=False) -%}
+{%- for node in nodes -%}
     {{child_def(node)}}
 {%- endfor -%}

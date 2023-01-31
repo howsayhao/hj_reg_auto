@@ -139,9 +139,7 @@ module regslv_slv_map (
     parameter       INSERT_REG_FF               = 1;
     parameter       REG_NUM                     = 61;
 
-
     parameter       TEM__FIELD_0__ARST_VALUE = 32'hffff;
-
 
     output  logic   [31:0]                      TEM__FIELD_0__curr_value;
     input   logic                               TEM__FIELD_0__pulse;

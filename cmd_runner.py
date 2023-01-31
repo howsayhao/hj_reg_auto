@@ -1,16 +1,18 @@
 import argparse
 import os
 import sys
+import time
 from multiprocessing import Process
 
 import utils.message as message
 from generators.chdr.export import export_chdr
-from generators.doc.export import export_doc
+from generators.doc.export import DocExporter
 from generators.preprocess import preprocess
 from generators.rtl.export import export_rtl
 from generators.uvm.export import export_uvm
 from parsers.parse import Parser
 from templates.gen_temp import generate_excel_template, generate_rdl_template
+from utils.env import HRDAEnv
 
 __version__ = "0.4.0"
 __man_file__ = "hrda_reference_manual_v0.4.0_Rev.A.pdf"
@@ -35,100 +37,85 @@ class CommandRunner:
         parser = argparse.ArgumentParser(
             prog="hrda",
             description="HJ-micro Register Design Automation (HRDA) Tool. "
-                        "See reference manual in {}".format(
-                            os.path.join(os.path.dirname(__file__), __man_file__)
-                        )
+                "See reference manual in {}".format(
+                    os.path.join(os.path.dirname(__file__), __man_file__))
         )
         parser.add_argument(
             "-v", "--version",
             action="version",
-            version="%(prog)s {}".format(__version__)
-        )
+            version="%(prog)s {}".format(__version__))
 
         # subcommand parser
         subparsers = parser.add_subparsers(
             title="subcommand",
             description="support for generating templates, "
-                        "parsing Excel worksheet/SystemRDL/IP-XACT specifications, "
-                        "and generating RTL, UVM RAL model, documentations "
-                        "and C header files",
+                "parsing Excel worksheet/SystemRDL/IP-XACT specifications, "
+                "and generating RTL, UVM RAL model, documentations "
+                "and C header files",
             help="see more details in the reference manual: {}".format(
-                os.path.join(os.path.dirname(__file__), __man_file__)
-            )
+                os.path.join(os.path.dirname(__file__), __man_file__))
         )
 
         # subcommand: template
         parser_template = subparsers.add_parser(
             "template",
-            help="generate an Excel worksheet or SystemRDL template"
-        )
+            help="generate an Excel worksheet or SystemRDL template")
         parser_template.add_argument(
             "-rdl",
             action="store_true",
-            help="generate SystemRDL template"
-        )
+            help="generate SystemRDL template")
         parser_template.add_argument(
             "--interrupt_template",
             action="store_true",
-            help="the SystemRDL template is used for merging interrupts"
-        )
+            help="the SystemRDL template is used for merging interrupts")
         parser_template.add_argument(
             "--interrupt_number",
             nargs=1,
-            help="interrupt number generated in the interrupt template"
-        )
+            help="interrupt number generated in the interrupt template")
         parser_template.add_argument(
             "--ras_template",
             action="store_true",
-            help="the SystemRDL template is used for RAS architecture"
-        )
+            help="the SystemRDL template is used for RAS architecture")
         parser_template.add_argument(
             "--ras_record_list",
             nargs="+",
             default=[1],
             help="list of record numbers in each RAS node."
             "for example, 1 2 3 means 3 nodes with each node has 1, 2, 3 records "
-            "respectively (default: %(default)s)"
-        )
+            "respectively (default: %(default)s)")
         parser_template.add_argument(
             "-excel",
             action="store_true",
-            help="to generate Excel worksheet template"
-        )
+            help="to generate Excel worksheet template")
         parser_template.add_argument(
             "-d", "--dir",
             default=".",
             help="directory for the generated template "
-            "(default: %(default)s)"
-        )
+            "(default: %(default)s)")
         parser_template.add_argument(
             "-n", "--name",
             default="template",
             help="generated template name "
-            "(default: %(default)s)"
-        )
+            "(default: %(default)s)")
         parser_template.add_argument(
             "-rnum",
             default=1,
             type=int,
             help="number of registers to be generated "
-            "in the Excel worksheet template (default: %(default)s)"
-        )
+            "in the Excel worksheet template (default: %(default)s)")
         parser_template.add_argument(
             "-rname",
             default=["TEM1"],
             nargs="+",
             help="abbreviations of every generated registers "
-            "in the Excel worksheet template. (default: %(default)s)"
-        )
+            "in the Excel worksheet template. (default: %(default)s)")
         parser_template.add_argument(
             "-l",
             "--language",
             default="en",
             choices=["cn", "en"],
             help="language of the generated Excel template "
-            "(default: %(default)s)"
-        )
+            "(default: %(default)s)")
         parser_template.set_defaults(func=self._template)
 
         # Subcommand: parse
@@ -139,138 +126,139 @@ class CommandRunner:
         parser_parse.add_argument(
             "-f", "--file",
             nargs="+",
-            help="Excel worksheets, SystemRDL and IP-XACT files to parse"
-        )
+            help="Excel worksheets, SystemRDL and IP-XACT files to parse")
         parser_parse.add_argument(
             "-l", "--list",
             help="a filelist including all files "
-            "(useful for a large number of files)"
-        )
+            "(useful for a large number of files)")
         parser_parse.add_argument(
             "-grdl", "--gen_rdl",
             action="store_true",
-            help="generate SystemRDL(.rdl) file based on all input Excel(.xlsx) specifications"
-        )
+            help="generate SystemRDL(.rdl) file based on all input Excel(.xlsx) specifications")
         parser_parse.add_argument(
             "-m", "--module",
             default="top_map",
             help="used under the situation where all input files are Excel worksheets, "
             "which specifies a top addrmap instance name"
-            "for all input Excel(.xlsx) files (default:%(default)s)"
-        )
+            "for all input Excel(.xlsx) files (default:%(default)s)")
         parser_parse.add_argument(
             "-gdir", "--gen_dir",
             default=".",
             help="used under the situation where -grdl/--gen_rdl is set, "
-            "which specifies the SystemRDL file directory (default:%(default)s)"
-        )
+            "which specifies the SystemRDL file directory (default:%(default)s)")
         parser_parse.set_defaults(func=self._parse)
 
         # Subcommand: generate
         parser_generate = subparsers.add_parser(
             "generate",
-            help="generate RTL, documentations, UVM RAL model and C header files"
-        )
+            help="generate RTL, documentations, UVM RAL model and C header files")
         parser_generate.add_argument(
             "-f", "--file",
             nargs="+",
-            help="RDL or Excel (or mixed) files to parse (must provide the entire path)"
-        )
+            help="RDL or Excel (or mixed) files to parse (must provide the entire path)")
         parser_generate.add_argument(
             "-l", "--list",
             help="a list including paths and names of all files "
-            "(useful for large number of files)"
-        )
+            "(useful for large number of files)")
         parser_generate.add_argument(
             "-m", "--module",
             default="top_map",
             help="if all input files are Excel worksheets, "
             "this option specifies extra top RDL file name "
-            "for all input Excel(.xlsx) files (default:%(default)s)"
-        )
+            "for all input Excel(.xlsx) files (default:%(default)s)")
         parser_generate.add_argument(
             "-gdir", "--gen_dir",
             default=".",
-            help="directory to save generated files (default:%(default)s)"
-        )
+            help="directory to save generated files (default:%(default)s)")
         parser_generate.add_argument(
             "-grtl", "--generate_rtl",
             action="store_true",
-            help="generate RTL code"
-        )
+            help="generate RTL code")
         parser_generate.add_argument(
             "--without_filelist",
             action="store_true",
-            help="filelist will not be generated in RTL directory"
-        )
+            default=False,
+            help="filelist will not be generated in RTL directory")
         parser_generate.add_argument(
             "--gen_hier_depth_range",
             nargs=2,
-            help="specify the hierarchy depth range for generating RTL code"
-        )
+            help="specify the hierarchy depth range for generating RTL code")
         parser_generate.add_argument(
             "-gdoc", "--generate_doc",
             action="store_true",
-            help="generate documentation files in different formats"
-        )
+            help="generate documentation files in different formats")
         parser_generate.add_argument(
             "--doc_format",
             nargs="+",
             default=["html"],
             choices=["html", "pdf", "md", "org", "txt"],
             help="specify the format of generated documentation files"
-            "(default:%(default)s)"
-        )
+            "(default:%(default)s)")
+        parser_generate.add_argument(
+            "--pdf_engine",
+            default="wkhtmltopdf",
+            choices=["wkhtmltopdf", "google-chrome"],
+            help="specify the engine for generating pdf files, default: %(default)s")
         parser_generate.add_argument(
             "--doc_with_toc",
             action="store_true",
-            help="generate table of contents in documentation files (html, pdf, md only)"
-        )
+            default=False,
+            help="generate table of contents in documentation files (html, pdf, md only)")
+        parser_generate.add_argument(
+            "--split_doc_by_sub_system",
+            action="store_true",
+            default=False,
+            help="split the generated documentation files by sub-system")
+        parser_generate.add_argument(
+            "--max_reg_count_per_doc",
+            type=int,
+            default=5000,
+            help="specify the maximum number of registers per documentation file, "
+                "0 means no separation, default: %(default)s")
         parser_generate.add_argument(
             "-top", "--top_inst",
-            help="specify the top level addrmap instance to generate"
-        )
+            help="specify the top level addrmap instance to generate")
         parser_generate.add_argument(
             "--only_simplified_org",
             action="store_true",
-            help="org documentation is simplified and only contains block contents"
-        )
+            default=False,
+            help="org documentation is simplified and only contains block contents")
         parser_generate.add_argument(
             "--with_simplified_org",
             action="store_true",
-            help="org documentation is generated with two versions: simplified and detailed"
-        )
+            default=False,
+            help="org documentation is generated with two versions: simplified and detailed")
         parser_generate.add_argument(
             "-gral", "--generate_ral",
             action="store_true",
-            help="generate UVM RAL model"
-        )
+            help="generate UVM RAL model")
         parser_generate.add_argument(
             "--filter",
             nargs="+",
             help="filter matched instances in generation process"
-            "(support wildcard character)"
-        )
+                "(support wildcard character)")
         parser_generate.add_argument(
             "-gch", "--generate_cheader",
             action="store_true",
-            help="generate C headers"
-        )
+            help="generate C headers")
         parser_generate.add_argument(
             "-gall", "--generate_all",
             action="store_true",
-            help="generate all related files"
-        )
+            help="generate all related files")
         parser_generate.add_argument(
             "-q", "--quiet",
             action="store_true",
-            help="turn off debug-level message display on terminal"
-        )
+            help="turn off debug-level message display on terminal")
         parser_generate.add_argument(
             "--skip_preprocess_check",
             action="store_true",
-            help="skip preprocess check"
-        )
+            default=False,
+            help="skip preprocess check")
+        parser_generate.add_argument(
+            "--max_process_num",
+            type=int,
+            default=1,
+            help="the maximum number of processes to be used, default: %(default)s")
 
         parser_generate.set_defaults(func=self._generate)
 
@@ -370,6 +358,8 @@ class CommandRunner:
             args.module
         )
 
+        message.info("time elapsed: {:.2f} s".format(time.time() - HRDAEnv.start_time))
+
     @staticmethod
     def _generate(args):
         """
@@ -389,6 +379,7 @@ class CommandRunner:
         `args.generate_cheader` : `bool`, whether to generate C header files
         """
         root = Parser().parse(args.file, args.list, args.gen_dir, True, args.module)
+        message.info("time elapsed: {:.2f} s".format(time.time() - HRDAEnv.start_time))
 
         if not os.path.exists(args.gen_dir):
             message.error(
@@ -402,8 +393,10 @@ class CommandRunner:
             quiet=args.quiet,
             skip_preprocess_check=(args.skip_preprocess_check or False)
         )
+        message.info("time elapsed: {:.2f} s".format(time.time() - HRDAEnv.start_time))
 
         proc_list = []
+        proc_num_left = args.max_process_num
 
         # when -top option is specified, search the root scope to
         # find the top-level addrmap
@@ -413,15 +406,15 @@ class CommandRunner:
             if not top_node:
                 message.error(
                     "--top_inst option specifies an invalid path %s, "
-                    "maybe you don't specify the full hierarchical instance path" % (args.top_inst)
-                )
+                    "maybe because you don't specify the full "
+                    "hierarchical instance path" % (args.top_inst))
         else:
             top_node = root.top
 
         # generate RTL modules
         if args.generate_all or args.generate_rtl:
             kwargs = {
-                "without_filelist": args.without_filelist or False,
+                "without_filelist": args.without_filelist,
                 "gen_hier_depth_range": args.gen_hier_depth_range or None,
                 "filter": args.filter or None
             }
@@ -430,24 +423,9 @@ class CommandRunner:
                 Process(
                     target=export_rtl,
                     name="generate_rtl",
-                    args=(top_node, args.gen_dir), kwargs=kwargs)
-            )
-
-        # generate documentations (HTML, org mode, PDF, markdown, txt)
-        if args.generate_all or args.generate_doc:
-            kwargs = {
-                "only_simplified_org": args.only_simplified_org or False,
-                "with_simplified_org": args.with_simplified_org or False,
-                "with_toc": args.doc_with_toc or False,
-                "filter": args.filter or None
-            }
-            proc_list.append(
-                Process(
-                    target=export_doc,
-                    name="generate_doc",
-                    args=(top_node, args.gen_dir, args.doc_format),
-                    kwargs=kwargs)
-            )
+                    args=(top_node, args.gen_dir), kwargs=kwargs
+                ))
+            proc_num_left -= 1
 
         # generate the UVM RAL model
         if args.generate_all or args.generate_ral:
@@ -456,18 +434,42 @@ class CommandRunner:
                     target=export_uvm,
                     name="generate_ral",
                     args=(top_node, args.gen_dir)
-                )
-            )
+                ))
+
+            proc_num_left -= 1
 
         # generate C header files
         if args.generate_all or args.generate_cheader:
             proc_list.append(
                 Process(
                     target=export_chdr,
-                    name="generate_cheader",
+                    name="generate_c_header",
                     args=(top_node, args.gen_dir)
-                )
-            )
+                ))
+
+            proc_num_left -= 1
+
+        # generate documentations (HTML, org mode, PDF, markdown, txt)
+        if args.generate_all or args.generate_doc:
+            if proc_num_left <= 0:
+                proc_num_left = 1
+
+            proc_list.append(
+                Process(
+                    target=DocExporter(top_node).export,
+                    name="generate_documentations",
+                    args=(
+                        args.gen_dir,
+                        args.doc_format,
+                        args.doc_with_toc,
+                        args.pdf_engine,
+                        args.split_doc_by_sub_system,
+                        args.max_reg_count_per_doc,
+                        args.only_simplified_org,
+                        args.with_simplified_org,
+                        proc_num_left
+                    )
+                ))
 
         # start multiprocessing and wait for all processes to finish
         for proc in proc_list:
@@ -475,13 +477,15 @@ class CommandRunner:
         for proc in proc_list:
             proc.join()
 
+        message.info("time elapsed: {:.2f} s".format(time.time() - HRDAEnv.start_time))
+
     def run(self):
         parser = self.build_parser()
         args = parser.parse_args()
 
         if len(sys.argv) <= 1:
             message.error(
-                "no command option is specified, use -h/--help option to get instruction"
-            )
+                "no option or argument is specified, "
+                "you can use -h/--help option to get help")
 
         args.func(args)

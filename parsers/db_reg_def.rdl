@@ -1,7 +1,7 @@
 // debug registers added in
 regfile db_regs {
     reg { regwidth = 64; field {sw=r;} val[63:0] = 0x0;} acc_addr;
-    reg { field {} cnt[31:0] = 0x63;} tmr_thr;
+    reg { field {} cnt[31:0] = 0xffff;} tmr_thr;
     reg {
         field { sw=rw; } intr[7:7] = 0x0;
         field { sw=rw; hw=r; } intr_mask[6:6] = 0x0;

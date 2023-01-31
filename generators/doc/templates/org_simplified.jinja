@@ -1,7 +1,7 @@
 |-----------------+------------+---------------+------+-------------|
 | hierarchy level | block name | address range | size | secure attr |
 |-----------------+------------+---------------+------+-------------|
-{% for blk in get_all_blocks(top_node) -%}
-| {{get_hier_depth(blk)}} | {{get_inst_name(blk)}} | {{get_abs_addr(blk)}}-{{get_end_addr(blk)}} | {{convert_size(blk.size)}} | {{get_secure_attr(blk)}} |
+{% for node in nodes if isinstance(node, (AddrmapNode, MemNode)) -%}
+| {{get_hier_depth(node)}} | {{get_inst_name(node)}} | {{get_abs_addr(node)}}-{{get_end_addr(node)}} | {{convert_size(node.size)}} | {{get_secure_attr(node)}} |
 {% endfor -%}
 |-----------------+------------+---------------+------+-------------|

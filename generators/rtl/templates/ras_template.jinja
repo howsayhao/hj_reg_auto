@@ -42,7 +42,8 @@ module {{slv_name}} (
 
     `define SERR_NO_ERR     8'h00
     `define SERR_IMP_DEF    8'h01
-    `define SERR_ECC        8'h02
+    `define SERR_CE_ECC     8'h02
+    `define SERR_UE_ECC     8'h02
     `define SERR_POIS       8'h15
 
     `define UET_IS_UEU      2'b01
@@ -116,6 +117,8 @@ module {{slv_name}} (
     logic                                       reg_rd_data_mux_dout_vld;
     logic                                       reg_rd_data_vld;
     logic   [DATA_WIDTH-1:0]                    reg_rd_data;
+
+    genvar                                      i;
 {%- if has_cdc(slv_node) -%}
 {%- set curr_clk = "regslv_clk" -%}
 {%- set curr_async_rst_n = "regslv_rst_n" -%}
@@ -276,7 +279,7 @@ module {{slv_name}} (
     logic                                       {{node_name}}__ctrl_fi;
     logic                                       {{node_name}}__ctrl_cfi;
     {%- endif %}
-    logic                                       {{node_name}}_{{record_name}}__plus_f;
+    logic                                       {{node_name}}_{{record_name}}__ce_occur;
     logic                                       {{node_name}}_{{record_name}}__of_flag;
     logic   [7:0]                               {{node_name}}_{{record_name}}__cec_wd_cnt;
     logic                                       {{node_name}}_{{record_name}}__cec_wd_cnt_of;
@@ -288,10 +291,11 @@ module {{slv_name}} (
     logic                                       {{node_name}}_{{record_name}}__fault;
     logic                                       {{node_name}}_{{record_name}}__fim_of;
     logic   [31:0]                              {{node_name}}_{{record_name}}__fim_int;
-    logic   [31:0]                              {{node_name}}_{{record_name}}__fen;
+    logic   [32:0]                              {{node_name}}_{{record_name}}__fen;
     logic                                       {{node_name}}_{{record_name}}__fmask;
     logic   [31:0]                              {{node_name}}_{{record_name}}__int_flag;
-    logic                                       {{node_name}}_{{record_name}}__or_all_int_flag;
+    logic   [31:0]                              {{node_name}}_{{record_name}}__int_flag_ff;
+    logic                                       {{node_name}}_{{record_name}}__ue_occur;
     logic                                       {{node_name}}_{{record_name}}__pn;
     logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     logic                                       {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
@@ -328,27 +332,36 @@ module {{slv_name}} (
     {% if ss_info.append(reg_idx[0]) %}{% endif -%}
     assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
-    assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[31:0];
+    assign  {{reg_name}}__sw_wr_data[31:8] = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[31:8];
+    always_comb begin   // SERR field value remapping
+        case ({{node_name}}_{{record_name}}__ss_reg_sw_wr_data[7:0])
+            `SERR_NO_ERR: {{reg_name}}__sw_wr_data[7:0] = 8'h0;
+            `SERR_POIS: {{reg_name}}__sw_wr_data[7:0] = 8'h2;
+            `SERR_IMP_DEF: {{reg_name}}__sw_wr_data[7:0] = 8'h3;
+            `SERR_UE_ECC: {{reg_name}}__sw_wr_data[7:0] = 8'h4;
+            default: {{reg_name}}__sw_wr_data[7:0] = 8'h0;
+        endcase
+    end
     assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[31:0] = {{reg_name}}__sw_rd_data;
-{%- elif reg.type_name == "ERR_MISC0_0" %}
+{%- elif reg.type_name == "ERR_ADDR_0" %}
     {% if ss_info.append(reg_idx[0]) %}{% endif -%}
     assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
     assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[63:32];
     assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[63:32] = {{reg_name}}__sw_rd_data;
-{%- elif reg.type_name == "ERR_MISC0_1" %}
+{%- elif reg.type_name == "ERR_ADDR_1" %}
     {% if ss_info.append(reg_idx[0]) %}{% endif -%}
     assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
     assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[95:64];
     assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[95:64] = {{reg_name}}__sw_rd_data;
-{%- elif reg.type_name == "ERR_ADDR_0" %}
+{%- elif reg.type_name == "ERR_MISC0_0" %}
     {% if ss_info.append(reg_idx[0]) %}{% endif -%}
     assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
     assign  {{reg_name}}__sw_wr_data = {{node_name}}_{{record_name}}__ss_reg_sw_wr_data[127:96];
     assign  {{node_name}}_{{record_name}}__ss_reg_sw_rd_data[127:96] = {{reg_name}}__sw_rd_data;
-{%- elif reg.type_name == "ERR_ADDR_1" %}
+{%- elif reg.type_name == "ERR_MISC0_1" %}
     {% if ss_info.append(reg_idx[0]) %}{% endif -%}
     assign  {{reg_name}}__sw_wr_en = {{node_name}}_{{record_name}}__ss_reg_sw_wr_en;
     assign  {{reg_name}}__sw_rd_en = {{node_name}}_{{record_name}}__ss_reg_sw_rd_en;
@@ -364,8 +377,7 @@ module {{slv_name}} (
     snapshot_reg #(
         .DATA_WIDTH                             (DATA_WIDTH),
         .REG_WIDTH                              (192)
-    )
-    {{node_name}}_{{record_name}}__ss_reg (
+    ) {{node_name}}_{{record_name}}__ss_reg (
         .clk                                    ({{curr_clk}}),
         .rst_n                                  ({{curr_async_rst_n}}),
         .soft_rst                               (soft_rst_i0),
@@ -459,7 +471,18 @@ module {{slv_name}} (
         {{reg_name}}__sw_rd_data = {{reg.size * 8}}'h0;
         {%- endif %}
         {%- for field in reg.fields(skip_not_present=False) if field.is_sw_readable %}
+        {%- if reg.type_name == "ERR_STATUS_0" and field.inst_name == "SERR" %}
+        case ({{reg_name}}__{{field.inst_name}}__curr_value)    // SERR field value remapping
+            8'h0: {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = `SERR_NO_ERR;
+            8'h1: {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = `SERR_CE_ECC;
+            8'h2: {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = `SERR_POIS;
+            8'h3: {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = `SERR_IMP_DEF;
+            8'h4: {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = `SERR_UE_ECC;
+            default: {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = `SERR_NO_ERR;
+        endcase
+        {%- else %}
         {{reg_name}}__sw_rd_data[{{field.high}}:{{field.low}}] = {{reg_name}}__{{field.inst_name}}__curr_value;
+        {%- endif %}
         {%- endfor %}{# field loop #}
     end
     {% if reg.type_name == "ERR_FR_0_first" %}
@@ -477,63 +500,97 @@ module {{slv_name}} (
     assign  {{reg_name}}__PADDR_55_32__pulse = {{node_name}}_{{record_name}}__pn;
     assign  {{reg_name}}__PADDR_55_32__next_value = {{node_name}}_{{record_name}}__poi_err_addr[55:32];
     {%- elif reg.type_name == "ERR_STATUS_0" %}
-    assign  {{reg_name}}__CE__pulse = {{node_name}}_{{record_name}}__plus_f;
-    assign  {{reg_name}}__CE__next_value = {{node_name}}_{{record_name}}__plus_f ? 2'b10 : 2'b00;
-    assign  {{reg_name}}__SERR__pulse = {{node_name}}_{{record_name}}__or_all_int_flag;
+    assign  {{node_name}}_{{record_name}}__ce_occur =
+                ({{node_name}}_{{record_name}}__plus |
+                {{node_name}}_{{record_name}}__fim_of) &
+                {{node_name}}_{{record_name}}__fen[32];
+    assign  {{reg_name}}__CE__pulse =
+                {{node_name}}_{{record_name}}__ce_occur;
+    assign  {{reg_name}}__CE__next_value =
+                {{node_name}}_{{record_name}}__ce_occur ? 2'b10 : 2'b00;
 
-    always_comb begin
+    assign  {{reg_name}}__SERR__pulse =
+                {{node_name}}_{{record_name}}__ue_occur |
+                {{node_name}}_{{record_name}}__ce_occur;
+    always_comb begin   // SERR field value remapping
         case ({{reg_name}}__SERR__curr_value)
-            `SERR_ECC: begin
-                {{reg_name}}__SERR__next_value = `SERR_ECC;
+            8'h4: begin
+                {{reg_name}}__SERR__next_value = 8'h4;
             end
-            `SERR_IMP_DEF: begin
-                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC & {{node_name}}_{{record_name}}__int_flag) |
-                    {{node_name}}_{{record_name}}__of_flag)
-                    {{reg_name}}__SERR__next_value = `SERR_ECC;
+            8'h3: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h4;
                 else
-                    {{reg_name}}__SERR__next_value = `SERR_IMP_DEF;
+                    {{reg_name}}__SERR__next_value = 8'h3;
             end
-            `SERR_POIS: begin
-                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC & {{node_name}}_{{record_name}}__int_flag) |
-                    {{node_name}}_{{record_name}}__of_flag)
-                    {{reg_name}}__SERR__next_value = `SERR_ECC;
-                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF & {{node_name}}_{{record_name}}__int_flag))
-                    {{reg_name}}__SERR__next_value = `SERR_IMP_DEF;
+            8'h2: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h4;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h3;
                 else
-                    {{reg_name}}__SERR__next_value = `SERR_POIS;
+                    {{reg_name}}__SERR__next_value = 8'h2;
             end
-            `SERR_NO_ERR: begin
-                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC & {{node_name}}_{{record_name}}__int_flag) |
-                    {{node_name}}_{{record_name}}__of_flag)
-                    {{reg_name}}__SERR__next_value = `SERR_ECC;
-                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF & {{node_name}}_{{record_name}}__int_flag))
-                    {{reg_name}}__SERR__next_value = `SERR_IMP_DEF;
-                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS & {{node_name}}_{{record_name}}__int_flag))
-                    {{reg_name}}__SERR__next_value = `SERR_POIS;
+            8'h1: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h4;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h3;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h2;
                 else
-                    {{reg_name}}__SERR__next_value = `SERR_NO_ERR;
+                    {{reg_name}}__SERR__next_value = 8'h1;
+            end
+            8'h0: begin
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_ECC &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h4;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h3;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__SERR__next_value = 8'h2;
+                else if ({{node_name}}_{{record_name}}__ce_occur)
+                    {{reg_name}}__SERR__next_value = 8'h1;
+                else
+                    {{reg_name}}__SERR__next_value = 8'h0;
             end
             default: begin
-                {{reg_name}}__SERR__next_value = `SERR_NO_ERR;
+                {{reg_name}}__SERR__next_value = 8'h0;
             end
         endcase
     end
 
-    assign  {{reg_name}}__UET__pulse = {{node_name}}_{{record_name}}__or_all_int_flag;
+    assign  {{reg_name}}__UET__pulse =
+        {{node_name}}_{{record_name}}__ue_occur;
     always_comb begin
         case ({{reg_name}}__UET__curr_value)
             `UET_IS_UEU: begin
                 {{reg_name}}__UET__next_value = `UET_IS_UEU;
             end
             `UET_IS_UER: begin
-                if (|({{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF & {{node_name}}_{{record_name}}__int_flag) |
-                    {{node_name}}_{{record_name}}__of_flag)
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF &
+                    {{node_name}}_{{record_name}}__int_flag))
                     {{reg_name}}__UET__next_value = `UET_IS_UEU;
                 else
                     {{reg_name}}__UET__next_value = `UET_IS_UER;
             end
             `UET_IS_NOERR: begin
-                {{reg_name}}__UET__next_value = `UET_IS_NOERR;
+                if (|({{node_name|upper}}_{{record_name|upper}}_P_NOT_IMP_DEF &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__UET__next_value = `UET_IS_UEU;
+                else if (|({{node_name|upper}}_{{record_name|upper}}_P_IS_IMP_DEF &
+                    {{node_name}}_{{record_name}}__int_flag))
+                    {{reg_name}}__UET__next_value = `UET_IS_UER;
+                else
+                    {{reg_name}}__UET__next_value = `UET_IS_NOERR;
             end
             default: begin
                 {{reg_name}}__UET__next_value = `UET_IS_NOERR;
@@ -542,42 +599,60 @@ module {{slv_name}} (
     end
 
     assign  {{node_name}}_{{record_name}}__pn =
-        |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS &
-        {{node_name}}_{{record_name}}__int_flag) &
-        ~{{reg_name}}__PN__curr_value;
+                |({{node_name|upper}}_{{record_name|upper}}_P_IS_POIS &
+                {{node_name}}_{{record_name}}__int_flag) &
+                ~{{reg_name}}__PN__curr_value;
     assign  {{reg_name}}__PN__pulse = {{node_name}}_{{record_name}}__pn;
     assign  {{reg_name}}__PN__next_value = {{reg_name}}__PN__pulse;
 
     assign  {{reg_name}}__V__pulse = {{reg_name}}__V__next_value;
-    assign  {{reg_name}}__V__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
+    assign  {{reg_name}}__V__next_value =
+                {{node_name}}_{{record_name}}__ue_occur |
+                {{node_name}}_{{record_name}}__ce_occur;
     assign  err_gsr_s[{{record_cnt[0]}}] = {{reg_name}}__V__curr_value;
 
+    assign  {{reg_name}}__AV__pulse = {{reg_name}}__AV__next_value;
+    assign  {{reg_name}}__AV__next_value =
+                {{node_name}}_{{record_name}}__pn;
+
     assign  {{reg_name}}__UE__pulse = {{reg_name}}__UE__next_value;
-    assign  {{reg_name}}__UE__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
+    assign  {{reg_name}}__UE__next_value = {{node_name}}_{{record_name}}__ue_occur;
 
     assign  {{reg_name}}__OF__pulse = {{reg_name}}__OF__next_value;
-    assign  {{reg_name}}__OF__next_value = {{node_name}}_{{record_name}}__of_flag;
+    assign  {{reg_name}}__OF__next_value =
+                {{node_name}}_{{record_name}}__of_flag |
+                ({{reg_name}}__V__curr_value &
+                |({{node_name}}_{{record_name}}__int_flag &
+                ~{{node_name}}_{{record_name}}__int_flag_ff));
 
     assign  {{reg_name}}__MV__pulse = {{reg_name}}__MV__next_value;
-    assign  {{reg_name}}__MV__next_value = {{node_name}}_{{record_name}}__or_all_int_flag;
+    assign  {{reg_name}}__MV__next_value =
+                {{node_name}}_{{record_name}}__ue_occur |
+                {{node_name}}_{{record_name}}__ce_occur;
     {%- elif reg.type_name == "ERR_STATUS_1" %}
     {%- elif reg.type_name == "ERR_MISC0_0" %}
     assign  {{node_name}}_{{record_name}}__int_fault = {{reg_name}}__IS__curr_value;
-    always_comb begin
-        for (integer i = 0; i < 32; i = i + 1) begin
-            {{reg_name}}__IS__next_value[i] =
-                (({{node_name}}_{{record_name}}__interrupt[i] & {{node_name}}__ctrl_fi) |
-                {{node_name}}_{{record_name}}__fim_int[i]) & {{node_name}}_{{record_name}}__fen[i];
+    generate
+        for (i = 0; i < 32; i = i + 1) begin
+            assign {{reg_name}}__IS__next_value[i] =
+                ({{node_name}}_{{record_name}}__interrupt[i] |
+                {{node_name}}_{{record_name}}__fim_int[i]) &
+                {{node_name}}_{{record_name}}__fen[i];
             if ({{node_name|upper}}_{{record_name|upper}}_P_INTR_TYPE[i])
-                {{reg_name}}__IS__pulse[i] = {{reg_name}}__IS__next_value[i];
+                assign {{reg_name}}__IS__pulse[i] = {{reg_name}}__IS__next_value[i];
             else
-                {{reg_name}}__IS__pulse[i] = 1'b1;
+                assign {{reg_name}}__IS__pulse[i] = 1'b1;
         end
-    end
+    endgenerate
     assign  {{node_name}}_{{record_name}}__int_flag = {{reg_name}}__IS__next_value;
-    {%- elif reg.type_name == "ERR_MISC0_1" %}
-    assign  {{node_name}}_{{record_name}}__plus_f = {{node_name}}_{{record_name}}__plus & {{node_name}}__ctrl_fi & {{node_name}}__ctrl_cfi;
 
+    always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
+        if (~{{curr_async_rst_n}})
+            {{node_name}}_{{record_name}}__int_flag_ff <= 32'h0;
+        else
+            {{node_name}}_{{record_name}}__int_flag_ff <= {{node_name}}_{{record_name}}__int_flag;
+    end
+    {%- elif reg.type_name == "ERR_MISC0_1" %}
     always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
         if (~{{curr_async_rst_n}})
             {{node_name}}_{{record_name}}__wd_step_cnt <= 44'h0;
@@ -586,36 +661,49 @@ module {{slv_name}} (
         else
             {{node_name}}_{{record_name}}__wd_step_cnt <= 44'h0;
     end
-    assign  {{node_name}}_{{record_name}}__wd_step_cnt_of = ({{node_name}}_{{record_name}}__wd_step_cnt == { {{reg_name}}__WD_STEP__curr_value, 40'hff_ffff_ffff });
+    assign  {{node_name}}_{{record_name}}__wd_step_cnt_of =
+                ({{node_name}}_{{record_name}}__wd_step_cnt ==
+                { {{reg_name}}__WD_STEP__curr_value, 40'hff_ffff_ffff });
 
     always_ff @(posedge {{curr_clk}} or negedge {{curr_async_rst_n}}) begin
         if (~{{curr_async_rst_n}})
             {{node_name}}_{{record_name}}__cec_wd_cnt   <= 8'h0;
         else if ({{node_name}}_{{record_name}}__wd_step_cnt_of)
             {{node_name}}_{{record_name}}__cec_wd_cnt   <= {{node_name}}_{{record_name}}__cec_wd_cnt + 8'h1;
-        else
+        else if ({{node_name}}_{{record_name}}__cec_wd_cnt_of)
             {{node_name}}_{{record_name}}__cec_wd_cnt   <= 8'h0;
     end
-    assign  {{node_name}}_{{record_name}}__cec_wd_cnt_of = ({{node_name}}_{{record_name}}__cec_wd_cnt == {{reg_name}}__CEC_WD__curr_value);
+    assign  {{node_name}}_{{record_name}}__cec_wd_cnt_of =
+                ({{node_name}}_{{record_name}}__cec_wd_cnt == {{reg_name}}__CEC_WD__curr_value);
 
-    assign  {{reg_name}}__OF__pulse = {{reg_name}}__OF__next_value;
-    assign  {{reg_name}}__OF__next_value = {{node_name}}_{{record_name}}__of_flag;
+    assign  {{reg_name}}__OF__pulse =
+                {{reg_name}}__OF__next_value;
+    assign  {{reg_name}}__OF__next_value =
+                {{node_name}}_{{record_name}}__of_flag;
 
-    assign  {{reg_name}}__CEC__pulse = 1'b1;
-    assign  {{node_name}}_{{record_name}}__cec_upd_value = {{node_name}}_{{record_name}}__plus_f ?
-        ({{reg_name}}__CEC__curr_value + {{node_name}}_{{record_name}}__plus_value) :
-        {1'b0, {{reg_name}}__CEC__curr_value};
-    assign  {{node_name}}_{{record_name}}__of_flag = ({{node_name}}_{{record_name}}__cec_upd_value >= (1'b1 << {{reg_name}}__CEC_TH__curr_value));
+    assign  {{reg_name}}__CEC__pulse =
+                {{node_name}}_{{record_name}}__fen[32];
+    assign  {{node_name}}_{{record_name}}__cec_upd_value =
+                {{node_name}}_{{record_name}}__plus ?
+                ({{reg_name}}__CEC__curr_value + {{node_name}}_{{record_name}}__plus_value) :
+                {1'b0, {{reg_name}}__CEC__curr_value};
+    assign  {{node_name}}_{{record_name}}__of_flag =
+                ({{node_name}}_{{record_name}}__cec_upd_value >= (8'h1 << {{reg_name}}__CEC_TH__curr_value) |
+                {{node_name}}_{{record_name}}__fim_of) &
+                {{node_name}}_{{record_name}}__fen[32];
     assign  {{reg_name}}__CEC__next_value =
-            ({{node_name}}_{{record_name}}__of_flag | {{reg_name}}__OF__curr_value | {{node_name}}_{{record_name}}__cec_wd_cnt_of) ?
-            7'b0 : {{node_name}}_{{record_name}}__cec_upd_value[6:0];
+                ({{node_name}}_{{record_name}}__of_flag |
+                {{reg_name}}__OF__curr_value |
+                {{node_name}}_{{record_name}}__cec_wd_cnt_of) ?
+                7'b0 : {{node_name}}_{{record_name}}__cec_upd_value[6:0];
 
     assign  {{node_name}}_{{record_name}}__of_fault =
-        ({{node_name}}_{{record_name}}__fim_of | {{reg_name}}__OF__curr_value) &
-        {{node_name}}__ctrl_cfi;
+                {{reg_name}}__OF__curr_value &
+                {{node_name}}__ctrl_cfi;
     {% elif reg.type_name == "ERR_MISC1_0" %}
-    assign  {{node_name}}_{{record_name}}__fen = {{reg_name}}__FEN__curr_value;
+    assign  {{node_name}}_{{record_name}}__fen[31:0] = {{reg_name}}__FEN__curr_value;
     {% elif reg.type_name == "ERR_MISC1_1" %}
+    assign  {{node_name}}_{{record_name}}__fen[32] = {{reg_name}}__FEN__curr_value;
     assign  {{node_name}}_{{record_name}}__fmask = {{reg_name}}__FMASK__curr_value;
     {% elif reg.type_name == "ERR_MISC2_0" %}
     assign  {{node_name}}_{{record_name}}__fim_int = {{reg_name}}__FIM__curr_value[31:0];
@@ -627,14 +715,19 @@ module {{slv_name}} (
     assign  {{reg_name}}__POIS_INFO__next_value = {{node_name}}_{{record_name}}__poi_err_info;
     {%- endif %}
 {% endfor %}{# reg loop #}
-    assign  {{node_name}}_{{record_name}}__or_all_int_flag = |{{node_name}}_{{record_name}}__int_flag;
-    assign  {{node_name}}_{{record_name}}__fault = (|{{node_name}}_{{record_name}}__int_fault) | {{node_name}}_{{record_name}}__of_fault;
-    assign  {{node_name}}__fault_int_r[{{loop.index0}}] = {{node_name}}_{{record_name}}__fault & ~{{node_name}}_{{record_name}}__fmask;
+    assign  {{node_name}}_{{record_name}}__ue_occur =
+                |{{node_name}}_{{record_name}}__int_flag;
+    assign  {{node_name}}_{{record_name}}__fault =
+                (|{{node_name}}_{{record_name}}__int_fault &
+                {{node_name}}__ctrl_fi) |
+                {{node_name}}_{{record_name}}__of_fault;
+    assign  {{node_name}}__fault_int_r[{{loop.index0}}] =
+                {{node_name}}_{{record_name}}__fault &
+                ~{{node_name}}_{{record_name}}__fmask;
 {%- if record_cnt.append(record_cnt.pop() + 1) %}{% endif %}
 {% endfor %}{# record loop #}
     assign  fault_int_n[{{loop.index0}}] =
-        (|{{node_name}}__fault_int_r) &
-        {{node_name}}__ctrl_fi;
+                |{{node_name}}__fault_int_r;
 {%- else %}{# if isinstance(node, RegfileNode) #}
     {%- if node.type_name in ("ERR_GSR", "ERR_DEVARCH") %}{% set reg = node %}
     {%- set reg_name = get_rtl_name(reg) %}
@@ -660,8 +753,7 @@ module {{slv_name}} (
     snapshot_reg #(
         .DATA_WIDTH                             (DATA_WIDTH),
         .REG_WIDTH                              ({{reg.size * 8}})
-    )
-    {{reg_name}}_snapshot_reg (
+    ) {{reg_name}}_snapshot_reg (
         .clk                                    ({{curr_clk}}),
         .rst_n                                  ({{curr_async_rst_n}}),
         .soft_rst                               (soft_rst_i0),

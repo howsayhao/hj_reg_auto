@@ -61,13 +61,12 @@ module {{slv_name}} (
     parameter       DATA_WIDTH                  = {{get_data_width(slv_node)}};
     parameter       INSERT_REG_FF               = 1;
     parameter       REG_NUM                     = {{addr_loc_num}};
-
+    parameter       DUMMY_READ_DATA             = 0;
 {% for reg in reg_list -%}
     {%- for field in reg.fields(skip_not_present=False) if not field.is_alias and need_param_reset(field) %}
     parameter       {{get_rtl_name(reg)|upper}}__{{field.inst_name|upper}}__ARST_VALUE = {{"%d'h%x"|format(field.width, get_reset_val(field))}};
     {%- endfor %}
 {%- endfor %}
-
 {% for reg in reg_list -%}
     {%- set reg_name = get_rtl_name(reg) -%}
     {%- for field in reg.fields(skip_not_present=False) if not field.is_alias %}
@@ -239,7 +238,8 @@ module {{slv_name}} (
 
 //*******************************************FSM******************************************************//
     slv_fsm #(
-        .DATA_WIDTH (DATA_WIDTH)
+        .DATA_WIDTH                             (DATA_WIDTH),
+        .DUMMY_READ_DATA                        (DUMMY_READ_DATA)
     )
     slv_fsm (
         .clk                                    ({{curr_clk}}),

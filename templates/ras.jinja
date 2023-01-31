@@ -11,10 +11,10 @@ addrmap {{inst_name}} {
             ERR_FR_1 ERR{{loop.index0}}FR_1;
             {% if loop.first %}ERR_CTRL_0_first{% else %}ERR_CTRL_0_otherwise{% endif %} ERR{{record_cnt[0]}}CTRL_0;
             ERR_CTRL_1 ERR{{record_cnt[0]}}CTRL_1;
-            ERR_ADDR_0 ERR{{record_cnt[0]}}ADDR_0;
-            ERR_ADDR_1 ERR{{record_cnt[0]}}ADDR_1;
             ERR_STATUS_0 ERR{{record_cnt[0]}}STATUS_0;
             ERR_STATUS_1 ERR{{record_cnt[0]}}STATUS_1;
+            ERR_ADDR_0 ERR{{record_cnt[0]}}ADDR_0;
+            ERR_ADDR_1 ERR{{record_cnt[0]}}ADDR_1;
             ERR_MISC0_0 ERR{{record_cnt[0]}}MISC0_0;
             ERR_MISC0_1 ERR{{record_cnt[0]}}MISC0_1;
             ERR_MISC1_0 ERR{{record_cnt[0]}}MISC1_0;

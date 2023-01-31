@@ -85,12 +85,17 @@
 {%- endmacro -%}
 
 {%- if with_toc %}
-# Table of Contents
+**Table of Contents**
 ***
 [TOC]
 {%- endif %}
 
-{{addr_block_def(top_node)}}
-{%- for node in top_node.descendants(in_post_order=False, unroll=True, skip_not_present=False) %}
+<style>
+  table {border-collapse: collapse;}
+  td {border: 1px solid black;}
+  th {border: 1px solid black;}
+</style>
+
+{%- for node in nodes %}
 {{child_def(node)}}
 {%- endfor %}

@@ -57,6 +57,7 @@ module {{disp_name}} (
     parameter   FORWARD_NUM = {{get_forward_num(disp_node)}};
     parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {{"{" ~ use_forward_ff(disp_node)|join(", ") ~ "}"}};
     parameter   INSERT_BACKWARD_FF = {{use_backward_ff(disp_node)}};
+    parameter   DUMMY_READ_DATA = 0;
 
     input   logic                               {{disp_name}}_clk;
     input   logic                               {{disp_name}}_rst_n;
@@ -320,7 +321,7 @@ module {{disp_name}} (
     assign  {{disp_name}}__upstream__err_mux = | downstream_err;
 
     always_comb begin
-        {{disp_name}}__upstream__rd_data_mux = {UPSTREAM_DATA_WIDTH{1'b0}};
+        {{disp_name}}__upstream__rd_data_mux = DUMMY_READ_DATA;
         if (!dummy_reg_ack_vld) begin
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
                 if (downstream_ack_vld[i]) begin

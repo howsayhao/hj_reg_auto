@@ -1,13 +1,14 @@
 addrmap root_map {
     base_addr = 0x20000000;
     hj_gendisp = true;
+    set_as_subsys_root = true;
     reg tem_alias_1{
         field {hw=w;} FIELD_1[17:17] = 0x0;
         field {hw=w;} FIELD_2[16:14] = 0x0;
         field {hw=w;} FIELD_3[13:13] = 0x1;
     };
     reg tem_alias_2{
-        field {hw=r;} FIELD_1[31:0] = 0x0;
+        field {hw=r;} FIELD_1[31:0] = 0xff;
     };
     addrmap flatten_map {
         hj_flatten_addrmap = true;

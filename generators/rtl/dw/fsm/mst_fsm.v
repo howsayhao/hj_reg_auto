@@ -45,6 +45,8 @@ module mst_fsm (
     input   logic                       downstream_err;
 
     logic           [DATA_WIDTH-1:0]    fsm_rd_data_ff;
+    logic                               err_occur;
+    logic                               err_occur_ff;
     logic           [1:0]               state;
     logic           [1:0]               next_state;
 
@@ -60,7 +62,7 @@ module mst_fsm (
         case(state)
             S_IDLE: begin
                 if (psel & ~penable)
-                    if (fsm_ack_vld)
+                    if (fsm_ack_vld | tmr_tmout)
                         next_state = S_ACK;
                     else
                         next_state = S_WAIT;
@@ -95,6 +97,14 @@ module mst_fsm (
             fsm_rd_data_ff  <= fsm_rd_data;
     end
 
+    assign  err_occur       =  tmr_tmout | downstream_err;
+    always_ff @(posedge pclk or negedge presetn) begin
+        if (~presetn)
+            err_occur_ff    <= 1'b0;
+        else
+            err_occur_ff    <= err_occur;
+    end
+
     always_comb begin
         prdata = {DATA_WIDTH{1'b0}};
 
@@ -108,7 +118,8 @@ module mst_fsm (
             prdata = fsm_rd_data_ff;
     end
 
-    assign  pready          = (state == S_ACK) || ((state == S_WAIT) && (next_state == S_IDLE));
-    assign  pslverr         = pslverr_en & (tmr_tmout | downstream_err);
-    assign  tmr_rst         = (next_state == S_IDLE);
+    assign  pready  = (state == S_ACK) || (state == S_WAIT && next_state == S_IDLE);
+    assign  pslverr = pslverr_en & (state == S_ACK ? err_occur_ff :
+                ((state == S_WAIT && next_state == S_IDLE) ? err_occur : 1'b0));
+    assign  tmr_rst = (next_state == S_IDLE);
 endmodule

@@ -15,6 +15,7 @@ module slv_fsm
     reg_rd_data_vld
 );
     parameter   DATA_WIDTH              = 32;
+    parameter   DUMMY_READ_DATA         = 0;
 
     localparam  S_IDLE                  = 3'd0;
     localparam  S_DUMMY_ACK             = 3'd1;
@@ -103,6 +104,7 @@ module slv_fsm
             S_DUMMY_ACK: begin
                 if_ack_vld  = 1'b1;
                 if_err  = 1'b1;
+                if_rd_data = DUMMY_READ_DATA;
             end
             S_REG_WRITE_ACK: begin
                 if_ack_vld  = 1'b1;
@@ -123,6 +125,7 @@ module slv_fsm
                 if (dummy_acc) begin
                     if_ack_vld  = 1'b1;
                     if_err  = 1'b1;
+                    if_rd_data = DUMMY_READ_DATA;
                 end
                 else if (reg_rd_data_vld) begin
                     if_ack_vld  = 1'b1;

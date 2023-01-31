@@ -10,19 +10,19 @@
 {# define absolute address of all internal registers #}
 {%- for child in node.descendants(unroll=True, skip_not_present=False, in_post_order=True) -%}
 {% if isinstance(child, RegNode) -%}
-#define {{"%-40s%8s%s_BASE + %s"|format(get_hier_name(child), "", get_inst_name(node), get_addr_offset(child))|upper}}
+#define {{"%-40s%8s%s_BASE + 0X%X"|format(get_hier_name(child), "", get_inst_name(node), child.absolute_address-node.absolute_address)|upper}}
 {% endif %}
 {%- endfor -%}
 
 {%- macro reg_typedef(reg) %}
-typedef union {{"{"}}
+typedef union {
     uint{{reg.size * 8}}_t val;
-    struct {{"{"}}
+    struct {
     {%- for field in get_all_fields(reg) %}
         {{"uint%s_t %-12s: %d;"|format(reg.size * 8, field[0], field[1])}}
     {%- endfor %}
-    {{"}"}} reg;
-{{"}"}} {{get_hier_name(reg)}}_t;
+    } reg;
+} {{get_hier_name(reg)}}_t;
 {%- endmacro -%}
 
 {# define absolute address of all internal registers #}

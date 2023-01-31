@@ -4,6 +4,7 @@ import os
 import traceback
 import markdown
 import subprocess
+import multiprocessing
 
 import jinja2 as jj
 import utils.message as message
@@ -13,34 +14,18 @@ from utils.misc import convert_size
 
 
 class DocExporter:
-    def __init__(self):
+    def __init__(self, top_node:AddrmapNode):
         # top-level node
-        self.top_node = None
-
-        loader = jj.FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates"))
-        self.jj_env = jj.Environment(
-            loader=loader,
-            undefined=jj.StrictUndefined
-        )
-
-    def export(self, top_node:AddrmapNode, export_file:str,
-               template_name:str, with_toc:bool=False):
-        """
-        Parameter
-        ---------
-        top_node : AddrmapNode
-            top-level address map node
-        export_file : str
-            output file path
-        template_name : str
-            jinja2 template name used to generate the output file
-        with_toc : bool
-            whether to generate a table of contents
-        """
         self.top_node = top_node
 
-        context = {
-            'top_node': top_node,
+        loader = jj.FileSystemLoader(
+            os.path.join(os.path.dirname(__file__), "templates"))
+
+        self.jj_env = jj.Environment(
+            loader=loader,
+            undefined=jj.StrictUndefined)
+
+        self.context = {
             'RegNode': RegNode,
             'RegfileNode': RegfileNode,
             'AddrmapNode': AddrmapNode,
@@ -58,12 +43,298 @@ class DocExporter:
             'convert_size': convert_size,
             'get_all_blocks': self._get_all_blocks,
             'get_secure_attr': self._get_secure_attr,
-            'get_base_node': self._get_base_node,
-            'with_toc': with_toc
+            'get_base_node': self._get_base_node
         }
 
-        template = self.jj_env.get_template("%s.jinja" % template_name)
-        template.stream(context).dump(export_file)
+    def export(self, out_dir:str,
+               format_list:list[str],
+               with_toc:bool,
+               pdf_engine:str,
+               split_by_sub_sys:bool,
+               max_reg_count:int,
+               only_simplified_org:bool,
+               with_simplified_org:bool,
+               max_proc_count:int):
+        """
+        Parameter
+        ---------
+        """
+        cpu_count = multiprocessing.cpu_count()
+
+        if cpu_count < max_proc_count:
+            max_proc_count = cpu_count
+
+        proc_pool = multiprocessing.Pool(processes=max_proc_count)
+
+        # create output directory
+        out_dir = os.path.join(out_dir, "docs")
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+
+        # generate doc for each sub-system if split_by_sub_sys is set
+        top_nodes = []
+        if split_by_sub_sys:
+            for node in self.top_node.descendants(unroll=True, skip_not_present=False):
+                # split nodes by sub-system since every sub-system has its own root node
+                # specified by set_as_subsys_root property
+                # note that the top node is not included in the list
+                if isinstance(node, AddrmapNode) and \
+                    node.get_property("set_as_subsys_root", default=False):
+                    top_nodes.append(node)
+        else:
+            top_nodes.append(self.top_node)
+
+        # update context with additional parameters
+        self.context.update({
+            'with_toc': with_toc
+        })
+
+        # org, markdown and txt doc are going to be generated from jinja2 templates
+        template_dict = {}
+        for format in format_list:
+            if format == "org":
+                if only_simplified_org:
+                    template_dict["org_simplified"] = format
+                    continue
+
+                if with_simplified_org:
+                    template_dict["org_simplified"] = format
+
+                template_dict["org_detailed"] = format
+
+            elif format == "txt":
+                template_dict["plain_text"] = format
+
+            # html and pdf doc are based on markdown doc rendered by jinja2 template
+            elif format in ("md", "html", "pdf"):
+                template_dict["md"] = format
+
+        if "org" in format_list:
+            if only_simplified_org:
+                template_dict["org_simplified"] = "org"
+            else:
+                if with_simplified_org:
+                    template_dict["org_simplified"] = "org"
+
+                template_dict["org_detailed"] = "org"
+
+        if "txt" in format_list:
+            template_dict["plain_text"] = "txt"
+
+        # html and pdf doc are based on markdown doc rendered by jinja2 template
+        if "md" in format_list or "html" in format_list or "pdf" in format_list:
+            template_dict["md"] = "md"
+
+        tmp_files = []
+        all_files = []
+
+        for top_node in top_nodes:
+            top_inst_name = top_node.get_path_segment(array_suffix="_{index:d}")
+
+            for template_name, format in template_dict.items():
+
+                if template_name == "org_simplified":
+                    file_prefix = top_inst_name + "_simplified"
+                elif template_name == "org_detailed":
+                    file_prefix = top_inst_name + "_detailed"
+                else:
+                    file_prefix = top_inst_name
+
+                nodes, files = [], []
+                reg_num, file_num = 0, 0
+                last_reg_addr = 0
+
+                # use corresponding format of jinja2 templates to dump
+                jj_template = self.jj_env.get_template("%s.jinja" % template_name)
+
+                for node in top_node.descendants(unroll=True, skip_not_present=False):
+                    if isinstance(node, (RegNode, RegfileNode, MemNode, AddrmapNode)):
+                        if len(nodes) == 0:
+                            # insert current top node into context to be generated for
+                            # the first file, or nodes are continued from the last
+                            # node of last file, try to capture the entire hierarchy
+                            # of the current first node
+                            curr_node = node
+
+                            while not curr_node.parent == top_node:
+                                nodes.insert(0, curr_node.parent)
+                                curr_node = curr_node.parent
+
+                            nodes.insert(0, top_node)
+
+                        nodes.append(node)
+
+                        if isinstance(node, RegNode):
+                            reg_num += 1
+
+                        # split all registers into multiple groups to dump
+                        # max_reg_count = 0 means no split
+                        if max_reg_count != 0 and reg_num >= max_reg_count:
+                            self.context.update({
+                                "nodes": nodes
+                            })
+
+                            if file_num > 0:
+                                file_suffix = "_cond_%d_%s_%s" % (
+                                    file_num,
+                                    hex(last_reg_addr),
+                                    hex(nodes[-1].absolute_address))
+                            else:
+                                file_suffix = ""
+                            last_reg_addr = nodes[-1].absolute_address + nodes[-1].size
+
+                            export_file = os.path.join(
+                                out_dir,
+                                "%s%s.%s" % (file_prefix, file_suffix, format))
+
+                            jj_template.stream(self.context).dump(export_file)
+
+                            # add to file list
+                            files.append(export_file)
+
+                            nodes = []
+                            reg_num = 0
+                            file_num += 1
+
+                # dump the last group of registers, if any
+                # or the total number of registers is less than max_reg_count
+                self.context.update({
+                    "nodes": nodes
+                })
+
+                if file_num > 0:
+                    file_suffix = "_cond_%d_%s_%s" % (
+                        file_num,
+                        hex(last_reg_addr),
+                        hex(nodes[-1].absolute_address)
+                    )
+                else:
+                    file_suffix = ""
+
+                export_file = os.path.join(
+                    out_dir,
+                    "%s%s.%s" % (file_prefix, file_suffix, format))
+                jj_template.stream(self.context).dump(export_file)
+
+                # add to file list
+                files.append(export_file)
+
+                message.info(
+                    "save %s documentation of %s (total %d files)" % (
+                        template_name, top_inst_name, len(files)))
+
+            # filenames without file type extension
+            common_files = [os.path.splitext(f)[0] for f in files]
+            all_files.extend(common_files)
+
+            # markdown extensions used
+            md_exts = ["tables", "nl2br", "toc"]
+
+            # use markdown util to generate html from markdown
+            if "html" in format_list:
+                if not "md" in format_list:
+                    # temporary markdown files are going to be removed later
+                    tmp_files.extend([f + ".md" for f in common_files])
+
+                # since conversion from markdown to html is a time-consuming task,
+                # we use multiprocessing to speed up the process
+                for file in common_files:
+                    proc_pool.apply_async(
+                        markdown.markdownFromFile,
+                        kwds={
+                            'input': file + ".md",
+                            'output': file + ".html",
+                            'extensions': md_exts
+                        },
+                        error_callback=self.export_error_handler
+                    )
+
+                message.info(
+                    "save html documentation of %s (total %d files)" %
+                    (top_inst_name, len(common_files))
+                )
+
+            # use optional pdf engines to convert html to pdf
+            # actually the conversion is not implemented here but later
+            # when all html files are prepared to boost the performance
+            # of the conversion process by multiprocessing
+            if "pdf" in format_list:
+                # when html files do not exist, generate it first
+                if not "html" in format_list:
+                    # when markdown files do not exist, generate it first
+                    if not "md" in format_list:
+                        # temporary markdown files are going to be removed later
+                        tmp_files.extend([f + ".md" for f in common_files])
+
+                    for file in common_files:
+                        proc_pool.apply_async(
+                            markdown.markdownFromFile,
+                            kwds={
+                                'input': file + ".md",
+                                'output': file + ".html",
+                                'extensions': md_exts
+                            },
+                            error_callback=self.export_error_handler
+                        )
+
+                    # temporary html files are going to be removed later
+                    tmp_files.extend([f + ".html" for f in common_files])
+
+        # wait for all tasks to finish: markdown and html generation
+        proc_pool.close()
+        proc_pool.join()
+
+        # convert html to pdf by specified engine
+        if "pdf" in format_list:
+            message.info(
+                "generate pdf using {}, it may take long long long time "
+                "if there are a large number of registers, so keep patient please".format(pdf_engine))
+
+            cmds = {
+                'wkhtmltopdf': [
+                    'wkhtmltopdf',
+                    '{html}',
+                    '{pdf}'
+                ],
+                'google-chrome': [
+                    'google-chrome',
+                    '--headless',   # no UI
+                    '--disable-gpu',
+                    '--print-to-pdf-no-header',
+                    '--print-to-pdf={pdf}',
+                    '{html}'
+                ]
+            }
+
+            proc_pool = multiprocessing.Pool(processes=max_proc_count)
+
+            for file in all_files:
+                cmd = [
+                    c.format(html = file+".html", pdf = file+".pdf") for c in cmds[pdf_engine]
+                ]
+
+                proc_pool.apply_async(
+                    subprocess.call, args=(cmd,),
+                    kwds={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL},
+                    error_callback=self.export_error_handler,
+                    callback=self.export_info_handler)
+
+            proc_pool.close()
+            proc_pool.join()
+
+        # delete all temporary files
+        for file in tmp_files:
+            os.remove(file)
+
+    def export_info_handler(self, result):
+        message.info("pdf generation finished")
+
+    def export_error_handler(self, e:BaseException):
+        # TODO: add error handling
+        message.error(
+            "doc exporter encounters some error: %s" % e,
+            raise_err=False)
 
     def _get_hier_depth(self, node:Node):
         """
@@ -156,174 +427,3 @@ class DocExporter:
             return "configured by register (default %s)" % (
                 "secure" if sec_cfg_default_val == 0 else "non-secure"
             )
-
-def export_doc(top_node:AddrmapNode, out_dir:str, format_list:list[str], **kwargs):
-    """
-    Export documentation with optional file formats
-
-    Parameters
-    ----------
-    `top_node` : AddrmapNode
-        top-level address map node
-    `out_dir` : str
-        Output directory
-    `format_list` : list[str]
-        List of file formats to export
-    `kwargs` :
-        Additional arguments for each file format
-    """
-    exporter = DocExporter()
-    error_occur = False
-
-    template_dict = {}
-
-    with_toc = kwargs.pop("with_toc")
-    exclude_pattern = kwargs.pop("filter")
-
-    # org, markdown and txt doc are going to be generated by jinja2 engine
-    for format in format_list:
-        if format == "org":
-            if kwargs.pop("only_simplified_org"):
-                template_dict["org_simplified"] = format
-                continue
-
-            if kwargs.pop("with_simplified_org"):
-                template_dict["org"] = format
-
-            template_dict["org_detailed"] = format
-
-        elif format == "md":
-            template_dict["md"] = format
-
-        elif format == "txt":
-            template_dict["plain_text"] = format
-
-    out_dir = os.path.join(out_dir, "docs")
-
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
-    md_already_exported = False
-    html_already_generated = False
-
-    # indicate whether there are temporal files
-    md_tmp_exported = False
-    html_tmp_exported = False
-
-    for template_name, format in template_dict.items():
-        export_file = os.path.join(out_dir, "%s.%s" % (top_node.inst_name, format))
-
-        try:
-            exporter.export(top_node, export_file, template_name, with_toc)
-        except:
-            message.error(
-                "failed to export %s documentation" % format,
-                raise_err=False
-            )
-            error_occur = True
-        else:
-            if format == "md":
-                md_already_exported = True
-                md_file = export_file
-
-            message.info("save %s documentation in %s" % (format, export_file))
-
-    html_file = os.path.join(out_dir, "%s.html" % top_node.inst_name)
-
-    # markdown extensions used
-    md_exts = ["tables", "nl2br"]
-    if with_toc:
-        md_exts.append("toc")
-
-    # for html, we use markdown library to generate html from markdown
-    if "html" in format_list:
-        try:
-            # when markdown file is not generated, we generate it first
-            if not md_already_exported:
-                md_file = os.path.join(out_dir, "%s.md" % top_node.inst_name)
-                exporter.export(top_node, md_file, "md", with_toc)
-
-            markdown.markdownFromFile(
-                input=md_file,
-                output=html_file,
-                extensions=md_exts
-            )
-        except:
-            message.error(
-                "failed to export html documentation",
-                raise_err=False
-            )
-            error_occur = True
-        else:
-            if not md_already_exported:
-                md_tmp_exported = True
-
-            html_already_generated = True
-
-            message.info("save html documentation in %s" % html_file)
-
-    # for pdf, we use google-chrome to convert html to pdf
-    if "pdf" in format_list:
-        pdf_file = os.path.join(out_dir, "%s.pdf" % top_node.inst_name)
-
-        # when html file is not generated, we generate it first
-        if not html_already_generated:
-            try:
-                # when markdown file is not generated, we generate it first
-                if not md_already_exported:
-                    md_file = os.path.join(out_dir, "%s.md" % top_node.inst_name)
-                    exporter.export(top_node, md_file, "md", with_toc)
-
-                markdown.markdownFromFile(
-                    input=md_file,
-                    output=html_file,
-                    extensions=md_exts
-                )
-            except:
-                message.error(
-                    "failed to export intermediate html file",
-                    raise_err=False
-                )
-                error_occur = True
-            else:
-                if not md_already_exported:
-                    md_already_exported = True
-
-                html_tmp_exported = True
-        else:
-            # convert html to pdf by Google Chrome
-            message.info("generate PDF file by Google Chrome, it may take a while")
-
-            try:
-                subprocess.call(
-                    [
-                        'google-chrome',
-                        '--headless',
-                        '--disable-gpu',
-                        '--print-to-pdf-no-header',
-                        '--print-to-pdf={}'.format(export_file), html_file
-                    ])
-            except:
-                message.error(
-                    "failed to generate PDF by Google Chrome",
-                    raise_err=False
-                )
-            else:
-                message.info("save pdf documentation in %s" % pdf_file)
-
-    # delete intermediate files after all generation work is done
-    if md_tmp_exported:
-        os.remove(md_file)
-
-    if html_tmp_exported:
-        os.remove(html_file)
-
-    # raise error ultimately to trace back
-    # TODO: provide more accurate trace information
-    if error_occur:
-        message.error(
-            "HRDA encounters some unknown errors,\n{}\n"
-            "doc exporter does not finish all work and exits incorrectly".format(
-                traceback.format_exc()
-            )
-        )

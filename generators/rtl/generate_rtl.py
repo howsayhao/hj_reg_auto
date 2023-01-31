@@ -107,8 +107,11 @@ class RTLExporter:
 
         self.top_node = top_node
 
+        nodes = [top_node]
+        nodes.extend(top_node.descendants(unroll=True, skip_not_present=False))
+
         # traverse all addrmap to get complete filelist and generate modules in pre-order (top-down)
-        for node in top_node.descendants(unroll=True, skip_not_present=False):
+        for node in nodes:
             if isinstance(node, AddrmapNode):
                 if node.is_array and node.get_property("hj_use_abs_addr"):
                     need_array_suffix = True

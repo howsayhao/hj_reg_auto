@@ -296,23 +296,6 @@ class PreprocessListener(RDLListener):
                 message.debug("generate regdisp_{}".format(node.inst_name), self.indent)
 
             if not self.skip_preprocess_check:
-                # check whether regdisp is instantiated at top level
-                # or under addrmap which represents for regmst or regdisp
-                if not isinstance(node.parent, RootNode) and \
-                    not node.parent.get_property("hj_genmst") and \
-                    not node.parent.get_property("hj_gendisp"):
-                    message.error(
-                        "%s, %d: %d:\n%s\n"
-                        "addrmap %s represents for regdisp, so it must be instantiated at top level, "
-                        "or under addrmap which represents for regmst or regdisp" % (
-                            self.ref.filename,
-                            self.ref.line,
-                            self.ref.line_selection[0],
-                            self.ref.line_text,
-                            node.get_path_segment(array_suffix="_{index:d}")
-                        )
-                    )
-
                 # the child of regdisp can only be:
                 # regdisp, regslv, 3rd party IP, memory
                 for child in node.children(skip_not_present=False):
