@@ -134,20 +134,18 @@ class CHdrExporter:
         rsvd_cnt = 0
 
         for index in range(len(orig_flds)):
-            all_flds.append(
-                (
-                    orig_flds[index].inst_name,
-                    orig_flds[index].width,
-                    orig_flds[index].get_property("reset", default=0)
-                )
-            )
-
             if index == 0:
                 if orig_flds[index].low > 0:
                     rsvd_width = orig_flds[index].low
                     all_flds.append(("reserved_{}".format(rsvd_cnt), rsvd_width, 0))
                     rsvd_cnt += 1
-            elif index == len(orig_flds) - 1:
+
+            all_flds.append((
+                orig_flds[index].inst_name,
+                orig_flds[index].width,
+                orig_flds[index].get_property("reset", default=0)))
+
+            if index == len(orig_flds) - 1:
                 if orig_flds[index].high < node.size * 8 - 1:
                     rsvd_width = node.size * 8 - 1 - orig_flds[index].high
                     all_flds.append(("reserved_{}".format(rsvd_cnt), rsvd_width, 0))
