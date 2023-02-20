@@ -142,10 +142,16 @@ class CHdrExporter:
                 )
             )
 
-            if index == len(orig_flds) - 1:
+            if index == 0:
+                if orig_flds[index].low > 0:
+                    rsvd_width = orig_flds[index].low
+                    all_flds.append(("reserved_{}".format(rsvd_cnt), rsvd_width, 0))
+                    rsvd_cnt += 1
+            elif index == len(orig_flds) - 1:
                 if orig_flds[index].high < node.size * 8 - 1:
                     rsvd_width = node.size * 8 - 1 - orig_flds[index].high
                     all_flds.append(("reserved_{}".format(rsvd_cnt), rsvd_width, 0))
+                    rsvd_cnt += 1
             else:
                 if orig_flds[index].high < orig_flds[index+1].low - 1:
                     rsvd_width = orig_flds[index+1].low - 1 - orig_flds[index].high
