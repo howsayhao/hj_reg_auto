@@ -16,19 +16,47 @@ module value_deliver_1cycle (
     output  reg             pulse_out;
     output  reg [WIDTH-1:0] value_out;
 
-    wire                    pulse_out_int;
     reg     [WIDTH-1:0]     value_in_ff;
+    reg                     pulse_in_ff;
+    wire                    pulse_int_1;
+    reg                     pulse_int_2;
+    wire                    pulse_int_3;
+    reg                     pulse_int_4;
+    wire                    pulse_out_int;
 
-    pulse_deliver pulse_deliver (
-        .scan_enable        (scan_enable),
-        .clk_a              (clk_a),
-        .rst_a_n            (rst_a_n),
-        .pulse_in           (pulse_in),
-        .clk_b              (clk_b),
-        .rst_b_n            (rst_b_n),
-        .pulse_out          (pulse_out_int)
+    // deliver pulse: toggle synchronizer
+    always @(posedge clk_a or negedge rst_a_n) begin
+        if (!rst_a_n)
+            pulse_in_ff <= 1'b0;
+        else
+            pulse_in_ff <= pulse_in;
+    end
+
+    assign pulse_int_1 = pulse_int_2 ^ pulse_in_ff;
+    always @(posedge clk_a or negedge rst_a_n) begin
+        if (!rst_a_n)
+            pulse_int_2 <= 1'b0;
+        else
+            pulse_int_2 <= pulse_int_1;
+    end
+
+    cdc_synczr_rst_1bit a2b (
+        .clk (clk_b),
+        .async_rst_n (rst_b_n),
+        .scan_enable (scan_enable),
+        .sync_in (pulse_int_2),
+        .sync_out (pulse_int_3)
     );
 
+    always @(posedge clk_b or negedge rst_b_n) begin
+        if (!rst_b_n)
+            pulse_int_4 <= 1'b0;
+        else
+            pulse_int_4 <= pulse_int_3;
+    end
+    assign pulse_out_int = pulse_int_4 ^ pulse_int_3;
+
+    // deliver value
     always @(posedge clk_a or negedge rst_a_n) begin
         if (~rst_a_n) begin
             value_in_ff[WIDTH-1:0] <= {WIDTH{1'b0}};
