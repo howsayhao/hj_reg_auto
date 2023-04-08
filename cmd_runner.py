@@ -8,11 +8,14 @@ import utils.message as message
 from generators.chdr.export import export_chdr
 from generators.doc.export import DocExporter
 from generators.preprocess import preprocess
-from generators.rtl.export import export_rtl
+from generators.rtl.export_rtl import export_rtl
 from generators.uvm.export import export_uvm
 from parsers.parse import Parser
 from templates.gen_temp import generate_excel_template, generate_rdl_template
 from utils.env import HRDAEnv
+
+# zhenghaoZJU
+from generators.rtl.export_graphviz import export_viz
 
 __version__ = "0.4.0"
 __man_file__ = "hrda_reference_manual_v0.4.0_Rev.A.pdf"
@@ -259,6 +262,11 @@ class CommandRunner:
             type=int,
             default=1,
             help="the maximum number of processes to be used, default: %(default)s")
+        # zhenghaoZJU
+        parser_generate.add_argument(
+            "-gviz", "--generate_graphviz",
+            action="store_true",
+            help="generate graph of rtl by graphviz")
 
         parser_generate.set_defaults(func=self._generate)
 
@@ -424,6 +432,16 @@ class CommandRunner:
                     target=export_rtl,
                     name="generate_rtl",
                     args=(top_node, args.gen_dir), kwargs=kwargs
+                ))
+            proc_num_left -= 1
+        
+        # generate graph of rtl by graphviz
+        if args.generate_all or args.generate_graphviz:
+            proc_list.append(
+                Process(
+                    target=export_viz,
+                    name="generate_graphviz",
+                    args=(top_node, args.gen_dir)
                 ))
             proc_num_left -= 1
 

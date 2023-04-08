@@ -83,7 +83,7 @@ class VIZExporter:
             'need_param_reset': self._need_param_reset
         }
 
-    def export(self, top_node:AddrmapNode, rtl_dir:str, **kwargs):
+    def export(self, top_node:AddrmapNode, rtl_dir:str):
         """
         Export in-house RTL module files: regmst, regdisp and regslv.
 
@@ -93,10 +93,6 @@ class VIZExporter:
             Top node of the generation boundry.
         rtl_dir : str
             Directory to save the generated RTL files.
-        kwargs : dict
-            Additional arguments to be passed to the template.
-            - without_filelist : bool
-            - gen_hier_depth_range : list
         """
 
         self.top_node = top_node

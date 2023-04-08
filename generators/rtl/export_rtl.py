@@ -5,7 +5,6 @@ import utils.message as message
 from systemrdl.node import AddrmapNode
 
 from .generate_rtl import RTLExporter
-from .generate_graphviz import VIZExporter
 
 
 def export_rtl(top_node:AddrmapNode, out_dir:str, **kwargs):
@@ -28,7 +27,6 @@ def export_rtl(top_node:AddrmapNode, out_dir:str, **kwargs):
 
     try:
         RTLExporter().export(top_node, rtl_dir, without_filelist=without_filelist)
-        VIZExporter().export(top_node, rtl_dir)
     except Exception:
         message.error(
             "HRDA encounters some unknown errors\n{}\n"
