@@ -1,0 +1,41 @@
+{# regmst #}
+{%- macro regmst_typedef(node) %}
+node[shape="retangle", color="#FDB7AF", style="filled", fillcolor="#FDB7AF", fontname="FangSong"];
+{{node.inst_name}}[label="regmst"]
+{%- endmacro -%}
+
+{# regdisp #}
+{%- macro regdisp_typedef(node) %}
+node[shape="retangle", color="#F8E1A9", style="filled", fillcolor="#F8E1A9", fontname="FangSong"];
+{{node.inst_name}}[label="regdisp"]
+{%- endmacro -%}
+
+{# regslv #}
+{%- macro regslv_typedef(node) %}
+node[shape="retangle", color="#9df7e4", style="filled", fillcolor="#9df7e4", width=.8, fontname="FangSong"];
+{{node.inst_name}}[label="regslv"]
+{%- endmacro -%}
+
+digraph G{
+    {{regmst_typedef(top_node)}}
+    {%- for node in nodes -%}
+        {% if isinstance(node, AddrmapNode) -%}
+            {%- for child in node.children() -%}
+                {% if isinstance(child, AddrmapNode) %}
+                    {% if child.get_property("hj_genmst", default=False) %}
+                        {{regmst_typedef(child)}}
+                        {{node.inst_name}}->{{child.inst_name}}
+                    {% endif %}
+                    {% if child.get_property("hj_gendisp", default=False) %}
+                        {{regdisp_typedef(child)}}
+                        {{node.inst_name}}->{{child.inst_name}}
+                    {% endif %}
+                    {% if child.get_property("hj_genslv", default=False) %}
+                        {{regslv_typedef(child)}}
+                        {{node.inst_name}}->{{child.inst_name}}
+                    {% endif %}
+                {% endif %}
+            {%- endfor -%}
+        {% endif %}
+    {%- endfor -%}
+}

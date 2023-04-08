@@ -6,7 +6,7 @@ import re
 import utils.message as message
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
-from peakrdl.ipxact import IPXACTImporter
+from peakrdl_ipxact import IPXACTImporter
 from systemrdl import RDLCompileError, RDLCompiler
 
 from .excel.args import EXCEL_REG_FIELD, EXCEL_REG_HEAD

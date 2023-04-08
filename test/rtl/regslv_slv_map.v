@@ -138,6 +138,7 @@ module regslv_slv_map (
     parameter       DATA_WIDTH                  = 32;
     parameter       INSERT_REG_FF               = 1;
     parameter       REG_NUM                     = 61;
+    parameter       DUMMY_READ_DATA             = 0;
 
     parameter       TEM__FIELD_0__ARST_VALUE = 32'hffff;
 
@@ -443,7 +444,8 @@ module regslv_slv_map (
 
 //*******************************************FSM******************************************************//
     slv_fsm #(
-        .DATA_WIDTH (DATA_WIDTH)
+        .DATA_WIDTH                             (DATA_WIDTH),
+        .DUMMY_READ_DATA                        (DUMMY_READ_DATA)
     )
     slv_fsm (
         .clk                                    (regslv_clk),
@@ -900,7 +902,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1068,7 +1070,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1236,7 +1238,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1404,7 +1406,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1572,7 +1574,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1740,7 +1742,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -1908,7 +1910,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2076,7 +2078,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2244,7 +2246,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2412,7 +2414,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2580,7 +2582,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2748,7 +2750,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -2916,7 +2918,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3084,7 +3086,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),
@@ -3252,7 +3254,7 @@ module regslv_slv_map (
 
     field #(
         .F_WIDTH                                (32),
-        .ARST_VALUE                             (32'h0),
+        .ARST_VALUE                             (32'hff),
         .ALIAS_NUM                              (2),
         .SRST_CNT                               (0),
         .SW_TYPE                                ({`SW_RW, `SW_RW}),

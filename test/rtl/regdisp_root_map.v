@@ -38,6 +38,7 @@ module regdisp_root_map (
     parameter   FORWARD_NUM = 1;
     parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {1'b0};
     parameter   INSERT_BACKWARD_FF = 0;
+    parameter   DUMMY_READ_DATA = 0;
 
     input   logic                               regdisp_root_map_clk;
     input   logic                               regdisp_root_map_rst_n;
@@ -197,7 +198,7 @@ module regdisp_root_map (
     assign  regdisp_root_map__upstream__err_mux = | downstream_err;
 
     always_comb begin
-        regdisp_root_map__upstream__rd_data_mux = {UPSTREAM_DATA_WIDTH{1'b0}};
+        regdisp_root_map__upstream__rd_data_mux = DUMMY_READ_DATA;
         if (!dummy_reg_ack_vld) begin
             for (integer i = 0; i < FORWARD_NUM; i = i + 1) begin
                 if (downstream_ack_vld[i]) begin

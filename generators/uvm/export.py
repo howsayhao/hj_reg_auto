@@ -2,7 +2,7 @@ import os
 import traceback
 
 import utils.message as message
-from peakrdl.uvm import UVMExporter
+from peakrdl_uvm import UVMExporter
 from systemrdl.node import AddrmapNode
 
 
