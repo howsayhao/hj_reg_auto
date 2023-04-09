@@ -13,7 +13,8 @@
             "justMyCode": false,
             "args": [
                 "generate", "-f",
-                "./test/test_alias.rdl", "-gch"
+                "./test/test_alias.rdl", "-gdir", "./test",
+                "-grtl", "-gviz" 
             ],
             "subProcess": true
         }

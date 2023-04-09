@@ -18,20 +18,17 @@ def export_viz(top_node:AddrmapNode, out_dir:str):
     out_dir : str
         Output directory
     """
-    rtl_dir = os.path.join(out_dir, "rtl")
+    graphviz_dir = os.path.join(out_dir, "graphviz")
 
-    if not os.path.exists(rtl_dir):
-        os.makedirs(rtl_dir)
-
+    if not os.path.exists(graphviz_dir):
+        os.makedirs(graphviz_dir)
 
     try:
-        VIZExporter().export(top_node, rtl_dir)
+        # print(graphviz_dir)
+        VIZExporter().export(top_node, graphviz_dir)
     except Exception:
         message.error(
-            "HRDA encounters some unknown errors\n{}\n"
-            "VIZ export failed due to previous error".format(
-                traceback.format_exc()
-            ), raise_err=False
+            "HRDA encounters some unknown errors when generating graphviz\n"
         )
     else:
-        message.info("save VIZ in directory: %s" % (rtl_dir))
+        message.info("save VIZ in directory: %s" % (graphviz_dir))

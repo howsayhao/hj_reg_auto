@@ -11,6 +11,50 @@ module regdisp_root_map (
     regdisp_disp_map__regdisp_root_map__rd_data,
     regdisp_root_map__regdisp_disp_map__non_sec,
     regdisp_root_map__regdisp_disp_map__soft_rst,
+    // reg_native_if forwarding to regdisp_disp1_map
+    regdisp_root_map__regdisp_disp1_map__req_vld,
+    regdisp_disp1_map__regdisp_root_map__ack_vld,
+    regdisp_disp1_map__regdisp_root_map__err,
+    regdisp_root_map__regdisp_disp1_map__addr,
+    regdisp_root_map__regdisp_disp1_map__wr_en,
+    regdisp_root_map__regdisp_disp1_map__rd_en,
+    regdisp_root_map__regdisp_disp1_map__wr_data,
+    regdisp_disp1_map__regdisp_root_map__rd_data,
+    regdisp_root_map__regdisp_disp1_map__non_sec,
+    regdisp_root_map__regdisp_disp1_map__soft_rst,
+    // reg_native_if forwarding to regdisp_disp2_map
+    regdisp_root_map__regdisp_disp2_map__req_vld,
+    regdisp_disp2_map__regdisp_root_map__ack_vld,
+    regdisp_disp2_map__regdisp_root_map__err,
+    regdisp_root_map__regdisp_disp2_map__addr,
+    regdisp_root_map__regdisp_disp2_map__wr_en,
+    regdisp_root_map__regdisp_disp2_map__rd_en,
+    regdisp_root_map__regdisp_disp2_map__wr_data,
+    regdisp_disp2_map__regdisp_root_map__rd_data,
+    regdisp_root_map__regdisp_disp2_map__non_sec,
+    regdisp_root_map__regdisp_disp2_map__soft_rst,
+    // reg_native_if forwarding to regdisp_disp3_map
+    regdisp_root_map__regdisp_disp3_map__req_vld,
+    regdisp_disp3_map__regdisp_root_map__ack_vld,
+    regdisp_disp3_map__regdisp_root_map__err,
+    regdisp_root_map__regdisp_disp3_map__addr,
+    regdisp_root_map__regdisp_disp3_map__wr_en,
+    regdisp_root_map__regdisp_disp3_map__rd_en,
+    regdisp_root_map__regdisp_disp3_map__wr_data,
+    regdisp_disp3_map__regdisp_root_map__rd_data,
+    regdisp_root_map__regdisp_disp3_map__non_sec,
+    regdisp_root_map__regdisp_disp3_map__soft_rst,
+    // reg_native_if forwarding to regslv_slv5_map
+    regdisp_root_map__regslv_slv5_map__req_vld,
+    regslv_slv5_map__regdisp_root_map__ack_vld,
+    regslv_slv5_map__regdisp_root_map__err,
+    regdisp_root_map__regslv_slv5_map__addr,
+    regdisp_root_map__regslv_slv5_map__wr_en,
+    regdisp_root_map__regslv_slv5_map__rd_en,
+    regdisp_root_map__regslv_slv5_map__wr_data,
+    regslv_slv5_map__regdisp_root_map__rd_data,
+    regdisp_root_map__regslv_slv5_map__non_sec,
+    regdisp_root_map__regslv_slv5_map__soft_rst,
     // regdisp is in register native clock and reset domain
     regdisp_root_map_clk,
     regdisp_root_map_rst_n,
@@ -35,8 +79,24 @@ module regdisp_root_map (
     parameter   REGDISP_DISP_MAP_DATA_WIDTH = 32;
     parameter   REGDISP_DISP_MAP_ADDR_REM_BITS = 13;
     parameter   REGDISP_DISP_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGDISP_DISP_MAP_ADDR_REM_BITS;
-    parameter   FORWARD_NUM = 1;
-    parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {1'b0};
+    parameter   REGDISP_DISP1_MAP_ADDR_WIDTH = 48;
+    parameter   REGDISP_DISP1_MAP_DATA_WIDTH = 32;
+    parameter   REGDISP_DISP1_MAP_ADDR_REM_BITS = 14;
+    parameter   REGDISP_DISP1_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGDISP_DISP1_MAP_ADDR_REM_BITS;
+    parameter   REGDISP_DISP2_MAP_ADDR_WIDTH = 48;
+    parameter   REGDISP_DISP2_MAP_DATA_WIDTH = 32;
+    parameter   REGDISP_DISP2_MAP_ADDR_REM_BITS = 13;
+    parameter   REGDISP_DISP2_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGDISP_DISP2_MAP_ADDR_REM_BITS;
+    parameter   REGDISP_DISP3_MAP_ADDR_WIDTH = 48;
+    parameter   REGDISP_DISP3_MAP_DATA_WIDTH = 32;
+    parameter   REGDISP_DISP3_MAP_ADDR_REM_BITS = 13;
+    parameter   REGDISP_DISP3_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGDISP_DISP3_MAP_ADDR_REM_BITS;
+    parameter   REGSLV_SLV5_MAP_ADDR_WIDTH = 48;
+    parameter   REGSLV_SLV5_MAP_DATA_WIDTH = 32;
+    parameter   REGSLV_SLV5_MAP_ADDR_REM_BITS = 13;
+    parameter   REGSLV_SLV5_MAP_ADDR_TRUNC_BITS = UPSTREAM_ADDR_WIDTH - REGSLV_SLV5_MAP_ADDR_REM_BITS;
+    parameter   FORWARD_NUM = 5;
+    parameter   [FORWARD_NUM-1:0]   INSERT_FORWARD_FF = {1'b0, 1'b0, 1'b0, 1'b0, 1'b0};
     parameter   INSERT_BACKWARD_FF = 0;
     parameter   DUMMY_READ_DATA = 0;
 
@@ -63,6 +123,46 @@ module regdisp_root_map (
     input   logic   [REGDISP_DISP_MAP_DATA_WIDTH-1:0] regdisp_disp_map__regdisp_root_map__rd_data;
     output  logic                               regdisp_root_map__regdisp_disp_map__non_sec;
     output  logic                               regdisp_root_map__regdisp_disp_map__soft_rst;
+    output  logic                               regdisp_root_map__regdisp_disp1_map__req_vld;
+    input   logic                               regdisp_disp1_map__regdisp_root_map__ack_vld;
+    input   logic                               regdisp_disp1_map__regdisp_root_map__err;
+    output  logic   [REGDISP_DISP1_MAP_ADDR_WIDTH-1:0] regdisp_root_map__regdisp_disp1_map__addr;
+    output  logic                               regdisp_root_map__regdisp_disp1_map__wr_en;
+    output  logic                               regdisp_root_map__regdisp_disp1_map__rd_en;
+    output  logic   [REGDISP_DISP1_MAP_DATA_WIDTH-1:0] regdisp_root_map__regdisp_disp1_map__wr_data;
+    input   logic   [REGDISP_DISP1_MAP_DATA_WIDTH-1:0] regdisp_disp1_map__regdisp_root_map__rd_data;
+    output  logic                               regdisp_root_map__regdisp_disp1_map__non_sec;
+    output  logic                               regdisp_root_map__regdisp_disp1_map__soft_rst;
+    output  logic                               regdisp_root_map__regdisp_disp2_map__req_vld;
+    input   logic                               regdisp_disp2_map__regdisp_root_map__ack_vld;
+    input   logic                               regdisp_disp2_map__regdisp_root_map__err;
+    output  logic   [REGDISP_DISP2_MAP_ADDR_WIDTH-1:0] regdisp_root_map__regdisp_disp2_map__addr;
+    output  logic                               regdisp_root_map__regdisp_disp2_map__wr_en;
+    output  logic                               regdisp_root_map__regdisp_disp2_map__rd_en;
+    output  logic   [REGDISP_DISP2_MAP_DATA_WIDTH-1:0] regdisp_root_map__regdisp_disp2_map__wr_data;
+    input   logic   [REGDISP_DISP2_MAP_DATA_WIDTH-1:0] regdisp_disp2_map__regdisp_root_map__rd_data;
+    output  logic                               regdisp_root_map__regdisp_disp2_map__non_sec;
+    output  logic                               regdisp_root_map__regdisp_disp2_map__soft_rst;
+    output  logic                               regdisp_root_map__regdisp_disp3_map__req_vld;
+    input   logic                               regdisp_disp3_map__regdisp_root_map__ack_vld;
+    input   logic                               regdisp_disp3_map__regdisp_root_map__err;
+    output  logic   [REGDISP_DISP3_MAP_ADDR_WIDTH-1:0] regdisp_root_map__regdisp_disp3_map__addr;
+    output  logic                               regdisp_root_map__regdisp_disp3_map__wr_en;
+    output  logic                               regdisp_root_map__regdisp_disp3_map__rd_en;
+    output  logic   [REGDISP_DISP3_MAP_DATA_WIDTH-1:0] regdisp_root_map__regdisp_disp3_map__wr_data;
+    input   logic   [REGDISP_DISP3_MAP_DATA_WIDTH-1:0] regdisp_disp3_map__regdisp_root_map__rd_data;
+    output  logic                               regdisp_root_map__regdisp_disp3_map__non_sec;
+    output  logic                               regdisp_root_map__regdisp_disp3_map__soft_rst;
+    output  logic                               regdisp_root_map__regslv_slv5_map__req_vld;
+    input   logic                               regslv_slv5_map__regdisp_root_map__ack_vld;
+    input   logic                               regslv_slv5_map__regdisp_root_map__err;
+    output  logic   [REGSLV_SLV5_MAP_ADDR_WIDTH-1:0] regdisp_root_map__regslv_slv5_map__addr;
+    output  logic                               regdisp_root_map__regslv_slv5_map__wr_en;
+    output  logic                               regdisp_root_map__regslv_slv5_map__rd_en;
+    output  logic   [REGSLV_SLV5_MAP_DATA_WIDTH-1:0] regdisp_root_map__regslv_slv5_map__wr_data;
+    input   logic   [REGSLV_SLV5_MAP_DATA_WIDTH-1:0] regslv_slv5_map__regdisp_root_map__rd_data;
+    output  logic                               regdisp_root_map__regslv_slv5_map__non_sec;
+    output  logic                               regdisp_root_map__regslv_slv5_map__soft_rst;
 
     logic   [FORWARD_NUM-1:0]                           downstream_ack_vld;
     logic   [FORWARD_NUM-1:0]                           downstream_err;
@@ -106,6 +206,26 @@ module regdisp_root_map (
                 upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
                 (DEC_ADDR_REM_BITS'((64'h12c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
                     dec_if_sel[0] = 1'b1;
+                ((DEC_ADDR_REM_BITS'((64'h4000 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
+                <= upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
+                upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
+                (DEC_ADDR_REM_BITS'((64'h72c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
+                    dec_if_sel[1] = 1'b1;
+                ((DEC_ADDR_REM_BITS'((64'h8000 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
+                <= upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
+                upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
+                (DEC_ADDR_REM_BITS'((64'h92c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
+                    dec_if_sel[2] = 1'b1;
+                ((DEC_ADDR_REM_BITS'((64'ha000 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
+                <= upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
+                upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
+                (DEC_ADDR_REM_BITS'((64'hb2c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
+                    dec_if_sel[3] = 1'b1;
+                ((DEC_ADDR_REM_BITS'((64'hc000 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))
+                <= upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] &&
+                upstream__regdisp_root_map__addr[UPSTREAM_ADDR_WIDTH-1:DEC_ADDR_TRUNC_BITS] <
+                (DEC_ADDR_REM_BITS'((64'hd2c8 + BASE_ADDR) >> DEC_ADDR_TRUNC_BITS))):
+                    dec_if_sel[4] = 1'b1;
                 default: dec_dummy_reg_sel  = 1'b1;
             endcase
         end
@@ -135,6 +255,10 @@ module regdisp_root_map (
 
     // address conversion
     assign  downstream_addr_conv[0] = {{REGDISP_DISP_MAP_ADDR_TRUNC_BITS{1'b0}}, downstream_addr_imux[0][REGDISP_DISP_MAP_ADDR_REM_BITS-1:0]};
+    assign  downstream_addr_conv[1] = {{REGDISP_DISP1_MAP_ADDR_TRUNC_BITS{1'b0}}, downstream_addr_imux[1][REGDISP_DISP1_MAP_ADDR_REM_BITS-1:0]};
+    assign  downstream_addr_conv[2] = {{REGDISP_DISP2_MAP_ADDR_TRUNC_BITS{1'b0}}, downstream_addr_imux[2][REGDISP_DISP2_MAP_ADDR_REM_BITS-1:0]};
+    assign  downstream_addr_conv[3] = {{REGDISP_DISP3_MAP_ADDR_TRUNC_BITS{1'b0}}, downstream_addr_imux[3][REGDISP_DISP3_MAP_ADDR_REM_BITS-1:0]};
+    assign  downstream_addr_conv[4] = {{REGSLV_SLV5_MAP_ADDR_TRUNC_BITS{1'b0}}, downstream_addr_imux[4][REGSLV_SLV5_MAP_ADDR_REM_BITS-1:0]};
 
     // optionally insert forwarding flip-flops,
     // which depends on hj_use_forward_ff in child addrmaps
@@ -185,6 +309,50 @@ module regdisp_root_map (
     assign  downstream_ack_vld[0]     = regdisp_disp_map__regdisp_root_map__ack_vld;
     assign  downstream_err[0]         = regdisp_disp_map__regdisp_root_map__err;
     assign  downstream_rd_data[0]     = regdisp_disp_map__regdisp_root_map__rd_data;
+
+    assign  regdisp_root_map__regdisp_disp1_map__req_vld      = downstream_req_vld_ff[1];
+    assign  regdisp_root_map__regdisp_disp1_map__addr         = downstream_addr_ff[1];
+    assign  regdisp_root_map__regdisp_disp1_map__wr_en        = downstream_wr_en_ff[1];
+    assign  regdisp_root_map__regdisp_disp1_map__rd_en        = downstream_rd_en_ff[1];
+    assign  regdisp_root_map__regdisp_disp1_map__wr_data      = downstream_wr_data_ff[1];
+    assign  regdisp_root_map__regdisp_disp1_map__non_sec      = downstream_non_sec_ff[1];
+    assign  regdisp_root_map__regdisp_disp1_map__soft_rst     = downstream_soft_rst_ff[1];
+    assign  downstream_ack_vld[1]     = regdisp_disp1_map__regdisp_root_map__ack_vld;
+    assign  downstream_err[1]         = regdisp_disp1_map__regdisp_root_map__err;
+    assign  downstream_rd_data[1]     = regdisp_disp1_map__regdisp_root_map__rd_data;
+
+    assign  regdisp_root_map__regdisp_disp2_map__req_vld      = downstream_req_vld_ff[2];
+    assign  regdisp_root_map__regdisp_disp2_map__addr         = downstream_addr_ff[2];
+    assign  regdisp_root_map__regdisp_disp2_map__wr_en        = downstream_wr_en_ff[2];
+    assign  regdisp_root_map__regdisp_disp2_map__rd_en        = downstream_rd_en_ff[2];
+    assign  regdisp_root_map__regdisp_disp2_map__wr_data      = downstream_wr_data_ff[2];
+    assign  regdisp_root_map__regdisp_disp2_map__non_sec      = downstream_non_sec_ff[2];
+    assign  regdisp_root_map__regdisp_disp2_map__soft_rst     = downstream_soft_rst_ff[2];
+    assign  downstream_ack_vld[2]     = regdisp_disp2_map__regdisp_root_map__ack_vld;
+    assign  downstream_err[2]         = regdisp_disp2_map__regdisp_root_map__err;
+    assign  downstream_rd_data[2]     = regdisp_disp2_map__regdisp_root_map__rd_data;
+
+    assign  regdisp_root_map__regdisp_disp3_map__req_vld      = downstream_req_vld_ff[3];
+    assign  regdisp_root_map__regdisp_disp3_map__addr         = downstream_addr_ff[3];
+    assign  regdisp_root_map__regdisp_disp3_map__wr_en        = downstream_wr_en_ff[3];
+    assign  regdisp_root_map__regdisp_disp3_map__rd_en        = downstream_rd_en_ff[3];
+    assign  regdisp_root_map__regdisp_disp3_map__wr_data      = downstream_wr_data_ff[3];
+    assign  regdisp_root_map__regdisp_disp3_map__non_sec      = downstream_non_sec_ff[3];
+    assign  regdisp_root_map__regdisp_disp3_map__soft_rst     = downstream_soft_rst_ff[3];
+    assign  downstream_ack_vld[3]     = regdisp_disp3_map__regdisp_root_map__ack_vld;
+    assign  downstream_err[3]         = regdisp_disp3_map__regdisp_root_map__err;
+    assign  downstream_rd_data[3]     = regdisp_disp3_map__regdisp_root_map__rd_data;
+
+    assign  regdisp_root_map__regslv_slv5_map__req_vld      = downstream_req_vld_ff[4];
+    assign  regdisp_root_map__regslv_slv5_map__addr         = downstream_addr_ff[4];
+    assign  regdisp_root_map__regslv_slv5_map__wr_en        = downstream_wr_en_ff[4];
+    assign  regdisp_root_map__regslv_slv5_map__rd_en        = downstream_rd_en_ff[4];
+    assign  regdisp_root_map__regslv_slv5_map__wr_data      = downstream_wr_data_ff[4];
+    assign  regdisp_root_map__regslv_slv5_map__non_sec      = downstream_non_sec_ff[4];
+    assign  regdisp_root_map__regslv_slv5_map__soft_rst     = downstream_soft_rst_ff[4];
+    assign  downstream_ack_vld[4]     = regslv_slv5_map__regdisp_root_map__ack_vld;
+    assign  downstream_err[4]         = regslv_slv5_map__regdisp_root_map__err;
+    assign  downstream_rd_data[4]     = regslv_slv5_map__regdisp_root_map__rd_data;
 
 //**************************************BACKWARD DATAPATH**********************************************//
     // backward multiplexor for rd_data, ack_vld and err

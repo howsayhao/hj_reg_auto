@@ -8,6 +8,7 @@ import utils.message as message
 from generators.chdr.export import export_chdr
 from generators.doc.export import DocExporter
 from generators.preprocess import preprocess
+# zhenghaoZJU
 from generators.rtl.export_rtl import export_rtl
 from generators.uvm.export import export_uvm
 from parsers.parse import Parser
@@ -435,6 +436,7 @@ class CommandRunner:
                 ))
             proc_num_left -= 1
         
+        # zhenghaoZJU
         # generate graph of rtl by graphviz
         if args.generate_all or args.generate_graphviz:
             proc_list.append(

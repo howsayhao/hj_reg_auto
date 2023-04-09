@@ -83,16 +83,16 @@ class VIZExporter:
             'need_param_reset': self._need_param_reset
         }
 
-    def export(self, top_node:AddrmapNode, rtl_dir:str):
+    def export(self, top_node:AddrmapNode, viz_dir:str):
         """
-        Export in-house RTL module files: regmst, regdisp and regslv.
+        Export graphviz RTL module files: regmst, regdisp and regslv.
 
         Parameters
         ----------
         top_node : AddrmapNode
             Top node of the generation boundry.
-        rtl_dir : str
-            Directory to save the generated RTL files.
+        viz_dir : str
+            Directory to save the generated graphviz files.
         """
 
         self.top_node = top_node
@@ -106,20 +106,18 @@ class VIZExporter:
             'nodes': nodes
         }
         template = self.jj_env.get_template("graphviz_template.jinja")
-        filename = "graphviz.dot"
-        dump_file = os.path.join(rtl_dir, filename)
+        filename = "graphviz_{}.dot".format(self._get_inst_name(top_node))
+        dump_file = os.path.join(viz_dir, filename)
         if template:
             self.context.update(update_context)
             stream = template.stream(self.context)
-
+            
             stream.dump(dump_file)
 
             with open(dump_file) as f:
                 dot_graph = f.read()
             dot = graphviz.Source(dot_graph)
-            # dot.view()
-            dot.render(os.path.join(rtl_dir, 'graphviz.gv'), view=True)
-            print(rtl_dir)
+            dot.render(os.path.join(viz_dir, 'graphviz_{}.gv'.format(self._get_inst_name(top_node))), view=True)
         
         message.info(
             "zhenghaoZJU set test break-point here."
