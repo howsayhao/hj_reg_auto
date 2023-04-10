@@ -1,25 +1,25 @@
 {# regmst #}
 {%- macro regmst_typedef(node) %}
 node[shape="retangle", color="#FDB7AF", style="filled", fillcolor="#FDB7AF", fontname="FangSong"];
-{{node.inst_name}}[label="regmst"]
+{{node.inst_name}}[label="{{get_rtl_name(node)}}"]
 {%- endmacro -%}
 
 {# regdisp #}
 {%- macro regdisp_typedef(node) %}
 node[shape="retangle", color="#F8E1A9", style="filled", fillcolor="#F8E1A9", fontname="FangSong"];
-{{node.inst_name}}[label="regdisp"]
+{{node.inst_name}}[label="{{get_rtl_name(node)}}"]
 {%- endmacro -%}
 
 {# regslv #}
 {%- macro regslv_typedef(node) %}
 node[shape="retangle", color="#9df7e4", style="filled", fillcolor="#9df7e4", width=.8, fontname="FangSong"];
-{{node.inst_name}}[label="regslv"]
+{{node.inst_name}}[label="{{get_rtl_name(node)}}"]
 {%- endmacro -%}
 
 {# 3rd_party_ip 但还没试过 #}
 {%- macro hj_3rd_party_ip_typedef(node) %}
 node[shape="retangle", color="#E890FE", style="filled", fillcolor="#E890FE", width=.8, fontname="FangSong"];
-{{node.inst_name}}[label="3rd_party_ip"]
+{{node.inst_name}}[label="{{get_rtl_name(node)}}"]
 {%- endmacro -%}
 
 digraph G{
